@@ -1,3 +1,10 @@
+Görseli anladım, bildirim paneli (toast) tam üstteki başlık etiketinin üzerine denk geliyor ve okunmayı zorlaştırıyor. 
+
+Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmından alıp ekranın alt kısmına (merkeze)** taşıdım. Böylece bildirimler çıkarken yukarıdaki başlıkları, takım skorlarını veya soruları asla kapatmayacak, ekranın altından güzel bir animasyonla belirecek.
+
+İşte düzeltilmiş tam kod, önceki gibi kopyalayıp kullanabilirsiniz:
+
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -146,8 +153,8 @@
         }
 
         .toast {
-            position: fixed; top: 10%; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
+            position: fixed; bottom: 8%; left: 50%;
+            transform: translate(-50%, 50%) scale(0);
             padding: 10px 30px;
             border-radius: 50px;
             color: white; font-weight: bold;
@@ -677,3 +684,4 @@
 </script>
 </body>
 </html>
+```
