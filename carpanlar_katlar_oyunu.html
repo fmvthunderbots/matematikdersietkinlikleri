@@ -232,29 +232,68 @@
     <div id="toast" class="toast font-baloo"></div>
 
 <script>
+    // 6. Sınıf Çarpanlar ve Katlar (1. Kazanım) 60 Soruluk Geniş Soru Havuzu
     const questionsData = [
       { q: "12 sayısının en büyük çarpanı ile en küçük çarpanının toplamı kaçtır?", a: "13", p: 20 },
-      { q: "24 sayısının kaç tane pozitif çarpanı vardır?", a: "8", p: 30 },
-      { q: "36 sayısının en büyük asal çarpanı kaçtır?", a: "3", p: 25 },
+      { q: "24 sayısının kaç tane pozitif çarpanı vardır?", a: "8", p: 25 },
       { q: "15 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "5", p: 15 },
-      { q: "18'in çarpanlarından kaç tanesi tek sayıdır?", a: "3", p: 30 },
-      { q: "40 sayısının asal çarpanlarının toplamı kaçtır?", a: "7", p: 30 },
-      { q: "Sadece 1 tane asal çarpanı olan, 10 ile 20 arasındaki doğal sayı kaçtır?", a: "16", p: 40 },
-      { q: "30 sayısının asal olmayan çarpanlarının sayısı kaçtır?", a: "5", p: 40 },
-      { q: "45'in çarpanlarından en büyüğü ile en küçüğünün farkı kaçtır?", a: "44", p: 20 },
-      { q: "50 sayısının çarpanları arasında 5'in katı olan kaç sayı vardır?", a: "4", p: 35 },
-      { q: "28 sayısının kendisi hariç çarpanlarının toplamı kaçtır?", a: "28", p: 30 },
-      { q: "60 sayısının asal çarpanlarının rakamları toplamı kaçtır?", a: "10", p: 35 },
+      { q: "18 sayısının pozitif çarpanlarından kaç tanesi tek sayıdır?", a: "3", p: 25 },
+      { q: "45 sayısının en büyük böleni ile en küçük böleninin farkı kaçtır?", a: "44", p: 20 },
+      { q: "50 sayısının çarpanları arasında 5'in katı olan kaç sayı vardır?", a: "4", p: 30 },
+      { q: "28 sayısının kendisi hariç pozitif çarpanlarının toplamı kaçtır?", a: "28", p: 30 },
       { q: "100 sayısının en büyük böleni kaçtır?", a: "100", p: 10 },
-      { q: "48 sayısının kaç tane böleni vardır?", a: "10", p: 40 },
-      { q: "20 sayısının bölenlerinin toplamı kaçtır?", a: "42", p: 35 },
+      { q: "48 sayısının kaç tane pozitif böleni vardır?", a: "10", p: 30 },
+      { q: "20 sayısının bölenlerinin toplamı kaçtır?", a: "42", p: 30 },
       { q: "'1' sayısı tüm doğal sayıların ortak nesidir? (Tek kelimeyle yazın)", a: "çarpanı", p: 15 },
-      { q: "72 sayısının en küçük asal çarpanı kaçtır?", a: "2", p: 15 },
-      { q: "81 sayısının kaç tane pozitif böleni vardır?", a: "5", p: 30 },
-      { q: "12 ve 15 sayılarının en küçük ortak katı kaçtır?", a: "60", p: 40 },
-      { q: "25 sayısının bölenleri toplamı kaçtır?", a: "31", p: 25 },
-      { q: "İki asal sayının çarpımı 35 ise, bu sayıların toplamı kaçtır?", a: "12", p: 25 },
-      { q: "90 sayısının en büyük ve en küçük asal çarpanlarının farkı kaçtır?", a: "3", p: 30 }
+      { q: "81 sayısının kaç tane pozitif böleni vardır?", a: "5", p: 25 },
+      { q: "25 sayısının bölenlerinin toplamı kaçtır?", a: "31", p: 25 },
+      { q: "18 sayısının 100'den büyük en küçük katı kaçtır?", a: "108", p: 35 },
+      { q: "8 sayısının 90'dan küçük en büyük katı kaçtır?", a: "88", p: 35 },
+      { q: "15 sayısının iki basamaklı en büyük katı kaçtır?", a: "90", p: 25 },
+      { q: "12 sayısının iki basamaklı en küçük katı kaçtır?", a: "12", p: 15 },
+      { q: "14 sayısının 50 ile 80 arasındaki en büyük katı kaçtır?", a: "70", p: 30 },
+      { q: "16 sayısının 3 basamaklı en küçük katı kaçtır?", a: "112", p: 35 },
+      { q: "7 sayısının 50'den küçük kaç tane pozitif katı vardır?", a: "7", p: 30 },
+      { q: "36 sayısının kaç tane pozitif çarpanı vardır?", a: "9", p: 25 },
+      { q: "36 sayısının tek olan çarpanlarının toplamı kaçtır?", a: "13", p: 30 },
+      { q: "40 sayısının çift olan çarpanlarının sayısı kaçtır?", a: "6", p: 30 },
+      { q: "30 sayısının kendisi hariç en büyük böleni kaçtır?", a: "15", p: 20 },
+      { q: "32 sayısının kaç tane böleni vardır?", a: "6", p: 20 },
+      { q: "21 sayısının pozitif çarpanlarının toplamı kaçtır?", a: "32", p: 25 },
+      { q: "9 sayısının 100'den küçük en büyük katı kaçtır?", a: "99", p: 20 },
+      { q: "13 sayısının 50'den büyük en küçük katı kaçtır?", a: "52", p: 30 },
+      { q: "25 sayısının 3 basamaklı en küçük katı kaçtır?", a: "100", p: 20 },
+      { q: "6 sayısının 40 ile 70 arasındaki en küçük katı kaçtır?", a: "42", p: 30 },
+      { q: "6 sayısının 40 ile 70 arasındaki en büyük katı kaçtır?", a: "66", p: 30 },
+      { q: "64 sayısının kaç tane pozitif böleni vardır?", a: "7", p: 30 },
+      { q: "54 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "27", p: 25 },
+      { q: "50 sayısının en küçük pozitif böleni kaçtır?", a: "1", p: 10 },
+      { q: "75 sayısının en büyük çarpanı ile en küçük çarpanının farkı kaçtır?", a: "74", p: 20 },
+      { q: "11 sayısının iki basamaklı en büyük katı kaçtır?", a: "99", p: 15 },
+      { q: "22 sayısının kaç tane pozitif böleni vardır?", a: "4", p: 20 },
+      { q: "42 sayısının çarpanlarından kaç tanesi 3'ün katıdır?", a: "4", p: 35 },
+      { q: "16 sayısının tüm pozitif çarpanlarının toplamı kaçtır?", a: "31", p: 25 },
+      { q: "17 sayısının kaç tane pozitif böleni vardır?", a: "2", p: 15 },
+      { q: "23 sayısının en büyük böleni ile en küçük böleninin toplamı kaçtır?", a: "24", p: 20 },
+      { q: "19 sayısının 100'den küçük en büyük katı kaçtır?", a: "95", p: 30 },
+      { q: "24 sayısının 50'den büyük en küçük katı kaçtır?", a: "72", p: 25 },
+      { q: "45 sayısının kaç tane pozitif çarpanı vardır?", a: "6", p: 25 },
+      { q: "60 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "30", p: 20 },
+      { q: "60 sayısının kaç tane pozitif böleni vardır?", a: "12", p: 35 },
+      { q: "70 sayısının çarpanlarından kaç tanesi 10'un katıdır?", a: "2", p: 30 },
+      { q: "80 sayısının kendisi hariç en büyük böleni kaçtır?", a: "40", p: 20 },
+      { q: "90 sayısının 200'den küçük en büyük katı kaçtır?", a: "180", p: 25 },
+      { q: "15 sayısının 70 ile 110 arasındaki katlarının sayısı kaçtır?", a: "3", p: 35 },
+      { q: "8 sayısının 60 ile 100 arasındaki en küçük katı kaçtır?", a: "64", p: 25 },
+      { q: "8 sayısının 60 ile 100 arasındaki en büyük katı kaçtır?", a: "96", p: 25 },
+      { q: "9 sayısının iki basamaklı kaç tane katı vardır?", a: "10", p: 40 },
+      { q: "35 sayısının bölenlerinin toplamı kaçtır?", a: "48", p: 25 },
+      { q: "10 sayısının 3 basamaklı en küçük katı kaçtır?", a: "100", p: 15 },
+      { q: "40 sayısının en büyük böleni ile en küçük böleninin toplamı kaçtır?", a: "41", p: 20 },
+      { q: "27 sayısının pozitif çarpanlarının sayısı kaçtır?", a: "4", p: 20 },
+      { q: "12 sayısının 50'den küçük kaç tane katı vardır?", a: "4", p: 25 },
+      { q: "16 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "8", p: 15 },
+      { q: "50 sayısının pozitif çarpanlarının toplamı kaçtır?", a: "93", p: 30 }
     ];
 
     const jokersData = [
@@ -281,15 +320,27 @@
         pendingJokerAction: null
     };
 
+    // Diziden rastgele eleman seçme fonksiyonu
+    function getRandomSubarray(arr, size) {
+        let shuffled = arr.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, size);
+    }
+
     function startGame() {
         document.getElementById('winner-screen').classList.add('hidden');
         document.getElementById('winner-screen').classList.remove('flex');
         document.getElementById('btn-last-round').style.display = 'flex';
 
-        const q = questionsData.map(d => ({ ...d, type: 'q', solved: false }));
+        // Soru havuzundan her oyunda rastgele 22 soru seçiyoruz
+        const selectedQuestions = getRandomSubarray(questionsData, 22).map(d => ({ ...d, type: 'q', solved: false }));
         const j = jokersData.map(d => ({ ...d, type: 'j', solved: false }));
-        let deck = [...q, ...j];
+        let deck = [...selectedQuestions, ...j];
         
+        // Desteyi karıştır
         for (let i = deck.length - 1; i > 0; i--) {
             const r = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[r]] = [deck[r], deck[i]];
@@ -387,7 +438,10 @@
         let val = document.getElementById('modal-input').value.trim().toLowerCase();
         let correct = card.a.toLowerCase();
         
-        if (val === 'böleni' && correct === 'çarpanı') val = 'çarpanı';
+        // Çarpan / Bölen kelime eşleşmelerinde esneklik
+        if (correct === 'çarpanı' && (val === 'böleni' || val === 'çarpan' || val === 'bölen')) {
+            val = 'çarpanı';
+        }
 
         document.getElementById('modal-q').classList.remove('modal-active');
 
