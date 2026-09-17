@@ -125,18 +125,18 @@
             position: relative;
         }
 
+        /* Takım kutuları opak ve düz kenarlıklı */
         .team-box {
-            background: rgba(255, 255, 255, 0.9);
-            border: 4px solid #cbd5e1;
+            background-color: #ffffff;
+            border-width: 4px;
+            border-style: solid;
             border-radius: 12px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        
+        /* Aktif takım büyür ve öne çıkar */
         .active-team {
-            border-color: #3b82f6;
             transform: scale(1.05) translateY(-3px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-            background: #fff;
             z-index: 10;
         }
 
@@ -245,17 +245,17 @@
     // 6. Sınıf Çarpanlar ve Katlar (1. Kazanım) 60 Soruluk Geniş Soru Havuzu
     const questionsData = [
       { q: "12 sayısının en büyük çarpanı ile en küçük çarpanının toplamı kaçtır?", a: "13", p: 20 },
-      { q: "24 sayısının kaç tane pozitif çarpanı vardır?", a: "8", p: 25 },
+      { q: "24 sayısının kaç tane çarpanı vardır?", a: "8", p: 25 },
       { q: "15 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "5", p: 15 },
-      { q: "18 sayısının pozitif çarpanlarından kaç tanesi tek sayıdır?", a: "3", p: 25 },
+      { q: "18 sayısının çarpanlarından kaç tanesi tek sayıdır?", a: "3", p: 25 },
       { q: "45 sayısının en büyük böleni ile en küçük böleninin farkı kaçtır?", a: "44", p: 20 },
       { q: "50 sayısının çarpanları arasında 5'in katı olan kaç sayı vardır?", a: "4", p: 30 },
-      { q: "28 sayısının kendisi hariç pozitif çarpanlarının toplamı kaçtır?", a: "28", p: 30 },
+      { q: "28 sayısının kendisi hariç çarpanlarının toplamı kaçtır?", a: "28", p: 30 },
       { q: "100 sayısının en büyük böleni kaçtır?", a: "100", p: 10 },
-      { q: "48 sayısının kaç tane pozitif böleni vardır?", a: "10", p: 30 },
+      { q: "48 sayısının kaç tane böleni vardır?", a: "10", p: 30 },
       { q: "20 sayısının bölenlerinin toplamı kaçtır?", a: "42", p: 30 },
       { q: "'1' sayısı tüm doğal sayıların ortak nesidir? (Tek kelimeyle yazın)", a: "çarpanı", p: 15 },
-      { q: "81 sayısının kaç tane pozitif böleni vardır?", a: "5", p: 25 },
+      { q: "81 sayısının kaç tane böleni vardır?", a: "5", p: 25 },
       { q: "25 sayısının bölenlerinin toplamı kaçtır?", a: "31", p: 25 },
       { q: "18 sayısının 100'den büyük en küçük katı kaçtır?", a: "108", p: 35 },
       { q: "8 sayısının 90'dan küçük en büyük katı kaçtır?", a: "88", p: 35 },
@@ -263,33 +263,33 @@
       { q: "12 sayısının iki basamaklı en küçük katı kaçtır?", a: "12", p: 15 },
       { q: "14 sayısının 50 ile 80 arasındaki en büyük katı kaçtır?", a: "70", p: 30 },
       { q: "16 sayısının 3 basamaklı en küçük katı kaçtır?", a: "112", p: 35 },
-      { q: "7 sayısının 50'den küçük kaç tane pozitif katı vardır?", a: "7", p: 30 },
-      { q: "36 sayısının kaç tane pozitif çarpanı vardır?", a: "9", p: 25 },
+      { q: "7 sayısının 50'den küçük kaç tane katı vardır?", a: "7", p: 30 },
+      { q: "36 sayısının kaç tane çarpanı vardır?", a: "9", p: 25 },
       { q: "36 sayısının tek olan çarpanlarının toplamı kaçtır?", a: "13", p: 30 },
       { q: "40 sayısının çift olan çarpanlarının sayısı kaçtır?", a: "6", p: 30 },
       { q: "30 sayısının kendisi hariç en büyük böleni kaçtır?", a: "15", p: 20 },
       { q: "32 sayısının kaç tane böleni vardır?", a: "6", p: 20 },
-      { q: "21 sayısının pozitif çarpanlarının toplamı kaçtır?", a: "32", p: 25 },
+      { q: "21 sayısının çarpanlarının toplamı kaçtır?", a: "32", p: 25 },
       { q: "9 sayısının 100'den küçük en büyük katı kaçtır?", a: "99", p: 20 },
       { q: "13 sayısının 50'den büyük en küçük katı kaçtır?", a: "52", p: 30 },
       { q: "25 sayısının 3 basamaklı en küçük katı kaçtır?", a: "100", p: 20 },
       { q: "6 sayısının 40 ile 70 arasındaki en küçük katı kaçtır?", a: "42", p: 30 },
       { q: "6 sayısının 40 ile 70 arasındaki en büyük katı kaçtır?", a: "66", p: 30 },
-      { q: "64 sayısının kaç tane pozitif böleni vardır?", a: "7", p: 30 },
+      { q: "64 sayısının kaç tane böleni vardır?", a: "7", p: 30 },
       { q: "54 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "27", p: 25 },
-      { q: "50 sayısının en küçük pozitif böleni kaçtır?", a: "1", p: 10 },
+      { q: "50 sayısının en küçük böleni kaçtır?", a: "1", p: 10 },
       { q: "75 sayısının en büyük çarpanı ile en küçük çarpanının farkı kaçtır?", a: "74", p: 20 },
       { q: "11 sayısının iki basamaklı en büyük katı kaçtır?", a: "99", p: 15 },
-      { q: "22 sayısının kaç tane pozitif böleni vardır?", a: "4", p: 20 },
+      { q: "22 sayısının kaç tane böleni vardır?", a: "4", p: 20 },
       { q: "42 sayısının çarpanlarından kaç tanesi 3'ün katıdır?", a: "4", p: 35 },
-      { q: "16 sayısının tüm pozitif çarpanlarının toplamı kaçtır?", a: "31", p: 25 },
-      { q: "17 sayısının kaç tane pozitif böleni vardır?", a: "2", p: 15 },
+      { q: "16 sayısının tüm çarpanlarının toplamı kaçtır?", a: "31", p: 25 },
+      { q: "17 sayısının kaç tane böleni vardır?", a: "2", p: 15 },
       { q: "23 sayısının en büyük böleni ile en küçük böleninin toplamı kaçtır?", a: "24", p: 20 },
       { q: "19 sayısının 100'den küçük en büyük katı kaçtır?", a: "95", p: 30 },
       { q: "24 sayısının 50'den büyük en küçük katı kaçtır?", a: "72", p: 25 },
-      { q: "45 sayısının kaç tane pozitif çarpanı vardır?", a: "6", p: 25 },
+      { q: "45 sayısının kaç tane çarpanı vardır?", a: "6", p: 25 },
       { q: "60 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "30", p: 20 },
-      { q: "60 sayısının kaç tane pozitif böleni vardır?", a: "12", p: 35 },
+      { q: "60 sayısının kaç tane böleni vardır?", a: "12", p: 35 },
       { q: "70 sayısının çarpanlarından kaç tanesi 10'un katıdır?", a: "2", p: 30 },
       { q: "80 sayısının kendisi hariç en büyük böleni kaçtır?", a: "40", p: 20 },
       { q: "90 sayısının 200'den küçük en büyük katı kaçtır?", a: "180", p: 25 },
@@ -300,10 +300,10 @@
       { q: "35 sayısının bölenlerinin toplamı kaçtır?", a: "48", p: 25 },
       { q: "10 sayısının 3 basamaklı en küçük katı kaçtır?", a: "100", p: 15 },
       { q: "40 sayısının en büyük böleni ile en küçük böleninin toplamı kaçtır?", a: "41", p: 20 },
-      { q: "27 sayısının pozitif çarpanlarının sayısı kaçtır?", a: "4", p: 20 },
+      { q: "27 sayısının çarpanlarının sayısı kaçtır?", a: "4", p: 20 },
       { q: "12 sayısının 50'den küçük kaç tane katı vardır?", a: "4", p: 25 },
       { q: "16 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "8", p: 15 },
-      { q: "50 sayısının pozitif çarpanlarının toplamı kaçtır?", a: "93", p: 30 }
+      { q: "50 sayısının çarpanlarının toplamı kaçtır?", a: "93", p: 30 }
     ];
 
     const jokersData = [
@@ -320,9 +320,9 @@
     let gameState = {
         cards: [],
         teams: [
-            { name: "DEFTERLER 📓", score: 0, color: "text-blue-600" },
-            { name: "KİTAPLAR 📚", score: 0, color: "text-purple-600" },
-            { name: "KALEMLER ✏️", score: 0, color: "text-green-600" }
+            { name: "DEFTERLER 📓", score: 0, color: "text-blue-600", activeBorder: "border-blue-500", shadow: "shadow-blue-400/50", bar: "bg-blue-500" },
+            { name: "KİTAPLAR 📚", score: 0, color: "text-purple-600", activeBorder: "border-purple-500", shadow: "shadow-purple-400/50", bar: "bg-purple-500" },
+            { name: "KALEMLER ✏️", score: 0, color: "text-green-600", activeBorder: "border-green-500", shadow: "shadow-green-400/50", bar: "bg-green-500" }
         ],
         currentTeam: 0,
         activeIndex: null,
@@ -367,13 +367,19 @@
 
     function renderTeams() {
         const div = document.getElementById('teams');
-        div.innerHTML = gameState.teams.map((t, i) => `
-            <div class="team-box p-2 text-center relative overflow-hidden flex flex-col justify-center ${i === gameState.currentTeam ? 'active-team' : 'opacity-70'}">
+        div.innerHTML = gameState.teams.map((t, i) => {
+            const isActive = i === gameState.currentTeam;
+            const borderClass = isActive ? t.activeBorder : "border-slate-200";
+            const shadowClass = isActive ? `shadow-xl ${t.shadow}` : "shadow-sm";
+            
+            return `
+            <div class="team-box p-2 text-center relative overflow-hidden flex flex-col justify-center ${borderClass} ${shadowClass} ${isActive ? 'active-team' : ''}">
                 <div class="text-sm md:text-base font-bold ${t.color} mb-1">${t.name}</div>
                 <div class="text-3xl md:text-4xl font-black text-gray-800 font-baloo leading-none">${t.score}</div>
-                ${i === gameState.currentTeam ? '<div class="absolute bottom-0 left-0 w-full h-1 bg-blue-500 animate-pulse"></div>' : ''}
+                ${isActive ? `<div class="absolute bottom-0 left-0 w-full h-1.5 ${t.bar} animate-pulse"></div>` : ''}
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function renderGrid() {
