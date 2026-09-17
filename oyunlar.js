@@ -4,7 +4,7 @@
 const SISTEM_OYUNLARI = [
     {
         id: "oyun-1",
-        title: "Çarpanlar ve Katlar Macerası",
+        title: "Çarpanlar ve Katlar",
         grade: "6", // 5 veya 6 yazın
         image: "./kapak_6sinif.jpg", // Kapak resmi yoksa boş bırakın: ""
         url: "./carpanlar_katlar_oyunu.html" // Oyunun dosya adı
