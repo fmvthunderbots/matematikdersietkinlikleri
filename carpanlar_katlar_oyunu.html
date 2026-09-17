@@ -173,8 +173,8 @@
 </head>
 <body class="p-2 relative flex flex-col justify-center items-center h-screen">
 
-    <!-- Sağ Üst Butonlar -->
-    <div class="absolute top-4 right-4 flex gap-2 z-20">
+    <!-- SOL ÜST BUTONLAR (Kapatma tuşuyla çakışmasın diye sola alındı) -->
+    <div class="absolute top-4 left-4 flex gap-2 z-20">
         <button id="btn-last-round" onclick="triggerLastRound()" class="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 border-b-4 border-yellow-600 font-bold py-2 px-4 rounded-xl shadow-lg transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-lg font-baloo flex items-center gap-2">
             ⏳ SON TUR
         </button>
@@ -201,7 +201,7 @@
             </p>
         </div>
 
-        <!-- BİLDİRİM (TOAST) ALANI: Tam boşluğa oturtuldu, düzeni bozmaz -->
+        <!-- BİLDİRİM (TOAST) ALANI -->
         <div class="relative w-full flex justify-center z-50" style="height: 0;">
             <div id="toast" class="toast font-baloo"></div>
         </div>
