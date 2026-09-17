@@ -1,0 +1,3069 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>5. Sınıf Zihinden Çarpma Yarışması | 60 Sn Şampiyonası</title>
+  
+  <!-- Google Fonts: Baloo 2 ve Nunito (Neşeli ve okunaklı eğitim fontları) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-dark: #3730A3;
+      --secondary: #F59E0B;
+      --accent: #10B981;
+      --danger: #EF4444;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --dark-card: rgba(15, 23, 42, 0.88);
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --shadow-xl: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      color: var(--text-main);
+      position: relative;
+      background-color: #0f172a;
+    }
+
+    /* Arka Plan Görseli Katmanı */
+    .bg-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('background.jpg'), url('https://i.imgur.com/Hxgewhc.jpeg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      z-index: 0;
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Başlangıç Ekranında Arka Plan (Net & Canlı) */
+    body.screen-start .bg-layer,
+    body.screen-leaderboard .bg-layer {
+      opacity: 1;
+      filter: brightness(0.98) contrast(1.02);
+      transform: scale(1);
+    }
+
+    /* Oyun Sırasında Arka Plan Şeffaflığı ve Hafif Bulanıklık (Soruların net okunması için) */
+    body.screen-game .bg-layer {
+      opacity: 0.22;
+      filter: blur(8px) brightness(0.7);
+      transform: scale(1.03);
+    }
+
+    /* Sonuç Ekranı Arka Planı */
+    body.screen-result .bg-layer {
+      opacity: 0.30;
+      filter: blur(6px) brightness(0.75);
+    }
+
+    /* Oyun ve Sonuç Ekranı için Koyu Gradyan Katmanı */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.95) 100%);
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    body.screen-game .bg-overlay,
+    body.screen-result .bg-overlay {
+      opacity: 1;
+    }
+
+    /* Sağ Taraf Dikey Kontrol Araç Çubuğu (Ses, Sıralama, Tam Ekran) */
+    .top-toolbar {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.intro-mode .top-toolbar {
+      opacity: 0 !important;
+      transform: translateX(30px) !important;
+      pointer-events: none !important;
+    }
+
+    .tool-btn {
+      background: rgba(255, 255, 255, 0.92);
+      border: 2px solid rgba(255, 255, 255, 0.98);
+      border-radius: 50px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #1E293B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .tool-btn.icon-only {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 20px;
+    }
+
+    .tool-btn:hover {
+      transform: translateX(-4px) scale(1.03);
+      background: #FFFFFF;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+    }
+
+    /* Ana Konteyner */
+    .app-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* ===================================================
+       1. BAŞLANGIÇ EKRANI & GİRİŞ AFİŞ SÜRESİ
+       =================================================== */
+    /* Sayfa ilk açıldığında afiş 1.5 saniye tam ekran görünür, ardından panel yumuşakça süzülür */
+    body.intro-mode .start-card {
+      opacity: 0 !important;
+      transform: translateY(40px) scale(0.95) !important;
+      pointer-events: none !important;
+    }
+
+    .start-card {
+      width: 100%;
+      max-width: 560px;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.38);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .badge-welcome {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      color: white;
+      font-family: 'Baloo 2', cursive;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 6px 20px;
+      border-radius: 50px;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 16px rgba(255, 107, 107, 0.35);
+      letter-spacing: 0.5px;
+      animation: pulseGlow 2.5s infinite;
+    }
+
+    .start-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: #1E293B;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .start-title span {
+      background: linear-gradient(135deg, #4F46E5, #06B6D4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .start-subtitle {
+      font-size: 15px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    /* Oyun Kuralları Özeti */
+    .rules-banner {
+      background: rgba(241, 245, 249, 0.9);
+      border: 2px dashed #CBD5E1;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-around;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .rule-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rule-item.penalty {
+      color: #DC2626;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .input-player {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 17px;
+      font-family: inherit;
+      font-weight: 700;
+      border: 2px solid #CBD5E1;
+      border-radius: 14px;
+      background: #FFFFFF;
+      color: #1E293B;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-player:focus {
+      border-color: #4F46E5;
+      background: #FFFFFF;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+    }
+
+    /* Büyük Başla Butonu */
+    .btn-start {
+      position: relative;
+      width: 100%;
+      padding: 20px 30px;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      border: none;
+      border-radius: 20px;
+      color: white;
+      font-family: 'Baloo 2', cursive;
+      font-size: 28px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(16, 185, 129, 0.42), 0 4px 0 #047857;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      letter-spacing: 1px;
+      animation: pulseBtn 2s infinite ease-in-out;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 32px rgba(16, 185, 129, 0.5), 0 4px 0 #047857;
+      animation: none;
+    }
+
+    .btn-start:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4), 0 1px 0 #047857;
+    }
+
+    .start-secondary-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn-subtle {
+      background: #EEF2FF;
+      border: 2px solid #C7D2FE;
+      color: #4F46E5;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-subtle:hover {
+      background: #E0E7FF;
+      transform: translateY(-1px);
+    }
+
+    /* ===================================================
+       2. YARIŞMA OYUN EKRANI (60 Saniye)
+       =================================================== */
+    .game-layout {
+      width: 100%;
+      max-width: 840px;
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* Üst Durum Paneli */
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      padding: 16px 24px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .stat-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .stat-icon.score { background: #FEF3C7; color: #D97706; }
+    .stat-icon.streak { background: #FEE2E2; color: #DC2626; }
+    .stat-icon.timer { background: #E0E7FF; color: #4338CA; }
+
+    .stat-info .stat-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-info .stat-value {
+      font-family: 'Baloo 2', cursive;
+      font-size: 28px;
+      font-weight: 800;
+      color: #0F172A;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Puan Değişim Bildirimi (+150 veya -50) */
+    .score-feedback {
+      font-size: 14px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 10px;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: all 0.3s ease;
+    }
+    .score-feedback.positive {
+      background: #D1FAE5;
+      color: #059669;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .score-feedback.negative {
+      background: #FEE2E2;
+      color: #DC2626;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Süre Çubuğu */
+    .timer-container {
+      position: relative;
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .timer-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #10B981, #F59E0B, #EF4444);
+      border-radius: 10px;
+      transition: width 0.1s linear;
+    }
+
+    /* Soru Kartı */
+    .question-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 36px 30px;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .question-badge {
+      background: #EEF2FF;
+      color: #4F46E5;
+      font-weight: 800;
+      font-size: 15px;
+      padding: 6px 18px;
+      border-radius: 30px;
+    }
+
+    .strategy-tag {
+      background: #ECFDF5;
+      color: #059669;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 6px 18px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Hız ve Puan İpucu Bannerı */
+    .speed-banner {
+      font-size: 14px;
+      font-weight: 800;
+      color: #64748B;
+      margin-bottom: 10px;
+      min-height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* İşlem Metni */
+    .math-expression {
+      font-family: 'Baloo 2', cursive;
+      font-size: 72px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: 2px;
+      margin: 10px 0 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      line-height: 1.1;
+    }
+
+    .math-expression .op {
+      color: #4F46E5;
+      font-size: 60px;
+    }
+
+    .math-expression .equals {
+      color: #94A3B8;
+      font-size: 60px;
+    }
+
+    .math-expression .question-mark {
+      color: #F59E0B;
+      animation: bounceMark 1.4s infinite;
+      display: inline-block;
+    }
+
+    /* Çoktan Seçmeli Şıklar */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .option-btn {
+      background: #FFFFFF;
+      border: 3px solid #E2E8F0;
+      border-radius: 20px;
+      padding: 22px 24px;
+      font-family: 'Baloo 2', cursive;
+      font-size: 36px;
+      font-weight: 800;
+      color: #1E293B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+      transition: all 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+    }
+
+    .option-btn .letter-tag {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #94A3B8;
+      background: #F1F5F9;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .option-btn:hover {
+      border-color: #4F46E5;
+      background: #F8FAFC;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.18);
+    }
+
+    .option-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Doğru / Yanlış Animasyon Stilleri */
+    .option-btn.correct {
+      background: #10B981 !important;
+      border-color: #059669 !important;
+      color: #FFFFFF !important;
+      animation: correctPulse 0.35s ease;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.45) !important;
+    }
+    .option-btn.correct .letter-tag {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+
+    .option-btn.wrong {
+      background: #EF4444 !important;
+      border-color: #DC2626 !important;
+      color: #FFFFFF !important;
+      animation: shake 0.4s ease;
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.45) !important;
+    }
+    .option-btn.wrong .letter-tag {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+
+    .option-btn.disabled {
+      pointer-events: none;
+      opacity: 0.75;
+    }
+
+    /* Çözüm İpucu Kutusu */
+    .tip-box {
+      margin-top: 18px;
+      background: #FEF3C7;
+      border: 2px dashed #F59E0B;
+      border-radius: 16px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 700;
+      color: #92400E;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      display: none;
+    }
+
+    .tip-box.show {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tip-icon {
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    /* ===================================================
+       3. SONUÇ VE SKOR KAYIT EKRANI
+       =================================================== */
+    .result-card {
+      width: 100%;
+      max-width: 720px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: 38px 30px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      display: none;
+      animation: popIn 0.5s ease;
+    }
+
+    .trophy-badge {
+      font-size: 76px;
+      margin-bottom: 8px;
+      display: inline-block;
+      animation: bounceMark 1.5s infinite;
+    }
+
+    .result-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 38px;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 6px;
+    }
+
+    .result-subtitle {
+      font-size: 17px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 24px;
+    }
+
+    .score-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .score-item {
+      background: #F8FAFC;
+      border: 2px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 14px 10px;
+    }
+
+    .score-item .label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748B;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .score-item .val {
+      font-family: 'Baloo 2', cursive;
+      font-size: 28px;
+      font-weight: 800;
+      color: #1E293B;
+    }
+
+    .score-item.highlight {
+      background: #EEF2FF;
+      border-color: #4F46E5;
+    }
+    .score-item.highlight .val {
+      color: #4F46E5;
+    }
+
+    .score-item.penalty-stat {
+      background: #FEF2F2;
+      border-color: #FCA5A5;
+    }
+    .score-item.penalty-stat .val {
+      color: #DC2626;
+    }
+
+    /* Sıralamaya Kayıt Kutusu */
+    .save-rank-box {
+      background: #F0FDF4;
+      border: 2px solid #86EFAC;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .save-rank-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #166534;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .save-rank-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-save-name {
+      flex: 1;
+      padding: 14px 16px;
+      font-size: 17px;
+      font-weight: 700;
+      border: 2px solid #86EFAC;
+      border-radius: 14px;
+      outline: none;
+      background: white;
+    }
+
+    .input-save-name:focus {
+      border-color: #16A34A;
+      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+    }
+
+    .btn-save-score {
+      padding: 14px 22px;
+      background: linear-gradient(135deg, #10B981, #059669);
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-family: 'Baloo 2', cursive;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-save-score:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-action {
+      padding: 16px 28px;
+      border-radius: 16px;
+      font-family: 'Baloo 2', cursive;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-restart {
+      background: linear-gradient(135deg, #4F46E5, #3730A3);
+      color: white;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+    }
+    .btn-restart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(79, 70, 229, 0.45);
+    }
+
+    .btn-view-leaderboard {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 2px solid #F59E0B;
+    }
+    .btn-view-leaderboard:hover {
+      background: #FDE68A;
+      transform: translateY(-2px);
+    }
+
+    /* ===================================================
+       4. İLK 10 SIRALAMA EKRANI (LEADERBOARD)
+       =================================================== */
+    .leaderboard-card {
+      width: 100%;
+      max-width: 760px;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: 36px 30px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      display: none;
+      animation: popIn 0.5s ease;
+    }
+
+    .lb-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #E2E8F0;
+    }
+
+    .lb-title-group {
+      text-align: left;
+    }
+
+    .lb-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 34px;
+      font-weight: 800;
+      color: #1E293B;
+      line-height: 1.1;
+    }
+
+    .lb-subtitle {
+      font-size: 14px;
+      font-weight: 700;
+      color: #64748B;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+
+    .lb-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+
+    .lb-table th {
+      font-size: 13px;
+      font-weight: 800;
+      color: #64748B;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .lb-table th.th-name {
+      text-align: left;
+      padding-left: 18px;
+    }
+
+    .lb-row {
+      background: #F8FAFC;
+      border-radius: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .lb-row:hover {
+      transform: scale(1.01);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .celebrate-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #EEF2FF;
+      color: #4F46E5;
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      transition: transform 0.2s ease, background 0.2s ease;
+      white-space: nowrap;
+    }
+    .lb-row:hover .celebrate-pill {
+      transform: scale(1.08);
+      background: #4F46E5;
+      color: #FFF;
+    }
+    .lb-row.rank-1 .celebrate-pill {
+      background: #FEF3C7;
+      color: #B45309;
+      border-color: #FCD34D;
+    }
+    .lb-row.rank-1:hover .celebrate-pill {
+      background: #F59E0B;
+      color: #FFF;
+    }
+    .lb-row.rank-2 .celebrate-pill {
+      background: #F1F5F9;
+      color: #475569;
+      border-color: #CBD5E1;
+    }
+    .lb-row.rank-2:hover .celebrate-pill {
+      background: #64748B;
+      color: #FFF;
+    }
+    .lb-row.rank-3 .celebrate-pill {
+      background: #FFEDD5;
+      color: #9A3412;
+      border-color: #FDBA74;
+    }
+    .lb-row.rank-3:hover .celebrate-pill {
+      background: #EA580C;
+      color: #FFF;
+    }
+
+    .lb-row td {
+      padding: 14px 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #334155;
+      text-align: center;
+    }
+
+    .lb-row td:first-child {
+      border-top-left-radius: 14px;
+      border-bottom-left-radius: 14px;
+    }
+    .lb-row td:last-child {
+      border-top-right-radius: 14px;
+      border-bottom-right-radius: 14px;
+    }
+
+    .lb-row.rank-1 {
+      background: linear-gradient(90deg, #FEF3C7, #FFFBEB);
+      border: 2px solid #F59E0B;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+    }
+    .lb-row.rank-1 .rank-badge { color: #D97706; font-size: 24px; }
+    .lb-row.rank-1 .player-cell { font-weight: 900; color: #92400E; }
+
+    .lb-row.rank-2 {
+      background: linear-gradient(90deg, #F1F5F9, #F8FAFC);
+      border: 2px solid #CBD5E1;
+    }
+    .lb-row.rank-2 .rank-badge { color: #64748B; font-size: 22px; }
+
+    .lb-row.rank-3 {
+      background: linear-gradient(90deg, #FFEDD5, #FFF7ED);
+      border: 2px solid #FDBA74;
+    }
+    .lb-row.rank-3 .rank-badge { color: #C2410C; font-size: 22px; }
+
+    .player-cell {
+      text-align: left !important;
+      padding-left: 18px !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .player-name-text {
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .score-cell {
+      font-family: 'Baloo 2', cursive;
+      font-size: 22px !important;
+      font-weight: 800 !important;
+      color: #4F46E5 !important;
+    }
+
+    .empty-state {
+      padding: 36px 20px;
+      color: #64748B;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .lb-footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-clear-lb {
+      background: transparent;
+      border: 1px dashed #CBD5E1;
+      color: #94A3B8;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-clear-lb:hover {
+      background: #FEE2E2;
+      border-color: #EF4444;
+      color: #DC2626;
+    }
+
+
+
+    /* Canvas Konfeti */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 90;
+    }
+
+    /* Animasyonlar */
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); box-shadow: 0 8px 24px rgba(255, 107, 107, 0.5); }
+    }
+
+    @keyframes pulseBtn {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.025); }
+    }
+
+    @keyframes highlightGlow {
+      0%, 100% { box-shadow: 0 0 0 3px #4F46E5; }
+      50% { box-shadow: 0 0 15px 4px #818CF8; }
+    }
+
+    @keyframes bounceMark {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    /* ===================================================
+       KUTLAMA MODALI STİLLERİ (1., 2., 3. ve İlk 10)
+       =================================================== */
+    .celebration-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .celebration-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease;
+    }
+    .celebration-card {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 28px;
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10000;
+      background: #FFF;
+    }
+    .btn-close-celebration {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0, 0, 0, 0.08);
+      color: #334155;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-close-celebration:hover {
+      background: rgba(0, 0, 0, 0.18);
+      transform: scale(1.1);
+    }
+    .celebration-badge {
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .celebration-icon {
+      font-size: 72px;
+      line-height: 1;
+      margin: 8px 0 16px 0;
+      animation: pulseEmoji 2s infinite ease-in-out;
+    }
+    @keyframes pulseEmoji {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15) rotate(5deg); }
+    }
+    .celebration-name {
+      font-family: 'Baloo 2', cursive;
+      font-size: 38px;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+    .celebration-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: 0.2px;
+    }
+    .celebration-desc {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 24px;
+      padding: 0 10px;
+    }
+    .celebration-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .cel-stat-box {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 16px;
+      padding: 12px 6px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    }
+    .cel-stat-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748B;
+      margin-bottom: 4px;
+    }
+    .cel-stat-val {
+      display: block;
+      font-size: 20px;
+      font-weight: 900;
+      color: #0F172A;
+    }
+    .btn-cel-action {
+      width: 100%;
+      padding: 15px 24px;
+      border-radius: 18px;
+      border: none;
+      font-family: 'Baloo 2', cursive;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #FFF;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-cel-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+    }
+    .btn-cel-action:active {
+      transform: translateY(1px);
+    }
+
+    /* 1. Sıra (Altın / Şampiyon) */
+    .theme-rank-1 {
+      background: linear-gradient(145deg, #FFFBEB 0%, #FEF3C7 50%, #FDE68A 100%);
+      border: 4px solid #F59E0B;
+      box-shadow: 0 25px 60px rgba(245, 158, 11, 0.45);
+    }
+    .theme-rank-1 .celebration-badge {
+      background: #F59E0B;
+      color: #FFF;
+    }
+    .theme-rank-1 .celebration-name {
+      color: #92400E;
+      text-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+    }
+    .theme-rank-1 .celebration-title {
+      color: #B45309;
+    }
+    .theme-rank-1 .btn-cel-action {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+    }
+
+    /* 2. Sıra (Gümüş) */
+    .theme-rank-2 {
+      background: linear-gradient(145deg, #F8FAFC 0%, #E2E8F0 50%, #CBD5E1 100%);
+      border: 4px solid #94A3B8;
+      box-shadow: 0 25px 60px rgba(148, 163, 184, 0.45);
+    }
+    .theme-rank-2 .celebration-badge {
+      background: #64748B;
+      color: #FFF;
+    }
+    .theme-rank-2 .celebration-name {
+      color: #334155;
+    }
+    .theme-rank-2 .celebration-title {
+      color: #475569;
+    }
+    .theme-rank-2 .btn-cel-action {
+      background: linear-gradient(135deg, #64748B, #475569);
+    }
+
+    /* 3. Sıra (Bronz) */
+    .theme-rank-3 {
+      background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 50%, #FED7AA 100%);
+      border: 4px solid #F97316;
+      box-shadow: 0 25px 60px rgba(234, 88, 12, 0.4);
+    }
+    .theme-rank-3 .celebration-badge {
+      background: #EA580C;
+      color: #FFF;
+    }
+    .theme-rank-3 .celebration-name {
+      color: #9A3412;
+    }
+    .theme-rank-3 .celebration-title {
+      color: #C2410C;
+    }
+    .theme-rank-3 .btn-cel-action {
+      background: linear-gradient(135deg, #EA580C, #C2410C);
+    }
+
+    /* 4-10. Sıralar */
+    .theme-rank-other {
+      background: linear-gradient(145deg, #EEF2FF 0%, #E0E7FF 100%);
+      border: 4px solid #6366F1;
+      box-shadow: 0 25px 60px rgba(99, 102, 241, 0.35);
+    }
+    .theme-rank-other .celebration-badge {
+      background: #4F46E5;
+      color: #FFF;
+    }
+    .theme-rank-other .celebration-name {
+      color: #312E81;
+    }
+    .theme-rank-other .celebration-title {
+      color: #4338CA;
+    }
+    .theme-rank-other .btn-cel-action {
+      background: linear-gradient(135deg, #4F46E5, #3730A3);
+    }
+
+    /* ===================================================
+       AYARLAR & ŞİFRE MODALI
+       =================================================== */
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .settings-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.25s ease;
+    }
+    .settings-card {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 10000;
+    }
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #F1F5F9;
+    }
+    .settings-title {
+      font-family: 'Baloo 2', cursive;
+      font-size: 24px;
+      font-weight: 800;
+      color: #1E293B;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-close-settings {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #F1F5F9;
+      color: #64748B;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-close-settings:hover {
+      background: #E2E8F0;
+      color: #1E293B;
+      transform: scale(1.08);
+    }
+    .settings-input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 14px;
+      border: 2px solid #E2E8F0;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .settings-input:focus {
+      border-color: #4F46E5;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+    }
+    .settings-btn-primary {
+      width: 100%;
+      padding: 14px 20px;
+      font-family: 'Baloo 2', cursive;
+      font-size: 18px;
+      font-weight: 800;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #4F46E5, #3730A3);
+      color: #FFF;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .settings-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+    }
+    .settings-btn-danger {
+      width: 100%;
+      padding: 14px 20px;
+      font-family: 'Baloo 2', cursive;
+      font-size: 17px;
+      font-weight: 800;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #EF4444, #DC2626);
+      color: #FFF;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .settings-btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+    }
+    .settings-error {
+      color: #EF4444;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .settings-success {
+      color: #10B981;
+      font-size: 15px;
+      font-weight: 800;
+      margin-top: 14px;
+      display: none;
+    }
+
+    /* Mobil ve Akıllı Tahta Uyumluluğu */
+    @media (max-width: 640px) {
+      .top-toolbar {
+        top: 10px;
+        right: 10px;
+        gap: 6px;
+      }
+      .tool-btn {
+        padding: 6px 11px;
+        font-size: 12px;
+      }
+      .start-title { font-size: 32px; }
+      .math-expression { font-size: 50px; gap: 12px; }
+      .math-expression .op, .math-expression .equals { font-size: 42px; }
+      .options-grid { grid-template-columns: 1fr; }
+      .option-btn { font-size: 30px; padding: 16px; }
+      .score-summary-grid { grid-template-columns: 1fr 1fr; }
+      .rules-banner { flex-direction: column; align-items: center; }
+      .save-rank-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body class="screen-start intro-mode">
+
+  <!-- Arka Plan Resmi Katmanı -->
+  <div class="bg-layer" id="bgLayer"></div>
+  <div class="bg-overlay"></div>
+
+  <!-- Sağ Taraf Dikey Araç Çubuğu -->
+  <div class="top-toolbar">
+    <button class="tool-btn icon-only" id="btnSettings" title="Öğretmen Ayarları (Şifreli)">
+      <span>⚙️</span>
+    </button>
+    <button class="tool-btn icon-only" id="btnSound" title="Sesi Aç / Kapat">
+      <span id="soundIcon">🔊</span>
+    </button>
+    <button class="tool-btn" id="btnNavLeaderboard" title="İlk 10 Sıralamasını Gör">
+      <span>🏆</span>
+      <span>İlk 10</span>
+    </button>
+    <button class="tool-btn" id="btnFullscreen" title="Tam Ekran Modu (Akıllı Tahta)">
+      <span>⛶</span>
+      <span>Tam Ekran</span>
+    </button>
+  </div>
+
+  <!-- Konfeti Katmanı -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-container">
+
+    <!-- ===================================================
+         1. BAŞLANGIÇ EKRANI
+         =================================================== -->
+    <div class="start-card" id="startScreen">
+      <div class="badge-welcome">
+        <span>⭐</span> 5. Sınıfa Hoş Geldiniz!
+      </div>
+      
+      <h1 class="start-title">
+        Zihinden Çarpma <span>Yarışması</span>
+      </h1>
+      <p class="start-subtitle">
+        1 dakika boyunca en hızlı zihinden çarpma işlemlerini yap, yüksek puanları topla ve ilk 10'a adını yazdır!
+      </p>
+
+      <!-- Oyun Kuralları Özeti -->
+      <div class="rules-banner">
+        <div class="rule-item">⏱️ <strong>Süre:</strong> 60 Saniye</div>
+        <div class="rule-item">⚡ <strong>Hız:</strong> Hızlı cevap ekstra bonus</div>
+        <div class="rule-item penalty">⚠️ <strong>Yanlış:</strong> -50 Puan</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="playerName">Öğrenci Adı:</label>
+        <input type="text" id="playerName" class="input-player" placeholder="Öğrencinin adını yazın..." maxlength="20">
+      </div>
+
+      <!-- Sadece BAŞLA Yazan Buton -->
+      <button class="btn-start" id="btnStartGame">
+        <span>🚀 BAŞLA</span>
+      </button>
+
+      <div class="start-secondary-actions">
+        <button class="btn-subtle" id="btnOpenLeaderboardFromStart">
+          <span>🏆 İlk 10 Sıralamasını İncele</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================================================
+         2. YARIŞMA OYUN EKRANI (60 Saniye)
+         =================================================== -->
+    <div class="game-layout" id="gameScreen">
+      
+      <!-- İstatistik Göstergeleri -->
+      <div class="stats-bar">
+        <div class="stat-box">
+          <div class="stat-icon score">⭐</div>
+          <div class="stat-info">
+            <div class="stat-label">Puan</div>
+            <div class="stat-value">
+              <span id="scoreDisplay">0</span>
+              <span class="score-feedback" id="scoreFeedback">+150</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-icon streak">🔥</div>
+          <div class="stat-info">
+            <div class="stat-label">Seri (Kombo)</div>
+            <div class="stat-value" id="streakDisplay">x0</div>
+          </div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-icon timer">⏳</div>
+          <div class="stat-info">
+            <div class="stat-label">Kalan Süre</div>
+            <div class="stat-value" id="timerDisplay">60s</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Süre İlerleme Çubuğu -->
+      <div class="timer-container">
+        <div class="timer-bar" id="timerBar"></div>
+      </div>
+
+      <!-- Soru Kartı -->
+      <div class="question-card">
+        <div class="question-meta">
+          <span class="question-badge" id="questionCounter">Soru 1</span>
+          <span class="strategy-tag" id="strategyTag">💡 10 ile Kolay Çarpma</span>
+        </div>
+
+        <div class="speed-banner" id="speedBanner">
+          ⚡ Ne kadar hızlı çözersen o kadar çok puan!
+        </div>
+
+        <div class="math-expression">
+          <span id="factorA">25</span>
+          <span class="op">×</span>
+          <span id="factorB">10</span>
+          <span class="equals">=</span>
+          <span class="question-mark" id="questionResult">?</span>
+        </div>
+
+        <!-- 4 Şıklı Seçenekler -->
+        <div class="options-grid" id="optionsGrid">
+          <button class="option-btn" data-index="0">
+            <span class="letter-tag">A</span>
+            <span class="opt-val">250</span>
+          </button>
+          <button class="option-btn" data-index="1">
+            <span class="letter-tag">B</span>
+            <span class="opt-val">205</span>
+          </button>
+          <button class="option-btn" data-index="2">
+            <span class="letter-tag">C</span>
+            <span class="opt-val">2500</span>
+          </button>
+          <button class="option-btn" data-index="3">
+            <span class="letter-tag">D</span>
+            <span class="opt-val">255</span>
+          </button>
+        </div>
+
+        <!-- Zihinden Çözüm Taktik Kutusu -->
+        <div class="tip-box" id="tipBox">
+          <span class="tip-icon">💡</span>
+          <span id="tipText">Püf Noktası: Bir sayıyı 10 ile çarparken sağına bir sıfır (0) eklenir!</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================
+         3. SONUÇ VE SKOR KAYIT EKRANI
+         =================================================== -->
+    <div class="result-card" id="resultScreen">
+      <div class="trophy-badge" id="trophyIcon">🏆</div>
+      <h2 class="result-title" id="resultTitle">Süre Doldu! Harika İş!</h2>
+      <p class="result-subtitle" id="resultSubtitle">60 Saniyelik Zihinden Çarpma Maratonunu Tamamladın!</p>
+
+      <div class="score-summary-grid">
+        <div class="score-item highlight">
+          <div class="label">Toplam Puan</div>
+          <div class="val" id="finalScore">0</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Doğru Cevap</div>
+          <div class="val" id="finalCorrect" style="color: #10B981;">0</div>
+        </div>
+        <div class="score-item penalty-stat">
+          <div class="label">Yanlış (-50 Puan)</div>
+          <div class="val" id="finalWrong">0</div>
+        </div>
+        <div class="score-item">
+          <div class="label">En Yüksek Seri</div>
+          <div class="val" id="finalStreak">🔥 x0</div>
+        </div>
+      </div>
+
+      <!-- Sıralamaya Kayıt Alanı -->
+      <div class="save-rank-box" id="saveRankBox">
+        <div class="save-rank-title">
+          <span>📝</span> <strong>Skorunu İlk 10 Sıralamasına Kaydet:</strong>
+        </div>
+        <div class="save-rank-row">
+          <input type="text" id="savePlayerName" class="input-save-name" placeholder="Öğrencinin Adı..." maxlength="20">
+          <button class="btn-save-score" id="btnSaveToLeaderboard">
+            <span>🏆 Sıralamaya Kaydet!</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-action btn-view-leaderboard" id="btnGoToLeaderboard">
+          <span>🏆 İlk 10 Lider Tablosunu Gör</span>
+        </button>
+        <button class="btn-action btn-restart" id="btnRestart">
+          <span>🔄 Yeni Yarışma Başlat</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================================================
+         4. İLK 10 SIRALAMA EKRANI (LEADERBOARD)
+         =================================================== -->
+    <div class="leaderboard-card" id="leaderboardScreen">
+      <div class="lb-header">
+        <div class="lb-title-group">
+          <h2 class="lb-title">🏆 İlk 10!</h2>
+          <p class="lb-subtitle">5. Sınıf Zihinden Çarpma En İyiler Sıralaması</p>
+        </div>
+        <button class="tool-btn" id="btnCloseLeaderboard">
+          <span>✕</span>
+          <span>Kapat</span>
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Sıra</th>
+              <th class="th-name">Öğrenci Adı</th>
+              <th>Puan</th>
+              <th>Doğru / Yanlış</th>
+              <th>Saat</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Dinamik doldurulur -->
+          </tbody>
+        </table>
+        <div class="empty-state" id="emptyLeaderboard" style="display: none;">
+          Henüz kayıtlı öğrenci yok. İlk şampiyon sen ol! 🥇
+        </div>
+      </div>
+
+      <div class="lb-footer-actions">
+        <button class="btn-clear-lb" id="btnClearLeaderboard">
+          <span>🗑️ Sıralamayı Temizle</span>
+        </button>
+        <button class="btn-start" id="btnStartFromLeaderboard" style="padding: 14px 28px; font-size: 20px; width: auto;">
+          <span>🚀 Yeni Yarışma Başlat!</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================================================
+         5. DERECE VE ŞAMPİYONLUK KUTLAMA MODALI
+         =================================================== -->
+    <div class="celebration-modal" id="celebrationModal" style="display: none;">
+      <div class="celebration-backdrop" id="celebrationBackdrop"></div>
+      <div class="celebration-card" id="celebrationCard">
+        <button class="btn-close-celebration" id="btnCloseCelebration" title="Kapat">✕</button>
+        <div class="celebration-badge" id="celBadge">👑 1. LİK ŞAMPİYONU 👑</div>
+        <div class="celebration-icon" id="celIcon">🥇</div>
+        <h2 class="celebration-name" id="celName">Öğrenci Adı</h2>
+        <div class="celebration-title" id="celTitle">Zihinden Çarpma Zirvesinde!</div>
+        <p class="celebration-desc" id="celDesc">
+          <!-- Kutlama cümlesi dinamik gelecek -->
+        </p>
+        <div class="celebration-stats">
+          <div class="cel-stat-box">
+            <span class="cel-stat-label">Toplam Puan</span>
+            <span class="cel-stat-val" id="celScore">0 Puan</span>
+          </div>
+          <div class="cel-stat-box">
+            <span class="cel-stat-label">Doğru / Yanlış</span>
+            <span class="cel-stat-val" id="celStats">0 D / 0 Y</span>
+          </div>
+          <div class="cel-stat-box">
+            <span class="cel-stat-label">Derece</span>
+            <span class="cel-stat-val" id="celRank">1. Sıra</span>
+          </div>
+        </div>
+        <button class="btn-cel-action" id="btnCelClose">
+          <span>👏 Alkışla ve Kapat</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================================================
+         6. AYARLAR & ÖĞRETMEN YÖNETİCİ MODALI (ŞİFRELİ)
+         =================================================== -->
+    <div class="settings-modal" id="settingsModal" style="display: none;">
+      <div class="settings-backdrop" id="settingsBackdrop"></div>
+      <div class="settings-card">
+        <div class="settings-header">
+          <div class="settings-title">⚙️ Öğretmen Ayarları</div>
+          <button class="btn-close-settings" id="btnCloseSettings" title="Kapat">✕</button>
+        </div>
+
+        <!-- 1. Adım: Şifre Giriş Ekranı -->
+        <div id="settingsAuthStep">
+          <p style="font-size: 15px; color: #64748B; font-weight: 700; margin-bottom: 16px;">
+            Yönetici işlemlerine erişmek için lütfen öğretmen şifresini girin:
+          </p>
+          <input type="password" id="adminPasswordInput" class="settings-input" placeholder="Şifre..." autocomplete="off">
+          <div class="settings-error" id="settingsError">❌ Hatalı şifre! Lütfen tekrar deneyin.</div>
+          <button class="settings-btn-primary" id="btnSubmitPassword">
+            <span>Giriş Yap</span>
+          </button>
+        </div>
+
+        <!-- 2. Adım: Ayarlar Paneli (Şifre doğru girilince açılır) -->
+        <div id="settingsPanelStep" style="display: none;">
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 18px; margin-bottom: 20px; text-align: left;">
+            <div style="font-weight: 800; color: #1E293B; font-size: 16px; margin-bottom: 6px;">
+              🗑️ Skorları Sıfırla
+            </div>
+            <p style="font-size: 13px; color: #64748B; font-weight: 600; line-height: 1.5; margin-bottom: 14px;">
+              Yeni bir sınıfa başlarken hem bu bilgisayardaki hem de buluttaki (tüm sınıflardaki) liderlik tablosunu tamamen sıfırlar.
+            </p>
+            <button class="settings-btn-danger" id="btnAdminResetScores">
+              <span>🗑️ Tüm Skorları Sıfırla (Bulut + Yerel)</span>
+            </button>
+            <div class="settings-success" id="settingsSuccess">✅ Tüm skorlar başarıyla sıfırlandı!</div>
+          </div>
+          <button class="settings-btn-primary" id="btnDoneSettings" style="background: #E2E8F0; color: #334155;">
+            <span>Tamam</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+
+  <!-- FIREBASE SDK (Eş Zamanlı Bulut Sıralaması İçin) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- JAVASCRIPT OYUN MOTORU -->
+  <script>
+    /* ===================================================
+       BULUT (ONLINE) VERİTABANI AYARLARI (Eş Zamanlı Sıralama)
+       =================================================== */
+    // Kullanıcının Firebase Proje Yapılandırması (zihindencarpma)
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+      authDomain: "zihindencarpma.firebaseapp.com",
+      databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.firebasestorage.app",
+      messagingSenderId: "111639321624",
+      appId: "1:111639321624:web:b6d14149d55b3982d6376d",
+      measurementId: "G-688KJ8HE9S"
+    };
+
+    let cloudDb = null;
+
+    /* ===================================================
+       ÖĞRENCİ İSİMLERİNİ NORMALİZE ETME & TEKİLLEŞTİRME (Deduplication)
+       - Büyük / küçük harf duyarsız (İ/ı/i uyumu)
+       - Yanlışlıkla boşluk konulmamış veya fazla boşluklu ad-soyadları eşler (Ahmet Yılmaz == AhmetYılmaz)
+       - Türkçe karakterleri ve özel işaretleri tekilleştirir
+       - Aynı isim varsa YALNIZCA en yüksek puanlı olanı saklar, diğerlerini kaldırır
+       =================================================== */
+    function normalizeName(name) {
+      if (!name) return '';
+      return String(name)
+        .trim()
+        .replace(/[\s\-_.]+/g, '') // Boşlukları ve ayraçları kaldırır
+        .toLocaleLowerCase('tr-TR') // Türkçe küçük harf: İ -> i, I -> ı
+        .replace(/ı/g, 'i')
+        .replace(/ç/g, 'c')
+        .replace(/ğ/g, 'g')
+        .replace(/ö/g, 'o')
+        .replace(/ş/g, 's')
+        .replace(/ü/g, 'u');
+    }
+
+    function deduplicateLeaderboard(entries) {
+      if (!Array.isArray(entries)) return [];
+
+      // 1. İsim bazında grupla
+      const groups = new Map();
+      for (const entry of entries) {
+        if (!entry || !entry.name) continue;
+        const key = normalizeName(entry.name);
+        if (!key) continue;
+
+        if (!groups.has(key)) {
+          groups.set(key, []);
+        }
+        groups.get(key).push(entry);
+      }
+
+      // 2. Her öğrencinin yalnızca EN YÜKSEK puanlı kaydını al
+      const uniqueBestList = [];
+
+      for (const [key, groupEntries] of groups.entries()) {
+        // En iyi performansa göre sırala:
+        // Puan (Yüksek) > Doğru (Çok) > Yanlış (Az) > Zaman (Yeni)
+        groupEntries.sort((a, b) => {
+          const scoreDiff = (b.score || 0) - (a.score || 0);
+          if (scoreDiff !== 0) return scoreDiff;
+
+          const correctDiff = (b.correct || 0) - (a.correct || 0);
+          if (correctDiff !== 0) return correctDiff;
+
+          const wrongDiff = (a.wrong || 0) - (b.wrong || 0);
+          if (wrongDiff !== 0) return wrongDiff;
+
+          return (b.timestamp || 0) - (a.timestamp || 0);
+        });
+
+        const bestEntry = { ...groupEntries[0] };
+
+        // Eğer kayıtlardan birinde adı-soyadı düzgün boşluklu yazılmışsa o okunabilir ismi koru
+        const nicelyFormatted = groupEntries.find(e => e.name && e.name.trim().includes(' '));
+        if (nicelyFormatted && (!bestEntry.name || !bestEntry.name.trim().includes(' '))) {
+          bestEntry.name = nicelyFormatted.name.trim();
+        }
+
+        uniqueBestList.push(bestEntry);
+      }
+
+      // 3. Genel sıralamayı yap (en yüksek puan en üstte)
+      uniqueBestList.sort((a, b) => {
+        const scoreDiff = (b.score || 0) - (a.score || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+
+        const correctDiff = (b.correct || 0) - (a.correct || 0);
+        if (correctDiff !== 0) return correctDiff;
+
+        const wrongDiff = (a.wrong || 0) - (b.wrong || 0);
+        if (wrongDiff !== 0) return wrongDiff;
+
+        return (b.timestamp || 0) - (a.timestamp || 0);
+      });
+
+      return uniqueBestList.slice(0, 10);
+    }
+
+    function cleanupCloudDuplicates(entriesWithKeys) {
+      if (!cloudDb) return;
+      try {
+        const groups = new Map();
+        for (const item of entriesWithKeys) {
+          if (!item || !item.name || !item._firebaseKey) continue;
+          const key = normalizeName(item.name);
+          if (!key) continue;
+
+          if (!groups.has(key)) {
+            groups.set(key, []);
+          }
+          groups.get(key).push(item);
+        }
+
+        const keysToRemove = [];
+        for (const [key, items] of groups.entries()) {
+          if (items.length <= 1) continue;
+
+          items.sort((a, b) => {
+            const sDiff = (b.score || 0) - (a.score || 0);
+            if (sDiff !== 0) return sDiff;
+            return (b.timestamp || 0) - (a.timestamp || 0);
+          });
+
+          for (let i = 1; i < items.length; i++) {
+            if (items[i]._firebaseKey) {
+              keysToRemove.push(items[i]._firebaseKey);
+            }
+          }
+        }
+
+        for (const k of keysToRemove) {
+          cloudDb.ref('scores/' + k).remove().catch(() => {});
+        }
+      } catch(e) {}
+    }
+
+    function initCloudSync() {
+      if (typeof firebase !== 'undefined') {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(FIREBASE_CONFIG);
+          }
+          cloudDb = firebase.database();
+
+          // Gerçek zamanlı dinleyici (WebSocket - Anında eşzamanlama)
+          cloudDb.ref('scores').on('value', (snapshot) => {
+            try {
+              const data = snapshot.val();
+              handleIncomingCloudData(data);
+            } catch(e) {}
+          }, (err) => {
+            console.warn('Firebase dinleme:', err);
+          });
+          return;
+        } catch(e) {
+          console.warn('Firebase başlatma:', e);
+        }
+      }
+
+      // REST Fallback (SDK engellense dahi çalışır)
+      fetchCloudScoresREST();
+    }
+
+    function handleIncomingCloudData(data) {
+      if (data) {
+        const entriesWithKeys = Object.entries(data).map(([key, val]) => ({
+          ...val,
+          _firebaseKey: key
+        }));
+        const top10 = deduplicateLeaderboard(entriesWithKeys);
+        localStorage.setItem('meb_zihinden_top10', JSON.stringify(top10));
+        cleanupCloudDuplicates(entriesWithKeys);
+      } else {
+        localStorage.setItem('meb_zihinden_top10', JSON.stringify([]));
+      }
+      const lbScreen = document.getElementById('leaderboardScreen');
+      if (lbScreen && lbScreen.style.display !== 'none') {
+        renderLeaderboard();
+      }
+    }
+
+    function fetchCloudScoresREST() {
+      if (!FIREBASE_CONFIG.databaseURL || !FIREBASE_CONFIG.databaseURL.startsWith('http')) return;
+      const cleanUrl = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, '');
+      fetch(`${cleanUrl}/scores.json`)
+        .then(res => res.json())
+        .then(data => handleIncomingCloudData(data))
+        .catch(() => {});
+    }
+
+    function pushScoreToCloud(entry) {
+      if (cloudDb) {
+        try {
+          cloudDb.ref('scores').push(entry).catch((e) => {
+            console.warn('Buluta skor gönderme:', e);
+          });
+          return;
+        } catch(e) {}
+      }
+      if (FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.databaseURL.startsWith('http')) {
+        const cleanUrl = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, '');
+        fetch(`${cleanUrl}/scores.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry)
+        }).catch(() => {});
+      }
+    }
+
+    function clearScoresFromCloud() {
+      if (cloudDb) {
+        try {
+          cloudDb.ref('scores').remove().catch((e) => {
+            console.warn('Buluttan skor temizleme:', e);
+          });
+          return;
+        } catch(e) {}
+      }
+      if (FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.databaseURL.startsWith('http')) {
+        const cleanUrl = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, '');
+        fetch(`${cleanUrl}/scores.json`, { method: 'DELETE' }).catch(() => {});
+      }
+    }
+
+    // Bulut senkronizasyonunu arka planda başlat
+    initCloudSync();
+
+    /* ===================================================
+       RESİM YÜKLEME VE YEDEK KONTROLÜ
+       =================================================== */
+    const bgLayer = document.getElementById('bgLayer');
+    const imgTest = new Image();
+    imgTest.src = 'background.jpg';
+    imgTest.onerror = () => {
+      bgLayer.style.backgroundImage = "url('https://i.imgur.com/Hxgewhc.jpeg')";
+    };
+
+    /* ===================================================
+       SES SİSTEMİ (Web Audio API - Çevrimdışı çalışır)
+       =================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+
+      playCorrect(speedType) {
+        if (!this.enabled) return;
+        this.init();
+        const baseNotes = speedType === 'super' 
+          ? [523.25, 659.25, 783.99, 1046.50, 1318.51] 
+          : [523.25, 659.25, 783.99];
+        
+        baseNotes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 'triangle', 0.18, 0.12);
+          }, idx * 45);
+        });
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.init();
+        this.playTone(200, 'sawtooth', 0.22, 0.12);
+        setTimeout(() => this.playTone(150, 'sawtooth', 0.28, 0.10), 100);
+      }
+
+      playClick() {
+        this.playTone(600, 'sine', 0.05, 0.05);
+      }
+
+      playTick() {
+        this.playTone(880, 'sine', 0.04, 0.03);
+      }
+
+      playFanfare() {
+        if (!this.enabled) return;
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this.playTone(freq, 'triangle', 0.3, 0.15);
+          }, idx * 80);
+        });
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    /* ===================================================
+       SORU HAVUZU VE ÜRETİCİSİ
+       =================================================== */
+    function generateQuestionPool() {
+      // Çarpım Tablosu Soruları (Özellikle 6, 7, 8, 9 ve kritik çarpımlar)
+      const tables = [
+        { a: 6, b: 7, ans: 42, tag: "Çarpım Tablosu", tip: "6 × 7 = 42 (Afişteki soru!)" },
+        { a: 7, b: 8, ans: 56, tag: "Çarpım Tablosu", tip: "5, 6, 7, 8 kuralı: 56 = 7 × 8!" },
+        { a: 8, b: 9, ans: 72, tag: "Çarpım Tablosu", tip: "8 × 9 = 72" },
+        { a: 6, b: 8, ans: 48, tag: "Çarpım Tablosu", tip: "6 × 8 = 48" },
+        { a: 7, b: 9, ans: 63, tag: "Çarpım Tablosu", tip: "7 × 9 = 63" },
+        { a: 9, b: 9, ans: 81, tag: "Çarpım Tablosu", tip: "9 × 9 = 81" },
+        { a: 8, b: 8, ans: 64, tag: "Çarpım Tablosu", tip: "8 × 8 = 64" },
+        { a: 7, b: 7, ans: 49, tag: "Çarpım Tablosu", tip: "7 × 7 = 49" },
+        { a: 6, b: 6, ans: 36, tag: "Çarpım Tablosu", tip: "6 × 6 = 36" },
+        { a: 6, b: 9, ans: 54, tag: "Çarpım Tablosu", tip: "6 × 9 = 54" },
+        { a: 8, b: 7, ans: 56, tag: "Çarpım Tablosu", tip: "8 × 7 = 56" },
+        { a: 9, b: 8, ans: 72, tag: "Çarpım Tablosu", tip: "9 × 8 = 72" },
+        { a: 9, b: 6, ans: 54, tag: "Çarpım Tablosu", tip: "9 × 6 = 54" },
+        { a: 9, b: 7, ans: 63, tag: "Çarpım Tablosu", tip: "9 × 7 = 63" },
+        { a: 4, b: 7, ans: 28, tag: "Çarpım Tablosu", tip: "4 × 7 = 28" },
+        { a: 4, b: 8, ans: 32, tag: "Çarpım Tablosu", tip: "4 × 8 = 32" },
+        { a: 4, b: 9, ans: 36, tag: "Çarpım Tablosu", tip: "4 × 9 = 36" },
+        { a: 3, b: 8, ans: 24, tag: "Çarpım Tablosu", tip: "3 × 8 = 24" },
+        { a: 3, b: 9, ans: 27, tag: "Çarpım Tablosu", tip: "3 × 9 = 27" },
+        { a: 3, b: 7, ans: 21, tag: "Çarpım Tablosu", tip: "3 × 7 = 21" },
+        { a: 5, b: 7, ans: 35, tag: "Çarpım Tablosu", tip: "5 × 7 = 35" },
+        { a: 5, b: 8, ans: 40, tag: "Çarpım Tablosu", tip: "5 × 8 = 40" },
+        { a: 5, b: 9, ans: 45, tag: "Çarpım Tablosu", tip: "5 × 9 = 45 (Afişteki soru!)" },
+        { a: 6, b: 5, ans: 30, tag: "Çarpım Tablosu", tip: "6 × 5 = 30" },
+        { a: 8, b: 5, ans: 40, tag: "Çarpım Tablosu", tip: "8 × 5 = 40" },
+        { a: 7, b: 4, ans: 28, tag: "Çarpım Tablosu", tip: "7 × 4 = 28" },
+        { a: 8, b: 4, ans: 32, tag: "Çarpım Tablosu", tip: "8 × 4 = 32" },
+        { a: 9, b: 4, ans: 36, tag: "Çarpım Tablosu", tip: "9 × 4 = 36" },
+        { a: 9, b: 5, ans: 45, tag: "Çarpım Tablosu", tip: "9 × 5 = 45" },
+        { a: 6, b: 4, ans: 24, tag: "Çarpım Tablosu", tip: "6 × 4 = 24" },
+        { a: 7, b: 3, ans: 21, tag: "Çarpım Tablosu", tip: "7 × 3 = 21" },
+        { a: 8, b: 3, ans: 24, tag: "Çarpım Tablosu", tip: "8 × 3 = 24" },
+        { a: 9, b: 3, ans: 27, tag: "Çarpım Tablosu", tip: "9 × 3 = 27" },
+        { a: 4, b: 6, ans: 24, tag: "Çarpım Tablosu", tip: "4 × 6 = 24" },
+        { a: 5, b: 6, ans: 30, tag: "Çarpım Tablosu", tip: "5 × 6 = 30" },
+        { a: 7, b: 6, ans: 42, tag: "Çarpım Tablosu", tip: "7 × 6 = 42" },
+        { a: 8, b: 6, ans: 48, tag: "Çarpım Tablosu", tip: "8 × 6 = 48" },
+        { a: 4, b: 4, ans: 16, tag: "Çarpım Tablosu", tip: "4 × 4 = 16" },
+        { a: 3, b: 6, ans: 18, tag: "Çarpım Tablosu", tip: "3 × 6 = 18" },
+        { a: 6, b: 3, ans: 18, tag: "Çarpım Tablosu", tip: "6 × 3 = 18" },
+        { a: 4, b: 5, ans: 20, tag: "Çarpım Tablosu", tip: "4 × 5 = 20" },
+        { a: 5, b: 4, ans: 20, tag: "Çarpım Tablosu", tip: "5 × 4 = 20" }
+      ];
+
+      const tens = [
+        { a: 34, b: 10, ans: 340, tag: "10 ile Kolay Çarpma", tip: "Bir sayıyı 10 ile çarparken sağına 1 sıfır eklenir: 34 → 340" },
+        { a: 57, b: 10, ans: 570, tag: "10 ile Kolay Çarpma", tip: "Sayının sağına bir sıfır ekle: 57 → 570" },
+        { a: 8, b: 100, ans: 800, tag: "100 ile Kolay Çarpma", tip: "Bir sayıyı 100 ile çarparken sağına 2 sıfır eklenir: 8 → 800" },
+        { a: 24, b: 100, ans: 2400, tag: "100 ile Kolay Çarpma", tip: "Sayının sağına iki sıfır eklenir: 24 → 2400" },
+        { a: 7, b: 1000, ans: 7000, tag: "1000 ile Kolay Çarpma", tip: "Bir sayıyı 1000 ile çarparken sağına 3 sıfır eklenir: 7 → 7000" },
+        { a: 16, b: 100, ans: 1600, tag: "100 ile Kolay Çarpma", tip: "100 ile çarpmak için sonuna iki sıfır ekle: 1600" },
+        { a: 85, b: 10, ans: 850, tag: "10 ile Kolay Çarpma", tip: "Sayının sonuna bir sıfır eklenir: 850" },
+        { a: 12, b: 100, ans: 1200, tag: "100 ile Kolay Çarpma", tip: "12'nin yanına 2 sıfır: 1200!" }
+      ];
+
+      const fives = [
+        { a: 14, b: 5, ans: 70, tag: "5 ile Kolay Çarpma", tip: "14 × 10 = 140, 140'ın yarısı 70!" },
+        { a: 18, b: 5, ans: 90, tag: "5 ile Kolay Çarpma", tip: "18'in yarısı 9, 10 ile çarp: 90!" },
+        { a: 24, b: 5, ans: 120, tag: "5 ile Kolay Çarpma", tip: "24'ün yarısı 12, yanına bir sıfır koy: 120!" },
+        { a: 32, b: 5, ans: 160, tag: "5 ile Kolay Çarpma", tip: "32 × 10 = 320, yarısı 160 eder!" },
+        { a: 44, b: 5, ans: 220, tag: "5 ile Kolay Çarpma", tip: "44'ün yarısı 22, 10 ile çarp: 220!" },
+        { a: 16, b: 5, ans: 80, tag: "5 ile Kolay Çarpma", tip: "16'nın yarısı 8, yanına sıfır ekle: 80!" },
+        { a: 60, b: 5, ans: 300, tag: "5 ile Kolay Çarpma", tip: "60 × 10 = 600, yarısı 300 eder!" }
+      ];
+
+      const zeros = [
+        { a: 30, b: 20, ans: 600, tag: "Sıfırları Cepte Tut", tip: "3 ile 2'yi çarp (6), iki sıfırı yanına ekle: 600!" },
+        { a: 40, b: 50, ans: 2000, tag: "Sıfırları Cepte Tut", tip: "4 × 5 = 20, iki sıfırı sonuna ekle: 2000!" },
+        { a: 60, b: 7, ans: 420, tag: "Katlarla Çarpma", tip: "6 × 7 = 42, bir sıfır ekle: 420!" },
+        { a: 80, b: 30, ans: 2400, tag: "Sıfırları Cepte Tut", tip: "8 × 3 = 24, iki sıfır ekle: 2400!" },
+        { a: 500, b: 6, ans: 3000, tag: "Katlarla Çarpma", tip: "5 × 6 = 30, iki sıfırı ekle: 3000!" },
+        { a: 70, b: 4, ans: 280, tag: "Katlarla Çarpma", tip: "7 × 4 = 28, yanına bir sıfır: 280!" },
+        { a: 90, b: 20, ans: 1800, tag: "Sıfırları Cepte Tut", tip: "9 × 2 = 18, yanına iki sıfır: 1800!" }
+      ];
+
+      const distributive = [
+        { a: 12, b: 4, ans: 48, tag: "Basamaklara Ayırma", tip: "(10 × 4) + (2 × 4) = 40 + 8 = 48!" },
+        { a: 15, b: 3, ans: 45, tag: "Basamaklara Ayırma", tip: "(10 × 3) + (5 × 3) = 30 + 15 = 45!" },
+        { a: 23, b: 3, ans: 69, tag: "Basamaklara Ayırma", tip: "20 × 3 = 60 ve 3 × 3 = 9, toplamı 69!" },
+        { a: 14, b: 3, ans: 42, tag: "Basamaklara Ayırma", tip: "10 × 3 = 30 ve 4 × 3 = 12, toplamı 42!" },
+        { a: 25, b: 4, ans: 100, tag: "Özel Çarpım (Dörtte Bir)", tip: "25'in 4 katı tam 100 eder!" },
+        { a: 16, b: 4, ans: 64, tag: "İki Kez Katlama", tip: "16'yı iki kez ikiye katla: 16 → 32 → 64!" },
+        { a: 31, b: 3, ans: 93, tag: "Basamaklara Ayırma", tip: "30 × 3 = 90, 1 × 3 = 3, toplam 93!" },
+        { a: 21, b: 4, ans: 84, tag: "Basamaklara Ayırma", tip: "20 × 4 = 80 ve 1 × 4 = 4, toplam 84!" }
+      ];
+
+      const special = [
+        { a: 12, b: 9, ans: 108, tag: "9 ile Pratik Çarpma", tip: "12 × 10 = 120, 12 çıkarırsak 108 kalır!" },
+        { a: 15, b: 9, ans: 135, tag: "9 ile Pratik Çarpma", tip: "15 × 10 = 150, 15 çıkarırsak 135 kalır!" },
+        { a: 8, b: 9, ans: 72, tag: "9 ile Pratik Çarpma", tip: "8 × 10 = 80, 8 çıkarırsak 72 kalır!" },
+        { a: 13, b: 11, ans: 143, tag: "11 ile Pratik Çarpma", tip: "13 × 10 = 130, 13 eklersek 143 eder!" },
+        { a: 24, b: 11, ans: 264, tag: "11 ile Pratik Çarpma", tip: "24 × 10 = 240, 24 eklersek 264 eder!" },
+        { a: 8, b: 25, ans: 200, tag: "25 ile Pratik Çarpma", tip: "8 × 100 = 800, 4'e bölersek 200 eder!" },
+        { a: 12, b: 25, ans: 300, tag: "25 ile Pratik Çarpma", tip: "12'nin 4'e bölümü 3, yanına 2 sıfır koy: 300!" }
+      ];
+
+      // Çarpım tablosu sorularına ağırlık vermek için havuzda daha sık yer veriyoruz (~%65-70)
+      const practical = [...tens, ...fives, ...zeros, ...distributive, ...special];
+      const all = [...tables, ...tables, ...practical];
+      return all.sort(() => Math.random() - 0.5);
+    }
+
+    function generateOptions(correctAnswer, factorA, factorB) {
+      const set = new Set([correctAnswer]);
+
+      if (correctAnswer <= 100) {
+        // Çarpım tablosu ve temel sayılar için gerçekçi çeldiriciler
+        const fA = factorA || 6;
+        const fB = factorB || 7;
+        const plausibleDeltas = [
+          fA, -fA, fB, -fB,
+          2, -2, 4, -4, 1, -1,
+          10, -10, 6, -6, 8, -8, 7, -7
+        ];
+        plausibleDeltas.sort(() => Math.random() - 0.5);
+
+        for (let delta of plausibleDeltas) {
+          if (set.size >= 4) break;
+          const candidate = correctAnswer + delta;
+          if (candidate > 0 && candidate !== correctAnswer && candidate <= 120) {
+            set.add(candidate);
+          }
+        }
+      } else {
+        // 100'den büyük pratik sorular için çeldiriciler
+        const deltas = [-10, 10, -20, 20, -100, 100, -50, 50, -5, 5];
+        deltas.sort(() => Math.random() - 0.5);
+
+        for (let delta of deltas) {
+          if (set.size >= 4) break;
+          const candidate = correctAnswer + delta;
+          if (candidate > 0 && candidate !== correctAnswer) {
+            set.add(candidate);
+          }
+        }
+      }
+
+      while (set.size < 4) {
+        const offset = (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * 8) + 1);
+        const candidate = correctAnswer + offset;
+        if (candidate > 0 && candidate !== correctAnswer) {
+          set.add(candidate);
+        }
+      }
+
+      const options = Array.from(set);
+      return options.sort(() => Math.random() - 0.5);
+    }
+
+    /* ===================================================
+       OYUN DURUMU (State)
+       =================================================== */
+    const GAME_DURATION = 60; // 1 Dakika
+
+    const state = {
+      playerName: '',
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      correctCount: 0,
+      wrongCount: 0,
+      timeLeft: GAME_DURATION,
+      timerInterval: null,
+      questionStartTime: 0,
+      isAnswered: false,
+      lastSavedId: null
+    };
+
+    /* ===================================================
+       DOM ELEMANLARI
+       =================================================== */
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const leaderboardScreen = document.getElementById('leaderboardScreen');
+
+    const playerNameInput = document.getElementById('playerName');
+    const savePlayerNameInput = document.getElementById('savePlayerName');
+    const btnStartGame = document.getElementById('btnStartGame');
+    const btnOpenLeaderboardFromStart = document.getElementById('btnOpenLeaderboardFromStart');
+
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const scoreFeedback = document.getElementById('scoreFeedback');
+    const streakDisplay = document.getElementById('streakDisplay');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerBar = document.getElementById('timerBar');
+
+    const questionCounter = document.getElementById('questionCounter');
+    const strategyTag = document.getElementById('strategyTag');
+    const speedBanner = document.getElementById('speedBanner');
+    const factorA = document.getElementById('factorA');
+    const factorB = document.getElementById('factorB');
+    const questionResult = document.getElementById('questionResult');
+    const optionsGrid = document.getElementById('optionsGrid');
+    const tipBox = document.getElementById('tipBox');
+    const tipText = document.getElementById('tipText');
+
+    const btnSaveToLeaderboard = document.getElementById('btnSaveToLeaderboard');
+    const btnGoToLeaderboard = document.getElementById('btnGoToLeaderboard');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnSound = document.getElementById('btnSound');
+    const soundIcon = document.getElementById('soundIcon');
+    const btnNavLeaderboard = document.getElementById('btnNavLeaderboard');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    const btnCloseLeaderboard = document.getElementById('btnCloseLeaderboard');
+    const btnClearLeaderboard = document.getElementById('btnClearLeaderboard');
+    const btnStartFromLeaderboard = document.getElementById('btnStartFromLeaderboard');
+
+    /* ===================================================
+       GİRİŞ AFİŞ SÜRESİ (1.5 saniye sonra panelin yavaşça gelmesi)
+       =================================================== */
+    let introTimer = setTimeout(() => {
+      document.body.classList.remove('intro-mode');
+    }, 1500);
+
+    function endIntro() {
+      clearTimeout(introTimer);
+      document.body.classList.remove('intro-mode');
+    }
+
+    // İstenirse ekrana tıklanarak da beklemeden panel açılabilir
+    document.addEventListener('click', () => {
+      if (document.body.classList.contains('intro-mode')) {
+        endIntro();
+      }
+    });
+
+    /* ===================================================
+       GENEL OLAY DİNLEYİCİLERİ
+       =================================================== */
+    btnSound.addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      if (sound.enabled) {
+        soundIcon.textContent = '🔊';
+        btnSound.title = 'Sesi Kapat';
+        sound.playClick();
+      } else {
+        soundIcon.textContent = '🔇';
+        btnSound.title = 'Sesi Aç';
+      }
+    });
+
+    btnFullscreen.addEventListener('click', () => {
+      sound.playClick();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    function goToStartScreen() {
+      sound.playClick();
+      endIntro();
+      clearInterval(state.timerInterval);
+
+      document.body.className = 'screen-start';
+      gameScreen.style.display = 'none';
+      resultScreen.style.display = 'none';
+      leaderboardScreen.style.display = 'none';
+      startScreen.style.display = 'block';
+
+      // Öğrenci adı kutusunu temizle ve yeni öğrencinin yazabilmesi için odakla
+      playerNameInput.value = '';
+      savePlayerNameInput.value = '';
+      setTimeout(() => {
+        playerNameInput.focus();
+      }, 120);
+    }
+
+    btnStartGame.addEventListener('click', () => {
+      sound.playClick();
+      startGame();
+    });
+
+    btnRestart.addEventListener('click', () => {
+      goToStartScreen();
+    });
+
+    btnStartFromLeaderboard.addEventListener('click', () => {
+      goToStartScreen();
+    });
+
+    playerNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sound.playClick();
+        startGame();
+      }
+    });
+
+    btnNavLeaderboard.addEventListener('click', () => {
+      sound.playClick();
+      showLeaderboardScreen();
+    });
+
+    btnOpenLeaderboardFromStart.addEventListener('click', () => {
+      sound.playClick();
+      showLeaderboardScreen();
+    });
+
+    btnGoToLeaderboard.addEventListener('click', () => {
+      sound.playClick();
+      showLeaderboardScreen();
+    });
+
+    btnCloseLeaderboard.addEventListener('click', () => {
+      sound.playClick();
+      hideLeaderboardScreen();
+    });
+
+    btnSaveToLeaderboard.addEventListener('click', () => {
+      sound.playClick();
+      saveScoreToLeaderboard();
+    });
+
+    savePlayerNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sound.playClick();
+        saveScoreToLeaderboard();
+      }
+    });
+
+    btnClearLeaderboard.addEventListener('click', () => {
+      openSettingsModal();
+    });
+
+    /* ===================================================
+       OYUN AKIŞ FONKSİYONLARI (60 Saniye)
+       =================================================== */
+    function startGame() {
+      endIntro();
+
+      state.playerName = playerNameInput.value.trim() || '5. Sınıf Öğrencisi';
+      savePlayerNameInput.value = state.playerName;
+      state.questions = generateQuestionPool();
+      state.currentIndex = 0;
+      state.score = 0;
+      state.streak = 0;
+      state.maxStreak = 0;
+      state.correctCount = 0;
+      state.wrongCount = 0;
+      state.timeLeft = GAME_DURATION;
+      state.isAnswered = false;
+      state.lastSavedId = null;
+
+      // Ekran Geçişleri
+      document.body.className = 'screen-game';
+      startScreen.style.display = 'none';
+      resultScreen.style.display = 'none';
+      leaderboardScreen.style.display = 'none';
+      gameScreen.style.display = 'flex';
+
+      document.getElementById('saveRankBox').style.display = 'block';
+
+      updateStatsUI();
+      start60SecTimer();
+      loadQuestion();
+    }
+
+    function start60SecTimer() {
+      clearInterval(state.timerInterval);
+      updateTimerUI(state.timeLeft, GAME_DURATION);
+
+      state.timerInterval = setInterval(() => {
+        state.timeLeft--;
+        updateTimerUI(state.timeLeft, GAME_DURATION);
+
+        // Son 10 saniye uyarı tik-takları
+        if (state.timeLeft <= 10 && state.timeLeft > 0) {
+          sound.playTick();
+        }
+
+        if (state.timeLeft <= 0) {
+          clearInterval(state.timerInterval);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI(current, max) {
+      timerDisplay.textContent = `${current}s`;
+      const pct = Math.max(0, (current / max) * 100);
+      timerBar.style.width = `${pct}%`;
+
+      if (pct < 25) {
+        timerBar.style.background = '#EF4444';
+      } else if (pct < 50) {
+        timerBar.style.background = '#F59E0B';
+      } else {
+        timerBar.style.background = 'linear-gradient(90deg, #10B981, #059669)';
+      }
+    }
+
+    function loadQuestion() {
+      state.isAnswered = false;
+      tipBox.classList.remove('show');
+      questionResult.textContent = '?';
+      questionResult.style.color = '#F59E0B';
+
+      if (state.currentIndex >= state.questions.length) {
+        state.questions = generateQuestionPool();
+        state.currentIndex = 0;
+      }
+
+      const q = state.questions[state.currentIndex];
+      factorA.textContent = q.a;
+      factorB.textContent = q.b;
+      strategyTag.innerHTML = `💡 ${q.tag}`;
+      tipText.textContent = `Püf Noktası: ${q.tip}`;
+
+      questionCounter.textContent = `Soru ${state.currentIndex + 1} (${state.correctCount} Doğru)`;
+      speedBanner.innerHTML = `⚡ Hızlı cevapla, seri yap ve rekor kır!`;
+
+      // 4 Şıkkı Oluştur
+      const options = generateOptions(q.ans, q.a, q.b);
+      const letters = ['A', 'B', 'C', 'D'];
+      optionsGrid.innerHTML = '';
+
+      options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.dataset.val = opt;
+        btn.innerHTML = `
+          <span class="letter-tag">${letters[idx]}</span>
+          <span class="opt-val">${opt}</span>
+        `;
+        btn.addEventListener('click', () => handleAnswer(opt, btn, q));
+        optionsGrid.appendChild(btn);
+      });
+
+      state.questionStartTime = performance.now();
+    }
+
+    function handleAnswer(selectedVal, btnElement, currentQuestion) {
+      if (state.isAnswered || state.timeLeft <= 0) return;
+      state.isAnswered = true;
+
+      const responseTimeSec = (performance.now() - state.questionStartTime) / 1000;
+      const isCorrect = (selectedVal === currentQuestion.ans);
+
+      const allButtons = optionsGrid.querySelectorAll('.option-btn');
+      allButtons.forEach(btn => btn.classList.add('disabled'));
+
+      questionResult.textContent = currentQuestion.ans;
+
+      if (isCorrect) {
+        btnElement.classList.add('correct');
+        questionResult.style.color = '#10B981';
+
+        state.correctCount++;
+        state.streak++;
+        if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+
+        let speedBonus = 15;
+        let speedText = 'Doğru!';
+        let soundType = 'normal';
+
+        if (responseTimeSec < 1.5) {
+          speedBonus = 100;
+          speedText = '⚡ Şimşek Hızı!';
+          soundType = 'super';
+        } else if (responseTimeSec < 3.0) {
+          speedBonus = 70;
+          speedText = '🔥 Çok Hızlı!';
+          soundType = 'fast';
+        } else if (responseTimeSec < 5.0) {
+          speedBonus = 40;
+          speedText = '👍 Hızlı!';
+        }
+
+        const streakBonus = Math.min(state.streak * 10, 80);
+        const earnedPoints = 100 + speedBonus + streakBonus;
+        state.score += earnedPoints;
+
+        sound.playCorrect(soundType);
+        showScoreFeedback(`+${earnedPoints} (${speedText})`, true);
+        speedBanner.innerHTML = `✨ <strong>+${earnedPoints} Puan!</strong> ${speedText} (${responseTimeSec.toFixed(1)} sn)`;
+
+        launchConfetti(18);
+
+        setTimeout(() => {
+          if (state.timeLeft > 0) {
+            state.currentIndex++;
+            loadQuestion();
+          }
+        }, 650);
+
+      } else {
+        // YANLIŞ CEVAP: -50 Puan
+        btnElement.classList.add('wrong');
+        questionResult.style.color = '#EF4444';
+        sound.playWrong();
+
+        state.wrongCount++;
+        state.streak = 0;
+
+        const penalty = 50;
+        state.score = Math.max(0, state.score - penalty);
+
+        showScoreFeedback(`-${penalty} Puan!`, false);
+        speedBanner.innerHTML = `⚠️ <strong style="color:#DC2626;">-${penalty} Puan!</strong> Yanlış cevap seriyi sıfırladı.`;
+
+        allButtons.forEach(btn => {
+          if (parseInt(btn.dataset.val) === currentQuestion.ans) {
+            btn.classList.add('correct');
+          }
+        });
+
+        tipBox.classList.add('show');
+
+        setTimeout(() => {
+          if (state.timeLeft > 0) {
+            state.currentIndex++;
+            loadQuestion();
+          }
+        }, 1400);
+      }
+
+      updateStatsUI();
+    }
+
+    function showScoreFeedback(text, isPositive) {
+      scoreFeedback.textContent = text;
+      scoreFeedback.className = `score-feedback ${isPositive ? 'positive' : 'negative'}`;
+      setTimeout(() => {
+        scoreFeedback.className = 'score-feedback';
+      }, 1200);
+    }
+
+    function updateStatsUI() {
+      scoreDisplay.textContent = state.score;
+      streakDisplay.textContent = `x${state.streak}`;
+    }
+
+    /* ===================================================
+       SONUÇ EKRANI VE SKOR KAYDI
+       =================================================== */
+    function endGame() {
+      clearInterval(state.timerInterval);
+      document.body.className = 'screen-result';
+      gameScreen.style.display = 'none';
+      resultScreen.style.display = 'block';
+
+      sound.playFanfare();
+      launchConfetti(120);
+
+      document.getElementById('finalScore').textContent = state.score;
+      document.getElementById('finalCorrect').textContent = `${state.correctCount} D`;
+      document.getElementById('finalWrong').textContent = `${state.wrongCount} Y`;
+      document.getElementById('finalStreak').textContent = `🔥 x${state.maxStreak}`;
+
+      const trophyIcon = document.getElementById('trophyIcon');
+      const resultTitle = document.getElementById('resultTitle');
+      const resultSubtitle = document.getElementById('resultSubtitle');
+
+      const completionQuotes = [
+        `60 saniyelik maratonu canavar gibi tamamladın! Zihnini müthiş çalıştırdın. Şimdi adını yaz ve İlk 10 sıralamasına kaydet!`,
+        `Harika odaklanma ve süper enerji! Zihnin adeta bir hesap makinesi gibi çalıştı!`,
+        `Tebrikler! 60 saniyelik zihinden çarpma etabını başarıyla bitirdin. Sıralamadaki yerini kap!`,
+        `Müthiş bir çaba! Zihninden çarptın, puanları topladın. Hemen adını listeye yazdır!`
+      ];
+      const quote = completionQuotes[Math.floor(Math.random() * completionQuotes.length)];
+
+      trophyIcon.textContent = '🎉';
+      resultTitle.textContent = 'Süre Doldu! Harika Bir Turdu! 🚀';
+      resultSubtitle.textContent = quote;
+    }
+
+    /* ===================================================
+       İLK 10 SIRALAMA YÖNETİMİ (LEADERBOARD)
+       =================================================== */
+    function getLeaderboard() {
+      try {
+        const data = localStorage.getItem('meb_zihinden_top10');
+        const parsed = data ? JSON.parse(data) : [];
+        return deduplicateLeaderboard(parsed);
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function saveScoreToLeaderboard() {
+      const finalName = savePlayerNameInput.value.trim() || state.playerName || '5. Sınıf Öğrencisi';
+      state.playerName = finalName;
+
+      const leaderboard = getLeaderboard();
+      const newEntryId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 4);
+
+      const newEntry = {
+        id: newEntryId,
+        name: finalName,
+        score: state.score,
+        correct: state.correctCount,
+        wrong: state.wrongCount,
+        date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now()
+      };
+
+      // 1. Önce yerel hafızaya kaydet ve aynı isimleri tekilleştir (en yüksek puanlıyı koru, diğerini kaldır)
+      const combined = [...leaderboard, newEntry];
+      const top10 = deduplicateLeaderboard(combined);
+      localStorage.setItem('meb_zihinden_top10', JSON.stringify(top10));
+
+      state.lastSavedId = newEntryId;
+      document.getElementById('saveRankBox').style.display = 'none';
+
+      // 2. Bu öğrencinin yeni kişisel rekoruysa buluta gönder
+      const normName = normalizeName(finalName);
+      const existingBest = leaderboard.find(e => normalizeName(e.name) === normName);
+      if (!existingBest || newEntry.score >= existingBest.score) {
+        pushScoreToCloud(newEntry);
+      }
+
+      showLeaderboardScreen();
+    }
+
+    function renderLeaderboard() {
+      const leaderboard = getLeaderboard();
+      const tbody = document.getElementById('leaderboardBody');
+      const emptyState = document.getElementById('emptyLeaderboard');
+
+      tbody.innerHTML = '';
+
+      if (!leaderboard || leaderboard.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      const medals = ['🥇', '🥈', '🥉'];
+
+      leaderboard.forEach((entry, idx) => {
+        const row = document.createElement('tr');
+        row.className = `lb-row rank-${idx + 1}`;
+        const rankDisplay = (idx < 3) ? medals[idx] : `${idx + 1}.`;
+
+        // Satıra tıklanınca özel kutlama ekranını aç
+        row.title = `${idx + 1}. olan ${entry.name} için kutlama sayfasını aç!`;
+        row.addEventListener('click', () => openCelebration(entry, idx + 1));
+
+        row.innerHTML = `
+          <td><span class="rank-badge">${rankDisplay}</span></td>
+          <td class="player-cell">
+            <span class="player-name-text">${escapeHtml(entry.name)}</span>
+            <span class="celebrate-pill">🎉 Kutla</span>
+          </td>
+          <td class="score-cell">${entry.score}</td>
+          <td>${entry.correct} D / ${entry.wrong} Y</td>
+          <td style="color: #94A3B8; font-size: 14px;">${entry.date || '-'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    /* ===================================================
+       KUTLAMA SAYFASI / MODALI FONKSİYONLARI (1., 2., 3. ve İlk 10)
+       =================================================== */
+    const celebrationModal = document.getElementById('celebrationModal');
+    const celebrationCard = document.getElementById('celebrationCard');
+    const btnCloseCelebration = document.getElementById('btnCloseCelebration');
+    const btnCelClose = document.getElementById('btnCelClose');
+    const celebrationBackdrop = document.getElementById('celebrationBackdrop');
+
+    const celBadge = document.getElementById('celBadge');
+    const celIcon = document.getElementById('celIcon');
+    const celName = document.getElementById('celName');
+    const celTitle = document.getElementById('celTitle');
+    const celDesc = document.getElementById('celDesc');
+    const celScore = document.getElementById('celScore');
+    const celStats = document.getElementById('celStats');
+    const celRank = document.getElementById('celRank');
+
+    function openCelebration(entry, rank) {
+      if (!entry) return;
+
+      sound.playFanfare();
+      launchConfetti(110);
+
+      celebrationCard.className = 'celebration-card';
+      celName.textContent = entry.name;
+      celScore.textContent = `${entry.score} Puan`;
+      celStats.textContent = `${entry.correct} D / ${entry.wrong} Y`;
+      celRank.textContent = `${rank}. Sıra`;
+
+      if (rank === 1) {
+        celebrationCard.classList.add('theme-rank-1');
+        celBadge.textContent = '👑 1. LİK ŞAMPİYONU 👑';
+        celIcon.textContent = '🥇';
+        celTitle.textContent = '🏆 ZİRVEYE OTURAN OKUL ŞAMPİYONU! 🏆';
+        celDesc.innerHTML = `Büyük alkışlar okulun 1 numarasına! 👑 60 saniyelik zorlu maratonda zihnini bir fırtına gibi çalıştırıp <strong>${entry.score} puanla 1.lik koltuğuna</strong> adını altın harflerle yazdırdı! Bu muazzam hız ve keskin zeka için kocaman tebrikler, zirve senin! 🌟👏`;
+      } else if (rank === 2) {
+        celebrationCard.classList.add('theme-rank-2');
+        celBadge.textContent = '🥈 2. LİK GÜMÜŞ KUPA 🥈';
+        celIcon.textContent = '🥈';
+        celTitle.textContent = '⚡ GÜMÜŞ KUPA VE HARİKA BİR 2.LİK! ⚡';
+        celDesc.innerHTML = `Kürsünün en iddialı basamağında parlayan bir yıldız! 🥈 60 saniyede <strong>${entry.score} puan</strong> toplayarak nefes kesen bir yarış çıkardı ve 2.lik kürsüsüne gururla çıktı! Zirveyi son ana kadar kovalayan müthiş performansın ve gayretin için tebrikler! ⚡👏`;
+      } else if (rank === 3) {
+        celebrationCard.classList.add('theme-rank-3');
+        celBadge.textContent = '🥉 3. LÜK BRONZ MADALYA 🥉';
+        celIcon.textContent = '🥉';
+        celTitle.textContent = '🥉 BRONZ MADALYA İLE KÜRSÜDESİN! 🥉';
+        celDesc.innerHTML = `Kürsünün madalyalı şampiyonu belli oldu! 🥉 60 saniye boyunca gösterdiği harika odaklanma ile <strong>${entry.score} puan</strong> elde etti ve 3. sıraya yerleşerek madalyayı kaptı! Bu hızlı düşünme becerin ve başarınla gurur duyuyoruz, harika iş! 🚀🎉`;
+      } else {
+        celebrationCard.classList.add('theme-rank-other');
+        celBadge.textContent = `⭐ İLK 10 ŞAMPİYONLAR KULÜBÜ (${rank}. SIRA) ⭐`;
+        celIcon.textContent = '⭐';
+        celTitle.textContent = '🎯 EN İYİ İLK 10 ARASINDASIN! 🎯';
+        celDesc.innerHTML = `Tebrikler! <strong>${entry.score} puan</strong> toplayarak yüzlerce işlem arasından sıyrıldın ve okulun En İyi İlk 10 listesine adını gururla yazdırdın! Zihninin hızıyla harika bir başarıya imza attın! 🎯👏`;
+      }
+
+      celebrationModal.style.display = 'flex';
+    }
+
+    function closeCelebration() {
+      celebrationModal.style.display = 'none';
+      sound.playClick();
+    }
+
+    btnCloseCelebration.addEventListener('click', closeCelebration);
+    btnCelClose.addEventListener('click', closeCelebration);
+    celebrationBackdrop.addEventListener('click', closeCelebration);
+
+    /* ===================================================
+       ÖĞRETMEN AYARLARI VE ŞİFRE YÖNETİMİ (bati.1234)
+       =================================================== */
+    const ADMIN_PASSWORD = 'bati.1234';
+    const btnSettings = document.getElementById('btnSettings');
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsBackdrop = document.getElementById('settingsBackdrop');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const btnDoneSettings = document.getElementById('btnDoneSettings');
+
+    const settingsAuthStep = document.getElementById('settingsAuthStep');
+    const settingsPanelStep = document.getElementById('settingsPanelStep');
+    const adminPasswordInput = document.getElementById('adminPasswordInput');
+    const settingsError = document.getElementById('settingsError');
+    const settingsSuccess = document.getElementById('settingsSuccess');
+    const btnSubmitPassword = document.getElementById('btnSubmitPassword');
+    const btnAdminResetScores = document.getElementById('btnAdminResetScores');
+
+    function openSettingsModal() {
+      settingsAuthStep.style.display = 'block';
+      settingsPanelStep.style.display = 'none';
+      settingsError.style.display = 'none';
+      settingsSuccess.style.display = 'none';
+      adminPasswordInput.value = '';
+      settingsModal.style.display = 'flex';
+      setTimeout(() => adminPasswordInput.focus(), 150);
+      sound.playClick();
+    }
+
+    function closeSettingsModal() {
+      settingsModal.style.display = 'none';
+      sound.playClick();
+    }
+
+    function handlePasswordSubmit() {
+      const entered = adminPasswordInput.value.trim();
+      if (entered === ADMIN_PASSWORD) {
+        settingsAuthStep.style.display = 'none';
+        settingsPanelStep.style.display = 'block';
+        settingsError.style.display = 'none';
+        sound.playClick();
+      } else {
+        settingsError.style.display = 'block';
+        sound.playWrong();
+      }
+    }
+
+    function handleAdminResetScores() {
+      if (confirm('Tüm sınıfların buluttaki ve bu bilgisayardaki liderlik tablosu tamamen sıfırlanacak. Emin misiniz?')) {
+        localStorage.removeItem('meb_zihinden_top10');
+        clearScoresFromCloud();
+        renderLeaderboard();
+        settingsSuccess.style.display = 'block';
+        sound.playFanfare();
+      }
+    }
+
+    btnSettings.addEventListener('click', openSettingsModal);
+    btnCloseSettings.addEventListener('click', closeSettingsModal);
+    btnDoneSettings.addEventListener('click', closeSettingsModal);
+    settingsBackdrop.addEventListener('click', closeSettingsModal);
+    btnSubmitPassword.addEventListener('click', handlePasswordSubmit);
+    adminPasswordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handlePasswordSubmit();
+    });
+    btnAdminResetScores.addEventListener('click', handleAdminResetScores);
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function showLeaderboardScreen() {
+      renderLeaderboard();
+      fetchCloudScoresREST();
+      document.body.className = 'screen-leaderboard';
+      startScreen.style.display = 'none';
+      gameScreen.style.display = 'none';
+      resultScreen.style.display = 'none';
+      leaderboardScreen.style.display = 'block';
+    }
+
+    function hideLeaderboardScreen() {
+      leaderboardScreen.style.display = 'none';
+      if (state.timeLeft <= 0 && state.score > 0) {
+        resultScreen.style.display = 'block';
+        document.body.className = 'screen-result';
+      } else {
+        goToStartScreen();
+      }
+    }
+
+
+
+    /* ===================================================
+       KLAVYE KISAYOLLARI (1, 2, 3, 4 veya A, B, C, D)
+       =================================================== */
+    window.addEventListener('keydown', (e) => {
+      if (gameScreen.style.display !== 'flex' || state.isAnswered) return;
+      const key = e.key.toUpperCase();
+      const buttons = optionsGrid.querySelectorAll('.option-btn');
+      
+      let targetIdx = -1;
+      if (['1', 'A'].includes(key)) targetIdx = 0;
+      else if (['2', 'B'].includes(key)) targetIdx = 1;
+      else if (['3', 'C'].includes(key)) targetIdx = 2;
+      else if (['4', 'D'].includes(key)) targetIdx = 3;
+
+      if (targetIdx >= 0 && buttons[targetIdx]) {
+        buttons[targetIdx].click();
+      }
+    });
+
+    /* ===================================================
+       KONFETİ EFEKTİ
+       =================================================== */
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiPieces = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function launchConfetti(count = 70) {
+      const colors = ['#4F46E5', '#F59E0B', '#10B981', '#EF4444', '#EC4899', '#06B6D4'];
+      for (let i = 0; i < count; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height * 0.4 - 20,
+          w: Math.random() * 10 + 6,
+          h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 6,
+          vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 8,
+          life: 1
+        });
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = confettiPieces.length - 1; i >= 0; i--) {
+        const p = confettiPieces[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.rotSpeed;
+        p.life -= 0.007;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rot * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+
+        if (p.life <= 0 || p.y > canvas.height) {
+          confettiPieces.splice(i, 1);
+        }
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+  </script>
+</body>
+</html>

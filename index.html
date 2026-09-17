@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematik Etkinlik Portalı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            transition: background-image 0.8s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-color: #0f172a; /* Koyu arkaplan yedeği */
+        }
+
+        /* Üst Menü Cam Efekti */
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Genel Cam Paneller (Boş durum, Modallar vb.) */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            color: #f8fafc;
+        }
+
+        /* Oyun Kartları */
+        .game-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 20px rgba(96, 165, 250, 0.3);
+            border-color: rgba(148, 163, 184, 0.5);
+            background: rgba(30, 41, 59, 0.85);
+        }
+
+        .game-cover {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            background-color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #475569;
+            position: relative;
+        }
+
+        /* Görselin altına hafif karartma geçişi (Yazı daha iyi okunsun diye) */
+        .game-cover::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 50%;
+            background: linear-gradient(to top, rgba(15,23,42,1), transparent);
+        }
+
+        .game-title {
+            padding: 16px;
+            font-weight: 700;
+            text-align: center;
+            color: #e2e8f0;
+            font-size: 1.15rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigasyon Butonları */
+        .nav-btn {
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #cbd5e1;
+        }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        .nav-btn.active-gold {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: white;
+            border-color: #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            transform: scale(1.05);
+        }
+        .nav-btn.active-blue {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border-color: #60a5fa;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* Modal ve Form Girdileri (Koyu Tema) */
+        #settings-modal, #password-modal {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            align-items: center; justify-content: center;
+        }
+
+        .dark-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #475569;
+            color: #f8fafc;
+        }
+        .dark-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        /* Metalik / Parlak Başlık */
+        .text-metallic {
+            background: linear-gradient(to right, #cbd5e1, #f8fafc, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.1);
+        }
+
+        /* Iframe Container */
+        #game-frame-container {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; background: #000;
+        }
+        #game-frame { width: 100%; height: 100%; border: none; }
+        
+        .close-game-btn {
+            position: absolute; top: 20px; right: 20px; z-index: 110;
+            background: rgba(220, 38, 38, 0.8); color: white; width: 50px; height: 50px;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .close-game-btn:hover { background: rgba(220, 38, 38, 1); transform: scale(1.1); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <!-- Top Navbar -->
+    <nav class="glass-nav w-full py-4 px-8 flex justify-between items-center z-10 sticky top-0">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
+                <i class="fas fa-square-root-alt"></i>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-metallic tracking-tight uppercase">Matematik Etkinlik Portalı</h1>
+        </div>
+        
+        <div class="flex gap-4">
+            <button id="btn-grade-5" onclick="setGrade('5')" class="nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-2">
+                <i class="fas fa-shapes"></i> 5. Sınıflar
+            </button>
+            <button id="btn-grade-6" onclick="setGrade('6')" class="nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-3">
+                <span class="font-serif italic font-bold flex items-center gap-0.5 leading-none text-blue-300">
+                    <span class="text-base -mt-3">x</span>
+                    <span class="text-xl">y</span>
+                    <span class="text-sm mt-3">z</span>
+                </span>
+                6. Sınıflar
+            </button>
+        </div>
+
+        <button onclick="openPasswordModal()" class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-400 hover:bg-slate-700 transition-all shadow-lg">
+            <i class="fas fa-cog text-xl"></i>
+        </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-8 relative z-0">
+        <div id="games-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
+            <!-- Oyunlar buraya yüklenecek -->
+        </div>
+        
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center h-full glass-panel rounded-3xl p-12 max-w-lg mx-auto mt-20 text-center">
+            <div class="w-24 h-24 rounded-full bg-slate-800 flex items-center justify-center mb-6 shadow-inner border border-slate-700">
+                <i class="fas fa-folder-open text-5xl text-slate-500"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-3 text-slate-200">Kayıt Bulunamadı</h2>
+            <p class="text-slate-400 text-lg leading-relaxed">Bu sınıfa ait sisteme yüklenmiş bir materyal yok. Sağ üstteki yönetim panelinden yeni etkinlik ekleyebilirsiniz.</p>
+        </div>
+    </main>
+
+    <!-- Game Player (Iframe) -->
+    <div id="game-frame-container">
+        <div class="close-game-btn" onclick="closeGame()">
+            <i class="fas fa-times"></i>
+        </div>
+        <iframe id="game-frame" srcdoc=""></iframe>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="password-modal">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md relative animate-[fadeIn_0.3s_ease-out]">
+            <button onclick="closePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div class="text-center mb-6">
+                <i class="fas fa-user-shield text-4xl text-blue-400 mb-3"></i>
+                <h2 class="text-2xl font-bold text-white">Yönetici Girişi</h2>
+            </div>
+            <input type="password" id="admin-password" class="w-full p-4 rounded-xl dark-input outline-none transition-all mb-6 text-center text-2xl tracking-widest" placeholder="••••••••">
+            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/50">GİRİŞ YAP</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal (Admin Dashboard) -->
+    <div id="settings-modal">
+        <div class="glass-panel p-8 rounded-3xl w-full max-w-5xl max-h-[90vh] flex flex-col relative animate-[fadeIn_0.3s_ease-out]">
+            <button onclick="closeSettingsModal()" class="absolute top-5 right-6 text-slate-400 hover:text-red-400 transition-colors text-3xl z-10">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-3xl font-bold mb-8 text-white border-b border-slate-700 pb-4 flex items-center justify-between">
+                <div><i class="fas fa-sliders-h text-blue-400 mr-4"></i> Sistem Yönetimi</div>
+                <button onclick="logoutAdmin()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-4 py-2 rounded-lg border border-slate-600 transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
+                </button>
+            </h2>
+            
+            <div class="flex-1 overflow-y-auto pr-4 grid grid-cols-1 lg:grid-cols-2 gap-10">
+                
+                <!-- Oyun Ekleme Formu -->
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-xl font-bold mb-6 text-emerald-400 flex items-center"><i class="fas fa-plus-circle mr-2"></i>Yeni Materyal Ekle</h3>
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Etkinlik Başlığı</label>
+                        <input type="text" id="new-game-title" class="w-full p-3 rounded-xl dark-input outline-none" placeholder="Örn: Kesirler Macerası">
+                    </div>
+                    
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Sınıf Kademesi</label>
+                        <select id="new-game-grade" class="w-full p-3 rounded-xl dark-input outline-none appearance-none">
+                            <option value="5" class="bg-slate-800">5. Sınıf</option>
+                            <option value="6" class="bg-slate-800">6. Sınıf</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Kapak Görseli Linki (Opsiyonel)</label>
+                        <input type="text" id="new-game-image" class="w-full p-3 rounded-xl dark-input outline-none" placeholder="https://...">
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-sm font-semibold text-slate-300">HTML Kaynak Kodları</label>
+                            <label class="cursor-pointer bg-slate-700 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-600 transition-colors flex items-center gap-2">
+                                <i class="fas fa-file-upload"></i> Dosyadan Oku
+                                <input type="file" id="html-file-input" accept=".html" class="hidden" onchange="handleFileUpload(event)">
+                            </label>
+                        </div>
+                        <textarea id="new-game-code" rows="6" class="w-full p-3 rounded-xl dark-input outline-none font-mono text-xs resize-none" placeholder="<!-- Kodları yapıştırın veya üstteki butondan .html dosyası seçin -->"></textarea>
+                    </div>
+
+                    <button onclick="addGame()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2 text-lg">
+                        <i class="fas fa-satellite-dish"></i> SİSTEME YÜKLE
+                    </button>
+                </div>
+
+                <!-- Oyun Yönetimi -->
+                <div class="flex flex-col h-full">
+                    <h3 class="text-xl font-bold mb-6 text-blue-400 flex items-center"><i class="fas fa-server mr-2"></i>Yüklü Materyaller</h3>
+                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl flex-1 overflow-y-auto p-3 space-y-3" id="admin-games-list">
+                        <!-- Admin listesi buraya gelecek -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Veritabanı Dosyası -->
+    <script src="./oyunlar.js"></script>
+    <script>
+    const DB_KEY = 'edu_games_db';
+    const PASSWORD = '26575982824.bati';
+    
+    // Arka plan resimleri
+    const BG_5 = './arkaplan5.jpg';
+    const BG_6 = './arkaplan6.jpg';
+
+    let currentGrade = '5';
+    let games = []; // oyunlar.js'den dolacak
+
+    window.onload = () => {
+        loadGamesFromDB();
+        setGrade('5');
+    };
+
+    function loadGamesFromDB() {
+        // oyunlar.js içindeki SISTEM_OYUNLARI listesini al
+        if (typeof SISTEM_OYUNLARI !== 'undefined') {
+            games = [...SISTEM_OYUNLARI];
+        }
+
+        // Test amaçlı tarayıcıya eklenenleri de al
+        const stored = localStorage.getItem(DB_KEY);
+        if (stored) {
+            const userGames = JSON.parse(stored);
+            // Sadece test için eklenen oyunları filtrele
+            const testGames = userGames.filter(ug => !ug.id.includes('oyun-'));
+            games = [...games, ...testGames];
+        }
+    }
+
+    function saveGamesToDB() {
+        localStorage.setItem(DB_KEY, JSON.stringify(games));
+    }
+
+    function setGrade(grade) {
+        currentGrade = grade;
+        
+        const btn5 = document.getElementById('btn-grade-5');
+        const btn6 = document.getElementById('btn-grade-6');
+        
+        btn5.className = "nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-2";
+        btn6.className = "nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-2";
+        
+        if(grade === '5') {
+            btn5.classList.add('active-gold');
+        } else {
+            btn6.classList.add('active-blue');
+        }
+
+        document.body.style.backgroundImage = `url('${grade === '5' ? BG_5 : BG_6}')`;
+        renderGames();
+    }
+
+    function renderGames() {
+        const container = document.getElementById('games-container');
+        const emptyState = document.getElementById('empty-state');
+        container.innerHTML = '';
+
+        const filteredGames = games.filter(g => g.grade === currentGrade);
+
+        if (filteredGames.length === 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+            
+            filteredGames.forEach((game) => {
+                const card = document.createElement('div');
+                card.className = 'game-card group';
+                card.onclick = () => playGame(game.id);
+
+                let coverHtml = '';
+                if (game.image && game.image.trim() !== '') {
+                    coverHtml = `<div class="game-cover" style="background-image: url('${game.image}')"></div>`;
+                } else {
+                    coverHtml = `<div class="game-cover group-hover:text-blue-400 transition-colors"><i class="fas fa-cubes"></i></div>`;
+                }
+
+                card.innerHTML = `
+                    ${coverHtml}
+                    <div class="game-title relative z-10">${game.title}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('new-game-code').value = e.target.result;
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    function playGame(id) {
+        const game = games.find(g => g.id === id);
+        if (game) {
+            const frame = document.getElementById('game-frame');
+            const container = document.getElementById('game-frame-container');
+            
+            if (game.url) {
+                frame.removeAttribute('srcdoc');
+                frame.src = game.url;
+            } else {
+                frame.removeAttribute('src');
+                frame.srcdoc = game.code;
+            }
+            
+            container.style.display = 'block';
+        }
+    }
+
+    function closeGame() {
+        const frame = document.getElementById('game-frame');
+        const container = document.getElementById('game-frame-container');
+        container.style.display = 'none';
+        frame.srcdoc = ''; 
+    }
+
+    function openPasswordModal() {
+        // Eğer daha önce giriş yapılmışsa şifre sorma
+        if (localStorage.getItem('admin_auth') === 'true') {
+            openSettingsModal();
+            return;
+        }
+
+        document.getElementById('admin-password').value = '';
+        document.getElementById('password-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('admin-password').focus(), 100);
+    }
+
+    function closePasswordModal() {
+        document.getElementById('password-modal').style.display = 'none';
+    }
+
+    function checkPassword() {
+        const pass = document.getElementById('admin-password').value;
+        if (pass === PASSWORD) {
+            localStorage.setItem('admin_auth', 'true'); // Şifreyi bilgisayara kaydet
+            closePasswordModal();
+            openSettingsModal();
+        } else {
+            alert('Yetkisiz Giriş Denemesi!');
+        }
+    }
+
+    // Ayarlardan çıkış yapmak için (opsiyonel)
+    function logoutAdmin() {
+        localStorage.removeItem('admin_auth');
+        closeSettingsModal();
+        alert('Yönetici çıkışı yapıldı.');
+    }
+
+    document.getElementById('admin-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkPassword();
+    });
+
+    function openSettingsModal() {
+        document.getElementById('settings-modal').style.display = 'flex';
+        renderAdminGamesList();
+    }
+
+    function closeSettingsModal() {
+        document.getElementById('settings-modal').style.display = 'none';
+        document.getElementById('new-game-title').value = '';
+        document.getElementById('new-game-image').value = '';
+        document.getElementById('new-game-code').value = '';
+    }
+
+    function addGame() {
+        const title = document.getElementById('new-game-title').value.trim();
+        const grade = document.getElementById('new-game-grade').value;
+        const image = document.getElementById('new-game-image').value.trim();
+        const code = document.getElementById('new-game-code').value.trim();
+
+        if (!title || !code) {
+            alert('Lütfen Başlık ve Kaynak Kod alanlarını doldurunuz!');
+            return;
+        }
+
+        const newGame = {
+            id: Date.now().toString(),
+            title: title,
+            grade: grade,
+            image: image,
+            code: code,
+            addedAt: new Date().toISOString()
+        };
+
+        games.push(newGame);
+        saveGamesToDB();
+        
+        alert('Etkinlik sisteme başarıyla yüklendi!');
+        
+        document.getElementById('new-game-title').value = '';
+        document.getElementById('new-game-image').value = '';
+        document.getElementById('new-game-code').value = '';
+        
+        renderAdminGamesList();
+        renderGames();
+    }
+
+    function renderAdminGamesList() {
+        const list = document.getElementById('admin-games-list');
+        list.innerHTML = '';
+
+        if (games.length === 0) {
+            list.innerHTML = '<div class="text-center p-6 text-slate-500 font-medium">Veritabanında kayıtlı materyal yok.</div>';
+            return;
+        }
+
+        const sortedGames = [...games].sort((a, b) => b.id - a.id);
+
+        sortedGames.forEach(game => {
+            const item = document.createElement('div');
+            item.className = 'bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center group hover:border-slate-500 transition-colors';
+            item.innerHTML = `
+                <div>
+                    <h4 class="font-bold text-slate-200">${game.title}</h4>
+                    <span class="text-xs font-bold bg-blue-900/50 text-blue-400 px-2.5 py-1 rounded-md mt-2 inline-block border border-blue-800/50">${game.grade}. Sınıf</span>
+                </div>
+                <button onclick="deleteGame('${game.id}')" class="w-10 h-10 bg-red-900/30 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center border border-red-900/50">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    function deleteGame(id) {
+        if (confirm('Bu materyali kalıcı olarak sistemden silmek istediğinize emin misiniz?')) {
+            games = games.filter(g => g.id !== id);
+            saveGamesToDB();
+            renderAdminGamesList();
+            renderGames();
+        }
+    }
+</script>
+</body>
+</html>
