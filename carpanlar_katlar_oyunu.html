@@ -1,10 +1,3 @@
-Görseli anladım, bildirim paneli (toast) tam üstteki başlık etiketinin üzerine denk geliyor ve okunmayı zorlaştırıyor. 
-
-Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmından alıp ekranın alt kısmına (merkeze)** taşıdım. Böylece bildirimler çıkarken yukarıdaki başlıkları, takım skorlarını veya soruları asla kapatmayacak, ekranın altından güzel bir animasyonla belirecek.
-
-İşte düzeltilmiş tam kod, önceki gibi kopyalayıp kullanabilirsiniz:
-
-```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -21,7 +14,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
             background-size: cover;
             color: #1f2937;
             user-select: none;
-            overflow: hidden; /* Aşağı yukarı kaymayı engelle */
+            overflow: hidden; 
             height: 100vh;
         }
 
@@ -43,7 +36,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
         .card-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px; /* Boşluklar küçüldü */
+            gap: 8px;
             max-width: 900px;
             margin: 0 auto;
         }
@@ -53,7 +46,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
 
         .card {
             position: relative;
-            height: 75px; /* Kart yüksekliği küçültüldü */
+            height: 75px; 
             cursor: pointer;
             perspective: 1000px;
         }
@@ -152,19 +145,30 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
             z-index: 10;
         }
 
+        /* BİLDİRİM (TOAST) GÜNCELLEMESİ - EKRANIN ALTINA ALINDI */
         .toast {
-            position: fixed; bottom: 8%; left: 50%;
-            transform: translate(-50%, 50%) scale(0);
-            padding: 10px 30px;
+            position: fixed; 
+            bottom: 40px; /* Ekranın altından 40px yukarıda */
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            padding: 12px 35px;
             border-radius: 50px;
-            color: white; font-weight: bold;
-            z-index: 100; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            text-align: center; border: 4px solid white;
-            font-size: 1.2rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            color: white; 
+            font-weight: bold;
+            z-index: 9999; 
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center; 
+            border: 4px solid white;
+            font-size: 1.3rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             letter-spacing: 1px;
+            opacity: 0;
+            pointer-events: none;
         }
-        .toast-show { transform: translate(-50%, 0) scale(1); }
+        .toast.toast-show { 
+            transform: translateX(-50%) scale(1); 
+            opacity: 1;
+        }
         
         #winner-screen {
             background: rgba(255,255,255,0.95);
@@ -177,7 +181,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
     <div class="bg-overlay"></div>
 
     <!-- Sağ Üst Butonlar -->
-    <div class="absolute top-4 right-24 flex gap-2 z-20">
+    <div class="absolute top-4 right-4 flex gap-2 z-20">
         <button id="btn-last-round" onclick="triggerLastRound()" class="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 border-b-4 border-yellow-600 font-bold py-2 px-4 rounded-xl shadow-lg transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-lg font-baloo flex items-center gap-2">
             ⏳ SON TUR
         </button>
@@ -208,6 +212,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
         <div id="grid" class="card-grid mb-2 w-full"></div>
     </div>
 
+    <!-- Soru Modalı -->
     <div id="modal-q" class="modal-overlay">
         <div class="modal-box">
             <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-5 py-1 rounded-full font-bold border-4 border-white shadow-md text-lg">
@@ -225,6 +230,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
         </div>
     </div>
 
+    <!-- Şans Kartı Modalı -->
     <div id="modal-j" class="modal-overlay">
         <div id="joker-box" class="modal-box">
             <div id="joker-icon" class="text-7xl mb-2 animate-bounce">🎒</div>
@@ -236,6 +242,7 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
         </div>
     </div>
 
+    <!-- Bildirim (Toast) Mesajı -->
     <div id="toast" class="toast font-baloo"></div>
 
 <script>
@@ -684,4 +691,3 @@ Bu durumu düzeltmek için bildirim panelinin konumunu **ekranın üst kısmınd
 </script>
 </body>
 </html>
-```
