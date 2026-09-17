@@ -8,10 +8,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+        /* YENİ NOKTALI MATEMATİK DEFTERİ ARKA PLANI */
         body {
             font-family: 'Fredoka', sans-serif;
-            background: url('./arkaplan6.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2.5px, transparent 2.5px);
+            background-size: 32px 32px;
             color: #1f2937;
             user-select: none;
             overflow: hidden; 
@@ -19,13 +21,6 @@
         }
 
         .font-baloo { font-family: 'Baloo 2', cursive; }
-
-        .bg-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: -1;
-        }
 
         h1 { 
             letter-spacing: 2px; 
@@ -145,25 +140,25 @@
             z-index: 10;
         }
 
-        /* BİLDİRİM (TOAST) GÜNCELLEMESİ - EKRANIN ALTINA ALINDI */
+        /* BİLDİRİM YERİ (Tam Olarak Başlık ile Takımlar Arasında) */
         .toast {
-            position: fixed; 
-            bottom: 40px; /* Ekranın altından 40px yukarıda */
+            position: absolute;
+            top: 4px;
             left: 50%;
             transform: translateX(-50%) scale(0);
-            padding: 12px 35px;
+            padding: 6px 24px;
             border-radius: 50px;
             color: white; 
             font-weight: bold;
             z-index: 9999; 
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
             text-align: center; 
-            border: 4px solid white;
-            font-size: 1.3rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 3px solid white;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             letter-spacing: 1px;
             opacity: 0;
-            pointer-events: none;
+            white-space: nowrap;
         }
         .toast.toast-show { 
             transform: translateX(-50%) scale(1); 
@@ -177,8 +172,6 @@
     </style>
 </head>
 <body class="p-2 relative flex flex-col justify-center items-center h-screen">
-
-    <div class="bg-overlay"></div>
 
     <!-- Sağ Üst Butonlar -->
     <div class="absolute top-4 right-4 flex gap-2 z-20">
@@ -200,14 +193,20 @@
     </div>
 
     <div id="app" class="w-full max-w-5xl relative z-10 flex flex-col justify-between h-full py-4">
-        <div class="text-center mb-2">
+        
+        <div class="text-center mb-1">
             <h1 class="font-baloo text-4xl md:text-6xl mb-1">OKULA MERHABA!</h1>
             <p class="text-white font-bold text-sm bg-blue-600 inline-block px-4 py-1 rounded-full shadow-md border-2 border-white">
                 📚 6. Sınıf: Çarpanlar ve Katlar Macerası ✏️
             </p>
         </div>
 
-        <div id="teams" class="grid grid-cols-3 gap-4 mb-4 max-w-3xl mx-auto w-full"></div>
+        <!-- BİLDİRİM (TOAST) ALANI: Tam boşluğa oturtuldu, düzeni bozmaz -->
+        <div class="relative w-full flex justify-center z-50" style="height: 0;">
+            <div id="toast" class="toast font-baloo"></div>
+        </div>
+
+        <div id="teams" class="grid grid-cols-3 gap-4 mb-2 mt-5 max-w-3xl mx-auto w-full"></div>
 
         <div id="grid" class="card-grid mb-2 w-full"></div>
     </div>
@@ -241,9 +240,6 @@
             </button>
         </div>
     </div>
-
-    <!-- Bildirim (Toast) Mesajı -->
-    <div id="toast" class="toast font-baloo"></div>
 
 <script>
     // 6. Sınıf Çarpanlar ve Katlar (1. Kazanım) 60 Soruluk Geniş Soru Havuzu
@@ -334,7 +330,6 @@
         pendingJokerAction: null
     };
 
-    // Diziden rastgele eleman seçme fonksiyonu
     function getRandomSubarray(arr, size) {
         let shuffled = arr.slice();
         for (let i = shuffled.length - 1; i > 0; i--) {
@@ -349,12 +344,10 @@
         document.getElementById('winner-screen').classList.remove('flex');
         document.getElementById('btn-last-round').style.display = 'flex';
 
-        // Soru havuzundan her oyunda rastgele 22 soru seçiyoruz
         const selectedQuestions = getRandomSubarray(questionsData, 22).map(d => ({ ...d, type: 'q', solved: false }));
         const j = jokersData.map(d => ({ ...d, type: 'j', solved: false }));
         let deck = [...selectedQuestions, ...j];
         
-        // Desteyi karıştır
         for (let i = deck.length - 1; i > 0; i--) {
             const r = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[r]] = [deck[r], deck[i]];
@@ -452,7 +445,6 @@
         let val = document.getElementById('modal-input').value.trim().toLowerCase();
         let correct = card.a.toLowerCase();
         
-        // Çarpan / Bölen kelime eşleşmelerinde esneklik
         if (correct === 'çarpanı' && (val === 'böleni' || val === 'çarpan' || val === 'bölen')) {
             val = 'çarpanı';
         }
@@ -571,7 +563,6 @@
         }
     }
 
-    // SON TUR BUTONU MANTIĞI
     function triggerLastRound() {
         let unsolvedIndices = [];
         gameState.cards.forEach((c, i) => { if (!c.solved) unsolvedIndices.push(i); });
@@ -581,13 +572,11 @@
             return;
         }
 
-        // Kalan kartları karıştır
         for (let i = unsolvedIndices.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [unsolvedIndices[i], unsolvedIndices[j]] = [unsolvedIndices[j], unsolvedIndices[i]];
         }
 
-        // İlk 3 kartı bırak, gerisini iptal et
         const toDisable = unsolvedIndices.slice(3);
         toDisable.forEach(idx => {
             gameState.cards[idx].solved = true;
@@ -665,6 +654,7 @@
         triggerConfetti();
     }
 
+    let toastTimeout;
     function showToast(msg, type) {
         const t = document.getElementById('toast');
         t.innerText = msg;
@@ -675,8 +665,15 @@
         } else {
             t.className = "toast font-baloo bg-blue-500 border-blue-200 shadow-lg";
         }
+        
+        // Animasyonu baştan başlatabilmek için sıfırlama
+        t.classList.remove('toast-show');
+        void t.offsetWidth; 
+        
         t.classList.add('toast-show');
-        setTimeout(() => t.classList.remove('toast-show'), 2000);
+        
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => t.classList.remove('toast-show'), 2000);
     }
 
     document.getElementById('modal-input').addEventListener('keypress', function (e) {
