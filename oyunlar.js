@@ -15,6 +15,13 @@ const SISTEM_OYUNLARI = [
         grade: "5",
         image: "./5_okula_merhaba_arkaplan.jpg",
         url: "./5_okula_merhaba.html"
+    },
+    {
+        id: "oyun-3",
+        title: "Geometri Tombalası",
+        grade: "5",
+        image: "./geotombala.jpg",
+        url: "./tombala.html"
     }
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
