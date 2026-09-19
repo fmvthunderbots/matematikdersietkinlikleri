@@ -191,8 +191,8 @@
                 6. Sınıflar
             </button>
         </div>
-                        <!-- Yenile Butonu -->
-        <button onclick="window.location.reload(true)" title="Sayfayı Yenile" class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
+                <!-- Yenile Butonu -->
+        <button onclick="window.location.href = window.location.pathname + '?t=' + new Date().getTime()" title="Sayfayı Yenile" class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
             <i class="fas fa-sync-alt text-xl transition-transform duration-500 group-hover:rotate-180"></i>
         </button>
     </nav>
