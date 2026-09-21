@@ -18,7 +18,7 @@ const SISTEM_OYUNLARI = [
     },
     {
         id: "oyun-3",
-        title: "Geometri Tombalası",
+        title: "Geombala",
         grade: "5",
         image: "./geotombala.jpg",
         url: "./tombala.html"
