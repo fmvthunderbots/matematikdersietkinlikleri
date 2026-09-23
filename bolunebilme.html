@@ -545,9 +545,15 @@
       }
     }
 
-    function setQuestion(playerNum) {
-      let div = divisors[Math.floor(Math.random() * divisors.length)];
+        function setQuestion(playerNum) {
+      let current = (playerNum === 1) ? p1.currentDiv : p2.currentDiv;
+      
+      // Mevcut sorudaki sayıyı listeden çıkar ki üst üste AYNISI gelmesin!
+      let availableDivs = divisors.filter(d => d !== current);
+      let div = availableDivs[Math.floor(Math.random() * availableDivs.length)];
+      
       let text = `Hangisi <span style="color:#FDE047; font-size:24px;">${div}</span> ile bölünür?`;
+      
       if(playerNum === 1) {
         p1.currentDiv = div;
         document.getElementById('p1-question').innerHTML = text;
