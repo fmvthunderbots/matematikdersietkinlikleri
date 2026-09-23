@@ -150,7 +150,7 @@
       padding: 36px 32px; text-align: center;
       box-shadow: 0 25px 60px rgba(0,0,0,0.5);
       border: 3px solid rgba(255, 255, 255, 0.9);
-      width: 100%; max-width: 550px; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 100%; max-width: 580px; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -166,7 +166,7 @@
     
     .input-player {
       width: 100%; padding: 14px 18px; font-size: 17px; font-weight: 700;
-      border: 2px solid #CBD5E1; border-radius: 14px; outline: none; text-align: center; margin-bottom: 20px;
+      border: 2px solid #CBD5E1; border-radius: 14px; outline: none; text-align: center;
     }
     .input-player:focus { border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15); }
 
@@ -190,12 +190,12 @@
     .btn-restart { background: linear-gradient(135deg, #4F46E5, #3730A3); color: white; }
 
     /* Lider Tablosu Özel Tasarımı */
-    .leaderboard-card { max-width: 760px; }
+    .leaderboard-card { max-width: 780px; }
     .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-bottom: 20px; }
     .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 8px; }
     .lb-row { background: #F8FAFC; border-radius: 14px; cursor: pointer; transition: transform 0.2s; }
     .lb-row:hover { transform: scale(1.02); }
-    .lb-row td { padding: 14px 12px; font-size: 16px; font-weight: 700; text-align: center; }
+    .lb-row td { padding: 12px 10px; font-size: 15px; font-weight: 700; text-align: center; }
     .lb-row td:first-child { border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
     .lb-row td:last-child { border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
     
@@ -215,7 +215,7 @@
       position: relative; width: 100%; max-width: 500px; border-radius: 28px; padding: 36px 28px;
       text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4); animation: popIn 0.4s; z-index: 201; background: #FFF;
     }
-    .cel-name { font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; margin-bottom: 10px; color: #1E293B; }
+    .cel-name { font-family: 'Baloo 2'; font-size: 36px; font-weight: 900; margin-bottom: 10px; color: #1E293B; }
     .cel-score { font-size: 24px; font-weight: 800; color: #4F46E5; margin-bottom: 20px; }
     .btn-cel-close {
       width: 100%; padding: 15px; border-radius: 16px; border: none; font-family: 'Baloo 2'; font-size: 20px;
@@ -286,8 +286,10 @@
         <button id="btn-mode-2p" class="btn-subtle" onclick="setMode('2P')">👥 İki Kişilik Düello</button>
       </div>
 
-      <div id="1p-form">
-        <input type="text" id="playerName" class="input-player" placeholder="Öğrenci Adını Yazın..." maxlength="20">
+      <!-- AD SOYAD AYRI GİRİŞ ALANLARI -->
+      <div id="1p-form" style="display:flex; gap:10px; margin-bottom: 20px;">
+        <input type="text" id="playerFirstName" class="input-player" placeholder="Ad..." maxlength="15">
+        <input type="text" id="playerLastName" class="input-player" placeholder="Soyad..." maxlength="15">
       </div>
 
       <button class="btn-start" onclick="startGame()">🚀 OYUNA BAŞLA</button>
@@ -307,14 +309,18 @@
         </div>
       </div>
 
-      <div style="background: #F0FDF4; border: 2px solid #86EFAC; border-radius: 16px; padding: 15px; margin-bottom: 20px;">
+      <!-- SKOR KAYDETME ALANI (AD VE SOYAD AYRI) -->
+      <div style="background: #F0FDF4; border: 2px solid #86EFAC; border-radius: 16px; padding: 15px; margin-bottom: 20px;" id="saveRankBox">
         <p style="font-weight: 800; color: #166534; margin-bottom: 10px; font-size: 14px;">📝 Skorunu İlk 10'a Kaydet:</p>
-        <input type="text" id="savePlayerName" class="input-player" style="margin-bottom: 10px;" placeholder="Adınız...">
-        <button class="btn-start" style="padding: 12px; font-size: 20px;" onclick="saveScoreToLeaderboard()">Kaydet</button>
+        <div style="display:flex; gap:10px; margin-bottom: 12px;">
+          <input type="text" id="saveFirstName" class="input-player" placeholder="Adı..." maxlength="15">
+          <input type="text" id="saveLastName" class="input-player" placeholder="Soyadı..." maxlength="15">
+        </div>
+        <button class="btn-start" style="padding: 12px; font-size: 20px;" onclick="saveScoreToLeaderboard()">💾 Skoru Kaydet</button>
       </div>
 
-      <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">İlk 10 Tablosunu Gör</button>
-      <button class="btn-action btn-restart" onclick="showScreen('START')">Yeniden Oyna</button>
+      <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
+      <button class="btn-action btn-restart" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
     </div>
 
     <!-- 2P SONUÇ EKRANI -->
@@ -322,7 +328,7 @@
       <div style="font-size: 70px; margin-bottom: 10px;">⚔️</div>
       <h2 class="start-title" id="winner-title-2p">Kazanan Belli Oldu!</h2>
       <p class="start-subtitle" style="font-size: 36px; font-family: 'Baloo 2'; font-weight: 900; color: #1E293B; margin: 15px 0;" id="winner-score-2p">200 - 150</p>
-      <button class="btn-start" style="margin-top: 20px;" onclick="showScreen('START')">Yeniden Oyna</button>
+      <button class="btn-start" style="margin-top: 20px;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
     </div>
 
     <!-- LİDER TABLOSU EKRANI -->
@@ -333,13 +339,22 @@
       </div>
       <table class="lb-table">
         <thead>
-          <tr><th style="width: 50px;">Sıra</th><th style="text-align: left;">Öğrenci Adı</th><th>Puan</th><th>Tarih</th></tr>
+          <tr>
+            <th style="width: 50px;">Sıra</th>
+            <th style="text-align: left;">Adı Soyadı</th>
+            <th>Puan</th>
+            <th>Tarih</th>
+            <th>Kutla</th>
+          </tr>
         </thead>
         <tbody id="leaderboardBody">
           <!-- JS ile doldurulur -->
         </tbody>
       </table>
       <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. İlk sen ol!</div>
+      
+      <!-- BAŞA DÖN / YENİDEN OYNA BUTONU -->
+      <button class="btn-start" style="margin-top: 15px; padding: 14px; font-size: 20px;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
     </div>
   </div>
 
@@ -376,7 +391,7 @@
 
   <script>
     /* ==============================
-       FİREBASE VE LİDER TABLOSU
+       FİREBASE VE AKILLI LİDER TABLOSU
        ============================== */
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
@@ -406,31 +421,109 @@
       } catch(e) {}
     }
 
+    /* Levenshtein Mesafe Algoritması (Benzer İsim Tespiti) */
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    /* İsim İskeleti (Sesli Harfleri Çıkarıp Karşılaştırma) */
+    function getFuzzyKey(str) {
+      let clean = (str || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, '');
+      let noVowels = clean.replace(/[aeıioöuü]/g, '');
+      return noVowels || clean;
+    }
+
+    function capitalizeName(str) {
+      return (str || '').split(' ').map(w => {
+        if (!w) return '';
+        return w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR');
+      }).join(' ');
+    }
+
+    /* AKILLI TEKİLLEŞTİRME VE EN YÜKSEK SKOR SEÇİMİ */
     function updateLocalLeaderboard(rawEntries) {
-      let groups = new Map();
-      rawEntries.forEach(e => {
-        if(!e || !e.name) return;
-        let key = e.name.trim().replace(/[\s\-_.]+/g, '').toLocaleLowerCase('tr-TR');
-        if(!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(e);
+      let groups = []; // { canonicalName, canonicalNorm, fuzzyKey, items: [] }
+
+      rawEntries.forEach(entry => {
+        if (!entry) return;
+        let fullName = entry.fullName || entry.name || '';
+        if (!fullName.trim()) return;
+
+        let normName = fullName.trim().replace(/\s+/g, ' ');
+        let normLower = normName.toLocaleLowerCase('tr-TR');
+        let fuzzyKey = getFuzzyKey(normName);
+
+        let foundGroup = null;
+        for (let g of groups) {
+          if (g.fuzzyKey === fuzzyKey) {
+            foundGroup = g;
+            break;
+          }
+          let dist = levenshtein(g.canonicalNorm, normLower);
+          if (dist <= 2 && Math.abs(g.canonicalNorm.length - normLower.length) <= 2) {
+            foundGroup = g;
+            break;
+          }
+        }
+
+        if (foundGroup) {
+          foundGroup.items.push(entry);
+          if (normName.length > foundGroup.canonicalName.length) {
+            foundGroup.canonicalName = normName;
+          }
+        } else {
+          groups.push({
+            canonicalName: normName,
+            canonicalNorm: normLower,
+            fuzzyKey: fuzzyKey,
+            items: [entry]
+          });
+        }
       });
 
       let bestList = [];
-      groups.forEach(items => {
-        items.sort((a,b) => b.score - a.score);
-        bestList.push(items[0]);
+      groups.forEach(g => {
+        g.items.sort((a, b) => b.score - a.score);
+        let best = g.items[0];
+        best.displayName = capitalizeName(g.canonicalName);
+        bestList.push(best);
       });
 
-      bestList.sort((a,b) => b.score - a.score);
+      bestList.sort((a, b) => b.score - a.score);
       let top10 = bestList.slice(0, 10);
       localStorage.setItem('meb_bolunebilme_top10', JSON.stringify(top10));
       renderLeaderboard();
     }
 
     function saveScoreToLeaderboard() {
-      let name = document.getElementById('savePlayerName').value.trim() || 'Öğrenci';
+      let fn = document.getElementById('saveFirstName').value.trim();
+      let ln = document.getElementById('saveLastName').value.trim();
+      let fullName = (fn + " " + ln).trim() || 'Öğrenci';
+      
       let entry = {
-        name: name,
+        firstName: fn,
+        lastName: ln,
+        name: fullName,
+        fullName: fullName,
         score: p1.score,
         date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
         timestamp: Date.now()
@@ -444,7 +537,7 @@
         });
       }
       document.getElementById('saveRankBox').style.display = 'none';
-      showScreen('LEADERBOARD');
+      showScreen('LEADERBOARD'); // Skoru kaydedince doğrudan Lider Tablosunu aç
     }
 
     function renderLeaderboard() {
@@ -463,12 +556,18 @@
         tr.className = `lb-row rank-${idx+1}`;
         let rankStr = idx < 3 ? medals[idx] : `${idx+1}.`;
         
-        tr.onclick = () => openCelebration(e, idx+1);
+        let nameToShow = e.displayName || e.fullName || e.name || 'Öğrenci';
+        let safeName = nameToShow.replace(/'/g, "\\'");
+        
+        tr.onclick = () => openCelebration({name: nameToShow, score: e.score}, idx+1);
         tr.innerHTML = `
           <td><span style="font-size:20px;">${rankStr}</span></td>
-          <td style="text-align:left; font-weight:800;">${e.name}</td>
+          <td style="text-align:left; font-weight:800;">${nameToShow}</td>
           <td style="color:#4F46E5; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
           <td style="color:#94A3B8; font-size:14px;">${e.date || '-'}</td>
+          <td>
+            <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px; background: #FEF3C7; color: #92400E; border-color: #F59E0B;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -503,6 +602,8 @@
     let p1 = { score: 0, currentDiv: 2 };
     let p2 = { score: 0, currentDiv: 2 };
     const divisors = [2, 3, 4, 5, 6, 9, 10];
+    let currentFirstName = '';
+    let currentLastName = '';
 
     function initRain() {
       let rc = document.getElementById('rain-container');
@@ -522,7 +623,7 @@
       gameMode = mode;
       document.getElementById('btn-mode-1p').className = (mode === '1P') ? 'btn-subtle active' : 'btn-subtle';
       document.getElementById('btn-mode-2p').className = (mode === '2P') ? 'btn-subtle active' : 'btn-subtle';
-      document.getElementById('1p-form').style.display = (mode === '1P') ? 'block' : 'none';
+      document.getElementById('1p-form').style.display = (mode === '1P') ? 'flex' : 'none';
     }
 
     function showScreen(screenId) {
@@ -546,8 +647,6 @@
 
     function setQuestion(playerNum) {
       let current = (playerNum === 1) ? p1.currentDiv : p2.currentDiv;
-      
-      // Mevcut kuralı listeden çıkar, her zaman YENİ bir kural seç
       let availableDivs = divisors.filter(d => d !== current);
       let div = availableDivs[Math.floor(Math.random() * availableDivs.length)];
       
@@ -567,7 +666,9 @@
     }
 
     function startGame() {
-      let name = document.getElementById('playerName').value.trim() || 'Öğrenci';
+      currentFirstName = document.getElementById('playerFirstName').value.trim();
+      currentLastName = document.getElementById('playerLastName').value.trim();
+      let name = (currentFirstName + " " + currentLastName).trim() || 'Öğrenci';
       
       showScreen('GAME');
       document.getElementById('game-area').innerHTML = '';
@@ -625,7 +726,6 @@
       return num;
     }
 
-    /* Puan Havaya Uçma Animasyonu (PRO Efekt) */
     function showFloatingText(x, y, text, color) {
       let ft = document.createElement('div');
       ft.innerText = text;
@@ -764,7 +864,8 @@
       if(gameMode === '1P') {
         document.getElementById('resultScreen1P').style.display = 'block';
         document.getElementById('finalScore1P').innerText = p1.score;
-        document.getElementById('savePlayerName').value = document.getElementById('playerName').value;
+        document.getElementById('saveFirstName').value = currentFirstName;
+        document.getElementById('saveLastName').value = currentLastName;
         document.getElementById('saveRankBox').style.display = 'block';
       } else {
         document.getElementById('resultScreen2P').style.display = 'block';
