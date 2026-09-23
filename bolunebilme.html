@@ -28,7 +28,10 @@
       min-height: 100vh;
       overflow: hidden;
       color: #1E293B;
-      background: linear-gradient(to bottom, #2C3E50 0%, #34495E 40%, #4A6265 100%);
+      /* Özel resim ve üzerine okunaklılık için hafif koyu lacivert degrade */
+      background: linear-gradient(to bottom, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.85)), url('bg.jpg');
+      background-size: cover;
+      background-position: center;
       position: relative;
     }
 
@@ -56,7 +59,7 @@
     .hud-side.right { justify-content: flex-end; }
     
     .team-box {
-      background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px);
       border-radius: 16px; padding: 10px 20px; text-align: center;
       border: 2px solid; min-width: 220px;
     }
@@ -75,13 +78,13 @@
       font-family: 'Baloo 2'; font-size: 32px; font-weight: 800; 
       background: rgba(255,255,255,0.95); color: #0F172A; 
       padding: 5px 22px; border-radius: 12px; border: 3px solid #E2E8F0;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     }
 
     #timer-box {
       background: rgba(255, 255, 255, 0.95); border: 3px solid #E2E8F0;
       border-radius: 16px; padding: 10px 25px; text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3); min-width: 120px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 120px;
     }
     .timer-val { font-family: 'Baloo 2'; font-size: 36px; font-weight: 800; color: #1E293B; line-height: 1; }
     .timer-label { font-size: 13px; font-weight: 800; color: #64748B; }
@@ -107,9 +110,10 @@
     .falling-item span {
       font-size: 24px; font-family: 'Baloo 2', sans-serif; font-weight: 900;
       color: #FFF; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
-      background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 10px;
+      background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 10px;
     }
 
+    /* Patlama ve Yanlış Animasyonları (PRO YENİ) */
     @keyframes swayFall {
       0% { transform: translate(0, 0) rotate(-15deg); }
       25% { transform: translate(30px, 25vh) rotate(15deg); }
@@ -120,6 +124,19 @@
     @keyframes dropFall {
       0% { transform: translate(0, -50px); }
       100% { transform: translate(0, 115vh); }
+    }
+    @keyframes correctPop {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      50% { transform: scale(1.4) rotate(15deg); opacity: 0.8; filter: brightness(1.5) drop-shadow(0 0 20px #10B981); }
+      100% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    }
+    @keyframes wrongShake {
+      0% { transform: translateX(0) scale(1); filter: grayscale(0); }
+      20% { transform: translateX(-15px) scale(1.1); filter: grayscale(1); }
+      40% { transform: translateX(15px) scale(1.1); filter: grayscale(1); }
+      60% { transform: translateX(-15px) scale(1.1); filter: grayscale(1); }
+      80% { transform: translateX(15px) scale(1.1); filter: grayscale(1); }
+      100% { transform: translateY(60px) scale(0); opacity: 0; }
     }
 
     /* Menü Katmanı ve Kartlar */
@@ -132,7 +149,7 @@
     .card {
       background: rgba(255, 255, 255, 0.97); border-radius: var(--radius-lg);
       padding: 36px 32px; text-align: center;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
       border: 3px solid rgba(255, 255, 255, 0.9);
       width: 100%; max-width: 550px; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -205,6 +222,16 @@
       width: 100%; padding: 15px; border-radius: 16px; border: none; font-family: 'Baloo 2'; font-size: 20px;
       font-weight: 800; cursor: pointer; color: #FFF; background: linear-gradient(135deg, #4F46E5, #3730A3);
     }
+
+    .btn-endgame {
+      position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%);
+      background: #EF4444; color: white; border: 2px solid #FFF; padding: 6px 16px;
+      border-radius: 12px; font-family: 'Baloo 2'; font-weight: 800; font-size: 15px;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap;
+      transition: transform 0.2s, background 0.2s; z-index: 50;
+    }
+    .btn-endgame:hover { background: #DC2626; transform: translateX(-50%) scale(1.05); }
+    .btn-endgame:active { transform: translateX(-50%) scale(0.95); }
   </style>
 </head>
 <body>
@@ -223,9 +250,11 @@
       <div id="p1-score" class="score-display">0</div>
     </div>
 
-    <div id="timer-box">
-      <div id="timer" class="timer-val">60s</div>
+    <!-- Zamanlayıcı ve Oyunu Bitir Butonu -->
+    <div id="timer-box" style="position: relative;">
+      <div id="timer" class="timer-val">90s</div>
       <div class="timer-label">SÜRE</div>
+      <button class="btn-endgame" onclick="endGame()">⏹️ Bitir</button>
     </div>
 
     <div class="hud-side right" id="hud-right" style="display: none;">
@@ -245,7 +274,11 @@
   <div class="app-overlay" id="app-overlay">
     
     <!-- BAŞLANGIÇ EKRANI -->
-    <div class="card" id="startScreen">
+    <div class="card" id="startScreen" style="position: relative;">
+      
+      <!-- AYARLAR TUŞU -->
+      <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
+      
       <h1 class="start-title">🍂 Sonbahar Yağmuru 🌧️</h1>
       <p class="start-subtitle">6. Sınıf Bölünebilme Kuralları Yarışması</p>
       
@@ -265,7 +298,7 @@
     <!-- 1P SONUÇ EKRANI -->
     <div class="card" id="resultScreen1P" style="display:none;">
       <div style="font-size: 60px; margin-bottom: 10px;">🏆</div>
-      <h2 class="start-title">Süre Doldu!</h2>
+      <h2 class="start-title">Oyun Bitti!</h2>
       <p class="start-subtitle">Bölünebilme kurallarında fırtına gibi estin!</p>
       
       <div class="score-summary-grid">
@@ -311,7 +344,7 @@
     </div>
   </div>
 
-  <!-- KUTLAMA MODALI (Lider Tablosu Tıklama) -->
+  <!-- KUTLAMA MODALI -->
   <div class="celebration-modal" id="celebrationModal">
     <div class="celebration-backdrop" onclick="closeCelebration()"></div>
     <div class="celebration-card" id="celebrationCard">
@@ -319,6 +352,26 @@
       <div class="cel-name" id="celName">Öğrenci</div>
       <div class="cel-score" id="celScore">0 Puan</div>
       <button class="btn-cel-close" onclick="closeCelebration()">👏 Alkışla ve Kapat</button>
+    </div>
+  </div>
+
+  <!-- AYARLAR MODALI -->
+  <div class="celebration-modal" id="settingsModal">
+    <div class="celebration-backdrop" onclick="closeSettings()"></div>
+    <div class="celebration-card" style="padding: 30px;">
+      <h2 class="start-title" style="font-size: 28px; margin-bottom: 20px;">⚙️ Ayarlar</h2>
+      
+      <div id="authSection">
+        <input type="password" id="adminPassword" class="input-player" placeholder="Yönetici Şifresi" style="margin-bottom: 15px;">
+        <button class="btn-start" style="font-size: 18px; padding: 12px;" onclick="checkAdminPassword()">Giriş Yap</button>
+      </div>
+
+      <div id="adminSection" style="display: none;">
+        <p style="margin-bottom: 15px; font-weight: 700; color: #475569;">Yönetici paneline hoş geldiniz.</p>
+        <button class="btn-start" style="font-size: 18px; padding: 12px; background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
+      </div>
+
+      <button class="btn-subtle" style="margin-top: 20px; width: 100%;" onclick="closeSettings()">Kapat</button>
     </div>
   </div>
 
@@ -355,7 +408,6 @@
     }
 
     function updateLocalLeaderboard(rawEntries) {
-      // Tekilleştirme mantığı
       let groups = new Map();
       rawEntries.forEach(e => {
         if(!e || !e.name) return;
@@ -447,7 +499,7 @@
     let gameMode = '1P';
     let isGameRunning = false;
     let timerInterval, gameInterval;
-    let timeLeft = 60;
+    let timeLeft = 90;
     
     let p1 = { score: 0, currentDiv: 2 };
     let p2 = { score: 0, currentDiv: 2 };
@@ -533,7 +585,7 @@
       if(gameMode === '2P') setQuestion(2);
 
       isGameRunning = true;
-      timeLeft = 60;
+      timeLeft = 90;
       document.getElementById('timer').innerText = timeLeft + 's';
       
       timerInterval = setInterval(() => {
@@ -569,10 +621,73 @@
       return num;
     }
 
+    /* Puan Havaya Uçma Animasyonu (PRO Efekt) */
+    function showFloatingText(x, y, text, color) {
+      let ft = document.createElement('div');
+      ft.innerText = text;
+      ft.style.position = 'fixed';
+      ft.style.left = x + 'px';
+      ft.style.top = y + 'px';
+      ft.style.color = color;
+      ft.style.fontSize = '36px';
+      ft.style.fontWeight = '900';
+      ft.style.fontFamily = "'Baloo 2', sans-serif";
+      ft.style.textShadow = '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000';
+      ft.style.zIndex = '999';
+      ft.style.pointerEvents = 'none';
+      ft.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      document.body.appendChild(ft);
+      
+      // CSS Tetiklemesi
+      ft.getBoundingClientRect();
+      ft.style.transform = 'translate(-50%, -80px) scale(1.5)';
+      ft.style.opacity = '0';
+      
+      setTimeout(() => ft.remove(), 800);
+    }
+
+    function popEffect(element, isCorrect) {
+      let rect = element.getBoundingClientRect();
+      let centerX = rect.left + rect.width / 2;
+      
+      let effectDiv = document.createElement('div');
+      effectDiv.className = 'falling-item';
+      effectDiv.style.position = 'fixed';
+      effectDiv.style.left = rect.left + 'px';
+      effectDiv.style.top = rect.top + 'px';
+      effectDiv.style.width = rect.width + 'px';
+      effectDiv.style.height = rect.height + 'px';
+      effectDiv.style.zIndex = '999';
+      effectDiv.setAttribute('data-icon', element.getAttribute('data-icon'));
+      effectDiv.style.animation = 'none'; // Aşağı düşmeyi durdur
+      
+      let span = document.createElement('span');
+      span.style.background = "transparent";
+      span.style.fontSize = "50px";
+      span.style.textShadow = "none";
+      
+      if (isCorrect) {
+        span.innerHTML = "✨";
+        effectDiv.style.animation = "correctPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards";
+        showFloatingText(centerX, rect.top, "+20", "#10B981");
+      } else {
+        span.innerHTML = "❌";
+        effectDiv.style.animation = "wrongShake 0.5s ease-in forwards";
+        showFloatingText(centerX, rect.top, "-5", "#EF4444");
+      }
+      
+      effectDiv.appendChild(span);
+      document.body.appendChild(effectDiv);
+      
+      element.remove(); // Eskisini hemen sil
+      setTimeout(() => effectDiv.remove(), 600);
+    }
+
     function createSingleObject(side) {
       if(!isGameRunning) return;
       let obj = document.createElement('div');
       obj.className = 'falling-item';
+      obj.dataset.side = side;
       
       let isLeft = (side === 'left');
       let isAny = (side === 'any');
@@ -611,8 +726,16 @@
           player.score += 20;
           popEffect(this, true);
           setQuestion(player === p1 ? 1 : 2);
+          
+          let sideToRemove = (gameMode === '1P') ? 'any' : (player === p1 ? 'left' : 'right');
+          document.querySelectorAll('.falling-item').forEach(item => {
+            if (item.dataset.side === sideToRemove && !item.classList.contains('popping')) {
+               item.remove();
+            }
+          });
+
         } else {
-          player.score = Math.max(0, player.score - 5);
+          player.score -= 5; // Puan kaybetme devrede! (Eksiye de düşebilir)
           popEffect(this, false);
         }
         updateScores();
@@ -623,23 +746,6 @@
       obj.addEventListener('animationend', function() { if(this.parentNode) this.parentNode.removeChild(this); });
       
       document.getElementById('game-area').appendChild(obj);
-    }
-
-    function popEffect(element, isCorrect) {
-      let clone = element.cloneNode(true);
-      element.parentNode.replaceChild(clone, element);
-      clone.style.animation = "none";
-      if (isCorrect) {
-        clone.style.transform = "scale(1.5)";
-        clone.style.opacity = "0";
-        clone.style.transition = "all 0.3s ease-out";
-        clone.style.filter = "brightness(2) drop-shadow(0 0 20px #10B981)";
-      } else {
-        clone.innerHTML = "<span style='font-size: 50px; text-shadow:none; background:transparent;'>❌</span>";
-        clone.style.transition = "all 0.3s ease-out";
-        clone.style.opacity = "0";
-      }
-      setTimeout(() => { if(clone.parentNode) clone.parentNode.removeChild(clone); }, 300);
     }
 
     function endGame() {
@@ -701,6 +807,51 @@
       requestAnimationFrame(animateConfetti);
     }
     animateConfetti();
+
+    /* ==============================
+       AYARLAR VE SIFIRLAMA
+       ============================== */
+    function openSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      
+      if (localStorage.getItem('isAdmin_bolunebilme') === 'true') {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+      }
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function checkAdminPassword() {
+      const pwd = document.getElementById('adminPassword').value;
+      if (pwd === '26575982824.bati') {
+        localStorage.setItem('isAdmin_bolunebilme', 'true');
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        alert('Hatalı şifre! Lütfen tekrar deneyin.');
+      }
+    }
+
+    function clearLeaderboard() {
+      if (confirm('Tüm lider tablosu hem veritabanından hem de bu cihazdan kalıcı olarak silinecek. Emin misiniz?')) {
+        if (cloudDb) {
+          cloudDb.ref(DB_NODE).remove();
+        } else {
+          fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'DELETE' });
+        }
+        localStorage.removeItem('meb_bolunebilme_top10');
+        renderLeaderboard();
+        alert('Lider tablosu başarıyla sıfırlandı.');
+        closeSettings();
+      }
+    }
   </script>
 </body>
 </html>
