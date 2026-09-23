@@ -22,6 +22,13 @@ const SISTEM_OYUNLARI = [
         grade: "5",
         image: "./geotombala.jpg",
         url: "./tombala.html"
+    },
+    {
+        id: "oyun-4",
+        title: "Bölünebilme",
+        grade: "6",
+        image: "./bolunebilme.jpg",
+        url: "./bolunebilme.html"
     }
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
