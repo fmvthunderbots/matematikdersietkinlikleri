@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bölünebilme Düellosu</title>
+  <title>Bölünebilme Yağmuru - Öğretmen Versiyonu</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,6 @@
       min-height: 100vh;
       overflow: hidden;
       color: #1E293B;
-      /* Özel resim ve üzerine okunaklılık için hafif koyu lacivert degrade */
       background: linear-gradient(to bottom, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.85)), url('bg.jpg');
       background-size: cover;
       background-position: center;
@@ -95,7 +94,7 @@
       transform: translateX(-50%); z-index: 0; display: none;
     }
 
-    /* Düşen Nesneler (Yaprak / Damla) */
+    /* Düşen Nesneler */
     #game-area { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
     
     .falling-item {
@@ -113,7 +112,7 @@
       background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 10px;
     }
 
-    /* Patlama ve Yanlış Animasyonları (PRO YENİ) */
+    /* Patlama ve Yanlış Animasyonları */
     @keyframes swayFall {
       0% { transform: translate(0, 0) rotate(-15deg); }
       25% { transform: translate(30px, 25vh) rotate(15deg); }
@@ -275,9 +274,11 @@
     
     <!-- BAŞLANGIÇ EKRANI -->
     <div class="card" id="startScreen" style="position: relative;">
-    
       
-      <h1 class="start-title">🍂 Bölünebilme Yağmuru 🌧️</h1>
+      <!-- AYARLAR TUŞU (SADECE ÖĞRETMEN VERSİYONUNDA) -->
+      <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
+      
+      <h1 class="start-title">🌧️ Bölünebilme Yağmuru 🍂</h1>
       <p class="start-subtitle">6. Sınıf Bölünebilme Kuralları Yarışması</p>
       
       <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 20px;">
@@ -543,15 +544,14 @@
       }
     }
 
-        function setQuestion(playerNum) {
+    function setQuestion(playerNum) {
       let current = (playerNum === 1) ? p1.currentDiv : p2.currentDiv;
       
-      // Mevcut sorudaki sayıyı listeden çıkar ki üst üste AYNISI gelmesin!
+      // Mevcut kuralı listeden çıkar, her zaman YENİ bir kural seç
       let availableDivs = divisors.filter(d => d !== current);
       let div = availableDivs[Math.floor(Math.random() * availableDivs.length)];
       
       let text = `Hangisi <span style="color:#FDE047; font-size:24px;">${div}</span> ile bölünür?`;
-      
       if(playerNum === 1) {
         p1.currentDiv = div;
         document.getElementById('p1-question').innerHTML = text;
@@ -642,7 +642,6 @@
       ft.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
       document.body.appendChild(ft);
       
-      // CSS Tetiklemesi
       ft.getBoundingClientRect();
       ft.style.transform = 'translate(-50%, -80px) scale(1.5)';
       ft.style.opacity = '0';
@@ -663,7 +662,7 @@
       effectDiv.style.height = rect.height + 'px';
       effectDiv.style.zIndex = '999';
       effectDiv.setAttribute('data-icon', element.getAttribute('data-icon'));
-      effectDiv.style.animation = 'none'; // Aşağı düşmeyi durdur
+      effectDiv.style.animation = 'none';
       
       let span = document.createElement('span');
       span.style.background = "transparent";
@@ -683,7 +682,7 @@
       effectDiv.appendChild(span);
       document.body.appendChild(effectDiv);
       
-      element.remove(); // Eskisini hemen sil
+      element.remove();
       setTimeout(() => effectDiv.remove(), 600);
     }
 
@@ -698,7 +697,7 @@
       let leftPos = isAny ? (Math.random() * 80 + 10) : (isLeft ? (Math.random() * 40 + 5) : (Math.random() * 40 + 55));
       obj.style.left = leftPos + '%';
       
-      let speed = Math.floor(Math.random() * 4) + 6; // 6-9s
+      let speed = Math.floor(Math.random() * 4) + 6;
       let icons = ['🍂', '🍁', '💧'];
       let icon = icons[Math.floor(Math.random() * icons.length)];
       obj.setAttribute('data-icon', icon);
@@ -739,7 +738,7 @@
           });
 
         } else {
-          player.score -= 5; // Puan kaybetme devrede! (Eksiye de düşebilir)
+          player.score -= 5;
           popEffect(this, false);
         }
         updateScores();
