@@ -140,7 +140,7 @@
             z-index: 10;
         }
 
-        /* BİLDİRİM YERİ (Tam Olarak Başlık ile Takımlar Arasında) */
+        /* BİLDİRİM YERİ */
         .toast {
             position: absolute;
             top: 4px;
@@ -173,7 +173,6 @@
 </head>
 <body class="p-2 relative flex flex-col justify-center items-center h-screen">
 
-    <!-- SOL ÜST BUTONLAR (Kapatma tuşuyla çakışmasın diye sola alındı) -->
     <div class="absolute top-4 left-4 flex gap-2 z-20">
         <button id="btn-last-round" onclick="triggerLastRound()" class="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 border-b-4 border-yellow-600 font-bold py-2 px-4 rounded-xl shadow-lg transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-lg font-baloo flex items-center gap-2">
             ⏳ SON TUR
@@ -201,7 +200,6 @@
             </p>
         </div>
 
-        <!-- BİLDİRİM (TOAST) ALANI -->
         <div class="relative w-full flex justify-center z-50" style="height: 0;">
             <div id="toast" class="toast font-baloo"></div>
         </div>
@@ -224,7 +222,7 @@
             <input type="text" id="modal-input" class="w-full p-3 rounded-xl text-gray-800 text-xl text-center font-bold mb-4 outline-none border-4 border-gray-300 focus:border-blue-500 transition-colors bg-white shadow-inner" placeholder="Cevabını Yaz..." autocomplete="off">
             
             <button onclick="submitAnswer()" class="w-full bg-green-500 hover:bg-green-400 text-white text-xl font-bold py-3 rounded-xl shadow-lg border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all font-baloo tracking-widest">
-                ÖĞRETMENE GÖSTER 🙋‍♂️
+                ÖĞRETMENE GÖSTER 🙋♂️
             </button>
         </div>
     </div>
@@ -242,69 +240,164 @@
     </div>
 
 <script>
-    // 6. Sınıf Çarpanlar ve Katlar (1. Kazanım) 60 Soruluk Geniş Soru Havuzu
-    const questionsData = [
-      { q: "12 sayısının en büyük çarpanı ile en küçük çarpanının toplamı kaçtır?", a: "13", p: 20 },
-      { q: "24 sayısının kaç tane çarpanı vardır?", a: "8", p: 25 },
-      { q: "15 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "5", p: 15 },
-      { q: "18 sayısının çarpanlarından kaç tanesi tek sayıdır?", a: "3", p: 25 },
-      { q: "45 sayısının en büyük böleni ile en küçük böleninin farkı kaçtır?", a: "44", p: 20 },
-      { q: "50 sayısının çarpanları arasında 5'in katı olan kaç sayı vardır?", a: "4", p: 30 },
-      { q: "28 sayısının kendisi hariç çarpanlarının toplamı kaçtır?", a: "28", p: 30 },
-      { q: "100 sayısının en büyük böleni kaçtır?", a: "100", p: 10 },
-      { q: "48 sayısının kaç tane böleni vardır?", a: "10", p: 30 },
-      { q: "20 sayısının bölenlerinin toplamı kaçtır?", a: "42", p: 30 },
-      { q: "'1' sayısı tüm doğal sayıların ortak nesidir? (Tek kelimeyle yazın)", a: "çarpanı", p: 15 },
-      { q: "81 sayısının kaç tane böleni vardır?", a: "5", p: 25 },
-      { q: "25 sayısının bölenlerinin toplamı kaçtır?", a: "31", p: 25 },
-      { q: "18 sayısının 100'den büyük en küçük katı kaçtır?", a: "108", p: 35 },
-      { q: "8 sayısının 90'dan küçük en büyük katı kaçtır?", a: "88", p: 35 },
-      { q: "15 sayısının iki basamaklı en büyük katı kaçtır?", a: "90", p: 25 },
-      { q: "12 sayısının iki basamaklı en küçük katı kaçtır?", a: "12", p: 15 },
-      { q: "14 sayısının 50 ile 80 arasındaki en büyük katı kaçtır?", a: "70", p: 30 },
-      { q: "16 sayısının 3 basamaklı en küçük katı kaçtır?", a: "112", p: 35 },
-      { q: "7 sayısının 50'den küçük kaç tane katı vardır?", a: "7", p: 30 },
-      { q: "36 sayısının kaç tane çarpanı vardır?", a: "9", p: 25 },
-      { q: "36 sayısının tek olan çarpanlarının toplamı kaçtır?", a: "13", p: 30 },
-      { q: "40 sayısının çift olan çarpanlarının sayısı kaçtır?", a: "6", p: 30 },
-      { q: "30 sayısının kendisi hariç en büyük böleni kaçtır?", a: "15", p: 20 },
-      { q: "32 sayısının kaç tane böleni vardır?", a: "6", p: 20 },
-      { q: "21 sayısının çarpanlarının toplamı kaçtır?", a: "32", p: 25 },
-      { q: "9 sayısının 100'den küçük en büyük katı kaçtır?", a: "99", p: 20 },
-      { q: "13 sayısının 50'den büyük en küçük katı kaçtır?", a: "52", p: 30 },
-      { q: "25 sayısının 3 basamaklı en küçük katı kaçtır?", a: "100", p: 20 },
-      { q: "6 sayısının 40 ile 70 arasındaki en küçük katı kaçtır?", a: "42", p: 30 },
-      { q: "6 sayısının 40 ile 70 arasındaki en büyük katı kaçtır?", a: "66", p: 30 },
-      { q: "64 sayısının kaç tane böleni vardır?", a: "7", p: 30 },
-      { q: "54 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "27", p: 25 },
-      { q: "50 sayısının en küçük böleni kaçtır?", a: "1", p: 10 },
-      { q: "75 sayısının en büyük çarpanı ile en küçük çarpanının farkı kaçtır?", a: "74", p: 20 },
-      { q: "11 sayısının iki basamaklı en büyük katı kaçtır?", a: "99", p: 15 },
-      { q: "22 sayısının kaç tane böleni vardır?", a: "4", p: 20 },
-      { q: "42 sayısının çarpanlarından kaç tanesi 3'ün katıdır?", a: "4", p: 35 },
-      { q: "16 sayısının tüm çarpanlarının toplamı kaçtır?", a: "31", p: 25 },
-      { q: "17 sayısının kaç tane böleni vardır?", a: "2", p: 15 },
-      { q: "23 sayısının en büyük böleni ile en küçük böleninin toplamı kaçtır?", a: "24", p: 20 },
-      { q: "19 sayısının 100'den küçük en büyük katı kaçtır?", a: "95", p: 30 },
-      { q: "24 sayısının 50'den büyük en küçük katı kaçtır?", a: "72", p: 25 },
-      { q: "45 sayısının kaç tane çarpanı vardır?", a: "6", p: 25 },
-      { q: "60 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "30", p: 20 },
-      { q: "60 sayısının kaç tane böleni vardır?", a: "12", p: 35 },
-      { q: "70 sayısının çarpanlarından kaç tanesi 10'un katıdır?", a: "2", p: 30 },
-      { q: "80 sayısının kendisi hariç en büyük böleni kaçtır?", a: "40", p: 20 },
-      { q: "90 sayısının 200'den küçük en büyük katı kaçtır?", a: "180", p: 25 },
-      { q: "15 sayısının 70 ile 110 arasındaki katlarının sayısı kaçtır?", a: "3", p: 35 },
-      { q: "8 sayısının 60 ile 100 arasındaki en küçük katı kaçtır?", a: "64", p: 25 },
-      { q: "8 sayısının 60 ile 100 arasındaki en büyük katı kaçtır?", a: "96", p: 25 },
-      { q: "9 sayısının iki basamaklı kaç tane katı vardır?", a: "10", p: 40 },
-      { q: "35 sayısının bölenlerinin toplamı kaçtır?", a: "48", p: 25 },
-      { q: "10 sayısının 3 basamaklı en küçük katı kaçtır?", a: "100", p: 15 },
-      { q: "40 sayısının en büyük böleni ile en küçük böleninin toplamı kaçtır?", a: "41", p: 20 },
-      { q: "27 sayısının çarpanlarının sayısı kaçtır?", a: "4", p: 20 },
-      { q: "12 sayısının 50'den küçük kaç tane katı vardır?", a: "4", p: 25 },
-      { q: "16 sayısının kendisi hariç en büyük çarpanı kaçtır?", a: "8", p: 15 },
-      { q: "50 sayısının çarpanlarının toplamı kaçtır?", a: "93", p: 30 }
-    ];
+    // DİNAMİK SORU ÜRETİCİ (Her seferinde farklı sayılarla yepyeni sorular oluşturur)
+    function generateQuestionsPool() {
+        let pool = [];
+        
+        function getDivisors(n) {
+            let divs = [];
+            for (let i = 1; i <= n; i++) {
+                if (n % i === 0) divs.push(i);
+            }
+            return divs;
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Soru Tipi 1: X sayısının en büyük çarpanı ile en küçük çarpanının toplamı/farkı
+        for (let i = 0; i < 25; i++) {
+            let n = getRandomInt(12, 120);
+            let op = Math.random() > 0.5 ? "toplamı" : "farkı";
+            let divs = getDivisors(n);
+            let ans = op === "toplamı" ? divs[divs.length - 1] + divs[0] : divs[divs.length - 1] - divs[0];
+            pool.push({ q: `${n} sayısının en büyük çarpanı ile en küçük çarpanının ${op} kaçtır?`, a: String(ans), p: 20 });
+        }
+
+        // Soru Tipi 2: X sayısının kaç tane çarpanı/böleni vardır?
+        for (let i = 0; i < 25; i++) {
+            let n = getRandomInt(15, 100);
+            let term = Math.random() > 0.5 ? "çarpanı" : "böleni";
+            let ans = getDivisors(n).length;
+            pool.push({ q: `${n} sayısının kaç tane ${term} vardır?`, a: String(ans), p: 25 });
+        }
+
+        // Soru Tipi 3: X sayısının kendisi hariç en büyük çarpanı kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let n;
+            let divs = [];
+            do {
+                n = getRandomInt(12, 100);
+                divs = getDivisors(n);
+            } while (divs.length <= 2);
+            let term = Math.random() > 0.5 ? "çarpanı" : "böleni";
+            let ans = divs[divs.length - 2];
+            pool.push({ q: `${n} sayısının kendisi hariç en büyük ${term} kaçtır?`, a: String(ans), p: 15 });
+        }
+
+        // Soru Tipi 4: X sayısının çarpanlarından kaç tanesi tek/çift sayıdır?
+        for (let i = 0; i < 25; i++) {
+            let n = getRandomInt(20, 100);
+            let divs = getDivisors(n);
+            let isEven = Math.random() > 0.5;
+            let count = divs.filter(d => isEven ? d % 2 === 0 : d % 2 !== 0).length;
+            let term = isEven ? "çift" : "tek";
+            pool.push({ q: `${n} sayısının çarpanlarından kaç tanesi ${term} sayıdır?`, a: String(count), p: 25 });
+        }
+
+        // Soru Tipi 5: X sayısının çarpanları arasında Y'nin katı olan kaç sayı vardır?
+        let possibleN = [30, 40, 45, 50, 60, 72, 80, 90, 96, 100];
+        for (let i = 0; i < 20; i++) {
+            let n = possibleN[getRandomInt(0, possibleN.length - 1)];
+            let divs = getDivisors(n);
+            let possibleY = [2, 3, 4, 5, 6, 10].filter(y => n % y === 0);
+            if (possibleY.length === 0) continue;
+            let y = possibleY[getRandomInt(0, possibleY.length - 1)];
+            let count = divs.filter(d => d % y === 0).length;
+            pool.push({ q: `${n} sayısının çarpanları arasında ${y}'nin katı olan kaç sayı vardır?`, a: String(count), p: 30 });
+        }
+
+        // Soru Tipi 6: X sayısının bölenlerinin toplamı kaçtır?
+        for (let i = 0; i < 20; i++) {
+            let n = getRandomInt(10, 40);
+            let sum = getDivisors(n).reduce((a, b) => a + b, 0);
+            pool.push({ q: `${n} sayısının bölenlerinin toplamı kaçtır?`, a: String(sum), p: 30 });
+        }
+
+        // Soru Tipi 7: X sayısının kendisi hariç çarpanlarının toplamı kaçtır?
+        for (let i = 0; i < 20; i++) {
+            let n = getRandomInt(12, 40);
+            let divs = getDivisors(n);
+            divs.pop();
+            let sum = divs.reduce((a, b) => a + b, 0);
+            pool.push({ q: `${n} sayısının kendisi hariç çarpanlarının toplamı kaçtır?`, a: String(sum), p: 30 });
+        }
+
+        // Soru Tipi 8: X sayısının Y'den küçük en büyük katı kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let x = getRandomInt(6, 25);
+            let y = getRandomInt(80, 150);
+            let ans = Math.floor((y - 1) / x) * x;
+            if (ans > 0) pool.push({ q: `${x} sayısının ${y}'den küçük en büyük katı kaçtır?`, a: String(ans), p: 35 });
+        }
+
+        // Soru Tipi 9: X sayısının Y'den büyük en küçük katı kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let x = getRandomInt(6, 25);
+            let y = getRandomInt(50, 120);
+            let ans = Math.floor(y / x + 1) * x;
+            pool.push({ q: `${x} sayısının ${y}'den büyük en küçük katı kaçtır?`, a: String(ans), p: 35 });
+        }
+
+        // Soru Tipi 10: X sayısının iki basamaklı en büyük/küçük katı kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let x = getRandomInt(6, 40);
+            let isMax = Math.random() > 0.5;
+            if (isMax) {
+                let ans = Math.floor(99 / x) * x;
+                if (ans >= 10) pool.push({ q: `${x} sayısının iki basamaklı en büyük katı kaçtır?`, a: String(ans), p: 25 });
+            } else {
+                let ans = Math.floor((10 + x - 1) / x) * x;
+                if (ans < 100) pool.push({ q: `${x} sayısının iki basamaklı en küçük katı kaçtır?`, a: String(ans), p: 15 });
+            }
+        }
+
+        // Soru Tipi 11: X sayısının 3 basamaklı en küçük katı kaçtır?
+        for (let i = 0; i < 20; i++) {
+            let x = getRandomInt(7, 40);
+            let ans = Math.floor((100 + x - 1) / x) * x;
+            pool.push({ q: `${x} sayısının 3 basamaklı en küçük katı kaçtır?`, a: String(ans), p: 35 });
+        }
+
+        // Soru Tipi 12: X sayısının Y'den küçük kaç tane katı vardır?
+        for (let i = 0; i < 20; i++) {
+            let x = getRandomInt(5, 20);
+            let y = getRandomInt(40, 100);
+            let ans = Math.floor((y - 1) / x);
+            pool.push({ q: `${x} sayısının ${y}'den küçük kaç tane katı vardır?`, a: String(ans), p: 30 });
+        }
+
+        // Soru Tipi 13: X sayısının Y ile Z arasındaki en küçük/büyük katı kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let x = getRandomInt(6, 15);
+            let y = getRandomInt(30, 60);
+            let z = getRandomInt(80, 120);
+            let isMax = Math.random() > 0.5;
+            if (isMax) {
+                let ans = Math.floor((z - 1) / x) * x;
+                if (ans > y) pool.push({ q: `${x} sayısının ${y} ile ${z} arasındaki en büyük katı kaçtır?`, a: String(ans), p: 30 });
+            } else {
+                let ans = Math.floor(y / x + 1) * x;
+                if (ans < z) pool.push({ q: `${x} sayısının ${y} ile ${z} arasındaki en küçük katı kaçtır?`, a: String(ans), p: 30 });
+            }
+        }
+
+        // Her seferinde mutlaka havuzda bulunan özel bilgiler (Banko)
+        pool.push({ q: "'1' sayısı tüm doğal sayıların ortak nesidir? (Tek kelimeyle yazın)", a: "çarpanı", p: 15 });
+        
+        // Yinelenen soruları (kaza eseri aynı sayıların denk gelme ihtimaline karşı) temizle
+        let uniquePool = [];
+        let seen = new Set();
+        for (let item of pool) {
+            if (!seen.has(item.q)) {
+                seen.add(item.q);
+                uniquePool.push(item);
+            }
+        }
+        
+        return uniquePool;
+    }
 
     const jokersData = [
       { type: 'joker', subType: 'standard', points: 40, msg: "📚 Yeni Kitaplar!", desc: "Mis gibi kokan yeni kitaplarını aldın! +40 Puan" },
@@ -314,7 +407,7 @@
       { type: 'joker', subType: 'attack', points: 0, msg: "🥪 Kantin Sırası!", desc: "Kantin sırasını kaptın! Sıradaki takım 20 puan kaybeder." },
       { type: 'joker', subType: 'drain', points: 0, msg: "👑 Sınıf Başkanı!", desc: "Sınıf başkanı seçildin! Sonraki takımdan 25 Puan aldın!" },
       { type: 'joker', subType: 'bomb', points: 0, msg: "📄 Sürpriz Sınav!", desc: "Öğretmen sürpriz sınav yaptı! Herkesin puanı yarıya indi!" },
-      { type: 'joker', subType: 'standard', points: 25, msg: "👨‍🏫 Tahtaya Kalktın!", desc: "Soruyu ilk sen çözdün, aferin aldın! +25 Puan" }
+      { type: 'joker', subType: 'standard', points: 25, msg: "👨🏫 Tahtaya Kalktın!", desc: "Soruyu ilk sen çözdün, aferin aldın! +25 Puan" }
     ];
 
     let gameState = {
@@ -344,10 +437,15 @@
         document.getElementById('winner-screen').classList.remove('flex');
         document.getElementById('btn-last-round').style.display = 'flex';
 
-        const selectedQuestions = getRandomSubarray(questionsData, 22).map(d => ({ ...d, type: 'q', solved: false }));
+        // OYUN HER BAŞLADIĞINDA YENİ BİR SORU HAVUZU ÜRET
+        const dynamicQuestionsData = generateQuestionsPool();
+        
+        // Bu havuzun içinden rastgele 22 tanesini çek
+        const selectedQuestions = getRandomSubarray(dynamicQuestionsData, 22).map(d => ({ ...d, type: 'q', solved: false }));
         const j = jokersData.map(d => ({ ...d, type: 'j', solved: false }));
         let deck = [...selectedQuestions, ...j];
         
+        // Kartları karıştır
         for (let i = deck.length - 1; i > 0; i--) {
             const r = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[r]] = [deck[r], deck[i]];
@@ -672,7 +770,6 @@
             t.className = "toast font-baloo bg-blue-500 border-blue-200 shadow-lg";
         }
         
-        // Animasyonu baştan başlatabilmek için sıfırlama
         t.classList.remove('toast-show');
         void t.offsetWidth; 
         
@@ -686,7 +783,6 @@
         if (e.key === 'Enter') submitAnswer();
     });
 
-    // İlk açılış
     window.onload = function() {
         startGame();
     };
