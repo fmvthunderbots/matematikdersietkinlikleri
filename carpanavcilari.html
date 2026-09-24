@@ -5,6 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Çarpan Avcıları Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+const studentList = [
+    "Alp Mete KURU", "Batıkan ÖZTUNALI", "Meryem DAĞLI", "Derya ATICI", "Alp ÖZ", "Ayaz Ali YILDIZ", "Beren NEZİROĞULULARI", "Cem Çınar DUMAN", "Defne AYTAK", "Defne TOPAL", "Demir Ali KAYA", "Deniz ÇİM", "Deniz PINDIKOĞLU", "Derin HOBAT", "Duru İŞERİ", "Elif DULUNDU", "Elis DEMİR", "Kuzey KURTULDU", "Kürşat Gökdeniz BEKTAŞ", "Meryem ŞEN", "Ömer Sadettin KELEŞ", "Serhat Yaman AĞIRMAN", "Tanem Lal KAVAKLI", "Yusuf EREN", "Yusuf Yankı EKİZ", "Zeynep KIZILKAYA",
+    "Ada USTA", "Alp Efe IŞIK", "Arya SAĞLIK", "Ayşe Ada YEŞİLYURT", "Bartu UÇAR", "Beren BULCA", "Bilge Naz ÖZCAN", "Defne ERÇEL", "Doruk ÇETİN", "Ela ALDEMİR", "Eren ÖZEL", "Eren TURANBARANOĞLU", "Kerem ÖZTÜRK", "Mehmet Ali ÇEMBERCİ", "Mercan GÖZÜKÜÇÜK", "Mihrimah Ela YILDIRIM", "Nikan KAYA", "Nil TABAK", "Selis TAHA", "Şevval ÖZTÜRK", "Tuna DEMİRER", "Zeynep BİLİR", "Zeynep Züleyha GEYİK",
+    "Ahmet Mutay ERDEM", "Alara Derin ÖZYER", "Ata İRGİ", "Beyza Betül HORUZ", "Beyza KARTAL", "Mert ÖZEL", "Yiğit Arda MART", "Defne ÇİM", "Melis COŞKUNER", "Demir TÜLÜ", "Ece ÜSTÜNDAĞ", "Ege SARI", "İpek Nazlı DOLU", "Kaan ÇALIŞKAN", "Kerem TUNÇYÜREK", "Kerem ÜNAL", "Kutay ÇOLAK", "Lina ÖZTAN", "Mira DAL", "Mustafa Yağız AVCI", "Nisan ÖZLÜK", "Ömer BARAN AYTEMÜR", "Yağmur SEZER",
+    "Alp KORALAY", "Bürçe Tuba KURT", "Can AKTAŞ", "Can AYTAK", "Çınar Berkay KILINÇ", "Defne TINAZ", "Derin Asel ASLAN", "Devrim ÖZGER", "Elif YILMAZ", "Emir TURANBARANOĞLU", "Emre ÖNEY", "Hüseyin Rüzgar SAĞLAM", "Mahmut Ali AYDIN", "Melis Nora ERSAN", "Melih Burak YAĞAR", "Melisa ESMER", "Mira ŞAHİN", "Mustafa Altuğ YAĞIZ", "Mustafa Kadir ARSLANOĞLU", "Sedef GÜNEŞLİ", "Serra SIRDAŞ", "Zeynep Alya EROL", "Zeynep VURUCU",
+    "Ali ATİLA", "Ali OĞUZ", "Alya EKMEN", "Alya ÖZPİ", "Ata Yılmaz ŞAHİN", "Ayşe Beren ULU", "Güney DÜZGÜN", "Çağan AKÇA", "Doğa ATEŞ", "Dora Ilgın GÜRSOY", "Doruk DUYMAÇ", "Ela EMİROĞLU", "Elif KILINÇ", "Gökçe TABAK", "Emir ÜNAL", "İnan ALDEMİR", "Kerem IŞIK", "Nisa ÖZVARDAR", "Perisu MURATHAN", "Poyraz Ahmed AYDINALP", "Rüzgar KIRALİ", "Yiğit Ali KOÇ"
+];
+
+function normalizeForSearch(str) {
+    return str.toLocaleLowerCase('tr-TR')
+        .replace(/[^a-zçğıöşü]/g, '')
+        .replace(/[aeıioöuü]/g, '');
+}
+
+function validateStudentName(inputStr) {
+    let inputParts = inputStr.toLocaleLowerCase('tr-TR').trim().split(/\s+/).filter(x => x.length > 0);
+    
+    if (inputParts.length < 2) {
+        return { error: "Lütfen adınızı ve soyadınızı aralarında boşluk bırakarak tam girin.\n(Örn: Zeynep Demir)" };
+    }
+    
+    let matches = [];
+    for (let student of studentList) {
+        let stdParts = student.toLocaleLowerCase('tr-TR').split(/\s+/);
+        
+        let matchScore = 0;
+        let matchedParts = 0;
+        
+        for (let ip of inputParts) {
+            let ipNorm = normalizeForSearch(ip);
+            let partMatched = false;
+            for (let sp of stdParts) {
+                let spNorm = normalizeForSearch(sp);
+                if (sp === ip) {
+                    matchScore += 2; partMatched = true;
+                } else if (sp.startsWith(ip) || ip.startsWith(sp)) {
+                    matchScore += 1; partMatched = true;
+                } else if (spNorm.length > 0 && ipNorm.length > 0 && spNorm === ipNorm) {
+                    matchScore += 1; partMatched = true;
+                }
+            }
+            if(partMatched) matchedParts++;
+        }
+        
+        // Match conditions: matched multiple words
+        if (matchedParts === inputParts.length || matchedParts >= 2) {
+            matches.push({ student, score: matchScore + matchedParts });
+        }
+    }
+    
+    if (matches.length > 0) {
+        matches.sort((a,b) => b.score - a.score);
+        return { success: true, name: matches[0].student };
+    }
+    
+    return { error: "İsminiz Öğrenci Listesinde bulunamadı! 👽\n\nLütfen uzaylı isimleri girmeyin. Sadece kendi adınızı ve soyadınızı doğru yazdığınızdan emin olun." };
+}
+
+    </script>
     <style>
         :root {
             --p1-color: #3b82f6;
@@ -312,7 +375,14 @@
             <button class="btn btn-primary" onclick="showScreen('screen-setup-1p')">👤 TEK KİŞİLİK OYNA</button>
             <button class="btn btn-secondary" onclick="showScreen('screen-setup-2p')">👥 İKİ KİŞİLİK DÜELLO</button>
         </div>
+        
         <button class="btn" style="margin-top: 20px; background: rgba(255,255,255,0.1);" onclick="showLeaderboard()">🏆 İLK 10 LİDERLİK TABLOSU</button>
+        
+        <!-- Oyunlar Arası Geçiş -->
+        <button class="btn" style="margin-top: 10px; background: rgba(59,130,246,0.2); border-color: #3b82f6;" onclick="window.location.href='../bolunebilme-yagmuru/index.html'">🌧️ BÖLÜNEBİLME YAĞMURU OYNA</button>
+        
+        <!-- Öğretmen Ayarları -->
+        <button class="btn" style="margin-top: 10px; background: rgba(100,116,139,0.2); border-color: #64748b; font-size: 1rem;" onclick="showScreen('screen-settings')">⚙️ ÖĞRETMEN AYARLARI</button>
     </div>
 
     <!-- KURULUM 1P -->
@@ -321,9 +391,9 @@
         <div class="panel" style="background: var(--panel-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--border-light); text-align: center;">
             <div class="input-group">
                 <label>Adınız ve Soyadınız:</label>
-                <input type="text" id="input-p1-single" placeholder="Örn: Ali Yılmaz" autocomplete="off">
+                <input type="text" id="input-p1-single" placeholder="Adınızı tam girin..." autocomplete="off">
             </div>
-            <button class="btn btn-primary" onclick="startGame(1)">OYUNA BAŞLA</button>
+            <button class="btn btn-primary" onclick="validateAndStart(1)">OYUNA BAŞLA</button>
             <button class="btn" onclick="showScreen('screen-menu')">İPTAL</button>
         </div>
     </div>
@@ -351,8 +421,28 @@
             <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 30px; line-height: 1.6;">
                 Ekran ikiye bölünür. İki takım da <strong>aynı hedefin</strong> çarpanlarını kendi tahtasında bulmaya çalışır. Seçilen süre sonunda en çok puanı toplayan kazanır!
             </p>
-            <button class="btn btn-secondary" onclick="startGame(2)">DÜELLOYU BAŞLAT</button>
+            <button class="btn btn-secondary" onclick="validateAndStart(2)">DÜELLOYU BAŞLAT</button>
             <button class="btn" onclick="showScreen('screen-menu')">İPTAL</button>
+        </div>
+    </div>
+
+    <!-- AYARLAR EKRANI -->
+    <div id="screen-settings" class="screen">
+        <h2 style="margin-top:0;">⚙️ ÖĞRETMEN AYARLARI</h2>
+        <div class="panel" style="background: var(--panel-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--border-light); text-align: center; max-width: 500px;">
+            <div id="pinAreaCarpan">
+                <p style="color: #cbd5e1; margin-bottom: 20px;">Lütfen yönetici şifresini girin:</p>
+                <input type="password" id="pinInputCarpan" class="input-player" style="text-align:center; font-size: 20px; letter-spacing: 5px; width: 250px; margin-bottom: 20px; border-radius:10px; padding:10px; outline:none; border:none;" placeholder="********">
+                <br>
+                <button class="btn btn-primary" onclick="checkPinCarpan()">GİRİŞ</button>
+            </div>
+            
+            <div id="controlsCarpan" style="display:none;">
+                <p style="color: #cbd5e1; margin-bottom: 20px;">Ayarlar paneline hoş geldiniz.</p>
+                <button class="btn" style="background: #ef4444; border-color: #ef4444; width: 100%; font-size: 1rem;" onclick="clearLeaderboardCarpan()">🗑️ Yerel Liderlik Tablosunu Sıfırla</button>
+            </div>
+            
+            <button class="btn" onclick="showScreen('screen-menu')" style="margin-top: 30px;">ANA MENÜYE DÖN</button>
         </div>
     </div>
 
@@ -361,7 +451,7 @@
         <div class="game-top-panel">
             <div class="timer-container">
                 <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Kalan Süre</div>
-                <div class="timer" id="timer-display">90</div>
+                <div class="timer" id="timer-display">60</div>
             </div>
             
             <div class="target-display">
@@ -420,6 +510,9 @@
                 
                 <button class="btn btn-primary" onclick="showScreen('screen-menu')" style="width: 250px; margin-top:10px;">ANA MENÜ</button>
                 <button class="btn" onclick="showLeaderboard()" style="width: 250px;">LİDERLİK TABLOSU</button>
+                
+                <!-- Oyun Geçiş Butonu -->
+                
             </div>
         </div>
     </div>
@@ -432,12 +525,87 @@
         let targetFactors = [];
         let factorsFoundCount = 0;
         
-        let selectedDuelTime = 90; // İki kişilik mod süresi
+        let selectedDuelTime = 90; 
         
         const possibleTargets = [12, 16, 18, 20, 24, 28, 30, 32, 36, 40, 42, 45, 48, 50, 54, 60, 64, 72, 80, 90, 96, 100];
         
         let p1 = { name: '', score: 0, combo: 0, wrongStreak: 0, el: 'p1' };
         let p2 = { name: '', score: 0, combo: 0, wrongStreak: 0, el: 'p2' };
+
+        /* ==============================
+           FİREBASE VE AKILLI LİDER TABLOSU
+           ============================== */
+        const FIREBASE_CONFIG = {
+          apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+          authDomain: "zihindencarpma.firebaseapp.com",
+          databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+          projectId: "zihindencarpma",
+          storageBucket: "zihindencarpma.firebasestorage.app",
+          messagingSenderId: "111639321624",
+          appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+        };
+
+        let cloudDb = null;
+        const DB_NODE = 'scores_carpanlar';
+
+        if (typeof firebase !== 'undefined') {
+          try {
+            firebase.initializeApp(FIREBASE_CONFIG);
+            cloudDb = firebase.database();
+            cloudDb.ref(DB_NODE).on('value', snap => {
+              let data = snap.val();
+              let arr = [];
+              if(data) {
+                Object.keys(data).forEach(k => arr.push(data[k]));
+              }
+              updateLocalLeaderboard(arr);
+            });
+          } catch(e) {}
+        }
+
+        function updateLocalLeaderboard(rawEntries) {
+          let groups = [];
+
+          // Group by name with fuzzy matching
+          rawEntries.forEach(entry => {
+            if (!entry) return;
+            let normName = (entry.name || '').trim().replace(/\s+/g, ' ');
+            if (!normName) return;
+            let normLower = normName.toLocaleLowerCase('tr-TR');
+            
+            let foundGroup = null;
+            for (let g of groups) {
+              if (g.canonicalNorm === normLower) {
+                foundGroup = g;
+                break;
+              }
+            }
+
+            if (foundGroup) {
+              foundGroup.items.push(entry);
+            } else {
+              groups.push({
+                canonicalName: normName,
+                canonicalNorm: normLower,
+                items: [entry]
+              });
+            }
+          });
+
+          let bestList = [];
+          groups.forEach(g => {
+            g.items.sort((a, b) => b.score - a.score);
+            let best = g.items[0];
+            bestList.push(best);
+          });
+
+          bestList.sort((a, b) => b.score - a.score);
+          let top10 = bestList.slice(0, 10);
+          localStorage.setItem('factorHunterTop10', JSON.stringify(top10));
+          if(document.getElementById('screen-leaderboard').classList.contains('active-screen')) {
+              showLeaderboard();
+          }
+        }
 
         if(window.innerWidth <= 850) {
             let el = document.querySelector('.hide-mobile');
@@ -448,12 +616,46 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
             document.getElementById(screenId).classList.add('active-screen');
             window.scrollTo(0,0);
+            
+            if(screenId === 'screen-settings') {
+                if (localStorage.getItem('isAdmin_carpan') === 'true') {
+                    document.getElementById('pinAreaCarpan').style.display = 'none';
+                    document.getElementById('controlsCarpan').style.display = 'block';
+                } else {
+                    document.getElementById('pinInputCarpan').value = '';
+                    document.getElementById('pinAreaCarpan').style.display = 'block';
+                    document.getElementById('controlsCarpan').style.display = 'none';
+                }
+            }
         }
 
         function selectTime(time, btnEl) {
             selectedDuelTime = time;
             document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
             btnEl.classList.add('active');
+        }
+        
+        function checkPinCarpan() {
+            if(document.getElementById('pinInputCarpan').value === '26575982824.bati') {
+                localStorage.setItem('isAdmin_carpan', 'true');
+                document.getElementById('pinAreaCarpan').style.display = 'none';
+                document.getElementById('controlsCarpan').style.display = 'block';
+            } else {
+                alert("Hatalı şifre! Lütfen tekrar deneyin.");
+            }
+        }
+        
+        function clearLeaderboardCarpan() {
+            if(confirm("DİKKAT: Tüm liderlik tablosu hem veritabanından hem de bu cihazdan kalıcı olarak silinecek. Emin misiniz?")) {
+                if (cloudDb) {
+                    cloudDb.ref(DB_NODE).remove();
+                } else {
+                    fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'DELETE' });
+                }
+                localStorage.removeItem('factorHunterTop10');
+                alert("Liderlik tablosu başarıyla sıfırlandı!");
+                showScreen('screen-menu');
+            }
         }
 
         function fireConfetti() {
@@ -482,7 +684,25 @@
             }());
         }
 
-        function startGame(mode) {
+        // --- NEW: Validation Layer ---
+        function validateAndStart(mode) {
+            if (mode === 1) {
+                let n = document.getElementById('input-p1-single').value.trim();
+                let result = validateStudentName(n);
+                if (result.error) {
+                    alert(result.error);
+                    return; // Block starting
+                }
+                
+                // Set to Excel's exact correct name and start!
+                document.getElementById('input-p1-single').value = result.name;
+                startGame(1, result.name);
+            } else {
+                startGame(2);
+            }
+        }
+
+        function startGame(mode, validatedName = null) {
             gameMode = mode;
             factorsFoundCount = 0;
             
@@ -490,9 +710,8 @@
             p2.score = 0; p2.combo = 0; p2.wrongStreak = 0;
             
             if(mode === 1) {
-                timeLeft = 60; // Tek oyunculu her zaman 60 saniye (Liderlik tablosu adaleti için)
-                let n = document.getElementById('input-p1-single').value.trim();
-                p1.name = n || 'Oyuncu';
+                timeLeft = 60; 
+                p1.name = validatedName || 'Öğrenci';
                 document.getElementById('name-p1').innerText = p1.name;
                 
                 document.getElementById('zone-p2').style.display = 'none';
@@ -500,7 +719,7 @@
                 let hm = document.querySelector('.hide-mobile');
                 if(hm) hm.style.display = 'block';
             } else {
-                timeLeft = selectedDuelTime; // Düelloda seçilen süreyi kullan
+                timeLeft = selectedDuelTime; 
                 p1.name = 'MAVİ TAKIM';
                 p2.name = 'KIRMIZI TAKIM';
                 
@@ -700,18 +919,24 @@
             
             if(gameMode === 1) {
                 let scores = JSON.parse(localStorage.getItem('factorHunterTop10')) || [];
-                let newEntry = { name: p1.name, score: p1.score, date: new Date().toLocaleDateString('tr-TR'), id: Date.now() };
+                let newEntry = { name: p1.name, score: p1.score, date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), timestamp: Date.now(), id: Date.now() };
+                
+                // Veritabanına kaydet (Firebase)
+                if(cloudDb) {
+                    cloudDb.ref(DB_NODE).push(newEntry);
+                } else {
+                    fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'POST', body: JSON.stringify(newEntry) });
+                }
+
                 scores.push(newEntry);
                 scores.sort((a, b) => b.score - a.score);
                 
                 let rankIndex = scores.findIndex(s => s.id === newEntry.id);
                 let rank = rankIndex + 1;
                 
-                scores = scores.slice(0, 10);
                 let isTop10 = rank <= 10;
                 
                 if(isTop10) {
-                    localStorage.setItem('factorHunterTop10', JSON.stringify(scores));
                     showKutla = true;
                 }
                 
@@ -728,14 +953,14 @@
                            
             } else {
                 if(p1.score > p2.score) {
-                    title = `🏆 ${p1.name} KAZANDI!`;
-                    details = `<span style="color:var(--p1-color)">${p1.name}: ${p1.score}</span><br>
-                               <span style="color:var(--p2-color)">${p2.name}: ${p2.score}</span>`;
+                    title = `🏆 MAVİ TAKIM KAZANDI!`;
+                    details = `<span style="color:var(--p1-color)">Mavi: ${p1.score}</span><br>
+                               <span style="color:var(--p2-color)">Kırmızı: ${p2.score}</span>`;
                     showKutla = true;
                 } else if(p2.score > p1.score) {
-                    title = `🏆 ${p2.name} KAZANDI!`;
-                    details = `<span style="color:var(--p1-color)">${p1.name}: ${p1.score}</span><br>
-                               <span style="color:var(--p2-color)">${p2.name}: ${p2.score}</span>`;
+                    title = `🏆 KIRMIZI TAKIM KAZANDI!`;
+                    details = `<span style="color:var(--p1-color)">Mavi: ${p1.score}</span><br>
+                               <span style="color:var(--p2-color)">Kırmızı: ${p2.score}</span>`;
                     showKutla = true;
                 } else {
                     title = "🤝 BERABERE!";
