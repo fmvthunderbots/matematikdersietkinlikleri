@@ -519,7 +519,7 @@ function validateStudentName(inputStr) {
 
     <script>
         let gameMode = 1;
-        let timeLeft = 90;
+        let timeLeft = 60;
         let timerInterval;
         let currentTarget = 0;
         let targetFactors = [];
@@ -710,7 +710,7 @@ function validateStudentName(inputStr) {
             p2.score = 0; p2.combo = 0; p2.wrongStreak = 0;
             
             if(mode === 1) {
-                timeLeft = 90; 
+                timeLeft = 60; 
                 p1.name = validatedName || 'Öğrenci';
                 document.getElementById('name-p1').innerText = p1.name;
                 
