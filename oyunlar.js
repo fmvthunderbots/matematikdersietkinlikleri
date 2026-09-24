@@ -24,19 +24,20 @@ const SISTEM_OYUNLARI = [
         url: "./tombala.html"
     },
     {
+        id: "oyun-4",
+        title: "Çarpan Avcıları",
+        grade: "6",
+        image: "./carpanavcilari.jpg",
+        url: "./carpanavcilari.html"
+    },
+    {
         id: "oyun-5",
         title: "Bölünebilme",
         grade: "6",
         image: "./bolunebilme.jpg",
         url: "./bolunebilme.html"
     },
-    {
-        id: "oyun-4",
-        title: "Çarpan Avcıları",
-        grade: "6",
-        image: "./carpanavcilari.jpg",
-        url: "./carpanavcilari.html"
-    }
+    
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
