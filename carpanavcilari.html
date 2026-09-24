@@ -301,7 +301,7 @@
             <h3>Kurallar ve Oynanış</h3>
             <ul>
                 <li><span>🎯</span> <span>Ortada çıkan hedef sayının <b>tüm çarpanlarını</b> tahtadan bul!</span></li>
-                <li><span>⏱️</span> <span>Süren tam <b>90 saniye</b>, olabildiğince çok sayı geçmeye çalış.</span></li>
+                <li><span>⏱️</span> <span>Süren tam <b>60 saniye</b>, olabildiğince çok sayı geçmeye çalış.</span></li>
                 <li><span>🔥</span> <span>Doğru sayılara peş peşe basarsan <b>X-COMBO</b> yapar, çok daha yüksek puan kazanırsın.</span></li>
                 <li><span>⚠️</span> <span>Yanlış sayılara basarsan hem puanın gider hem de üst üste hata yaparsan <b>cezan katlanır</b>!</span></li>
                 <li><span>🔄</span> <span>Tüm çarpanları bitirdiğinde beklemeden anında yeni sayı gelir.</span></li>
@@ -426,7 +426,7 @@
 
     <script>
         let gameMode = 1;
-        let timeLeft = 90;
+        let timeLeft = 60;
         let timerInterval;
         let currentTarget = 0;
         let targetFactors = [];
@@ -490,7 +490,7 @@
             p2.score = 0; p2.combo = 0; p2.wrongStreak = 0;
             
             if(mode === 1) {
-                timeLeft = 90; // Tek oyunculu her zaman 90 saniye (Liderlik tablosu adaleti için)
+                timeLeft = 60; // Tek oyunculu her zaman 60 saniye (Liderlik tablosu adaleti için)
                 let n = document.getElementById('input-p1-single').value.trim();
                 p1.name = n || 'Oyuncu';
                 document.getElementById('name-p1').innerText = p1.name;
