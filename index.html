@@ -326,6 +326,7 @@
     // Arka plan resimleri
     const BG_5 = './arkaplan5.jpg';
     const BG_6 = './arkaplan6.jpg';
+    const BG_7 = './arkaplan7.jpg';
 
     let currentGrade = '5';
     let games = []; // oyunlar.js'den dolacak
@@ -374,7 +375,7 @@
             document.body.style.backgroundImage = `url('${BG_6}')`;
         } else if (grade === '7') {
             btn7.classList.add('active-purple');
-            document.body.style.backgroundImage = 'radial-gradient(circle at center, #2e1065 0%, #0f172a 100%)';
+            document.body.style.backgroundImage = `url('${BG_7}')`;
         }
 
         renderGames();
