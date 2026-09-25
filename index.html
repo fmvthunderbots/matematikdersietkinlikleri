@@ -10,14 +10,25 @@
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            transition: background-image 0.8s ease-in-out, background-color 0.8s ease-in-out;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
             background-color: #0f172a; /* Koyu arkaplan yedeği */
+            position: relative;
+        }
+
+        /* Arka plan geçişlerinin pürüzsüz olması için özel katman */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            z-index: -1;
+            transition: background-image 0.8s ease-in-out, filter 0.8s ease-in-out;
+            background-image: var(--bg-image);
+            filter: var(--bg-filter, none);
         }
 
         /* Üst Menü Cam Efekti */
@@ -326,7 +337,6 @@
     // Arka plan resimleri
     const BG_5 = './arkaplan5.jpg';
     const BG_6 = './arkaplan6.jpg';
-    const BG_7 = './arkaplan7.jpg';
 
     let currentGrade = '5';
     let games = []; // oyunlar.js'den dolacak
@@ -367,15 +377,21 @@
         btn6.className = "nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-3";
         btn7.className = "nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-3";
         
+        const bgElem = document.body;
+
         if(grade === '5') {
             btn5.classList.add('active-gold');
-            document.body.style.backgroundImage = `url('${BG_5}')`;
+            bgElem.style.setProperty('--bg-image', `url('${BG_5}')`);
+            bgElem.style.setProperty('--bg-filter', 'none');
         } else if (grade === '6') {
             btn6.classList.add('active-blue');
-            document.body.style.backgroundImage = `url('${BG_6}')`;
+            bgElem.style.setProperty('--bg-image', `url('${BG_6}')`);
+            bgElem.style.setProperty('--bg-filter', 'none');
         } else if (grade === '7') {
             btn7.classList.add('active-purple');
-            document.body.style.backgroundImage = `url('${BG_7}')`;
+            // 7. sınıf için 6. sınıfın resmini kullanıyor, ama hue-rotate ile renkleri mora çeviriyor!
+            bgElem.style.setProperty('--bg-image', `url('${BG_6}')`);
+            bgElem.style.setProperty('--bg-filter', 'hue-rotate(60deg)');
         }
 
         renderGames();
