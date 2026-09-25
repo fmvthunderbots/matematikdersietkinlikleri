@@ -5,7 +5,7 @@ const SISTEM_OYUNLARI = [
     {
         id: "oyun-1",
         title: "Çarpanlar ve Katlar",
-        grade: "6", // 5 veya 6 yazın
+        grade: "6", // 5, 6 veya 7 yazın
         image: "./kapak_6sinif.jpg", // Kapak resmi yoksa boş bırakın: ""
         url: "./carpanlar_katlar_oyunu.html" // Oyunun dosya adı
     },
@@ -42,9 +42,9 @@ const SISTEM_OYUNLARI = [
     /*
     ,
     {
-        id: "oyun-2",
-        title: "Yeni Oyunun Adı",
-        grade: "5",
+        id: "oyun-6",
+        title: "Rasyonel Sayılar Macerası",
+        grade: "7",
         image: "kapak_resmi.jpg",
         url: "yeni_oyun_dosyasi.html"
     }
