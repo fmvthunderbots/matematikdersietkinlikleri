@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z & Q</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* YENİ NOKTALI MATEMATİK DEFTERİ ARKA PLANI */
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 2.5px, transparent 2.5px);
+            background-size: 32px 32px;
+            color: #1f2937;
+            user-select: none;
+            overflow: hidden; 
+            height: 100vh;
+        }
+
+        .font-baloo { font-family: 'Baloo 2', cursive; }
+
+        h1 { 
+            letter-spacing: 2px; 
+            text-shadow: 2px 2px 0px #fff, -2px -2px 0px #fff, 2px -2px 0px #fff, -2px 2px 0px #fff;
+            color: #ef4444;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) { .card-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; } }
+        @media (max-width: 768px) { .card-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; } }
+
+        .card {
+            position: relative;
+            height: 75px; 
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%; 
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .card.opened .card-inner { 
+            transform: rotateY(180deg); 
+            cursor: default; 
+        }
+        
+        .card:hover:not(.opened) .card-inner { 
+            transform: scale(1.05) translateY(-3px); 
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15); 
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-weight: bold;
+            border: 3px solid #3b82f6;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            color: #ffffff;
+            font-size: 2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .card-front::after {
+            content: '📐';
+            position: absolute;
+            opacity: 0.15;
+            font-size: 2.5rem;
+            z-index: 0;
+        }
+
+        .card-back {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            flex-direction: column;
+            padding: 2px;
+            text-align: center;
+            color: #1e293b;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 50;
+            display: none;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-active { display: flex; animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .modal-box {
+            background: #fff url('https://www.transparenttextures.com/patterns/notebook.png') repeat;
+            border: 6px solid #8b5cf6;
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%; max-width: 550px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        /* Takım kutuları opak ve düz kenarlıklı */
+        .team-box {
+            background-color: #ffffff;
+            border-width: 4px;
+            border-style: solid;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        /* Aktif takım büyür ve öne çıkar */
+        .active-team {
+            transform: scale(1.05) translateY(-3px);
+            z-index: 10;
+        }
+
+        /* BİLDİRİM YERİ */
+        .toast {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            padding: 6px 24px;
+            border-radius: 50px;
+            color: white; 
+            font-weight: bold;
+            z-index: 9999; 
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+            text-align: center; 
+            border: 3px solid white;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+            opacity: 0;
+            white-space: nowrap;
+        }
+        .toast.toast-show { 
+            transform: translateX(-50%) scale(1); 
+            opacity: 1;
+        }
+        
+        #winner-screen {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="p-2 relative flex flex-col justify-center items-center h-screen">
+
+    <div class="absolute top-4 left-4 flex gap-2 z-20">
+        <button id="btn-last-round" onclick="triggerLastRound()" class="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 border-b-4 border-yellow-600 font-bold py-2 px-4 rounded-xl shadow-lg transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-lg font-baloo flex items-center gap-2">
+            ⏳ SON TUR
+        </button>
+        <button onclick="startGame()" class="bg-red-500 hover:bg-red-400 text-white border-b-4 border-red-700 font-bold py-2 px-4 rounded-xl shadow-lg transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-lg font-baloo flex items-center gap-2">
+            🔄 YENİ OYUN
+        </button>
+    </div>
+
+    <!-- Kazanan Ekranı -->
+    <div id="winner-screen" class="fixed inset-0 z-[9999] hidden flex-col items-center justify-center text-center">
+        <div class="text-8xl mb-4">🏆</div>
+        <div id="winner-name" class="text-5xl md:text-7xl font-bold font-baloo text-blue-600 mb-2 drop-shadow-md">TAKIM ADI</div>
+        <div id="winner-theme-message" class="text-2xl text-gray-700 font-bold mb-6 italic"></div>
+        <div id="winner-score" class="text-3xl font-bold text-white bg-green-500 px-6 py-2 rounded-full border-4 border-green-700 shadow-lg mb-8">0 Puan</div>
+        <button onclick="startGame()" class="bg-blue-500 hover:bg-blue-400 text-white py-3 px-8 rounded-full text-2xl font-baloo border-b-4 border-blue-700 transition hover:scale-105 shadow-xl">YENİDEN OYNA</button>
+    </div>
+
+    <div id="app" class="w-full max-w-5xl relative z-10 flex flex-col justify-between h-full py-4">
+        
+        <div class="text-center mb-1">
+            <h1 class="font-baloo text-4xl md:text-6xl mb-1 text-purple-600">Z & Q BİLGİ YARIŞMASI!</h1>
+        </div>
+
+        <div class="relative w-full flex justify-center z-50" style="height: 0;">
+            <div id="toast" class="toast font-baloo"></div>
+        </div>
+
+        <div id="teams" class="grid grid-cols-3 gap-4 mb-2 mt-5 max-w-3xl mx-auto w-full"></div>
+
+        <div id="grid" class="card-grid mb-2 w-full"></div>
+    </div>
+
+    <!-- Soru Modalı -->
+    <div id="modal-q" class="modal-overlay">
+        <div class="modal-box">
+            <div class="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-5 py-1 rounded-full font-bold border-4 border-white shadow-md text-lg">
+                <span id="modal-points"></span> PUAN
+            </div>
+            
+            <div class="text-4xl mb-2 mt-2">📝</div>
+            <div id="modal-question" class="text-xl font-bold text-gray-800 mb-4 leading-relaxed"></div>
+            
+            <input type="text" id="modal-input" class="w-full p-3 rounded-xl text-gray-800 text-xl text-center font-bold mb-4 outline-none border-4 border-gray-300 focus:border-purple-500 transition-colors bg-white shadow-inner" placeholder="Cevabını Yaz..." autocomplete="off">
+            
+            <button onclick="submitAnswer()" class="w-full bg-green-500 hover:bg-green-400 text-white text-xl font-bold py-3 rounded-xl shadow-lg border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all font-baloo tracking-widest">
+                ÖĞRETMENE GÖSTER
+            </button>
+        </div>
+    </div>
+
+    <!-- Şans Kartı Modalı -->
+    <div id="modal-j" class="modal-overlay">
+        <div id="joker-box" class="modal-box">
+            <div id="joker-icon" class="text-7xl mb-2 animate-bounce">🎒</div>
+            <h2 id="joker-title" class="text-3xl font-baloo text-blue-600 mb-2 tracking-wide">BAŞLIK</h2>
+            <div id="joker-desc" class="text-lg text-gray-700 mb-6 leading-relaxed font-bold">Açıklama</div>
+            <button id="joker-btn" onclick="applyJokerEffect()" class="w-full text-xl font-bold py-3 rounded-xl shadow-lg font-baloo tracking-widest border-b-4 active:border-b-0 active:translate-y-1 transition-all text-white">
+                SIRANA DÖN
+            </button>
+        </div>
+    </div>
+
+<script>
+    // DİNAMİK SORU ÜRETİCİ (7. Sınıf Rasyonel Sayılar ve Mutlak Değer)
+    function generateQuestionsPool() {
+        let pool = [];
+        
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Soru Tipi 1: |-x| ifadesinin değeri kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let n = getRandomInt(5, 150);
+            pool.push({ q: `|-${n}| ifadesinin değeri kaçtır?`, a: String(n), p: 15 });
+        }
+
+        // Soru Tipi 2: Mutlak değeri x olan tam sayıların çarpımı kaçtır?
+        for (let i = 0; i < 25; i++) {
+            let n = getRandomInt(3, 12);
+            pool.push({ q: `Mutlak değeri ${n} olan tam sayıların çarpımı kaçtır?`, a: String(-(n*n)), p: 25 });
+        }
+
+        // Soru Tipi 3: Negatif bir rasyonel sayıdan büyük en küçük tam sayı
+        for (let i = 0; i < 25; i++) {
+            let tam = getRandomInt(1, 10);
+            let pay = getRandomInt(1, 4);
+            let payda = getRandomInt(5, 9);
+            pool.push({ q: `-${tam} tam ${pay}/${payda} rasyonel sayısından büyük en küçük tam sayı kaçtır?`, a: String(-tam), p: 30 });
+        }
+
+        // Soru Tipi 4: Pozitif bir rasyonel sayıdan küçük en büyük tam sayı
+        for (let i = 0; i < 25; i++) {
+            let tam = getRandomInt(1, 10);
+            let pay = getRandomInt(1, 4);
+            let payda = getRandomInt(5, 9);
+            pool.push({ q: `${tam} tam ${pay}/${payda} rasyonel sayısından küçük en büyük tam sayı kaçtır?`, a: String(tam), p: 30 });
+        }
+
+        // Soru Tipi 5: İki tam sayı arasındaki sayılar
+        for (let i = 0; i < 25; i++) {
+            let n1 = -getRandomInt(2, 8);
+            let n2 = getRandomInt(2, 8);
+            let count = n2 - n1 - 1;
+            pool.push({ q: `${n1} ile ${n2} arasında kaç tane tam sayı vardır?`, a: String(count), p: 25 });
+        }
+
+        // Soru Tipi 6: Sayı doğrusunda uzaklık (en büyük/en küçük)
+        for (let i = 0; i < 25; i++) {
+            let baslangic = getRandomInt(-10, 10);
+            let uzaklik = getRandomInt(3, 15);
+            let isMax = Math.random() > 0.5;
+            let ans = isMax ? baslangic + uzaklik : baslangic - uzaklik;
+            let tur = isMax ? "en büyük" : "en küçük";
+            pool.push({ q: `Sayı doğrusunda ${baslangic} noktasına ${uzaklik} birim uzaklıkta olan ${tur} sayı kaçtır?`, a: String(ans), p: 35 });
+        }
+
+        // Soru Tipi 7: Mutlak değeri x'ten küçük tam sayılar
+        for (let i = 0; i < 20; i++) {
+            let n = getRandomInt(3, 10);
+            let count = 2 * n - 1;
+            pool.push({ q: `Mutlak değeri ${n}'ten küçük kaç tane tam sayı vardır?`, a: String(count), p: 25 });
+        }
+
+        // Soru Tipi 8: Tanımsız Rasyonel Sayılar
+        for (let i = 0; i < 20; i++) {
+            let a = getRandomInt(1, 15);
+            let pay = getRandomInt(1, 10);
+            let isPlus = Math.random() > 0.5;
+            let op = isPlus ? "+" : "-";
+            let ans = isPlus ? -a : a;
+            pool.push({ q: `${pay}/(x ${op} ${a}) ifadesi bir rasyonel sayı belirtmiyorsa x kaçtır?`, a: String(ans), p: 30 });
+        }
+
+        // Soru Tipi 9: Sayı Kümeleri (Doğal sayı mı?)
+        for (let i = 0; i < 20; i++) {
+            let res = getRandomInt(1, 10);
+            let payda = getRandomInt(2, 5);
+            let pay = res * payda;
+            pool.push({ q: `${pay}/${payda} rasyonel sayısı aynı zamanda bir doğal sayı mıdır? (evet/hayır)`, a: "evet", p: 15 });
+            pool.push({ q: `-${pay}/${payda} rasyonel sayısı aynı zamanda bir doğal sayı mıdır? (evet/hayır)`, a: "hayır", p: 15 });
+        }
+
+        // Soru Tipi 10: Sayı Doğrusunda Ayna/Simetri
+        for (let i = 0; i < 20; i++) {
+            let x = getRandomInt(2, 10);
+            pool.push({ q: `Sayı doğrusunda 0 noktasına yerleştirilen aynaya göre, ${x} noktasındaki nesnenin görüntüsü hangi noktadadır?`, a: String(-x), p: 25 });
+            pool.push({ q: `Sayı doğrusunda 0 noktasına yerleştirilen aynaya göre, -${x} noktasındaki nesnenin görüntüsü hangi noktadadır?`, a: String(x), p: 25 });
+        }
+
+        // Soru Tipi 11: Rasyonel Sayılarda Sadeleştirme
+        for (let i = 0; i < 20; i++) {
+            let a = getRandomInt(2, 5);
+            let b = getRandomInt(6, 9);
+            let k = getRandomInt(3, 8);
+            let pay = a * k;
+            let payda = b * k;
+            pool.push({ q: `${pay}/${payda} rasyonel sayısının en sade hâlinde pay kısmı kaçtır?`, a: String(a), p: 30 });
+        }
+
+        // Soru Tipi 12: Sayı Doğrusunda Sıçrama
+        for (let i = 0; i < 20; i++) {
+            let jump = getRandomInt(2, 6);
+            let nJumps = getRandomInt(3, 8);
+            let start = getRandomInt(-15, -2);
+            let end = start + (jump * nJumps);
+            pool.push({ q: `Sayı doğrusunda ${start} noktasından başlayıp sağa doğru ${nJumps} eşit sıçrayışla ${end} noktasına ulaşan çekirge, her sıçrayışta kaç birim ilerlemiştir?`, a: String(jump), p: 35 });
+        }
+
+        // Soru Tipi 13: Asansör / Katlar Arası Mesafe
+        for (let i = 0; i < 20; i++) {
+            let a = getRandomInt(1, 5); // below ground
+            let b = getRandomInt(3, 12); // above ground
+            let dist = a + b;
+            pool.push({ q: `Zeminin ${a} kat altındaki otoparktan, zeminin ${b} kat üstündeki daireye çıkmak için kaç kat çıkılmalıdır?`, a: String(dist), p: 25 });
+        }
+
+        // Soru Tipi 14: Günlük Hayatta Tam Sayılar
+        for (let i = 0; i < 20; i++) {
+            let x = getRandomInt(10, 150);
+            pool.push({ q: `Deniz seviyesinin ${x} metre altı hangi tam sayı ile ifade edilir?`, a: String(-x), p: 15 });
+        }
+
+        // Soru Tipi 15: Bütçe / Bakiye Durumu
+        for (let i = 0; i < 20; i++) {
+            let bakiye = getRandomInt(100, 300);
+            let harcama = bakiye + getRandomInt(20, 150);
+            let sonuc = bakiye - harcama;
+            pool.push({ q: `Kartında ${bakiye} TL olan biri ${harcama} TL harcama yaparsa, bakiyesi tam sayı olarak nasıl ifade edilir?`, a: String(sonuc), p: 25 });
+        }
+
+        // Banko Sorular
+        pool.push({ q: "Paydası 1 olan rasyonel sayılara genel olarak ne ad verilir? (İki kelime)", a: "tam sayı", p: 15 });
+        pool.push({ q: "En büyük negatif tam sayı kaçtır?", a: "-1", p: 15 });
+        pool.push({ q: "En küçük pozitif tam sayı kaçtır?", a: "1", p: 15 });
+        pool.push({ q: "Sıfırın sıfırdan farklı bir tam sayıya bölümü kaçtır?", a: "0", p: 10 });
+        pool.push({ q: "Bir sayının sıfıra bölümü matematikte ne olarak adlandırılır?", a: "tanımsız", p: 20 });
+        pool.push({ q: "Her tam sayı aynı zamanda bir ... sayıdır. (İki kelime)", a: "rasyonel sayı", p: 20 });
+        pool.push({ q: "Negatif rasyonel sayılarda eksi işareti pay, payda veya nerenin önüne konabilir? (İki kelime)", a: "kesir çizgisi", p: 20 });
+        pool.push({ q: "Sıfır (0) sayısının işareti var mıdır? (evet/hayır)", a: "hayır", p: 15 });
+        
+        // Yinelenen soruları temizle
+        let uniquePool = [];
+        let seen = new Set();
+        for (let item of pool) {
+            if (!seen.has(item.q)) {
+                seen.add(item.q);
+                uniquePool.push(item);
+            }
+        }
+        
+        return uniquePool;
+    }
+
+    const jokersData = [
+      { type: 'joker', subType: 'standard', points: 40, msg: "📐 Yeni Gönye Seti!", desc: "Matematik dersi için yeni set aldın! +40 Puan" },
+      { type: 'joker', subType: 'standard', points: 30, msg: "🔔 Teneffüs Zili!", desc: "Zil çaldı, bahçede koşma vakti! +30 Puan" },
+      { type: 'joker', subType: 'standard', points: -20, msg: "➖ Eksi İşareti Unutuldu!", desc: "Soruyu çözerken eksi işaretini unuttun! -20 Puan" },
+      { type: 'joker', subType: 'standard', points: -15, msg: "👀 Nöbetçi Öğretmen!", desc: "Koridorda koşarken yakalandın! -15 Puan" },
+      { type: 'joker', subType: 'attack', points: 0, msg: "🥪 Kantin Sırası!", desc: "Kantin sırasını kaptın! Sıradaki takım 20 puan kaybeder." },
+      { type: 'joker', subType: 'drain', points: 0, msg: "👑 Sınıf Başkanı!", desc: "Sınıf başkanı seçildin! Sonraki takımdan 25 Puan aldın!" },
+      { type: 'joker', subType: 'bomb', points: 0, msg: "📄 Sürpriz Sınav!", desc: "Öğretmen sürpriz sınav yaptı! Herkesin puanı yarıya indi!" },
+      { type: 'joker', subType: 'standard', points: 25, msg: "👨🏫 Tahtaya Kalktın!", desc: "Sayı doğrusunu tahtaya harika çizdin! +25 Puan" }
+    ];
+
+    let gameState = {
+        cards: [],
+        teams: [
+            { name: "RASYONELLER 🔢", score: 0, color: "text-blue-600", activeBorder: "border-blue-500", shadow: "shadow-blue-400/50", bar: "bg-blue-500" },
+            { name: "MUTLAKLAR 📏", score: 0, color: "text-purple-600", activeBorder: "border-purple-500", shadow: "shadow-purple-400/50", bar: "bg-purple-500" },
+            { name: "TAM SAYILAR 🧮", score: 0, color: "text-green-600", activeBorder: "border-green-500", shadow: "shadow-green-400/50", bar: "bg-green-500" }
+        ],
+        currentTeam: 0,
+        activeIndex: null,
+        solvedCount: 0,
+        pendingJokerAction: null
+    };
+
+    function getRandomSubarray(arr, size) {
+        let shuffled = arr.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, size);
+    }
+
+    function startGame() {
+        document.getElementById('winner-screen').classList.add('hidden');
+        document.getElementById('winner-screen').classList.remove('flex');
+        document.getElementById('btn-last-round').style.display = 'flex';
+
+        // OYUN HER BAŞLADIĞINDA YENİ BİR SORU HAVUZU ÜRET
+        const dynamicQuestionsData = generateQuestionsPool();
+        
+        // Bu havuzun içinden rastgele 22 tanesini çek
+        const selectedQuestions = getRandomSubarray(dynamicQuestionsData, 22).map(d => ({ ...d, type: 'q', solved: false }));
+        const j = jokersData.map(d => ({ ...d, type: 'j', solved: false }));
+        let deck = [...selectedQuestions, ...j];
+        
+        // Kartları karıştır
+        for (let i = deck.length - 1; i > 0; i--) {
+            const r = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[r]] = [deck[r], deck[i]];
+        }
+
+        gameState.cards = deck;
+        gameState.teams.forEach(t => t.score = 0);
+        gameState.currentTeam = 0;
+        gameState.activeIndex = null;
+        gameState.solvedCount = 0;
+        gameState.pendingJokerAction = null;
+
+        renderTeams();
+        renderGrid();
+        showToast("🎒 İlk Ders Başladı!", "info");
+    }
+
+    function renderTeams() {
+        const div = document.getElementById('teams');
+        div.innerHTML = gameState.teams.map((t, i) => {
+            const isActive = i === gameState.currentTeam;
+            const borderClass = isActive ? t.activeBorder : "border-slate-200";
+            const shadowClass = isActive ? `shadow-xl ${t.shadow}` : "shadow-sm";
+            
+            return `
+            <div class="team-box p-2 text-center relative overflow-hidden flex flex-col justify-center ${borderClass} ${shadowClass} ${isActive ? 'active-team' : ''}">
+                <div class="text-sm md:text-base font-bold ${t.color} mb-1">${t.name}</div>
+                <div class="text-3xl md:text-4xl font-black text-gray-800 font-baloo leading-none">${t.score}</div>
+                ${isActive ? `<div class="absolute bottom-0 left-0 w-full h-1.5 ${t.bar} animate-pulse"></div>` : ''}
+            </div>
+            `;
+        }).join('');
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = gameState.cards.map((c, i) => {
+            let backContent = '';
+            let backClass = '';
+            
+            if (c.solved) {
+                if (c.type === 'j') {
+                    backContent = `<div class="text-4xl">🎁</div>`;
+                    backClass = 'bg-yellow-100 border-yellow-400';
+                } else {
+                    if (c.status === 'correct') {
+                        backContent = `<div class="text-2xl mb-1">⭐</div><div class="text-green-600 font-black text-lg">+${c.p}</div>`;
+                        backClass = 'bg-green-50 border-green-500';
+                    } else {
+                        backContent = `<div class="text-2xl mb-1">❌</div><div class="text-red-500 font-bold text-base">${c.a}</div>`;
+                        backClass = 'bg-red-50 border-red-500';
+                    }
+                }
+            } else {
+                if (c.type === 'q') {
+                    backContent = `<div class="absolute top-1 right-1 text-[10px] font-bold bg-white text-blue-600 px-1.5 py-0.5 rounded-full shadow-sm border border-blue-200">${c.p}P</div>`;
+                }
+            }
+
+            const finalBackClass = c.solved ? `card-back ${backClass}` : 'card-back';
+
+            return `
+                <div class="card ${c.solved ? 'opened' : ''}" onclick="cardClick(${i})">
+                    <div class="card-inner">
+                        <div class="card-face card-front font-baloo flex flex-col items-center justify-center">
+                            <span class="z-10">${i + 1}</span>
+                        </div>
+                        <div class="card-face ${finalBackClass}">
+                            ${backContent}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function cardClick(index) {
+        if (gameState.cards[index].solved || gameState.activeIndex !== null) return;
+        gameState.activeIndex = index;
+        const card = gameState.cards[index];
+        
+        if (card.type === 'j') {
+            prepareJoker(card);
+        } else {
+            openQModal(card);
+        }
+    }
+
+    function openQModal(card) {
+        const modal = document.getElementById('modal-q');
+        document.getElementById('modal-question').innerText = card.q;
+        document.getElementById('modal-points').innerText = card.p;
+        document.getElementById('modal-input').value = '';
+        modal.classList.add('modal-active');
+        setTimeout(() => document.getElementById('modal-input').focus(), 100);
+    }
+
+    function submitAnswer() {
+        const index = gameState.activeIndex;
+        const card = gameState.cards[index];
+        let val = document.getElementById('modal-input').value.trim().toLowerCase();
+        let correct = String(card.a).toLowerCase().trim();
+        
+        // Metinsel Türkçe karakter toleransı
+        let valText = val.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ +/g, ' ');
+        let correctText = correct.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ +/g, ' ');
+
+        document.getElementById('modal-q').classList.remove('modal-active');
+
+        let isCorrect = false;
+
+        // Sayısal kontrol (+5 ile 5 girişlerini sayı olarak aynı kabul et)
+        if (val !== '' && correct !== '' && !isNaN(val) && !isNaN(correct)) {
+            if (Number(val) === Number(correct)) {
+                isCorrect = true;
+            }
+        } 
+        // Sayısal eşleşme olmazsa veya cevap metin ise (evet, hayır vb.) düz metin kontrolü yap
+        else if (valText === correctText) {
+            isCorrect = true;
+        }
+
+        if (isCorrect) {
+            gameState.teams[gameState.currentTeam].score += card.p;
+            card.status = 'correct';
+            finalizeTurn(true, "Aferin! Doğru Cevap! ⭐");
+        } else {
+            const pen = Math.floor(card.p / 2);
+            gameState.teams[gameState.currentTeam].score -= pen;
+            card.status = 'wrong';
+            finalizeTurn(false, `Yanlış Yaptın! -${pen} Puan 📉`);
+        }
+    }
+
+    function prepareJoker(card) {
+        const current = gameState.currentTeam;
+        const next = (current + 1) % 3;
+        
+        let action = () => {};
+        
+        const box = document.getElementById('joker-box');
+        const icon = document.getElementById('joker-icon');
+        const titleEl = document.getElementById('joker-title');
+        const btn = document.getElementById('joker-btn');
+
+        box.className = "modal-box";
+        titleEl.className = "text-3xl font-baloo mb-2 tracking-wide";
+        btn.className = "w-full text-xl font-bold py-3 rounded-xl shadow-lg font-baloo tracking-widest border-b-4 active:border-b-0 active:translate-y-1 transition-all text-white";
+
+        if (card.subType === 'standard') {
+            const pts = card.points;
+            if (pts > 0) {
+                icon.innerText = "🎉";
+                box.style.borderColor = "#22c55e"; 
+                titleEl.classList.add("text-green-600");
+                btn.classList.add("bg-green-500", "border-green-700", "hover:bg-green-400");
+            } else {
+                icon.innerText = "😭";
+                box.style.borderColor = "#ef4444"; 
+                titleEl.classList.add("text-red-600");
+                btn.classList.add("bg-red-500", "border-red-700", "hover:bg-red-400");
+            }
+            action = () => { gameState.teams[current].score += pts; };
+        }
+        else {
+            box.style.borderColor = "#a855f7"; 
+            titleEl.classList.add("text-purple-600");
+            btn.classList.add("bg-purple-500", "border-purple-700", "hover:bg-purple-400");
+            
+            if (card.subType === 'drain') {
+                icon.innerText = "👑";
+                action = () => { gameState.teams[next].score -= 25; gameState.teams[current].score += 25; };
+            }
+            else if (card.subType === 'attack') {
+                icon.innerText = "🥪";
+                action = () => { gameState.teams[next].score -= 20; };
+            }
+            else if (card.subType === 'bomb') {
+                icon.innerText = "📄";
+                action = () => { gameState.teams.forEach(t => t.score = Math.floor(t.score / 2)); };
+            }
+        }
+
+        gameState.pendingJokerAction = action;
+        titleEl.innerText = card.msg;
+        document.getElementById('joker-desc').innerHTML = card.desc;
+        document.getElementById('modal-j').classList.add('modal-active');
+    }
+
+    function applyJokerEffect() {
+        if (gameState.pendingJokerAction) gameState.pendingJokerAction();
+        document.getElementById('modal-j').classList.remove('modal-active');
+        finalizeTurn(true, "Şans Kartı Çekildi! 🎲");
+    }
+
+    function finalizeTurn(success, msg) {
+        const index = gameState.activeIndex;
+        const cardData = gameState.cards[index];
+        
+        cardData.solved = true;
+        gameState.solvedCount++;
+        gameState.activeIndex = null;
+        gameState.pendingJokerAction = null;
+        
+        const cardEl = document.querySelectorAll('.card')[index];
+        const innerBack = cardEl.querySelector('.card-back');
+        
+        if (cardData.type === 'j') {
+            innerBack.innerHTML = `<div class="text-4xl">🎁</div>`;
+            innerBack.className = 'card-face card-back bg-yellow-100 border-yellow-400';
+        } else {
+            if (cardData.status === 'correct') {
+                innerBack.innerHTML = `<div class="text-2xl mb-1">⭐</div><div class="text-green-600 font-black text-lg">+${cardData.p}</div>`;
+                innerBack.className = 'card-face card-back bg-green-50 border-green-500';
+            } else {
+                innerBack.innerHTML = `<div class="text-2xl mb-1">❌</div><div class="text-red-500 font-bold text-base">${cardData.a}</div>`;
+                innerBack.className = 'card-face card-back bg-red-50 border-red-500';
+            }
+        }
+        
+        cardEl.classList.add('opened');
+        renderTeams();
+        showToast(msg, success ? 'success' : 'error');
+
+        if (gameState.solvedCount === gameState.cards.length) {
+            setTimeout(() => { showWinnerScreen(); }, 1200);
+        } else {
+            setTimeout(() => {
+                gameState.currentTeam = (gameState.currentTeam + 1) % 3;
+                renderTeams();
+            }, 1500);
+        }
+    }
+
+    function triggerLastRound() {
+        let unsolvedIndices = [];
+        gameState.cards.forEach((c, i) => { if (!c.solved) unsolvedIndices.push(i); });
+        
+        if (unsolvedIndices.length <= 3) {
+            showToast("Zaten son turlardayız!", "info");
+            return;
+        }
+
+        for (let i = unsolvedIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [unsolvedIndices[i], unsolvedIndices[j]] = [unsolvedIndices[j], unsolvedIndices[i]];
+        }
+
+        const toDisable = unsolvedIndices.slice(3);
+        toDisable.forEach(idx => {
+            gameState.cards[idx].solved = true;
+            gameState.solvedCount++;
+            
+            const cardEl = document.querySelectorAll('.card')[idx];
+            cardEl.style.opacity = '0.3';
+            cardEl.style.pointerEvents = 'none';
+        });
+
+        document.getElementById('btn-last-round').style.display = 'none';
+        showToast("⏳ SON TUR! Her takıma 1 soru kaldı!", "info");
+    }
+
+    function triggerConfetti() {
+        var duration = 4 * 1000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            var particleCount = 50 * (timeLeft / duration);
+            
+            confetti(Object.assign({}, defaults, { 
+                particleCount, 
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } 
+            }));
+            confetti(Object.assign({}, defaults, { 
+                particleCount, 
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } 
+            }));
+        }, 250);
+    }
+
+    function showWinnerScreen() {
+        let maxScore = -99999;
+        let winners = [];
+        
+        gameState.teams.forEach(t => { 
+            if(t.score > maxScore) { maxScore = t.score; winners = [t.name]; } 
+            else if (t.score === maxScore) { winners.push(t.name); }
+        });
+
+        const screen = document.getElementById('winner-screen');
+        const nameEl = document.getElementById('winner-name');
+        const scoreEl = document.getElementById('winner-score');
+        const themeMsgEl = document.getElementById('winner-theme-message');
+        
+        nameEl.innerText = winners.join(" & ");
+        scoreEl.innerText = `${maxScore} Puan`;
+
+        const winMessages = [
+            "Muazzam bir zafere imza attınız, şampiyon sizsiniz! 🏆",
+            "Rakiplerinizi geride bırakıp birinci oldunuz, tebrikler! 🥇",
+            "Matematikte ne kadar harika olduğunuzu herkese kanıtladınız! 🌟",
+            "Kusursuz bir oyun çıkardınız, en büyük tebriği hak ediyorsunuz! 💯",
+            "Zirvenin tek sahibi sizsiniz, şahane bir galibiyet! 🚀",
+            "Sınıfın en iyisi olduğunuzu gösterdiniz, muhteşem bir zafer! ✨"
+        ];
+        
+        themeMsgEl.innerText = winMessages[Math.floor(Math.random() * winMessages.length)];
+
+        screen.classList.remove('hidden');
+        screen.classList.add('flex');
+
+        triggerConfetti();
+    }
+
+    let toastTimeout;
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        if (type === 'success') {
+            t.className = "toast font-baloo bg-green-500 border-green-200 shadow-lg";
+        } else if (type === 'error') {
+            t.className = "toast font-baloo bg-red-500 border-red-200 shadow-lg";
+        } else {
+            t.className = "toast font-baloo bg-purple-500 border-purple-200 shadow-lg";
+        }
+        
+        t.classList.remove('toast-show');
+        void t.offsetWidth; 
+        
+        t.classList.add('toast-show');
+        
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => t.classList.remove('toast-show'), 2000);
+    }
+
+    document.getElementById('modal-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') submitAnswer();
+    });
+
+    window.onload = function() {
+        startGame();
+    };
+
+</script>
+</body>
+</html>
