@@ -538,24 +538,28 @@
     function submitAnswer() {
         const index = gameState.activeIndex;
         const card = gameState.cards[index];
-        let val = document.getElementById('modal-input').value.trim().toLowerCase();
-        let correct = String(card.a).toLowerCase().trim();
+        let val = document.getElementById('modal-input').value.toLowerCase();
+        let correct = String(card.a).toLowerCase();
         
-        // Metinsel Türkçe karakter toleransı
-        let valText = val.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ +/g, ' ');
-        let correctText = correct.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ +/g, ' ');
+        // Tüm metindeki boşlukları kaldıralım ve Türkçe karakterleri dönüştürelim
+        // Bu sayede "tam sayı" ile "tamsayı" veya "- 5" ile "-5" tamamen aynı kabul edilecek
+        let valText = val.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
+        let correctText = correct.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
 
         document.getElementById('modal-q').classList.remove('modal-active');
 
         let isCorrect = false;
+        
+        let valNum = val.replace(/\s+/g, '');
+        let correctNum = correct.replace(/\s+/g, '');
 
-        // Sayısal kontrol (+5 ile 5 girişlerini sayı olarak aynı kabul et)
-        if (val !== '' && correct !== '' && !isNaN(val) && !isNaN(correct)) {
-            if (Number(val) === Number(correct)) {
+        // Sayısal kontrol (+5 ile 5, - 5 ile -5 aynı kabul edilsin)
+        if (valNum !== '' && correctNum !== '' && !isNaN(valNum) && !isNaN(correctNum)) {
+            if (Number(valNum) === Number(correctNum)) {
                 isCorrect = true;
             }
         } 
-        // Sayısal eşleşme olmazsa veya cevap metin ise (evet, hayır vb.) düz metin kontrolü yap
+        // Metinsel kontrol (tamsayı == tam sayı)
         else if (valText === correctText) {
             isCorrect = true;
         }
