@@ -37,6 +37,14 @@ const SISTEM_OYUNLARI = [
         image: "./bolunebilme.jpg",
         url: "./bolunebilme.html"
     },
+    {
+        id: "oyun-6",
+        title: "Z & Q Bilgi Yarışması",
+        grade: "7",
+        image: "./zq.jpg",
+        url: "./zq.html"
+    },
+    
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
