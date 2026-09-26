@@ -326,9 +326,11 @@
         }
 
         // Soru Tipi 11: Rasyonel Sayılarda Sadeleştirme
+        let kesirler = [[1, 2], [1, 3], [1, 4], [2, 3], [2, 5], [3, 4], [3, 5], [4, 5], [3, 7], [4, 7], [5, 6], [5, 8]];
         for (let i = 0; i < 20; i++) {
-            let a = getRandomInt(2, 5);
-            let b = getRandomInt(6, 9);
+            let idx = getRandomInt(0, kesirler.length - 1);
+            let a = kesirler[idx][0];
+            let b = kesirler[idx][1];
             let k = getRandomInt(3, 8);
             let pay = a * k;
             let payda = b * k;
