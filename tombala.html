@@ -90,7 +90,7 @@
                 <span class="text-xl">📐</span>
                 <h1 class="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight">Geometri Tombalası</h1>
             </div>
-            <button onclick="endGameEarly()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm shrink-0 flex items-center gap-1 active:scale-95 transition-all">
+            <button onclick="endGameEarly(false)" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm shrink-0 flex items-center gap-1 active:scale-95 transition-all">
                 <span>🏁</span> Oyunu Bitir
             </button>
         </div>
@@ -220,6 +220,9 @@
     </div>
 
     <script>
+        // OYUN DURUMU BAYRAĞI EKLENDİ (Birden fazla bitiş ekranı açılmasını önler)
+        let gameOver = false;
+
         function shootConfetti(x, y, multiplier = 1) {
             const emojis = ['⭐', '🎉', '🎊', '✨', '🎈', '🌟'];
             const count = 20 * multiplier;
@@ -305,6 +308,7 @@
             clickAttempts = { k: 0, e: 0 };
             currentCard = null;
             cardMatched = false;
+            gameOver = false; // BAŞLANGIÇTA SIFIRLANIR
             updateScores();
             updateDrawnCardUI();
 
@@ -359,16 +363,24 @@
         }
 
         function drawCard() {
-            if (bag.length === 0 && !currentCard) {
-                endGameEarly();
+            if (gameOver) return;
+
+            // MASADA KART VARSA YENİ KART ÇEKMEYİ ZORLA ENGELLER
+            if (currentCard) {
+                const bagContainer = document.getElementById('bag-container');
+                showToast(bagContainer, 'Önce bu kart için hamle yapın (veya PAS geçin)!');
+                bagContainer.classList.add('shake');
+                setTimeout(() => bagContainer.classList.remove('shake'), 400);
+                return;
+            }
+
+            if (bag.length === 0) {
+                endGameEarly(true);
                 return;
             }
             
-            // Eğer çekilen kart henüz doğru eşleştirilmediyse, torbaya geri koy
-            if (currentCard && !cardMatched) {
-                bag.unshift(currentCard); 
-                bag.sort(() => Math.random() - 0.5);
-            }
+            // ESKİ KODDA BULUNAN bag.unshift MANTIĞI TAMAMEN KALDIRILDI.
+            // (Çünkü oynanmayan sürpriz kartlar yüzünden torba sonsuz döngüye giriyordu.)
 
             cardMatched = false;
             clickAttempts = { k: 0, e: 0 };
@@ -420,12 +432,13 @@
 
         function checkTurnEnd() {
             if (clickAttempts.k >= 1 && clickAttempts.e >= 1) {
-                if (currentCard && !cardMatched) {
-                    bag.unshift(currentCard);
-                    bag.sort(() => Math.random() - 0.5);
-                }
                 currentCard = null;
                 updateDrawnCardUI();
+                
+                // KARTLAR TAMAMEN BİTTİYSE VE TOMBALA OLMADIYSA OYUNU PUANA GÖRE BİTİR
+                if (bag.length === 0 && !gameOver) {
+                    setTimeout(() => endGameEarly(true), 1200);
+                }
             }
         }
 
@@ -513,6 +526,9 @@
         }
 
         function triggerWin(team) {
+            if (gameOver) return;
+            gameOver = true;
+
             const teamName = team === 'e' ? 'ERKEKLER' : 'KIZLAR';
             const color = team === 'e' ? '#0ea5e9' : '#f43f5e'; 
             const bgClass = team === 'e' ? 'bg-sky-900/90' : 'bg-rose-900/90';
@@ -552,7 +568,11 @@
             setTimeout(() => clearInterval(continuousConfetti), 12000);
         }
 
-        function endGameEarly() {
+        // isAutoEnd parametresi ile oyunun kart bittiği için mi yoksa butona basılarak mı bittiği kontrol edilir
+        function endGameEarly(isAutoEnd = false) {
+            if (gameOver) return;
+            gameOver = true;
+
             let winnerText = "";
             let color = "#6366f1";
             let emoji = "🏁";
@@ -579,7 +599,9 @@
                     <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-3 shadow-xl text-4xl sm:text-5xl text-white relative z-10" style="background-color: ${color}; animation: partyBounce 1.5s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;">
                         ${emoji}
                     </div>
-                    <h1 class="text-3xl sm:text-5xl font-black mb-1 tracking-tighter drop-shadow-sm relative z-10" style="color: ${color}">SÜRE DOLDU!</h1>
+                    <h1 class="text-3xl sm:text-5xl font-black mb-1 tracking-tighter drop-shadow-sm relative z-10" style="color: ${color}">
+                        ${isAutoEnd ? 'OYUN BİTTİ!' : 'SÜRE DOLDU!'}
+                    </h1>
                     <h2 class="text-lg sm:text-2xl font-extrabold text-slate-800 mb-4 relative z-10">${winnerText}</h2>
                     
                     <div class="w-full bg-slate-50 p-3 sm:p-4 rounded-2xl border-2 border-slate-200 mb-4 relative z-10 flex flex-col gap-2">
