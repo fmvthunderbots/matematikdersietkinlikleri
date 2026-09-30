@@ -44,15 +44,14 @@
       position: absolute; 
       background: rgba(210, 160, 90, 0.85);
       border-radius: 2px;
-      filter: blur(0.5px);
+      /* Performans için blur kaldırıldı */
       animation: bgSandStorm linear infinite;
     }
     .bg-sand-cloud {
       position: absolute;
       width: 400px;
       height: 150px;
-      background: rgba(230, 160, 100, 0.15);
-      filter: blur(40px);
+      background: radial-gradient(circle, rgba(230, 160, 100, 0.15) 0%, rgba(230, 160, 100, 0) 70%);
       border-radius: 50%;
       animation: bgSandStorm linear infinite;
     }
@@ -62,6 +61,14 @@
       80% { opacity: 1; }
       100% { transform: translate(-120vw, 60vh); opacity: 0; }
     }
+
+    @keyframes heartBreakAnim {
+      0% { transform: scale(1); filter: grayscale(0); }
+      50% { transform: scale(1.5) rotate(-15deg); filter: grayscale(0); }
+      100% { transform: scale(0); filter: grayscale(1); opacity: 0; }
+    }
+    .heart-icon { display: inline-block; transition: all 0.2s; }
+    .heart-lost { animation: heartBreakAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
     /* Oyun Arayüzü (HUD) */
     #top-hud {
@@ -261,13 +268,14 @@
       <div id="p1-box" class="team-box single-box">
         <div class="team-name" id="p1-name">Oyuncu</div>
         <div id="p1-question" class="question-text">Asal Sayıları Yakala!</div>
+        <div id="p1-lives" style="font-size:18px; letter-spacing: 2px; margin-top:4px;">❤️❤️❤️❤️❤️</div>
       </div>
       <div id="p1-score" class="score-display">0</div>
     </div>
 
     <!-- Zamanlayıcı ve Oyunu Bitir Butonu -->
     <div id="timer-box" style="position: relative;">
-      <div id="timer" class="timer-val">90s</div>
+      <div id="timer" class="timer-val">60s</div>
       <div class="timer-label">SÜRE</div>
       <button class="btn-endgame" onclick="endGame()">⏹️ Bitir</button>
     </div>
@@ -277,6 +285,7 @@
       <div id="p2-box" class="team-box blue-box">
         <div class="team-name">Mavi Takım</div>
         <div id="p2-question" class="question-text">Asal Sayıları Yakala!</div>
+        <div id="p2-lives" style="font-size:18px; letter-spacing: 2px; margin-top:4px;">❤️❤️❤️❤️❤️</div>
       </div>
     </div>
   </div>
@@ -304,7 +313,8 @@
 
       <!-- AD SOYAD GİRİŞ ALANI (BİREYSEL İÇİN) -->
       <div id="1p-form" style="display:flex; justify-content:center; margin-bottom: 20px;">
-        <input type="text" id="playerFullName" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="30">
+        <input type="text" id="playerFullName" list="studentNamesList" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
+        <datalist id="studentNamesList"></datalist>
       </div>
 
       <!-- SÜRE SEÇİM ALANI (DÜELLO İÇİN) -->
@@ -323,22 +333,13 @@
     <div class="card" id="resultScreen1P" style="display:none;">
       <div style="font-size: 60px; margin-bottom: 10px;">🏆</div>
       <h2 class="start-title">Oyun Bitti!</h2>
-      <p class="start-subtitle">Asal sayılarda kum fırtınası gibi estin!</p>
+      <p class="start-subtitle" id="1p-result-sub">Asal sayılarda kum fırtınası gibi estin!</p>
       
       <div class="score-summary-grid">
         <div class="score-item">
           <div class="label">Toplam Puan</div>
           <div class="val" id="finalScore1P">0</div>
         </div>
-      </div>
-
-      <!-- SKOR KAYDETME ALANI -->
-      <div style="background: #FFFBEB; border: 2px solid #FDE68A; border-radius: 16px; padding: 15px; margin-bottom: 20px;" id="saveRankBox">
-        <p style="font-weight: 800; color: #B45309; margin-bottom: 10px; font-size: 14px;">📝 Skorunu İlk 10'a Kaydet:</p>
-        <div style="display:flex; justify-content:center; margin-bottom: 12px;">
-          <input type="text" id="saveFullName" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="30">
-        </div>
-        <button class="btn-start" style="padding: 12px; font-size: 20px;" onclick="saveScoreToLeaderboard()">💾 Skoru Kaydet</button>
       </div>
 
       <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
@@ -425,7 +426,21 @@
 
       <div id="adminSection" style="display: none;">
         <p style="margin-bottom: 15px; font-weight: 700; color: #475569;">Yönetici paneline hoş geldiniz.</p>
-        <button class="btn-start" style="font-size: 18px; padding: 12px; background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
+        
+        <div style="background: #F1F5F9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; border: 2px solid #CBD5E1;">
+          <h3 style="font-size: 16px; margin-bottom: 8px; color: #1E293B;">📋 Yeni Öğrencileri Ekle</h3>
+          <p style="font-size: 13px; color: #64748B; margin-bottom: 10px;">İsimleri alt alta, virgülle ayırarak veya tırnak içinde ("Ali","Veli" vb.) kopyalayıp yapıştırabilirsiniz. Sistem isimleri otomatik ayıklar ve eskilere dokunmadan listeye ekler.</p>
+          <textarea id="adminStudentList" style="width:100%; height:90px; padding:10px; border-radius:8px; border:1px solid #94A3B8; font-family:sans-serif;" placeholder="İsimleri buraya yapıştırın..."></textarea>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px; margin-bottom: 10px;">
+             <span id="totalStudentsText" style="font-size: 13px; color: #10B981; font-weight:800;">Sistemde 0 öğrenci kayıtlı.</span>
+             <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Listeyi Sıfırla</button>
+          </div>
+          
+          <button class="btn-start" style="font-size: 15px; padding: 10px; border-radius: 8px;" onclick="saveStudentList()">💾 Öğrencileri Sisteme Ekle</button>
+        </div>
+
+        <button class="btn-start" style="font-size: 15px; padding: 10px; background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); border-radius: 8px;" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
       </div>
 
       <button class="btn-subtle" style="margin-top: 20px; width: 100%;" onclick="closeSettings()">Kapat</button>
@@ -514,11 +529,14 @@
 
     let cloudDb = null;
     const DB_NODE = 'scores_asalfirtina';
+    const STUDENTS_NODE = 'students_asalfirtina';
+    let authorizedStudents = [];
 
     if (typeof firebase !== 'undefined') {
       try {
         firebase.initializeApp(FIREBASE_CONFIG);
         cloudDb = firebase.database();
+        
         cloudDb.ref(DB_NODE).on('value', snap => {
           let data = snap.val();
           let arr = [];
@@ -527,7 +545,68 @@
           }
           updateLocalLeaderboard(arr);
         });
+
+        cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+          let data = snap.val();
+          if (data) {
+             authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+             authorizedStudents = [];
+          }
+          
+          let ts = document.getElementById('totalStudentsText');
+          if(ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+          
+          let dl = document.getElementById('studentNamesList');
+          if(dl) {
+             dl.innerHTML = '';
+             authorizedStudents.forEach(name => {
+                 let op = document.createElement('option');
+                 op.value = name;
+                 dl.appendChild(op);
+             });
+          }
+        });
       } catch(e) {}
+    }
+
+    function saveStudentList() {
+      let text = document.getElementById('adminStudentList').value;
+      if (!text.trim()) { alert('Lütfen eklenecek isimleri yazın.'); return; }
+      
+      let newNames = text.replace(/"/g, '')
+                         .split(/[\n,;]+/)
+                         .map(s => s.trim())
+                         .filter(s => s.length > 0);
+                         
+      let currentNamesLower = authorizedStudents.map(n => n.toLocaleLowerCase('tr-TR'));
+      let namesToAdd = [];
+      
+      newNames.forEach(n => {
+          if(!currentNamesLower.includes(n.toLocaleLowerCase('tr-TR'))) {
+              namesToAdd.push(n);
+              currentNamesLower.push(n.toLocaleLowerCase('tr-TR'));
+          }
+      });
+      
+      let updatedList = authorizedStudents.concat(namesToAdd);
+      
+      if(cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+          alert(namesToAdd.length + ' yeni benzersiz öğrenci sisteme eklendi!');
+          document.getElementById('adminStudentList').value = '';
+        }).catch(e => {
+          alert('Kaydedilirken hata oluştu.');
+        });
+      } else {
+        alert('Veritabanı bağlantısı kurulamadı.');
+      }
+    }
+    
+    function clearStudentList() {
+      if(confirm('Kayıtlı tüm öğrenci isimleri silinecek (oyun skorları silinmez). Emin misiniz?')) {
+         if(cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+      }
     }
 
     function levenshtein(a, b) {
@@ -620,16 +699,8 @@
       renderLeaderboard();
     }
 
-    function saveScoreToLeaderboard() {
-      let rawName = document.getElementById('saveFullName').value;
-      let validation = validateRealName(rawName);
-      if(!validation.valid) {
-         alert(validation.error);
-         return;
-      }
-      
-      let fullName = validation.name;
-      
+    function saveScoreToLeaderboardDirectly() {
+      let fullName = currentFullName;
       let entry = {
         name: fullName,
         fullName: fullName,
@@ -645,8 +716,6 @@
           method: 'POST', body: JSON.stringify(entry)
         });
       }
-      document.getElementById('saveRankBox').style.display = 'none';
-      showScreen('LEADERBOARD');
     }
 
     function renderLeaderboard() {
@@ -745,61 +814,67 @@
     let timerInterval, gameInterval;
     let timeLeft = 90;
     
-    let p1 = { score: 0 };
-    let p2 = { score: 0 };
+    let p1 = { score: 0, lives: 5 };
+    let p2 = { score: 0, lives: 5 };
     let currentFullName = '';
     let selectedDuelTime = 90;
 
-    function validateRealName(nameStr) {
-      let trimmed = nameStr.trim().replace(/\s+/g, ' ');
-      let parts = trimmed.split(' ');
-      
-      if (parts.length < 2) {
-          return { valid: false, error: "Lütfen hem adınızı hem de soyadınızı aralarında boşluk bırakarak tam girin." };
-      }
-      
-      let regex = /^[a-zA-ZçÇğĞıİöÖşŞüÜ]+$/;
-      let gibberishRegex = /(.)\1{2,}/;
-      let keyboardSmash = /qwe|asd|zxc|qaz|wsx/i;
-      
-      let bannedExact = [
-         "amk", "aq", "sik", "yarrak", "amcik", "amcık", "piç", "pic", "pezevenk", "yavşak", "yavsak",
-         "mal", "salak", "aptal", "gerizekali", "gerizekalı", "bok", "ibne", "göt", "got", "meme",
-         "osuruk", "zort", "pırt", "pirt", "patates", "domates", "hiyar", "hıyar", "hıyar",
-         "maymun", "hayvan", "inek", "şaban", "saban", "uzaylı", "uzayli", "uzay",
-         "kıllıbacak", "killibacak", "kıllı", "killi", "abdülrezak", "abdulrezak", "abuzer", "abuzittin",
-         "kobra", "ejderha", "baba", "kral", "reis", "pro", "baskan", "başkan", "god", "allah", "ilah",
-         "şeytan", "seytan", "melek", "cin", "hayalet", "vampir", "zombi", "uzayli", "hacker", "oyuncu"
-      ];
-      let severeBanned = ["yarrak", "amcık", "amcik", "pezevenk", "yavşak", "kıllıbacak", "osuruk", "siktir"];
+    function playLifeLostSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch(e) {}
+    }
 
-      for (let p of parts) {
-          if (p.length < 2) {
-             return { valid: false, error: "İsim veya soyisim çok kısa (en az 2 harf olmalı)." };
-          }
-          if (!regex.test(p)) {
-             return { valid: false, error: "Ad ve soyad sadece harflerden oluşmalıdır. Rakam veya sembol kullanmayın." };
-          }
-          if (gibberishRegex.test(p)) {
-             return { valid: false, error: "Lütfen geçerli, gerçek bir isim girin." };
-          }
-          if (keyboardSmash.test(p)) {
-             return { valid: false, error: "Lütfen klavye tuşlarına rastgele basarak isim girmeyin." };
-          }
-          
-          let lowerP = p.toLocaleLowerCase('tr-TR');
-          if (bannedExact.includes(lowerP)) {
-             return { valid: false, error: "Lütfen gerçek adınızı ve soyadınızı girin. Lakap, küfür veya anlamsız kelimeler kullanamazsınız." };
-          }
-          for(let bad of severeBanned) {
-             if (lowerP.includes(bad)) {
-                 return { valid: false, error: "Lütfen gerçek adınızı ve soyadınızı girin. Lakap, küfür veya anlamsız kelimeler kullanamazsınız." };
-             }
-          }
+    function updateLivesDisplay(lostPlayerObj = null) {
+      const p1El = document.getElementById('p1-lives');
+      let html1 = '';
+      for(let i=0; i<5; i++) {
+         if (i < p1.lives) html1 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p1 && i === p1.lives) html1 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html1 += `<span style="opacity:0.3">🖤</span>`;
       }
-      
-      let capitalized = parts.map(w => w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR')).join(' ');
-      return { valid: true, name: capitalized };
+      p1El.innerHTML = html1;
+
+      const p2El = document.getElementById('p2-lives');
+      let html2 = '';
+      for(let i=0; i<5; i++) {
+         if (i < p2.lives) html2 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p2 && i === p2.lives) html2 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html2 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p2El.innerHTML = html2;
+    }
+
+    function validateRealName(nameStr) {
+        let trimmed = nameStr.trim().replace(/\s+/g, ' ');
+        if (!trimmed) {
+            return { valid: false, error: "Lütfen adınızı girin." };
+        }
+        
+        if (authorizedStudents.length === 0) {
+            return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce Sağ Üstteki (⚙️) Yönetici Ayarları'ndan sınıf listesini ekleyin." };
+        }
+        
+        let lowerInput = trimmed.toLocaleLowerCase('tr-TR');
+        let matchedName = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === lowerInput);
+        
+        if (matchedName) {
+            return { valid: true, name: matchedName };
+        } else {
+            return { valid: false, error: "İsminiz sistemdeki öğrenci listesinde bulunamadı! Lütfen listeye eklenen isminizi doğru yazdığınızdan emin olun (veya kutucuğa tıklayıp açılan listeden seçin)." };
+        }
     }
 
     function isPrime(num) {
@@ -817,7 +892,7 @@
       rc.innerHTML = '';
       
       // Kum parçacıkları
-      for(let i=0; i<350; i++) {
+      for(let i=0; i<150; i++) {
         let d = document.createElement('div');
         d.className = 'bg-sand-particle';
         let thickness = Math.random() * 2 + 0.5; // 0.5px - 2.5px
@@ -831,7 +906,7 @@
       }
       
       // Toz bulutları
-      for(let i=0; i<15; i++) {
+      for(let i=0; i<5; i++) {
         let c = document.createElement('div');
         c.className = 'bg-sand-cloud';
         c.style.left = (Math.random() * 150 - 20) + 'vw';
@@ -907,14 +982,16 @@
         document.getElementById('p1-name').innerText = "Kırmızı Takım";
       }
 
-      p1.score = 0; p2.score = 0;
+      p1.score = 0; p1.lives = 5;
+      p2.score = 0; p2.lives = 5;
       updateScores();
+      updateLivesDisplay();
       
       document.getElementById('p1-question').innerText = "Asal Sayıları Yakala!";
       document.getElementById('p2-question').innerText = "Asal Sayıları Yakala!";
 
       isGameRunning = true;
-      timeLeft = gameMode === '1P' ? 90 : selectedDuelTime;
+      timeLeft = gameMode === '1P' ? 60 : selectedDuelTime;
       document.getElementById('timer').innerText = timeLeft + 's';
       
       timerInterval = setInterval(() => {
@@ -1051,7 +1128,16 @@
           popEffect(this, true);
         } else {
           player.score -= 5;
+          player.lives--;
+          playLifeLostSound();
           popEffect(this, false);
+          updateLivesDisplay(player);
+          
+          if(player.lives <= 0) {
+              setTimeout(() => {
+                  endGame(player === p1 ? "P1_DEAD" : "P2_DEAD");
+              }, 500);
+          }
         }
         updateScores();
       }
@@ -1064,7 +1150,7 @@
     }
 
     /* OYUN BİTİŞİ MANTIGI (1P SKOR KAYDEDER VE KUTLANIR, 2P DÜELLO SADECE KAZANANI GÖSTERİR) */
-    function endGame() {
+    function endGame(reason = null) {
       isGameRunning = false;
       clearInterval(timerInterval); clearInterval(gameInterval);
       document.getElementById('game-area').innerHTML = '';
@@ -1075,32 +1161,51 @@
       document.getElementById('center-line').style.display = 'none';
       
       if(gameMode === '1P') {
+        saveScoreToLeaderboardDirectly();
         document.getElementById('resultScreen1P').style.display = 'block';
         document.getElementById('finalScore1P').innerText = p1.score;
-        document.getElementById('saveFullName').value = currentFullName;
-        document.getElementById('saveRankBox').style.display = 'block';
+        
+        let sub = document.getElementById('1p-result-sub');
+        if (reason === "P1_DEAD") {
+            sub.innerText = "Tüm canların bitti! Ama pes etme, harika bir efordu.";
+            sub.style.color = "#EF4444";
+        } else {
+            sub.innerText = "Asal sayılarda kum fırtınası gibi estin!";
+            sub.style.color = "#475569";
+        }
       } else {
-        // 2P DÜELLO EKRANI: Sadece Kazananı Tebrik Eder, Sıralama/Veritabanı Kaydı Yapmaz
         document.getElementById('resultScreen2P').style.display = 'block';
         let title = document.getElementById('winner-title-2p');
         let sub = document.getElementById('winner-sub-2p');
         document.getElementById('winner-score-p1').innerText = p1.score;
         document.getElementById('winner-score-p2').innerText = p2.score;
 
-        if(p1.score > p2.score) {
-          title.innerText = "🔴 Kırmızı Takım Kazandı!";
-          title.style.color = "#EF4444";
-          sub.innerText = "Tebrikler! Kırmızı Takım üstün bir mücadeleyle düelloyu galip tamamladı!";
-          playFanfareSound(1);
-        } else if(p2.score > p1.score) {
-          title.innerText = "🔵 Mavi Takım Kazandı!";
-          title.style.color = "#3B82F6";
-          sub.innerText = "Tebrikler! Mavi Takım üstün bir mücadeleyle düelloyu galip tamamladı!";
-          playFanfareSound(1);
+        if (reason === "P1_DEAD") {
+           title.innerText = "🔵 Mavi Takım Kazandı!";
+           title.style.color = "#3B82F6";
+           sub.innerText = "Kırmızı takımın tüm canları bitti! Mavi Takım galip geldi!";
+           playFanfareSound(1);
+        } else if (reason === "P2_DEAD") {
+           title.innerText = "🔴 Kırmızı Takım Kazandı!";
+           title.style.color = "#EF4444";
+           sub.innerText = "Mavi takımın tüm canları bitti! Kırmızı Takım galip geldi!";
+           playFanfareSound(1);
         } else {
-          title.innerText = "🤝 Dostluk Kazandı! Berabere!";
-          title.style.color = "#10B981";
-          sub.innerText = "İki takım da eşit puan toplayarak muhteşem bir mücadele sergiledi!";
+            if(p1.score > p2.score) {
+              title.innerText = "🔴 Kırmızı Takım Kazandı!";
+              title.style.color = "#EF4444";
+              sub.innerText = "Tebrikler! Kırmızı Takım üstün bir mücadeleyle düelloyu galip tamamladı!";
+              playFanfareSound(1);
+            } else if(p2.score > p1.score) {
+              title.innerText = "🔵 Mavi Takım Kazandı!";
+              title.style.color = "#3B82F6";
+              sub.innerText = "Tebrikler! Mavi Takım üstün bir mücadeleyle düelloyu galip tamamladı!";
+              playFanfareSound(1);
+            } else {
+              title.innerText = "🤝 Dostluk Kazandı! Berabere!";
+              title.style.color = "#10B981";
+              sub.innerText = "İki takım da eşit puan toplayarak muhteşem bir mücadele sergiledi!";
+            }
         }
       }
     }
