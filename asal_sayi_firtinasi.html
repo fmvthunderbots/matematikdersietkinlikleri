@@ -204,14 +204,14 @@
     .btn-restart { background: linear-gradient(135deg, #D97706, #B45309); color: white; }
 
     /* Lider Tablosu Özel Tasarımı */
-    .leaderboard-card { max-width: 780px; }
-    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-bottom: 20px; }
-    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 8px; }
-    .lb-row { background: #F8FAFC; border-radius: 14px; cursor: pointer; transition: transform 0.2s; }
+    .leaderboard-card { max-width: 780px; max-height: 95vh; display: flex; flex-direction: column; }
+    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 10px; }
+    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
+    .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
     .lb-row:hover { transform: scale(1.02); }
-    .lb-row td { padding: 12px 10px; font-size: 15px; font-weight: 700; text-align: center; }
-    .lb-row td:first-child { border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
-    .lb-row td:last-child { border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
+    .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; }
+    .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
     
     .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
     .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
@@ -370,29 +370,32 @@
     </div>
 
     <!-- LİDER TABLOSU EKRANI -->
-    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 15px;">
-        <h2 class="start-title" style="margin:0;">🏆 İlk 10 Sıralaması</h2>
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
         <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
       </div>
-      <table class="lb-table">
-        <thead>
-          <tr>
-            <th style="width: 50px;">Sıra</th>
-            <th style="text-align: left;">Adı Soyadı</th>
-            <th>Puan</th>
-            <th>Tarih</th>
-            <th>Kutla</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboardBody">
-          <!-- JS ile doldurulur -->
-        </tbody>
-      </table>
-      <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. İlk sen ol!</div>
+      
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">Sıra</th>
+              <th style="text-align: left;">Adı Soyadı</th>
+              <th>Puan</th>
+              <th>Tarih</th>
+              <th>Kutla</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- JS ile doldurulur -->
+          </tbody>
+        </table>
+        <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. İlk sen ol!</div>
+      </div>
       
       <!-- BAŞA DÖN / YENİDEN OYNA BUTONU -->
-      <button class="btn-start" style="margin-top: 15px; padding: 14px; font-size: 20px;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
     </div>
   </div>
 
