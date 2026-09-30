@@ -32,7 +32,7 @@ const SISTEM_OYUNLARI = [
     },
     {
         id: "oyun-5",
-        title: "Bölünebilme",
+        title: "Bölünebilme Yağmuru",
         grade: "6",
         image: "./bolunebilme.jpg",
         url: "./bolunebilme.html"
