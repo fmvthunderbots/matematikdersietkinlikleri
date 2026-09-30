@@ -44,6 +44,13 @@ const SISTEM_OYUNLARI = [
         image: "./zq.jpg",
         url: "./zq.html"
     },
+    {
+        id: "oyun-7",
+        title: "Asal Sayı Fırtınası",
+        grade: "6",
+        image: "./asal_sayi_firtinasi.jpg",
+        url: "./asal_sayi_firtinasi.html"
+    },
     
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
