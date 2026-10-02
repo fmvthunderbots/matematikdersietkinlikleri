@@ -309,15 +309,12 @@
             return b === 0 ? Math.abs(a) : gcd(b, Math.abs(a) % b);
         }
 
-        pool.push({ q: "İki basamaklı en büyük negatif tam sayı kaçtır?", a: "-10", p: 15 });
-        pool.push({ q: "İki basamaklı en küçük tam sayı kaçtır?", a: "-99", p: 15 });
-        pool.push({ q: "Rakamları farklı iki basamaklı en küçük tam sayı kaçtır?", a: "-98", p: 20 });
-        pool.push({ q: "En küçük pozitif tam sayı kaçtır?", a: "1", p: 10 });
+        // SADECE TAM SAYILAR (Çok Nadir)
         pool.push({ q: "En büyük negatif tam sayı kaçtır?", a: "-1", p: 10 });
-        pool.push({ q: "0,<span style='text-decoration: overline;'>9</span> devirli ondalık gösterimi hangi tam sayıya eşittir?", a: "1", p: 20 });
+        pool.push({ q: "0,<span style='text-decoration: overline;'>9</span> devirli ondalık gösterimi hangi tam sayıya eşittir?", a: "1", p: 15 });
         pool.push({ q: "Paydası 1 olan rasyonel sayılara genel olarak ne denir?", a: "tam sayı", p: 15 });
 
-        // Ondalık -> Rasyonel (a+b)
+        // ONDALIK -> RASYONEL
         let decimals = [
             { d: "0,5", n: 1, d_den: 2 }, { d: "0,25", n: 1, d_den: 4 }, { d: "0,75", n: 3, d_den: 4 },
             { d: "0,2", n: 1, d_den: 5 }, { d: "0,4", n: 2, d_den: 5 }, { d: "0,6", n: 3, d_den: 5 },
@@ -334,11 +331,11 @@
             pool.push({
                 q: `"${signStr}${item.d}" ondalık gösteriminin en sade kesir hâli a/b'dir. Buna göre a+b kaçtır? (a işaretini korur)`,
                 a: String(num + den),
-                p: 25
+                p: 20
             });
         }
 
-        // Devirli -> Rasyonel (a/b)
+        // DEVİRLİ -> RASYONEL (Basit)
         for (let n = 1; n <= 8; n++) {
             let num = n;
             let den = 9;
@@ -350,7 +347,7 @@
             });
         }
         
-        // x,y(devirli)
+        // DEVİRLİ -> RASYONEL (x,y devreden)
         for (let i = 0; i < 20; i++) {
             let tam = getRandomInt(1, 4);
             let devir = getRandomInt(1, 8);
@@ -360,11 +357,11 @@
             pool.push({
                 q: `${tam},<span style='text-decoration: overline;'>${devir}</span> devirli ondalık gösteriminin en sade kesir hâlinde pay kaçtır?`,
                 a: String(pay / g),
-                p: 30
+                p: 25
             });
         }
 
-        // 0,xy(devirli)
+        // DEVİRLİ -> RASYONEL (0,xy y devreden)
         for (let i = 0; i < 15; i++) {
             let x = getRandomInt(1, 8);
             let y = getRandomInt(1, 8);
@@ -375,13 +372,13 @@
             pool.push({
                 q: `0,${x}<span style='text-decoration: overline;'>${y}</span> devirli ondalık gösteriminin en sade hâli a/b ise b-a kaçtır?`,
                 a: String((den/g) - (num/g)),
-                p: 35
+                p: 30
             });
         }
 
-        // Eşitsizlikten tam sayı
+        // EŞİTSİZLİKTEN TAM SAYI BULMA (Rasyonel Sınırlar)
         for (let i = 0; i < 20; i++) {
-            let num = getRandomInt(11, 45);
+            let num = getRandomInt(11, 55);
             let den = getRandomInt(3, 8);
             if (num % den === 0) num++;
             let val = num / den;
@@ -416,41 +413,69 @@
             }
         }
 
-        // Mutlak Değer
+        // RASYONEL MUTLAK DEĞER (Bir adım ilerisi)
         for(let i = 0; i < 15; i++) {
-            let n = getRandomInt(4, 15);
+            let num = getRandomInt(13, 45); 
+            let den = getRandomInt(4, 7); 
+            if (num % den === 0) num++;
+            let maxBoundary = Math.floor(num / den); 
+            let count = 2 * maxBoundary + 1;
+            
             pool.push({
-                q: `Mutlak değeri ${n}'ten küçük olan kaç tane tam sayı vardır?`,
-                a: String(2 * n - 1),
-                p: 20
+                q: `Mutlak değeri ${num}/${den}'ten küçük olan kaç tane tam sayı vardır?`,
+                a: String(count),
+                p: 30
             });
             pool.push({
-                q: `Mutlak değeri ${n}'ten küçük olan en küçük tam sayı kaçtır?`,
-                a: String(-(n - 1)),
-                p: 20
+                q: `Mutlak değeri ${num}/${den}'ten küçük olan en küçük tam sayı kaçtır?`,
+                a: String(-maxBoundary),
+                p: 30
             });
         }
 
-        // Averaj / Sıcaklık / Borç
+        // RASYONEL SAYILAR ARASI TAM SAYI SAYISI
+        for(let i=0; i<15; i++) {
+            let num1 = -1 * getRandomInt(11, 29); 
+            let den1 = getRandomInt(3, 5);
+            if (num1 % den1 === 0) num1++;
+            
+            let num2 = getRandomInt(11, 29);
+            let den2 = getRandomInt(3, 5);
+            if (num2 % den2 === 0) num2++;
+            
+            let minInt = Math.ceil(num1/den1);
+            let maxInt = Math.floor(num2/den2);
+            let count = maxInt - minInt + 1;
+            
+            pool.push({
+                q: `Sayı doğrusunda ${num1}/${den1} ile ${num2}/${den2} rasyonel sayıları arasında kaç tane tam sayı vardır?`,
+                a: String(count),
+                p: 30
+            });
+        }
+        
+        // RASYONEL SAYILAR ARASI TAM SAYILARIN TOPLAMI
         for(let i=0; i<10; i++) {
-            let attigi = getRandomInt(20, 50);
-            let yedigi = attigi + getRandomInt(5, 15);
+            let num1 = -1 * getRandomInt(7, 19);
+            let den1 = 3;
+            if(num1%3 === 0) num1++;
+            
+            let num2 = getRandomInt(7, 19);
+            let den2 = 2;
+            if(num2%2 === 0) num2++;
+            
+            let minInt = Math.ceil(num1/den1);
+            let maxInt = Math.floor(num2/den2);
+            let sum = 0;
+            for(let j=minInt; j<=maxInt; j++) sum += j;
             pool.push({
-                q: `Bir futbol takımı sezon boyunca ${attigi} gol atıp, ${yedigi} gol yemiştir. Bu takımın averajı kaçtır?`,
-                a: String(attigi - yedigi),
-                p: 15
-            });
-        }
-        for(let i=0; i<5; i++) {
-            let borc = getRandomInt(1, 5) * 10;
-            pool.push({
-                q: `Ahmet'in ${borc} TL borcu vardır. Bu durum tam sayı ile nasıl ifade edilir?`,
-                a: String(-borc),
-                p: 10
+                q: `${num1}/${den1} ile ${num2}/${den2} rasyonel sayıları arasındaki tam sayıların toplamı kaçtır?`,
+                a: String(sum),
+                p: 35
             });
         }
 
-        // Sonlu / Devirli
+        // SONLU / DEVİRLİ KONTROLÜ
         let fracs = [
             {f: "12/25", ans: "sonlu"}, {f: "8/18", ans: "devirli"}, {f: "63/35", ans: "sonlu"}, 
             {f: "18/15", ans: "sonlu"}, {f: "7/16", ans: "sonlu"}, {f: "37/22", ans: "devirli"},
@@ -465,17 +490,10 @@
             });
         });
 
-        // Kesirler arası tam sayı
-        for(let i=0; i<10; i++) {
-            let a = -1 * getRandomInt(1, 5);
-            let b = getRandomInt(1, 5);
-            let count = b - a - 1;
-            pool.push({
-                q: `${a} ile ${b} arasında kaç tane tam sayı vardır?`,
-                a: String(count),
-                p: 20
-            });
-        }
+        // SIRALAMA VE ÖZEL SORULAR
+        pool.push({q: "-1/2, -1/3 ve -1/4 rasyonel sayılarından en büyüğü hangisidir? (Örn: -1/5)", a: "-1/4", p: 20});
+        pool.push({q: "-1/2, -1/3 ve -1/4 rasyonel sayılarından en küçüğü hangisidir?", a: "-1/2", p: 20});
+        pool.push({q: "-5/2 ile 7/3 rasyonel sayıları arasındaki en büyük tam sayı kaçtır?", a: "2", p: 25});
         
         // Clean unique
         let uniquePool = [];
