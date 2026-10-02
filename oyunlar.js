@@ -51,7 +51,13 @@ const SISTEM_OYUNLARI = [
         image: "./asal_sayi_firtinasi.jpg",
         url: "./asal_sayi_firtinasi.html"
     },
-    
+    {
+        id: "oyun-8",
+        title: "Rasyonel Yağmuru",
+        grade: "7",
+        image: "./rasyonel_yagmuru.jpg",
+        url: "./rasyonel_yagmuru.html"
+    },
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
