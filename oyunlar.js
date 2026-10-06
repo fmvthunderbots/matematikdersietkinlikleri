@@ -60,10 +60,10 @@ const SISTEM_OYUNLARI = [
     },
     {
         id: "oyun-9",
-        title: "Rasyonel Yağmuru",
+        title: "Kutuplarda Asallık",
         grade: "6",
         image: "./polar_cover.jpg",
-        url: "./ralarinda_asal_kutup.html"
+        url: "./aralarinda_asal_kutup.html"
     },
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
