@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kutuplarda Asallık</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* TEMEL AYARLAR */
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-image: url('polar_background_1791279906598.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      height: 100vh; width: 100vw;
+      overflow: hidden;
+      color: #333;
+    }
+    
+    /* KAR EFEKTİ */
+    #snow-container {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .snowflake {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(110vh) translateX(20px); opacity: 0; }
+    }
+
+    /* HUD */
+    #top-hud {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 15px 30px; position: relative; z-index: 10;
+    }
+    .hud-side { display: flex; align-items: center; gap: 15px; }
+    .team-box {
+      background: rgba(255, 255, 255, 0.9); border: 3px solid #0EA5E9;
+      border-radius: 20px; padding: 10px 20px; text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .team-name { font-size: 14px; font-weight: 900; color: #0284C7; text-transform: uppercase; letter-spacing: 1px; }
+    .score-display {
+      font-family: 'Baloo 2', cursive; font-size: 40px; font-weight: 800;
+      color: #FFF; text-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px #0284C7;
+      min-width: 80px; text-align: center;
+    }
+    
+    #timer-box {
+      background: rgba(255, 255, 255, 0.95); border: 3px solid #38BDF8;
+      border-radius: 20px; padding: 10px 30px; text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .timer-val { font-family: 'Baloo 2', cursive; font-size: 45px; font-weight: 800; color: #0369A1; line-height: 1; }
+    .timer-label { font-size: 13px; font-weight: 900; color: #7DD3FC; letter-spacing: 2px; margin-bottom: 5px; }
+    .btn-endgame {
+      background: #EF4444; color: white; border: none; padding: 5px 15px;
+      border-radius: 8px; font-weight: bold; cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* OYUN ALANI */
+    #game-container {
+      position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
+      width: 450px; height: 450px; z-index: 5;
+    }
+    #pipes-svg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+    }
+    .pipe {
+      stroke-width: 12; stroke-linecap: round; transition: stroke 0.3s, filter 0.3s;
+    }
+    .pipe.invalid { stroke: #EF4444; filter: drop-shadow(0 0 4px #EF4444); }
+    .pipe.valid { stroke: #10B981; filter: drop-shadow(0 0 6px #10B981); }
+    .pipe.neutral { stroke: #94A3B8; opacity: 0.5; }
+
+    #grid {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
+      display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+      gap: 0;
+    }
+    .tile-wrapper {
+      position: relative; display: flex; justify-content: center; align-items: center;
+    }
+    .tile {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, #E0F2FE, #BAE6FD);
+      border: 4px solid #0EA5E9; border-radius: 20px;
+      display: flex; justify-content: center; align-items: center;
+      font-family: 'Baloo 2', cursive; font-size: 40px; font-weight: 800; color: #0369A1;
+      cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 4px 0 rgba(255,255,255,0.7);
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .tile:hover { transform: scale(1.05) translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.3); }
+    .tile.selected {
+      background: #FEF08A; border-color: #EAB308; transform: scale(1.1); box-shadow: 0 0 20px #FDE047;
+    }
+    
+    /* MENÜLER / OVERLAY */
+    .app-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(2, 6, 23, 0.75); backdrop-filter: blur(8px);
+      display: flex; justify-content: center; align-items: center; z-index: 50;
+    }
+    .card {
+      background: white; border-radius: 30px; padding: 40px; text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 90%; max-width: 500px;
+      position: relative;
+    }
+    .start-title { font-family: 'Baloo 2', cursive; font-size: 45px; color: #0369A1; line-height: 1.1; margin-bottom: 10px; }
+    .start-subtitle { font-size: 18px; color: #475569; margin-bottom: 30px; font-weight: 700; }
+    
+    .input-player {
+      width: 100%; padding: 15px 20px; font-size: 18px; font-weight: 700; font-family: 'Nunito', sans-serif;
+      border: 3px solid #E2E8F0; border-radius: 15px; outline: none; text-align: center;
+      transition: border 0.3s; color: #1E293B; background: #F8FAFC;
+    }
+    .input-player:focus { border-color: #0EA5E9; background: #FFF; box-shadow: 0 0 15px rgba(14, 165, 233, 0.3); }
+    
+    .btn-start {
+      width: 100%; padding: 18px; font-size: 24px; font-weight: 900; font-family: 'Nunito', sans-serif;
+      color: white; background: linear-gradient(135deg, #0EA5E9, #0284C7);
+      border: none; border-radius: 18px; cursor: pointer; transition: all 0.3s;
+      box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4); text-transform: uppercase;
+    }
+    .btn-start:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(2, 132, 199, 0.5); }
+    
+    .btn-subtle {
+      background: transparent; border: 2px solid #CBD5E1; color: #64748B;
+      padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 16px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-subtle:hover { background: #F1F5F9; border-color: #94A3B8; color: #334155; }
+    
+    .score-summary-grid {
+      display: flex; gap: 15px; margin-bottom: 25px; justify-content: center;
+    }
+    .score-item { background: #F8FAFC; padding: 15px; border-radius: 15px; border: 2px solid #E2E8F0; flex: 1; }
+    .score-item .label { font-size: 14px; font-weight: 800; color: #64748B; margin-bottom: 5px; }
+    .score-item .val { font-family: 'Baloo 2', cursive; font-size: 32px; font-weight: 900; color: #0EA5E9; line-height: 1; }
+
+    /* Lider Tablosu (Tam Ekrana Sığması İçin) */
+    .leaderboard-card {
+      max-height: 85vh; display: flex; flex-direction: column; max-width: 650px;
+    }
+    .lb-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .lb-table th { color: #64748B; font-size: 13px; font-weight: 900; text-transform: uppercase; padding: 10px 5px; border-bottom: 2px solid #E2E8F0; }
+    .lb-table td { padding: 8px 5px; font-weight: 700; color: #1E293B; border-bottom: 1px solid #F1F5F9; font-size: 16px; }
+    .lb-rank { font-family: 'Baloo 2', cursive; font-size: 20px; font-weight: 900; color: #94A3B8; }
+    .lb-name { text-align: left; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-score { font-family: 'Baloo 2', cursive; font-size: 22px; font-weight: 900; color: #D97706; }
+    .btn-cel-mini {
+      background: #FEF3C7; color: #B45309; border: none; padding: 6px 12px; border-radius: 20px;
+      font-weight: 800; cursor: pointer; font-size: 12px; transition: transform 0.2s;
+    }
+    .btn-cel-mini:hover { transform: scale(1.1); background: #FDE68A; }
+
+    /* Kutlama Modalı */
+    .celebration-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: none; justify-content: center; align-items: center; z-index: 100;
+    }
+    .celebration-backdrop { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+    .celebration-card {
+      position: relative; background: white; border-radius: 30px; padding: 40px; text-align: center;
+      width: 90%; max-width: 450px; z-index: 101; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .cel-name { font-family: 'Baloo 2', cursive; font-size: 35px; color: #1E293B; line-height: 1.1; margin-bottom: 5px; }
+    .cel-score { font-family: 'Baloo 2', cursive; font-size: 45px; font-weight: 900; color: #0EA5E9; line-height: 1; margin-bottom: 15px; }
+    .btn-cel-close {
+      background: linear-gradient(135deg, #10B981, #059669); color: white; border: none;
+      padding: 15px 30px; border-radius: 15px; font-size: 20px; font-weight: 900; width: 100%;
+      cursor: pointer; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); margin-top: 10px;
+    }
+  </style>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <div id="snow-container"></div>
+
+  <!-- HUD -->
+  <div id="top-hud" style="display: none;">
+    <div class="hud-side left">
+      <div class="team-box">
+        <div class="team-name" id="p-name">Oyuncu</div>
+        <div style="font-size: 16px; font-weight: bold; color: #0369A1; margin-top: 5px;">Bağlantılar</div>
+        <div id="valid-edges-display" style="font-family: 'Baloo 2', cursive; font-size: 24px; color: #10B981; font-weight: 900; line-height: 1;">0 / 12</div>
+      </div>
+      <div id="p-score" class="score-display">0</div>
+    </div>
+    <div id="timer-box">
+      <div id="timer" class="timer-val">60s</div>
+      <div class="timer-label">SÜRE</div>
+      <button class="btn-endgame" onclick="endGame(false)">⏹️ Bitir</button>
+    </div>
+  </div>
+
+  <!-- Oyun Alanı -->
+  <div id="game-container" style="display: none;">
+    <svg id="pipes-svg">
+      <!-- Çizgiler JS ile oluşturulacak -->
+    </svg>
+    <div id="grid">
+      <!-- Hücreler JS ile oluşturulacak -->
+    </div>
+  </div>
+
+  <!-- Overlay ve Menüler -->
+  <div class="app-overlay" id="app-overlay">
+    
+    <!-- BAŞLANGIÇ -->
+    <div class="card" id="startScreen" style="position: relative;">
+      <!-- Ayarlar -->
+      <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
+      
+      <img src="polar_cover_1791279919901.jpg" style="width: 150px; height: 150px; border-radius: 20px; margin: -20px auto 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); display: block; border: 4px solid white;">
+      
+      <h1 class="start-title">Kutuplarda Asallık</h1>
+      <p class="start-subtitle">Zaman bitmeden tüm buz bloklarını aralarında asal olacak şekilde bağla!</p>
+      
+      <div id="1p-form" style="display:flex; justify-content:center; margin-bottom: 20px;">
+        <input type="text" id="playerFullName" list="studentNamesList" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
+        <datalist id="studentNamesList"></datalist>
+      </div>
+
+      <button class="btn-start" onclick="startGame()">🚀 OYUNA BAŞLA</button>
+      <button class="btn-subtle" onclick="showScreen('LEADERBOARD')" style="margin-top: 15px; width: 100%;">🏆 İlk 10 Lider Tablosu</button>
+    </div>
+
+    <!-- SONUÇ EKRANI -->
+    <div class="card" id="resultScreen" style="display:none;">
+      <div style="font-size: 60px; margin-bottom: 10px;" id="result-icon">🏆</div>
+      <h2 class="start-title" id="result-title">Süre Bitti!</h2>
+      <p class="start-subtitle" id="result-sub">Buz blokları harika görünüyor.</p>
+      
+      <div class="score-summary-grid">
+        <div class="score-item">
+          <div class="label">Doğru Bağlantı</div>
+          <div class="val" id="res-edges">0/12</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Süre Bonusu</div>
+          <div class="val" id="res-time">0</div>
+        </div>
+        <div class="score-item" style="background:#FFFBEB; border-color:#FDE68A;">
+          <div class="label">Toplam Puan</div>
+          <div class="val" id="res-total" style="color:#D97706;">0</div>
+        </div>
+      </div>
+
+      <button class="btn-start" style="margin-bottom: 15px;" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
+      <button class="btn-subtle" style="width: 100%;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+
+    <!-- LİDER TABLOSU -->
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
+        <button class="btn-subtle" style="padding: 6px 12px;" onclick="showScreen('START')">✕ Kapat</button>
+      </div>
+      
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">Sıra</th>
+              <th style="text-align: left;">Adı Soyadı</th>
+              <th>Puan</th>
+              <th>Kutla</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+        <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. İlk sen ol!</div>
+      </div>
+      
+      <button class="btn-start" style="margin-top: 15px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+  </div>
+
+  <!-- KUTLAMA MODALI -->
+  <div class="celebration-modal" id="celebrationModal">
+    <div class="celebration-backdrop" onclick="closeCelebration()"></div>
+    <div class="celebration-card" id="celebrationCard">
+      <div style="font-size: 65px; margin-bottom: 5px;" id="celIcon">⭐</div>
+      <div class="cel-name" id="celName">Öğrenci</div>
+      <div style="font-size: 18px; font-weight: 800; color: #0EA5E9; margin-bottom: 8px;" id="celTitle">Kutup Yıldızı!</div>
+      <div class="cel-score" id="celScore">0 Puan</div>
+      <p id="celMessage" style="font-size: 15px; font-weight: 700; color: #475569; margin-bottom: 20px; line-height: 1.4;">Tebrikler!</p>
+      <button class="btn-cel-close" onclick="closeCelebration()">👏 Alkışla ve Kapat</button>
+    </div>
+  </div>
+
+  <!-- AYARLAR MODALI -->
+  <div class="celebration-modal" id="settingsModal">
+    <div class="celebration-backdrop" onclick="closeSettings()"></div>
+    <div class="celebration-card" style="padding: 30px;">
+      <h2 class="start-title" style="font-size: 28px; margin-bottom: 20px;">⚙️ Ayarlar</h2>
+      
+      <div id="authSection">
+        <input type="password" id="adminPassword" class="input-player" placeholder="Yönetici Şifresi" style="margin-bottom: 15px;">
+        <button class="btn-start" style="font-size: 18px; padding: 12px;" onclick="checkAdminPassword()">Giriş Yap</button>
+      </div>
+
+      <div id="adminSection" style="display: none;">
+        <div style="background: #F1F5F9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; border: 2px solid #CBD5E1;">
+          <h3 style="font-size: 16px; margin-bottom: 8px; color: #1E293B;">📋 Öğrenci Listesi (Whitelist)</h3>
+          <p style="font-size: 13px; color: #64748B; margin-bottom: 10px;">İsimleri alt alta veya virgülle ayırarak yapıştırın. Sistem eskilerin üstüne otomatik ekler.</p>
+          <textarea id="adminStudentList" style="width:100%; height:90px; padding:10px; border-radius:8px; border:1px solid #94A3B8; font-family:sans-serif;" placeholder="İsimleri buraya yapıştırın..."></textarea>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px; margin-bottom: 10px;">
+             <span id="totalStudentsText" style="font-size: 13px; color: #10B981; font-weight:800;">Sistemde 0 öğrenci kayıtlı.</span>
+             <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Listeyi Sıfırla</button>
+          </div>
+          <button class="btn-start" style="font-size: 15px; padding: 10px; border-radius: 8px;" onclick="saveStudentList()">💾 Sisteme Ekle</button>
+        </div>
+        <button class="btn-start" style="font-size: 15px; padding: 10px; background: #EF4444; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); border-radius: 8px;" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
+      </div>
+      <button class="btn-subtle" style="margin-top: 20px; width: 100%;" onclick="closeSettings()">Kapat</button>
+    </div>
+  </div>
+
+  <script>
+    // --- FIREBASE KURULUMU ---
+    const FIREBASE_CONFIG = {
+      databaseURL: "https://antigravity-math-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
+    let cloudDb = null;
+    const DB_NODE = 'scores_asalkutup';
+    const STUDENTS_NODE = 'students_asalkutup';
+    let authorizedStudents = [];
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        cloudDb = firebase.database();
+        
+        cloudDb.ref(DB_NODE).on('value', snap => {
+          let data = snap.val();
+          let arr = [];
+          if(data) Object.keys(data).forEach(k => arr.push(data[k]));
+          updateLocalLeaderboard(arr);
+        });
+
+        cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+          let data = snap.val();
+          authorizedStudents = data ? data.split('\n').map(s => s.trim()).filter(s => s.length > 0) : [];
+          
+          let ts = document.getElementById('totalStudentsText');
+          if(ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+          
+          let dl = document.getElementById('studentNamesList');
+          if(dl) {
+             dl.innerHTML = '';
+             authorizedStudents.forEach(name => {
+                 let op = document.createElement('option');
+                 op.value = name;
+                 dl.appendChild(op);
+             });
+          }
+        });
+      } catch(e) {}
+    }
+
+    // --- ÖĞRENCİ LİSTESİ (ADMIN) ---
+    function saveStudentList() {
+      let text = document.getElementById('adminStudentList').value;
+      if (!text.trim()) return alert('Lütfen eklenecek isimleri yazın.');
+      let newNames = text.replace(/"/g, '').split(/[\n,;]+/).map(s => s.trim()).filter(s => s.length > 0);
+      let currentNamesLower = authorizedStudents.map(n => n.toLocaleLowerCase('tr-TR'));
+      let namesToAdd = [];
+      newNames.forEach(n => {
+          if(!currentNamesLower.includes(n.toLocaleLowerCase('tr-TR'))) {
+              namesToAdd.push(n);
+              currentNamesLower.push(n.toLocaleLowerCase('tr-TR'));
+          }
+      });
+      let updatedList = authorizedStudents.concat(namesToAdd);
+      if(cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+          alert(namesToAdd.length + ' yeni benzersiz öğrenci sisteme eklendi!');
+          document.getElementById('adminStudentList').value = '';
+        });
+      }
+    }
+    
+    function clearStudentList() {
+      if(confirm('Kayıtlı tüm öğrenci isimleri silinecek. Emin misiniz?')) {
+         if(cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+      }
+    }
+
+    function validateRealName(nameStr) {
+        let trimmed = nameStr.trim().replace(/\s+/g, ' ');
+        if (!trimmed) return { valid: false, error: "Lütfen adınızı girin." };
+        if (authorizedStudents.length === 0) return { valid: false, error: "Sisteme henüz liste yüklenmemiş. (Ayarlar'dan ekleyin)" };
+        
+        let lowerInput = trimmed.toLocaleLowerCase('tr-TR');
+        let matchedName = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === lowerInput);
+        if (matchedName) return { valid: true, name: matchedName };
+        return { valid: false, error: "İsminiz listede bulunamadı! Açılır menüden seçin veya doğru yazın." };
+    }
+
+    // --- OYUN MANTIĞI VE DEĞİŞKENLER ---
+    let isGameRunning = false;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let currentFullName = '';
+    let currentScore = 0;
+    
+    let gridNumbers = new Array(9).fill(0);
+    let edges = [
+      [0,1], [1,2], [3,4], [4,5], [6,7], [7,8], // Yatay
+      [0,3], [3,6], [1,4], [4,7], [2,5], [5,8]  // Dikey
+    ];
+    let selectedTileIndex = -1;
+
+    // Matematik
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+    function isCoprime(a, b) { return gcd(a, b) === 1; }
+
+    function getNeighbors(i) {
+      let n = [];
+      if(i%3 !== 0) n.push(i-1);
+      if(i%3 !== 2) n.push(i+1);
+      if(Math.floor(i/3) !== 0) n.push(i-3);
+      if(Math.floor(i/3) !== 2) n.push(i+3);
+      return n;
+    }
+
+    // Rastgele ama çözülebilir bir 3x3 harita üret (Backtracking)
+    function generateSolvablePuzzle() {
+       let grid = new Array(9).fill(0);
+       let used = new Set();
+       let maxAttempts = 50;
+       
+       function solve(idx) {
+          if(idx === 9) return true;
+          let neighbors = getNeighbors(idx);
+          let pool = [];
+          // 2 ile 35 arası sayılar
+          for(let i=2; i<=35; i++) pool.push(i);
+          pool.sort(() => Math.random() - 0.5);
+          
+          for(let num of pool) {
+             if(used.has(num)) continue;
+             let valid = true;
+             for(let nx of neighbors) {
+                if(grid[nx] !== 0 && !isCoprime(grid[nx], num)) { valid = false; break; }
+             }
+             if(valid) {
+                grid[idx] = num;
+                used.add(num);
+                if(solve(idx+1)) return true;
+                used.delete(num);
+                grid[idx] = 0;
+             }
+          }
+          return false;
+       }
+       
+       for(let a=0; a<maxAttempts; a++) {
+         used.clear();
+         if(solve(0)) return grid;
+       }
+       // Fallback
+       return [2, 3, 4, 5, 7, 8, 9, 11, 13]; 
+    }
+
+    // UI OLUŞTURMA
+    function buildGrid() {
+      const gridEl = document.getElementById('grid');
+      const svgEl = document.getElementById('pipes-svg');
+      gridEl.innerHTML = '';
+      svgEl.innerHTML = '';
+
+      // Çizgiler (Pipes)
+      // Koordinatlar 3x3 grid için merkezler (toplam 450x450 boyut, hücre başına 150x150, merkez = 75)
+      edges.forEach((edge, idx) => {
+         let r1 = Math.floor(edge[0]/3), c1 = edge[0]%3;
+         let r2 = Math.floor(edge[1]/3), c2 = edge[1]%3;
+         let x1 = c1 * 150 + 75, y1 = r1 * 150 + 75;
+         let x2 = c2 * 150 + 75, y2 = r2 * 150 + 75;
+         
+         let line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+         line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+         line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+         line.setAttribute('id', `pipe-${idx}`);
+         line.setAttribute('class', 'pipe neutral');
+         svgEl.appendChild(line);
+      });
+
+      // Kutular
+      for(let i=0; i<9; i++) {
+        let wrapper = document.createElement('div');
+        wrapper.className = 'tile-wrapper';
+        let tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.id = `tile-${i}`;
+        tile.dataset.index = i;
+        tile.innerText = gridNumbers[i];
+        
+        tile.onclick = () => handleTileClick(i);
+        wrapper.appendChild(tile);
+        gridEl.appendChild(wrapper);
+      }
+      checkEdges();
+    }
+
+    function handleTileClick(idx) {
+      if(!isGameRunning) return;
+      
+      let tile = document.getElementById(`tile-${idx}`);
+      if (selectedTileIndex === -1) {
+         selectedTileIndex = idx;
+         tile.classList.add('selected');
+      } else {
+         if (selectedTileIndex === idx) {
+             tile.classList.remove('selected');
+             selectedTileIndex = -1;
+         } else {
+             // Swap
+             let prevTile = document.getElementById(`tile-${selectedTileIndex}`);
+             prevTile.classList.remove('selected');
+             
+             let temp = gridNumbers[selectedTileIndex];
+             gridNumbers[selectedTileIndex] = gridNumbers[idx];
+             gridNumbers[idx] = temp;
+             
+             prevTile.innerText = gridNumbers[selectedTileIndex];
+             tile.innerText = gridNumbers[idx];
+             
+             selectedTileIndex = -1;
+             checkEdges();
+         }
+      }
+    }
+
+    function checkEdges() {
+      let validCount = 0;
+      edges.forEach((edge, idx) => {
+         let line = document.getElementById(`pipe-${idx}`);
+         let n1 = gridNumbers[edge[0]];
+         let n2 = gridNumbers[edge[1]];
+         if (isCoprime(n1, n2)) {
+             line.setAttribute('class', 'pipe valid');
+             validCount++;
+         } else {
+             line.setAttribute('class', 'pipe invalid');
+         }
+      });
+      
+      document.getElementById('valid-edges-display').innerText = `${validCount} / 12`;
+      currentScore = validCount * 50;
+      document.getElementById('p-score').innerText = currentScore;
+      
+      if (validCount === 12 && isGameRunning) {
+         endGame(true);
+      }
+    }
+
+    // OYUN AKIŞI
+    function startGame() {
+      let rawName = document.getElementById('playerFullName').value;
+      let validation = validateRealName(rawName);
+      if(!validation.valid) return alert(validation.error);
+      currentFullName = validation.name;
+      
+      document.getElementById('app-overlay').style.display = 'none';
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('top-hud').style.display = 'flex';
+      document.getElementById('game-container').style.display = 'block';
+      document.getElementById('p-name').innerText = currentFullName.split(' ')[0];
+      
+      // Haritayı oluştur ve karıştır
+      let solved = generateSolvablePuzzle();
+      gridNumbers = [...solved];
+      // Shuffle until it's NOT solved
+      do { gridNumbers.sort(() => Math.random() - 0.5); } while(checkWinSilent());
+      
+      selectedTileIndex = -1;
+      buildGrid();
+      
+      timeLeft = 60;
+      isGameRunning = true;
+      document.getElementById('timer').innerText = timeLeft + 's';
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = timeLeft + 's';
+        if(timeLeft <= 0) endGame(false);
+      }, 1000);
+    }
+    
+    function checkWinSilent() {
+        for(let e of edges) {
+            if(!isCoprime(gridNumbers[e[0]], gridNumbers[e[1]])) return false;
+        }
+        return true;
+    }
+
+    function endGame(completedBeforeTime) {
+      isGameRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('game-container').style.display = 'none';
+      document.getElementById('app-overlay').style.display = 'flex';
+      
+      let validCount = 0;
+      edges.forEach(e => { if(isCoprime(gridNumbers[e[0]], gridNumbers[e[1]])) validCount++; });
+      
+      let baseScore = validCount * 50;
+      let timeBonus = completedBeforeTime ? (timeLeft * 10) : 0;
+      let total = baseScore + timeBonus;
+      
+      document.getElementById('res-edges').innerText = `${validCount}/12`;
+      document.getElementById('res-time').innerText = `+${timeBonus}`;
+      document.getElementById('res-total').innerText = total;
+      
+      let title = document.getElementById('result-title');
+      let sub = document.getElementById('result-sub');
+      let icon = document.getElementById('result-icon');
+      
+      if(completedBeforeTime) {
+         title.innerText = "Mükemmel Çözüm!";
+         sub.innerText = "Tüm buz bloklarını süreden önce bağladın!";
+         icon.innerText = "🎉";
+         launchConfetti(100);
+      } else {
+         title.innerText = "Süre Bitti!";
+         sub.innerText = "Bağlayabildiğin kadar bağladın!";
+         icon.innerText = "⌛";
+      }
+      
+      // Lider tablosuna kaydet
+      saveScoreDirectly(total);
+      document.getElementById('resultScreen').style.display = 'block';
+    }
+
+    function saveScoreDirectly(score) {
+      let entry = {
+        name: currentFullName, fullName: currentFullName, score: score, timestamp: Date.now()
+      };
+      if(cloudDb) {
+        cloudDb.ref(DB_NODE).push(entry);
+      } else {
+        fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'POST', body: JSON.stringify(entry) });
+      }
+    }
+
+    // --- LİDER TABLOSU VE KUTLAMA (Tarih kaldırıldı, sığması için optimize edildi) ---
+    function getFuzzyKey(str) { return (str || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, '').replace(/[aeıioöuü]/g, ''); }
+    function capitalizeName(s) { return (s||'').split(' ').map(w => w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR')).join(' '); }
+    function levenshtein(a, b) {
+      if (!a.length) return b.length; if (!b.length) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+      for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) == a.charAt(j - 1)) { matrix[i][j] = matrix[i - 1][j - 1]; }
+          else { matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)); }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    function updateLocalLeaderboard(rawEntries) {
+      let groups = [];
+      rawEntries.forEach(entry => {
+        let fullName = (entry.fullName || entry.name || '').trim();
+        if (!fullName) return;
+        let normName = fullName.replace(/\s+/g, ' ');
+        let normLower = normName.toLocaleLowerCase('tr-TR');
+        let fuzzyKey = getFuzzyKey(normName);
+        let foundGroup = null;
+        for (let g of groups) {
+          if (g.fuzzyKey === fuzzyKey || (levenshtein(g.canonicalNorm, normLower) <= 2 && Math.abs(g.canonicalNorm.length - normLower.length) <= 2)) {
+            foundGroup = g; break;
+          }
+        }
+        if (foundGroup) {
+          foundGroup.items.push(entry);
+          if (normName.length > foundGroup.canonicalName.length) foundGroup.canonicalName = normName;
+        } else {
+          groups.push({ canonicalName: normName, canonicalNorm: normLower, fuzzyKey: fuzzyKey, items: [entry] });
+        }
+      });
+      let topList = groups.map(g => {
+        let best = g.items.reduce((max, e) => e.score > max.score ? e : max, g.items[0]);
+        return { name: capitalizeName(g.canonicalName), score: best.score, timestamp: best.timestamp };
+      });
+      topList.sort((a, b) => b.score - a.score || b.timestamp - a.timestamp);
+      let top10 = topList.slice(0, 10);
+      localStorage.setItem('meb_asalkutup_top10', JSON.stringify(top10));
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      let data = localStorage.getItem('meb_asalkutup_top10');
+      let list = data ? JSON.parse(data) : [];
+      let tbody = document.getElementById('leaderboardBody');
+      let empty = document.getElementById('emptyLeaderboard');
+      tbody.innerHTML = '';
+      if(list.length === 0) { empty.style.display = 'block'; }
+      else {
+        empty.style.display = 'none';
+        list.forEach((entry, index) => {
+          let tr = document.createElement('tr');
+          let rankIcon = (index === 0) ? '🥇' : (index === 1) ? '🥈' : (index === 2) ? '🥉' : (index + 1) + '.';
+          
+          tr.innerHTML = `
+            <td class="lb-rank">${rankIcon}</td>
+            <td class="lb-name" title="${entry.name}">${entry.name}</td>
+            <td class="lb-score">${entry.score}</td>
+            <td><button class="btn-cel-mini" onclick="showCelebration('${entry.name}', ${entry.score}, ${index+1})">👏 Kutla</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    function showCelebration(name, score, rank) {
+      document.getElementById('celName').innerText = name;
+      document.getElementById('celScore').innerText = score + ' Puan';
+      
+      let icon, title, msg;
+      if (rank === 1) { icon = "👑"; title = "Zirvenin Tek Sahibi!"; msg = "Muhteşem bir rekorla birinci sıradasın!"; launchConfetti(200); }
+      else if (rank === 2) { icon = "🥈"; title = "Harika İkincilik!"; msg = "Zirveye çok yakınsın, tebrikler!"; launchConfetti(100); }
+      else if (rank === 3) { icon = "🥉"; title = "Bronz Madalya!"; msg = "İlk 3'e girmeyi başardın!"; launchConfetti(100); }
+      else { icon = "⭐"; title = `${rank}. Sıra Başarısı!`; msg = "İlk 10'da harika bir iş çıkardın!"; }
+      
+      document.getElementById('celIcon').innerText = icon;
+      document.getElementById('celTitle').innerText = title;
+      document.getElementById('celMessage').innerText = msg;
+      
+      document.getElementById('celebrationModal').style.display = 'flex';
+    }
+
+    function closeCelebration() { document.getElementById('celebrationModal').style.display = 'none'; }
+
+    // MENÜLER
+    function showScreen(screen) {
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('resultScreen').style.display = 'none';
+      document.getElementById('leaderboardScreen').style.display = 'none';
+      document.getElementById('app-overlay').style.display = 'flex';
+      
+      if(screen === 'START') document.getElementById('startScreen').style.display = 'block';
+      if(screen === 'LEADERBOARD') { renderLeaderboard(); document.getElementById('leaderboardScreen').style.display = 'block'; }
+    }
+
+    // AYARLAR
+    function openSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      if (localStorage.getItem('isAdmin_asalkutup') === 'true') {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+      }
+    }
+    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+    function checkAdminPassword() {
+      if (document.getElementById('adminPassword').value === '26575982824.bati') {
+        localStorage.setItem('isAdmin_asalkutup', 'true');
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else { alert('Hatalı şifre!'); }
+    }
+    function clearLeaderboard() {
+      if (confirm('Tüm lider tablosu silinecek. Emin misiniz?')) {
+        if (cloudDb) cloudDb.ref(DB_NODE).remove();
+        localStorage.removeItem('meb_asalkutup_top10');
+        renderLeaderboard();
+        alert('Sıfırlandı.');
+        closeSettings();
+      }
+    }
+
+    // Kar Efekti
+    function initSnow() {
+       let c = document.getElementById('snow-container');
+       for(let i=0; i<30; i++) {
+          let s = document.createElement('div');
+          s.className = 'snowflake';
+          let size = Math.random() * 5 + 3;
+          s.style.width = size + 'px'; s.style.height = size + 'px';
+          s.style.left = Math.random() * 100 + 'vw';
+          s.style.animationDuration = (Math.random() * 5 + 5) + 's';
+          s.style.animationDelay = (Math.random() * 5) + 's';
+          c.appendChild(s);
+       }
+    }
+    
+    // Confetti Helper
+    function launchConfetti(amount) {
+      try {
+        let duration = 2000; let animationEnd = Date.now() + duration;
+        let defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+        let interval = setInterval(function() {
+          let timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) return clearInterval(interval);
+          let particleCount = Math.floor(amount * (timeLeft / duration));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+          confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+      } catch(e){}
+    }
+
+    window.onload = () => { initSnow(); };
+  </script>
+</body>
+</html>
