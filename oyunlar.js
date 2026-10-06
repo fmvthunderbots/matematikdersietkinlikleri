@@ -58,6 +58,13 @@ const SISTEM_OYUNLARI = [
         image: "./rasyonel_yagmuru.jpg",
         url: "./rasyonel_yagmuru.html"
     },
+    {
+        id: "oyun-9",
+        title: "Rasyonel Yağmuru",
+        grade: "6",
+        image: "./polar_cover.jpg",
+        url: "./ralarinda_asal_kutup.html"
+    },
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
