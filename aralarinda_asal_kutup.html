@@ -179,6 +179,25 @@
     }
     .btn-cel-mini:hover { transform: scale(1.1); background: #FDE68A; }
 
+    /* Kalp (Can) Animasyonları */
+    #lives-container {
+      display: flex; gap: 8px; margin-top: 8px; justify-content: center;
+    }
+    .heart {
+      font-size: 26px; line-height: 1; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .heart.broken {
+      filter: grayscale(1) opacity(0.3); transform: scale(0.5);
+    }
+    .heart.restored {
+      animation: popHeart 0.5s;
+    }
+    @keyframes popHeart {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.5); filter: drop-shadow(0 0 10px #F43F5E); }
+      100% { transform: scale(1); }
+    }
+
     /* Kutlama Modalı */
     .celebration-modal {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -217,6 +236,11 @@
         <div class="team-name" id="p-name">Oyuncu</div>
         <div style="font-size: 16px; font-weight: bold; color: #0369A1; margin-top: 5px;">Bağlantılar</div>
         <div id="valid-edges-display" style="font-family: 'Baloo 2', cursive; font-size: 24px; color: #10B981; font-weight: 900; line-height: 1;">0 / 24</div>
+        <div id="lives-container">
+          <span class="heart" id="heart-1">❤️</span>
+          <span class="heart" id="heart-2">❤️</span>
+          <span class="heart" id="heart-3">❤️</span>
+        </div>
       </div>
       <div id="p-score" class="score-display">0</div>
     </div>
@@ -439,12 +463,37 @@
         return { valid: false, error: "İsminiz listede bulunamadı! Açılır menüden seçin veya doğru yazın." };
     }
 
+    // --- SES EFEKTLERİ ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, duration) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+        osc.stop(audioCtx.currentTime + duration);
+    }
+    function playLifeLostSound() {
+        playTone(150, 'sawtooth', 0.3);
+        setTimeout(() => playTone(100, 'sawtooth', 0.4), 100);
+    }
+    function playLifeResetSound() {
+        playTone(600, 'sine', 0.1);
+        setTimeout(() => playTone(800, 'sine', 0.2), 100);
+        setTimeout(() => playTone(1200, 'sine', 0.4), 200);
+    }
+
     // --- OYUN MANTIĞI VE DEĞİŞKENLER ---
     let isGameRunning = false;
     let timerInterval = null;
     let timeLeft = 60;
     let currentFullName = '';
     let currentScore = 0;
+    let mistakesInARow = 0;
     
     let gridNumbers = new Array(16).fill(0);
     // 4x4 için 24 adet bağlantı çizgisi
@@ -533,6 +582,20 @@
       checkEdgesSilent();
     }
 
+    function updateLivesUI() {
+      for(let i=1; i<=3; i++) {
+         let heart = document.getElementById(`heart-${i}`);
+         if (i <= 3 - mistakesInARow) {
+            if(heart.classList.contains('broken')) {
+                heart.className = 'heart restored';
+                setTimeout(() => heart.className = 'heart', 500);
+            }
+         } else {
+            heart.className = 'heart broken';
+         }
+      }
+    }
+
     function handleTileClick(idx) {
       if(!isGameRunning) return;
       if([0, 3, 12, 15].includes(idx)) return; // Kilitli kare seçilemez
@@ -567,13 +630,26 @@
              
              if (diff > 0) {
                  currentScore += (diff * 50); // Doğru yaptıkça puan artar
-             } else if (diff < 0) {
-                 currentScore += (diff * 50); // Yanlış bozulan bağ kadar düşer
+                 if (mistakesInARow > 0) {
+                     mistakesInARow = 0;
+                     updateLivesUI();
+                     playLifeResetSound();
+                 }
+             } else {
+                 // diff <= 0 ise bir hata sayılır (sallamayı engeller)
+                 if (diff < 0) currentScore += (diff * 50); 
+                 
+                 mistakesInARow++;
+                 updateLivesUI();
+                 playLifeLostSound();
+                 
+                 if (mistakesInARow >= 3) {
+                     endGame(false);
+                     return;
+                 }
              }
-             // diff == 0 durumunda puan değişmez, ceza uygulanmaz.
              
              if (currentScore < 0) currentScore = 0;
-             
              document.getElementById('p-score').innerText = currentScore;
              checkEdgesSilent();
          }
@@ -602,6 +678,9 @@
 
     // OYUN AKIŞI
     function startGame() {
+      // Ses bağlamını başlat (tarayıcı izni)
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      
       let rawName = document.getElementById('playerFullName').value;
       let validation = validateRealName(rawName);
       if(!validation.valid) return alert(validation.error);
@@ -618,16 +697,18 @@
       
       let unlockedIndices = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
       
-      // Sadece kilitli olmayan (serbest) kareleri karıştır
       do { 
          let vals = unlockedIndices.map(i => gridNumbers[i]);
          vals.sort(() => Math.random() - 0.5);
          unlockedIndices.forEach((idx, iter) => { gridNumbers[idx] = vals[iter]; });
-      } while(countValidEdgesSilent() > 10); // Çok doğru bağlantı ile başlamasın
+      } while(countValidEdgesSilent() > 10); 
       
       selectedTileIndex = -1;
       currentScore = countValidEdgesSilent() * 50; 
       document.getElementById('p-score').innerText = currentScore;
+      
+      mistakesInARow = 0;
+      updateLivesUI();
       
       buildGrid();
       
@@ -658,8 +739,14 @@
       document.getElementById('app-overlay').style.display = 'flex';
       
       let validCount = countValidEdgesSilent();
-      let timeBonus = completedBeforeTime ? (timeLeft * 10) : 0;
-      let total = currentScore + timeBonus; // Güncel puan + süre bonusu
+      
+      // Bulmacayı çözenlere devasa bir Tamamlama Bonusu + Süre Bonusu
+      let timeBonus = 0;
+      if (completedBeforeTime || validCount === 24) {
+          timeBonus = (timeLeft * 20) + 1000;
+      }
+      
+      let total = currentScore + timeBonus; 
       
       document.getElementById('res-edges').innerText = `${validCount}/24`;
       document.getElementById('res-time').innerText = `+${timeBonus}`;
@@ -669,11 +756,15 @@
       let sub = document.getElementById('result-sub');
       let icon = document.getElementById('result-icon');
       
-      if(completedBeforeTime) {
+      if(validCount === 24) {
          title.innerText = "Mükemmel Çözüm!";
          sub.innerText = "Tüm buz bloklarını süreden önce bağladın!";
          icon.innerText = "🎉";
          launchConfetti(100);
+      } else if (mistakesInARow >= 3) {
+         title.innerText = "Canın Bitti!";
+         sub.innerText = "Üst üste 3 hatalı hamle yaptın.";
+         icon.innerText = "💔";
       } else {
          title.innerText = "Süre Bitti!";
          sub.innerText = "Bağlayabildiğin kadar bağladın!";
