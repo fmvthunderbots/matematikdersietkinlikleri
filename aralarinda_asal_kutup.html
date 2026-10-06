@@ -557,10 +557,11 @@
              
              if (diff > 0) {
                  currentScore += (diff * 50); // Doğru yaptıkça puan artar
-             } else {
+             } else if (diff < 0) {
                  currentScore += (diff * 50); // Yanlış bozulan bağ kadar düşer
-                 currentScore -= 10; // Ekstra ceza puanı
              }
+             // diff == 0 durumunda puan değişmez, ceza uygulanmaz.
+             
              if (currentScore < 0) currentScore = 0;
              
              document.getElementById('p-score').innerText = currentScore;
