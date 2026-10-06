@@ -102,10 +102,22 @@
       font-family: 'Baloo 2', cursive; font-size: 32px; font-weight: 800; color: #0369A1;
       cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.2), inset 0 4px 0 rgba(255,255,255,0.7);
       transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      position: relative;
     }
     .tile:hover { transform: scale(1.05) translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.3); }
     .tile.selected {
       background: #FEF08A; border-color: #EAB308; transform: scale(1.1); box-shadow: 0 0 20px #FDE047;
+    }
+    .tile.locked {
+      background: linear-gradient(135deg, #CBD5E1, #94A3B8);
+      border-color: #64748B; color: #1E293B; cursor: not-allowed;
+      box-shadow: inset 0 4px 0 rgba(255,255,255,0.3);
+      transform: none !important;
+    }
+    .tile.locked::after {
+      content: '🔒'; position: absolute; top: -10px; right: -10px;
+      font-size: 16px; background: white; border-radius: 50%;
+      padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); line-height: 1;
     }
     
     /* MENÜLER / OVERLAY */
@@ -509,7 +521,12 @@
         tile.dataset.index = i;
         tile.innerText = gridNumbers[i];
         
-        tile.onclick = () => handleTileClick(i);
+        if ([0, 3, 12, 15].includes(i)) {
+            tile.classList.add('locked');
+        } else {
+            tile.onclick = () => handleTileClick(i);
+        }
+        
         wrapper.appendChild(tile);
         gridEl.appendChild(wrapper);
       }
@@ -518,6 +535,7 @@
 
     function handleTileClick(idx) {
       if(!isGameRunning) return;
+      if([0, 3, 12, 15].includes(idx)) return; // Kilitli kare seçilemez
       
       let tile = document.getElementById(`tile-${idx}`);
       if (selectedTileIndex === -1) {
@@ -528,15 +546,7 @@
              tile.classList.remove('selected');
              selectedTileIndex = -1;
          } else {
-             let neighbors = getNeighbors(selectedTileIndex);
-             if(!neighbors.includes(idx)) {
-                 // Komşu değilse, önceki seçimi kaldır ve yenisini seç
-                 document.getElementById(`tile-${selectedTileIndex}`).classList.remove('selected');
-                 selectedTileIndex = idx;
-                 tile.classList.add('selected');
-                 return;
-             }
-
+             // Komşu kuralı kaldırıldı, herhangi iki kilitsiz kare değişebilir
              let oldValid = countValidEdgesSilent();
              
              // Swap
@@ -606,27 +616,14 @@
       let solved = generateSolvablePuzzle();
       gridNumbers = [...solved];
       
-      // Sadece komşularla yer değişeceği için çözülü halin üzerinden N defa komşu değişimi yapıyoruz.
-      // Aşırı darmadağın olmasın ama çok da hazır gelmesin (25-30 rastgele değişim)
-      let shuffleSteps = 30;
-      for(let i=0; i<shuffleSteps; i++) {
-         let rIdx = Math.floor(Math.random() * 16);
-         let neighbors = getNeighbors(rIdx);
-         let nIdx = neighbors[Math.floor(Math.random() * neighbors.length)];
-         let temp = gridNumbers[rIdx];
-         gridNumbers[rIdx] = gridNumbers[nIdx];
-         gridNumbers[nIdx] = temp;
-      }
+      let unlockedIndices = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
       
-      // Yine de çok şanslı bir dağılımla fazla yeşil gelirse biraz daha karıştır
-      while(countValidEdgesSilent() > 10) {
-         let rIdx = Math.floor(Math.random() * 16);
-         let neighbors = getNeighbors(rIdx);
-         let nIdx = neighbors[Math.floor(Math.random() * neighbors.length)];
-         let temp = gridNumbers[rIdx];
-         gridNumbers[rIdx] = gridNumbers[nIdx];
-         gridNumbers[nIdx] = temp;
-      }
+      // Sadece kilitli olmayan (serbest) kareleri karıştır
+      do { 
+         let vals = unlockedIndices.map(i => gridNumbers[i]);
+         vals.sort(() => Math.random() - 0.5);
+         unlockedIndices.forEach((idx, iter) => { gridNumbers[idx] = vals[iter]; });
+      } while(countValidEdgesSilent() > 10); // Çok doğru bağlantı ile başlamasın
       
       selectedTileIndex = -1;
       currentScore = countValidEdgesSilent() * 50; 
