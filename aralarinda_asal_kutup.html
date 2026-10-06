@@ -454,43 +454,28 @@
       return n;
     }
 
-    // Rastgele ama çözülebilir bir 3x3 harita üret (Backtracking)
+    // Kesin bir bulmaca oluştur (Sadece tek bir çözüm mantığı olsun)
+    // Bunun için 2'nin katları ve 3'ün katlarını ayırıyoruz (aralarında asallık kuralları katılaşır)
     function generateSolvablePuzzle() {
-       let grid = new Array(9).fill(0);
-       let used = new Set();
-       let maxAttempts = 50;
+       let setA = [2, 4, 8, 10, 14, 16, 20, 22, 26, 28, 32, 34]; // Çift sayılar (5 adet seçilecek)
+       let setB = [3, 9, 15, 21, 27, 33]; // Sadece 3'e bölünenler (4 adet seçilecek)
        
-       function solve(idx) {
-          if(idx === 9) return true;
-          let neighbors = getNeighbors(idx);
-          let pool = [];
-          // 2 ile 35 arası sayılar
-          for(let i=2; i<=35; i++) pool.push(i);
-          pool.sort(() => Math.random() - 0.5);
-          
-          for(let num of pool) {
-             if(used.has(num)) continue;
-             let valid = true;
-             for(let nx of neighbors) {
-                if(grid[nx] !== 0 && !isCoprime(grid[nx], num)) { valid = false; break; }
-             }
-             if(valid) {
-                grid[idx] = num;
-                used.add(num);
-                if(solve(idx+1)) return true;
-                used.delete(num);
-                grid[idx] = 0;
-             }
-          }
-          return false;
-       }
+       setA.sort(() => Math.random() - 0.5);
+       setB.sort(() => Math.random() - 0.5);
        
-       for(let a=0; a<maxAttempts; a++) {
-         used.clear();
-         if(solve(0)) return grid;
-       }
-       // Fallback
-       return [2, 3, 4, 5, 7, 8, 9, 11, 13]; 
+       let chosenA = setA.slice(0, 5);
+       let chosenB = setB.slice(0, 4);
+       
+       let solvedGrid = new Array(9);
+       // Satranç tahtası mantığı: 0, 2, 4, 6, 8 (5 adet) = SetA
+       // 1, 3, 5, 7 (4 adet) = SetB
+       solvedGrid[0] = chosenA[0]; solvedGrid[2] = chosenA[1]; solvedGrid[4] = chosenA[2];
+       solvedGrid[6] = chosenA[3]; solvedGrid[8] = chosenA[4];
+       
+       solvedGrid[1] = chosenB[0]; solvedGrid[3] = chosenB[1];
+       solvedGrid[5] = chosenB[2]; solvedGrid[7] = chosenB[3];
+       
+       return solvedGrid;
     }
 
     // UI OLUŞTURMA
@@ -500,8 +485,6 @@
       gridEl.innerHTML = '';
       svgEl.innerHTML = '';
 
-      // Çizgiler (Pipes)
-      // Koordinatlar 3x3 grid için merkezler (toplam 450x450 boyut, hücre başına 150x150, merkez = 75)
       edges.forEach((edge, idx) => {
          let r1 = Math.floor(edge[0]/3), c1 = edge[0]%3;
          let r2 = Math.floor(edge[1]/3), c2 = edge[1]%3;
@@ -516,7 +499,6 @@
          svgEl.appendChild(line);
       });
 
-      // Kutular
       for(let i=0; i<9; i++) {
         let wrapper = document.createElement('div');
         wrapper.className = 'tile-wrapper';
@@ -530,7 +512,7 @@
         wrapper.appendChild(tile);
         gridEl.appendChild(wrapper);
       }
-      checkEdges();
+      checkEdgesSilent();
     }
 
     function handleTileClick(idx) {
@@ -545,6 +527,8 @@
              tile.classList.remove('selected');
              selectedTileIndex = -1;
          } else {
+             let oldValid = countValidEdgesSilent();
+             
              // Swap
              let prevTile = document.getElementById(`tile-${selectedTileIndex}`);
              prevTile.classList.remove('selected');
@@ -557,12 +541,25 @@
              tile.innerText = gridNumbers[idx];
              
              selectedTileIndex = -1;
-             checkEdges();
+             
+             let newValid = countValidEdgesSilent();
+             let diff = newValid - oldValid;
+             
+             if (diff > 0) {
+                 currentScore += (diff * 50); // Doğru yaptıkça puan artar
+             } else {
+                 currentScore += (diff * 50); // Yanlış bozulan bağ kadar düşer
+                 currentScore -= 10; // Ekstra ceza puanı (sallamayı engeller)
+             }
+             if (currentScore < 0) currentScore = 0;
+             
+             document.getElementById('p-score').innerText = currentScore;
+             checkEdgesSilent();
          }
       }
     }
 
-    function checkEdges() {
+    function checkEdgesSilent() {
       let validCount = 0;
       edges.forEach((edge, idx) => {
          let line = document.getElementById(`pipe-${idx}`);
@@ -575,10 +572,7 @@
              line.setAttribute('class', 'pipe invalid');
          }
       });
-      
       document.getElementById('valid-edges-display').innerText = `${validCount} / 12`;
-      currentScore = validCount * 50;
-      document.getElementById('p-score').innerText = currentScore;
       
       if (validCount === 12 && isGameRunning) {
          endGame(true);
@@ -598,23 +592,18 @@
       document.getElementById('game-container').style.display = 'block';
       document.getElementById('p-name').innerText = currentFullName.split(' ')[0];
       
-      // Haritayı oluştur ve karıştır
       let solved = generateSolvablePuzzle();
       gridNumbers = [...solved];
       
-      // Çok fazla doğru bağlantı ile başlamasın (çocuk biraz uğraşsın)
-      let shuffleAttempts = 0;
+      // Tamamen karıştır
       do { 
          gridNumbers.sort(() => Math.random() - 0.5); 
-         shuffleAttempts++;
-      } while(countValidEdgesSilent() > 4 && shuffleAttempts < 200);
-      
-      // Eğer imkansızsa bari tamamen bitmiş gelmesin
-      if (countValidEdgesSilent() === 12) {
-         let temp = gridNumbers[0]; gridNumbers[0] = gridNumbers[1]; gridNumbers[1] = temp;
-      }
+      } while(countValidEdgesSilent() > 4); // 4'ten fazla doğru varsa karıştırmaya devam et
       
       selectedTileIndex = -1;
+      currentScore = countValidEdgesSilent() * 50; // Başlangıç puanı
+      document.getElementById('p-score').innerText = currentScore;
+      
       buildGrid();
       
       timeLeft = 60;
@@ -643,12 +632,9 @@
       document.getElementById('game-container').style.display = 'none';
       document.getElementById('app-overlay').style.display = 'flex';
       
-      let validCount = 0;
-      edges.forEach(e => { if(isCoprime(gridNumbers[e[0]], gridNumbers[e[1]])) validCount++; });
-      
-      let baseScore = validCount * 50;
+      let validCount = countValidEdgesSilent();
       let timeBonus = completedBeforeTime ? (timeLeft * 10) : 0;
-      let total = baseScore + timeBonus;
+      let total = currentScore + timeBonus; // Güncel puan + süre bonusu
       
       document.getElementById('res-edges').innerText = `${validCount}/12`;
       document.getElementById('res-time').innerText = `+${timeBonus}`;
@@ -669,7 +655,6 @@
          icon.innerText = "⌛";
       }
       
-      // Lider tablosuna kaydet
       saveScoreDirectly(total);
       document.getElementById('resultScreen').style.display = 'block';
     }
@@ -679,7 +664,15 @@
         name: currentFullName, fullName: currentFullName, score: score, timestamp: Date.now()
       };
       if(cloudDb) {
-        cloudDb.ref(DB_NODE).push(entry);
+        cloudDb.ref(DB_NODE).push(entry).catch(err => {
+            console.error("Firebase yazma hatası:", err);
+            alert("Dikkat: Skor buluta kaydedilemedi. (Sadece bu bilgisayara kaydedilecek)");
+            // Yerel tabloya zorla ekle
+            let data = localStorage.getItem('meb_asalkutup_top10');
+            let list = data ? JSON.parse(data) : [];
+            list.push(entry);
+            updateLocalLeaderboard(list);
+        });
       } else {
         fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'POST', body: JSON.stringify(entry) });
       }
