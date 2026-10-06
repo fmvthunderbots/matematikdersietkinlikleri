@@ -343,7 +343,13 @@
   <script>
     // --- FIREBASE KURULUMU ---
     const FIREBASE_CONFIG = {
-      databaseURL: "https://antigravity-math-default-rtdb.europe-west1.firebasedatabase.app/"
+      apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+      authDomain: "zihindencarpma.firebaseapp.com",
+      databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.firebasestorage.app",
+      messagingSenderId: "305286209549",
+      appId: "1:305286209549:web:fb096e8f4cd1cb5cb06f15"
     };
     let cloudDb = null;
     const DB_NODE = 'scores_asalkutup';
@@ -595,8 +601,18 @@
       // Haritayı oluştur ve karıştır
       let solved = generateSolvablePuzzle();
       gridNumbers = [...solved];
-      // Shuffle until it's NOT solved
-      do { gridNumbers.sort(() => Math.random() - 0.5); } while(checkWinSilent());
+      
+      // Çok fazla doğru bağlantı ile başlamasın (çocuk biraz uğraşsın)
+      let shuffleAttempts = 0;
+      do { 
+         gridNumbers.sort(() => Math.random() - 0.5); 
+         shuffleAttempts++;
+      } while(countValidEdgesSilent() > 4 && shuffleAttempts < 200);
+      
+      // Eğer imkansızsa bari tamamen bitmiş gelmesin
+      if (countValidEdgesSilent() === 12) {
+         let temp = gridNumbers[0]; gridNumbers[0] = gridNumbers[1]; gridNumbers[1] = temp;
+      }
       
       selectedTileIndex = -1;
       buildGrid();
@@ -612,11 +628,12 @@
       }, 1000);
     }
     
-    function checkWinSilent() {
+    function countValidEdgesSilent() {
+        let count = 0;
         for(let e of edges) {
-            if(!isCoprime(gridNumbers[e[0]], gridNumbers[e[1]])) return false;
+            if(isCoprime(gridNumbers[e[0]], gridNumbers[e[1]])) count++;
         }
-        return true;
+        return count;
     }
 
     function endGame(completedBeforeTime) {
