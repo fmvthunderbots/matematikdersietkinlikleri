@@ -528,6 +528,15 @@
              tile.classList.remove('selected');
              selectedTileIndex = -1;
          } else {
+             let neighbors = getNeighbors(selectedTileIndex);
+             if(!neighbors.includes(idx)) {
+                 // Komşu değilse, önceki seçimi kaldır ve yenisini seç
+                 document.getElementById(`tile-${selectedTileIndex}`).classList.remove('selected');
+                 selectedTileIndex = idx;
+                 tile.classList.add('selected');
+                 return;
+             }
+
              let oldValid = countValidEdgesSilent();
              
              // Swap
@@ -596,10 +605,27 @@
       let solved = generateSolvablePuzzle();
       gridNumbers = [...solved];
       
-      // Tamamen karıştır
-      do { 
-         gridNumbers.sort(() => Math.random() - 0.5); 
-      } while(countValidEdgesSilent() > 8); // 8'den fazla doğru varsa karıştırmaya devam et (24 üzerinden)
+      // Sadece komşularla yer değişeceği için çözülü halin üzerinden N defa komşu değişimi yapıyoruz.
+      // Aşırı darmadağın olmasın ama çok da hazır gelmesin (25-30 rastgele değişim)
+      let shuffleSteps = 30;
+      for(let i=0; i<shuffleSteps; i++) {
+         let rIdx = Math.floor(Math.random() * 16);
+         let neighbors = getNeighbors(rIdx);
+         let nIdx = neighbors[Math.floor(Math.random() * neighbors.length)];
+         let temp = gridNumbers[rIdx];
+         gridNumbers[rIdx] = gridNumbers[nIdx];
+         gridNumbers[nIdx] = temp;
+      }
+      
+      // Yine de çok şanslı bir dağılımla fazla yeşil gelirse biraz daha karıştır
+      while(countValidEdgesSilent() > 10) {
+         let rIdx = Math.floor(Math.random() * 16);
+         let neighbors = getNeighbors(rIdx);
+         let nIdx = neighbors[Math.floor(Math.random() * neighbors.length)];
+         let temp = gridNumbers[rIdx];
+         gridNumbers[rIdx] = gridNumbers[nIdx];
+         gridNumbers[nIdx] = temp;
+      }
       
       selectedTileIndex = -1;
       currentScore = countValidEdgesSilent() * 50; 
