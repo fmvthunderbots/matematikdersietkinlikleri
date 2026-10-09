@@ -65,6 +65,13 @@ const SISTEM_OYUNLARI = [
         image: "./polar_cover.jpg",
         url: "./aralarinda_asal_kutup.html"
     },
+    {
+        id: "oyun-10",
+        title: "Kutuplarda Geometri",
+        grade: "6",
+        image: "./geometri_kutuplar_cover.jpg",
+        url: "./geometri_kutuplar.html"
+    },
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
