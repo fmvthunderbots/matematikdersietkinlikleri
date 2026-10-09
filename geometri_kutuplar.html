@@ -59,6 +59,13 @@
             height: 70px; 
             cursor: pointer;
             perspective: 1000px;
+            opacity: 0;
+            animation: dropInCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes dropInCard {
+            0% { opacity: 0; transform: translateY(-30px) scale(0.8); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .card-inner {
@@ -307,10 +314,6 @@
     function generateQuestionsPool() {
         let pool = [];
 
-    // DİNAMİK SORU ÜRETİCİ (Geometri - MEB Kitabı Müfredatı)
-    function generateQuestionsPool() {
-        let pool = [];
-
         // Temel Kavramlar
         pool.push({ q: "Eni, boyu ve derinliği olmayan, kalemin kâğıtta bıraktığı ize ne denir?", a: "nokta", aliases: ["noktadır"], p: 10 });
         pool.push({ q: "İki nokta arasında düz bir şekilde hizalanmış noktaların oluşturduğu şekle ne denir?", a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasi", "doğru parçasıdır"], p: 15 });
@@ -438,7 +441,6 @@
 
         renderTeams();
         renderGrid();
-        showToast("🧊 Kutuplarda Geometri Başladı!", "info");
     }
 
     function renderTeams() {
@@ -484,9 +486,12 @@
             }
 
             const finalBackClass = c.solved ? `card-back ${backClass}` : 'card-back';
+            
+            // Sırayla düşme efekti için gecikme (her karta 0.06s ekstra)
+            const animDelay = i * 0.06;
 
             return `
-                <div class="card ${c.solved ? 'opened' : ''}" onclick="cardClick(${i})">
+                <div class="card ${c.solved ? 'opened' : ''}" style="animation-delay: ${animDelay}s" onclick="cardClick(${i})">
                     <div class="card-inner">
                         <div class="card-face card-front font-baloo flex flex-col items-center justify-center">
                             <span class="z-10">${i + 1}</span>
