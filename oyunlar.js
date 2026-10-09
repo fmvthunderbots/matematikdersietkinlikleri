@@ -68,7 +68,7 @@ const SISTEM_OYUNLARI = [
     {
         id: "oyun-10",
         title: "Kutuplarda Geometri",
-        grade: "6",
+        grade: "5",
         image: "./geometri_kutuplar_cover.jpg",
         url: "./geometri_kutuplar.html"
     },
