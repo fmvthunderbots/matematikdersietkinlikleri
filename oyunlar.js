@@ -72,6 +72,13 @@ const SISTEM_OYUNLARI = [
         image: "./geometri_kutuplar_cover.jpg",
         url: "./geometri_kutuplar.html"
     },
+     {
+        id: "oyun-11",
+        title: "Tam Sayı Fırtınası",
+        grade: "7",
+        image: "./tam_sayi_firtinasi.jpg",
+        url: "./tam_sayi_firtinasi.html"
+    },
     
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
