@@ -173,6 +173,7 @@
     .app-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       display: flex; justify-content: center; align-items: center;
+      padding: 12px;
       z-index: 100; background: rgba(80, 50, 20, 0.85); backdrop-filter: blur(8px);
     }
 
@@ -220,15 +221,22 @@
     .btn-view-leaderboard { background: #FEF3C7; color: #92400E; border: 2px solid #F59E0B; }
     .btn-restart { background: linear-gradient(135deg, #D97706, #B45309); color: white; }
 
-    /* Lider Tablosu Özel Tasarımı */
-    .leaderboard-card { max-width: 780px; max-height: 95vh; display: flex; flex-direction: column; }
-    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 10px; }
-    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
-    .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
-    .lb-row:hover { transform: scale(1.02); }
-    .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; }
-    .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-    .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+    /* Lider Tablosu Özel Tasarımı (Her Ekrana Sığacak Şekilde Kompakt) */
+    .leaderboard-card {
+      max-width: 650px;
+      width: 95%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 22px;
+    }
+    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 3px; margin-bottom: 4px; }
+    .lb-table th { font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 2px 6px; }
+    .lb-row { background: #F8FAFC; border-radius: 10px; cursor: pointer; transition: transform 0.15s; }
+    .lb-row:hover { transform: scale(1.015); }
+    .lb-row td { padding: 5px 10px; font-size: 14px; font-weight: 700; text-align: center; line-height: 1.2; }
+    .lb-row td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .lb-row td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
     
     .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
     .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
@@ -381,21 +389,20 @@
     </div>
 
     <!-- LİDER TABLOSU EKRANI -->
-    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
-        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
-        <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 6px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 22px;">🏆 İlk 10 Sıralaması</h2>
+        <button class="btn-subtle" style="padding: 8px 16px; font-size: 14px;" onclick="showScreen('START')">✕ Kapat</button>
       </div>
       
-      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 4px;">
         <table class="lb-table">
           <thead>
             <tr>
-              <th style="width: 40px;">Sıra</th>
+              <th style="width: 55px;">Sıra</th>
               <th style="text-align: left;">Adı Soyadı</th>
               <th>Puan</th>
-              <th>Tarih</th>
-              <th>Kutla</th>
+              <th style="width: 110px;">Kutla</th>
             </tr>
           </thead>
           <tbody id="leaderboardBody">
@@ -406,7 +413,7 @@
       </div>
       
       <!-- BAŞA DÖN / YENİDEN OYNA BUTONU -->
-      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+      <button class="btn-start" style="margin-top: 8px; padding: 11px; font-size: 19px; border-radius: 14px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
     </div>
   </div>
 
@@ -519,6 +526,51 @@
           
           osc.start(now + idx * 0.05);
           osc.stop(now + idx * 0.05 + 0.18);
+        });
+      } catch(e) {}
+    }
+
+    // Doğru cevap verildiğinde temiz, parlak "Ding!" sesi
+    function playCorrectSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let notes = [587.33, 880.00]; // D5 -> A5
+        notes.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          gain.gain.setValueAtTime(0.22, now + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.18);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.06);
+          osc.stop(now + idx * 0.06 + 0.2);
+        });
+      } catch(e) {}
+    }
+
+    // Yanlış cevap verildiğinde temiz, yarışma tarzı iki notalı "Dıt-Dıııt" uyarı sesi
+    function playLifeLostSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let notes = [
+          { freq: 330.0, start: 0.0, dur: 0.11 }, // E4
+          { freq: 220.0, start: 0.12, dur: 0.22 } // A3
+        ];
+        notes.forEach(n => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(n.freq, now + n.start);
+          gain.gain.setValueAtTime(0.25, now + n.start);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + n.start + n.dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + n.start);
+          osc.stop(now + n.start + n.dur + 0.02);
         });
       } catch(e) {}
     }
@@ -749,12 +801,11 @@
         
         tr.onclick = () => openCelebration({name: nameToShow, score: e.score}, idx+1);
         tr.innerHTML = `
-          <td><span style="font-size:20px;">${rankStr}</span></td>
+          <td><span style="font-size:18px;">${rankStr}</span></td>
           <td style="text-align:left; font-weight:800;">${nameToShow}</td>
-          <td style="color:#D97706; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
-          <td style="color:#94A3B8; font-size:14px;">${e.date || '-'}</td>
+          <td style="color:#D97706; font-weight:900; font-family:'Baloo 2'; font-size:19px;">${e.score}</td>
           <td>
-            <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
+            <button class="btn-subtle" style="padding: 4px 12px; font-size: 13px; border-radius: 9px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -824,28 +875,10 @@
     let timerInterval, gameInterval;
     let timeLeft = 90;
     
-    let p1 = { score: 0, lives: 5, currentQ: null };
-    let p2 = { score: 0, lives: 5, currentQ: null };
+    let p1 = { score: 0, lives: 5, currentQ: null, qCount: 0, hardCount: 0 };
+    let p2 = { score: 0, lives: 5, currentQ: null, qCount: 0, hardCount: 0 };
     let currentFullName = '';
     let selectedDuelTime = 90;
-
-    function playLifeLostSound() {
-      try {
-        let ctx = getAudioContext();
-        let now = ctx.currentTime;
-        let osc = ctx.createOscillator();
-        let gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.connect(gain);
-        osc.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.3);
-      } catch(e) {}
-    }
 
     function updateLivesDisplay(lostPlayerObj = null) {
       const p1El = document.getElementById('p1-lives');
@@ -916,15 +949,21 @@
       return `|${n}|`;
     }
 
-    /* MEB 7. Sınıf Kitabı Örneklerine Birebir Uygun Dinamik Tam Sayı İşlem Üretici */
-    function generateIntegerProblem(prevAns = null) {
-      // Kitaptaki ikonik örnekler + zorluk derecesine göre puanlar (15, 25, 35, 45 Puan)
-      const presetPool = [
-        // 15 PUAN: İki terimli temel toplama / çıkarma
+    /* 
+      Öğrenci Dostu Tam Sayı Soru Üretici:
+      - Genelde (%80) iki sayı toplama ve çıkarma (15 - 20 Puan)
+      - Bazen (~%15-20) üç sayı toplama ve çıkarma, küçük sayılarla (30 Puan)
+      - Oyun boyunca oyuncu başına MAKSİMUM 1 tane zorlayıcı soru (40 Puan)
+    */
+    function generateIntegerProblem(player) {
+      let prevAns = player.currentQ ? player.currentQ.ans : null;
+
+      // 1) İKİ SAYILI KOLAY / TEMEL HAVUZ (15 - 20 PUAN)
+      const twoNumPresets = [
         { expr: "(+7) + (+6)", ans: 13, pts: 15, traps: [1, -13, -1, 12] },
         { expr: "(−2) + (−4)", ans: -6, pts: 15, traps: [6, -2, 2, -8] },
-        { expr: "(−5) + (−5)", ans: -10, pts: 15, traps: [0, 10, -25, -5] },
-        { expr: "(+12) + (+10)", ans: 22, pts: 15, traps: [2, -2, -22, 20] },
+        { expr: "(−5) + (−5)", ans: -10, pts: 15, traps: [0, 10, -15, -5] },
+        { expr: "(+8) + (+5)", ans: 13, pts: 15, traps: [3, -3, -13, 12] },
         { expr: "(+7) + (−4)", ans: 3, pts: 15, traps: [-3, 11, -11, 4] },
         { expr: "(+6) + (−8)", ans: -2, pts: 15, traps: [2, 14, -14, -3] },
         { expr: "(−6) + (+2)", ans: -4, pts: 15, traps: [4, -8, 8, -3] },
@@ -932,155 +971,133 @@
         { expr: "(−6) + (+12)", ans: 6, pts: 15, traps: [-6, 18, -18, 8] },
         { expr: "(−8) + (+2)", ans: -6, pts: 15, traps: [6, -10, 10, -4] },
         { expr: "(+10) + (−10)", ans: 0, pts: 15, traps: [20, -20, 10, -10] },
-        { expr: "(+15) + (−4)", ans: 11, pts: 15, traps: [-11, 19, -19, 12] },
+        { expr: "(+12) + (−4)", ans: 8, pts: 15, traps: [-8, 16, -16, 9] },
         { expr: "(−6) + 2", ans: -4, pts: 15, traps: [4, -8, 8, -2] },
-        { expr: "18 + (−3)", ans: 15, pts: 15, traps: [-15, 21, -21, 16] },
-        { expr: "(−15) + 25", ans: 10, pts: 15, traps: [-10, 40, -40, 15] },
+        { expr: "10 + (−3)", ans: 7, pts: 15, traps: [-7, 13, -13, 8] },
+        { expr: "(−9) + 14", ans: 5, pts: 15, traps: [-5, 23, -23, 6] },
         { expr: "6 − 9", ans: -3, pts: 15, traps: [3, 15, -15, -4] },
         { expr: "2 − 6", ans: -4, pts: 15, traps: [4, -8, 8, -3] },
-        { expr: "−10 − 10", ans: -20, pts: 15, traps: [0, 20, -10, 10] },
-
-        // 25 PUAN: İşaret dönüşümlü çıkarma ve iki terimli mutlak değer işlemleri
-        { expr: "(+10) − (−8)", ans: 18, pts: 25, traps: [2, -2, -18, 16] },
-        { expr: "(−12) − (+5)", ans: -17, pts: 25, traps: [-7, 7, 17, -15] },
-        { expr: "4 − (−5)", ans: 9, pts: 25, traps: [-1, 1, -9, 8] },
-        { expr: "(+5) − (+25)", ans: -20, pts: 25, traps: [20, 30, -30, -15] },
-        { expr: "(+13) − (−12)", ans: 25, pts: 25, traps: [1, -1, -25, 24] },
-        { expr: "(−24) − (−15)", ans: -9, pts: 25, traps: [9, -39, 39, -11] },
-        { expr: "(−3) − (−11)", ans: 8, pts: 25, traps: [-8, -14, 14, 7] },
-        { expr: "(−7) − (−7)", ans: 0, pts: 25, traps: [-14, 14, -7, 7] },
-        { expr: "(−7) − (+7)", ans: -14, pts: 25, traps: [0, 14, -7, 7] },
-        { expr: "8 − (−18)", ans: 26, pts: 25, traps: [-10, 10, -26, 24] },
-        { expr: "|−5| + |−9|", ans: 14, pts: 25, traps: [-14, -4, 4, -15] },
-        { expr: "9 + |−12|", ans: 21, pts: 25, traps: [-3, 3, -21, 19] },
-        { expr: "|−14| − (−6)", ans: 20, pts: 25, traps: [8, -8, -20, 18] },
-        { expr: "|−2| − |+5|", ans: -3, pts: 25, traps: [3, -7, 7, -5] },
-        { expr: "|−8| − 5", ans: 3, pts: 25, traps: [-13, 13, -3, 5] },
-
-        // 35 PUAN: 3 terimli işlemler ve köşeli parantezler
-        { expr: "9 + (−7) + (−9)", ans: -7, pts: 35, traps: [7, -25, 25, 9] },
-        { expr: "(−6) + (−5) + (−12)", ans: -23, pts: 35, traps: [23, -11, -13, 1] },
-        { expr: "(+9) + (−2) − (+1)", ans: 6, pts: 35, traps: [8, -6, 10, 12] },
-        { expr: "−3 − 4 − 5", ans: -12, pts: 35, traps: [12, -2, -6, 4] },
-        { expr: "[(16 − 26) − 2]", ans: -12, pts: 35, traps: [12, -8, 8, -10] },
-        { expr: "|+12| + |−7| + |−9|", ans: 28, pts: 35, traps: [-4, 10, -28, 14] },
-        { expr: "|10| + |−10| + (−10)", ans: 10, pts: 35, traps: [-10, 0, 30, -30] },
-
-        // 45 PUAN: Çok adımlı uzun / büyük sayılı işlemler
-        { expr: "(−26) + 34 + (−15)", ans: -7, pts: 45, traps: [7, -17, 17, -5] },
-        { expr: "17 + (−18) + 19 + (−20)", ans: -2, pts: 45, traps: [2, 0, -4, 4] }
+        { expr: "−5 − 5", ans: -10, pts: 15, traps: [0, 10, -5, 5] },
+        { expr: "−4 − 3", ans: -7, pts: 15, traps: [7, -1, 1, -6] },
+        { expr: "(+10) − (−4)", ans: 14, pts: 20, traps: [6, -6, -14, 12] },
+        { expr: "(−8) − (+3)", ans: -11, pts: 20, traps: [-5, 5, 11, -10] },
+        { expr: "4 − (−5)", ans: 9, pts: 20, traps: [-1, 1, -9, 8] },
+        { expr: "(+5) − (+12)", ans: -7, pts: 20, traps: [7, 17, -17, -6] },
+        { expr: "(−9) − (−4)", ans: -5, pts: 20, traps: [5, -13, 13, -4] },
+        { expr: "(−3) − (−11)", ans: 8, pts: 20, traps: [-8, -14, 14, 7] },
+        { expr: "(−7) − (−7)", ans: 0, pts: 20, traps: [-14, 14, -7, 7] },
+        { expr: "(−7) − (+7)", ans: -14, pts: 20, traps: [0, 14, -7, 7] },
+        { expr: "8 − (−6)", ans: 14, pts: 20, traps: [2, -2, -14, 12] }
       ];
+
+      // 2) ÜÇ SAYILI ORTA HAVUZ (30 PUAN - Küçük, zihinden kolay toplanan sayılar)
+      const threeNumPresets = [
+        { expr: "9 + (−7) + (−5)", ans: -3, pts: 30, traps: [3, -11, 11, -2] },
+        { expr: "(−4) + (−3) + (−5)", ans: -12, pts: 30, traps: [12, -6, -2, 2] },
+        { expr: "(+9) + (−2) − (+1)", ans: 6, pts: 30, traps: [8, -6, 10, 4] },
+        { expr: "−2 − 3 − 4", ans: -9, pts: 30, traps: [9, -1, -5, 3] },
+        { expr: "(+6) + (−8) + (+5)", ans: 3, pts: 30, traps: [-3, 9, -9, 5] },
+        { expr: "(−5) + (+9) + (−2)", ans: 2, pts: 30, traps: [-2, 6, -6, 4] },
+        { expr: "10 + (−4) − (+3)", ans: 3, pts: 30, traps: [-3, 9, 11, 5] }
+      ];
+
+      // 3) ZORLAYICI BONUS HAVUZU (40 PUAN - Oyun boyunca MAKSİMUM 1 TANE gelir)
+      const hardPresets = [
+        { expr: "|−5| + |−9| − 4", ans: 10, pts: 40, traps: [-10, 18, -18, 8], isHard: true },
+        { expr: "[(12 − 18) − (−4)]", ans: -2, pts: 40, traps: [2, -10, 10, -4], isHard: true },
+        { expr: "|−12| − (−6) + (−5)", ans: 13, pts: 40, traps: [-13, 1, -1, 11], isHard: true },
+        { expr: "(−14) + 20 − (−6)", ans: 12, pts: 40, traps: [-12, 0, -28, 8], isHard: true },
+        { expr: "|−8| − |+11| + (−4)", ans: -7, pts: 40, traps: [7, -1, 1, -15], isHard: true }
+      ];
+
+      // Zor soru gelebilir mi? (İlk 2 soruda asla gelmez, sonrasında daha önce hiç gelmediyse %12 ihtimalle sadece 1 kez gelir)
+      let canSpawnHard = (player.qCount >= 2 && player.hardCount < 1);
+      let roll = Math.random();
+
+      let category = 'TWO_NUM'; // Varsayılan: 2 sayılı
+      if (canSpawnHard && roll < 0.12) {
+        category = 'HARD';
+      } else if (player.qCount >= 1 && roll < 0.30) {
+        // Yaklaşık %18-20 oranında 3 sayılı soru
+        category = 'THREE_NUM';
+      }
 
       for (let attempt = 0; attempt < 10; attempt++) {
         let qObj;
-        if (Math.random() < 0.45) {
-          qObj = presetPool[Math.floor(Math.random() * presetPool.length)];
-        } else {
-          let type = randInt(1, 7);
-          if (type === 1) {
-            // 15 PUAN: İki tam sayıyı toplama: (+a) + (-b)
-            let a = nonZeroRand(-20, 20);
-            let b = nonZeroRand(-20, 20);
-            let ans = a + b;
-            let expr = Math.random() < 0.6 ? `${fmtSigned(a)} + ${fmtSigned(b)}` : `${fmtPlainOrNegParen(a)} + ${fmtPlainOrNegParen(b)}`;
-            qObj = { expr, ans, pts: 15, traps: [-ans, a - b, b - a, ans + (Math.random() < 0.5 ? 2 : -2)] };
-          } else if (type === 2) {
-            // 25 PUAN: İki tam sayıyı çıkarma: (+a) - (-b)
-            let a = nonZeroRand(-20, 20);
-            let b = nonZeroRand(-20, 20);
-            let ans = a - b;
-            let expr = Math.random() < 0.6 ? `${fmtSigned(a)} − ${fmtSigned(b)}` : `${fmtPlainOrNegParen(a)} − ${fmtSigned(b)}`;
-            qObj = { expr, ans, pts: 25, traps: [-ans, a + b, -(a + b), ans + (Math.random() < 0.5 ? 2 : -2)] };
-          } else if (type === 3) {
-            // 15 PUAN: Parantezsiz çıkarma: a - b veya -a - b
-            let a = nonZeroRand(-15, 15);
-            let b = randInt(2, 18);
-            let ans = a - b;
-            let aStr = a < 0 ? `−${Math.abs(a)}` : `${a}`;
-            let expr = `${aStr} − ${b}`;
-            qObj = { expr, ans, pts: 15, traps: [-ans, a + b, -(a + b), ans + 2] };
-          } else if (type === 4) {
-            // 25 PUAN: Mutlak değerli toplama/çıkarma: |-a| + |-b| veya |-a| - (-b)
-            let a = nonZeroRand(-18, -2);
-            let b = nonZeroRand(-15, 15);
-            let isAdd = Math.random() < 0.5;
-            if (isAdd) {
-              let useSecondAbs = Math.random() < 0.6;
-              let bVal = useSecondAbs ? Math.abs(b) : b;
-              let ans = Math.abs(a) + bVal;
-              let bStr = useSecondAbs ? fmtAbs(b) : fmtSigned(b);
-              let expr = `${fmtAbs(a)} + ${bStr}`;
-              qObj = { expr, ans, pts: 25, traps: [-ans, a + b, Math.abs(a) - bVal, a + Math.abs(b)] };
-            } else {
-              let useSecondAbs = Math.random() < 0.5;
-              let bVal = useSecondAbs ? Math.abs(b) : b;
-              let ans = Math.abs(a) - bVal;
-              let bStr = useSecondAbs ? fmtAbs(b) : fmtSigned(b);
-              let expr = `${fmtAbs(a)} − ${bStr}`;
-              qObj = { expr, ans, pts: 25, traps: [-ans, Math.abs(a) + bVal, a - b, a + b] };
-            }
-          } else if (type === 5) {
-            // 35 PUAN: Üç terimli işlem: a + (-b) + (-c) veya -a - b - c
-            if (Math.random() < 0.5) {
-              let a = randInt(2, 9);
-              let b = randInt(2, 9);
-              let c = randInt(2, 9);
+
+        if (category === 'HARD') {
+          qObj = hardPresets[Math.floor(Math.random() * hardPresets.length)];
+        } else if (category === 'THREE_NUM') {
+          if (Math.random() < 0.55) {
+            qObj = threeNumPresets[Math.floor(Math.random() * threeNumPresets.length)];
+          } else {
+            // Dinamik 3 sayılı kolay işlem (-8 ile +8 arası)
+            if (Math.random() < 0.4) {
+              let a = randInt(1, 6);
+              let b = randInt(1, 5);
+              let c = randInt(1, 5);
               let ans = -a - b - c;
               let expr = `−${a} − ${b} − ${c}`;
-              qObj = { expr, ans, pts: 35, traps: [-ans, -a - b + c, a + b - c, ans + 2] };
+              qObj = { expr, ans, pts: 30, traps: [-ans, -a - b + c, a + b - c, ans + 2] };
             } else {
-              let a = nonZeroRand(-12, 12);
-              let b = nonZeroRand(-12, 12);
-              let c = nonZeroRand(-12, 12);
-              let op2 = Math.random() < 0.5 ? '+' : '−';
+              let a = nonZeroRand(-8, 8);
+              let b = nonZeroRand(-8, 8);
+              let c = nonZeroRand(-6, 6);
+              let op2 = Math.random() < 0.65 ? '+' : '−';
               let ans = op2 === '+' ? (a + b + c) : (a + b - c);
               let expr = `${fmtSigned(a)} + ${fmtSigned(b)} ${op2} ${fmtSigned(c)}`;
-              qObj = { expr, ans, pts: 35, traps: [-ans, a - b + c, a + b + (op2 === '+' ? -c : c), ans + 2] };
+              qObj = { expr, ans, pts: 30, traps: [-ans, a - b + c, a + b + (op2 === '+' ? -c : c), ans + 2] };
             }
-          } else if (type === 6) {
-            // 35 PUAN: Köşeli parantezli işlem: [(a - b) - c]
-            let a = randInt(5, 20);
-            let b = randInt(a + 2, a + 15);
-            let c = nonZeroRand(-10, 10);
-            let ans = (a - b) - c;
-            let cStr = c < 0 ? `(−${Math.abs(c)})` : `${c}`;
-            let expr = `[(${a} − ${b}) − ${cStr}]`;
-            qObj = { expr, ans, pts: 35, traps: [-ans, (b - a) - c, (a - b) + c, ans + 2] };
+          }
+        } else {
+          // İKİ SAYILI TOPLAMA / ÇIKARMA (Ana kategori)
+          if (Math.random() < 0.5) {
+            qObj = twoNumPresets[Math.floor(Math.random() * twoNumPresets.length)];
           } else {
-            // 45 PUAN: 4 terimli veya mutlak değerli 3 terimli uzun işlem
-            if (Math.random() < 0.5) {
-              let a = nonZeroRand(-12, -2);
+            let subType = randInt(1, 3);
+            if (subType === 1) {
+              // 15 PUAN: İki tam sayıyı toplama: (+a) + (-b)
+              let a = nonZeroRand(-12, 12);
               let b = nonZeroRand(-12, 12);
-              let c = nonZeroRand(-12, 12);
-              let ans = Math.abs(a) + Math.abs(b) + c;
-              let expr = `${fmtAbs(a)} + ${fmtAbs(b)} + ${fmtSigned(c)}`;
-              qObj = { expr, ans, pts: 45, traps: [-ans, a + b + c, Math.abs(a) + Math.abs(b) - c, ans + 4] };
+              let ans = a + b;
+              let expr = Math.random() < 0.6 ? `${fmtSigned(a)} + ${fmtSigned(b)}` : `${fmtPlainOrNegParen(a)} + ${fmtPlainOrNegParen(b)}`;
+              qObj = { expr, ans, pts: 15, traps: [-ans, a - b, b - a, ans + (Math.random() < 0.5 ? 2 : -2)] };
+            } else if (subType === 2) {
+              // 15 PUAN: Parantezsiz çıkarma: a - b veya -a - b
+              let a = nonZeroRand(-10, 10);
+              let b = randInt(2, 10);
+              let ans = a - b;
+              let aStr = a < 0 ? `−${Math.abs(a)}` : `${a}`;
+              let expr = `${aStr} − ${b}`;
+              qObj = { expr, ans, pts: 15, traps: [-ans, a + b, -(a + b), ans + 2] };
             } else {
-              let a = nonZeroRand(-15, 15);
-              let b = nonZeroRand(-15, 15);
-              let c = nonZeroRand(-15, 15);
-              let d = nonZeroRand(-15, 15);
-              let ans = a + b - c + d;
-              let expr = `${fmtPlainOrNegParen(a)} + ${fmtSigned(b)} − ${fmtSigned(c)} + ${fmtSigned(d)}`;
-              qObj = { expr, ans, pts: 45, traps: [-ans, a + b + c + d, a - b - c + d, ans - 2] };
+              // 20 PUAN: İki tam sayıyı çıkarma: (+a) - (-b)
+              let a = nonZeroRand(-12, 12);
+              let b = nonZeroRand(-10, 10);
+              let ans = a - b;
+              let expr = Math.random() < 0.6 ? `${fmtSigned(a)} − ${fmtSigned(b)}` : `${fmtPlainOrNegParen(a)} − ${fmtSigned(b)}`;
+              qObj = { expr, ans, pts: 20, traps: [-ans, a + b, -(a + b), ans + (Math.random() < 0.5 ? 2 : -2)] };
             }
           }
         }
 
         if (prevAns === null || qObj.ans !== prevAns) {
+          player.qCount++;
+          if (qObj.isHard) player.hardCount++;
           return qObj;
         }
       }
-      return presetPool[0];
+
+      player.qCount++;
+      return twoNumPresets[0];
     }
 
     function setQuestion(playerNum) {
       let player = (playerNum === 1) ? p1 : p2;
-      let prevAns = player.currentQ ? player.currentQ.ans : null;
-      let qObj = generateIntegerProblem(prevAns);
+      let qObj = generateIntegerProblem(player);
       player.currentQ = qObj;
 
-      let badgeColor = qObj.pts >= 45 ? '#EF4444' : (qObj.pts >= 35 ? '#F97316' : (qObj.pts >= 25 ? '#10B981' : '#3B82F6'));
+      let badgeColor = qObj.pts >= 40 ? '#EF4444' : (qObj.pts >= 30 ? '#F97316' : (qObj.pts >= 20 ? '#10B981' : '#3B82F6'));
       let text = `<span style="color:#FDE047;">${qObj.expr} = ?</span> <span style="display:inline-block; font-size:13px; background:${badgeColor}; color:#FFF; padding:2px 8px; border-radius:8px; vertical-align:middle; margin-left:6px; box-shadow:0 2px 4px rgba(0,0,0,0.3);">+${qObj.pts} P</span>`;
       if (playerNum === 1) {
         document.getElementById('p1-question').innerHTML = text;
@@ -1100,7 +1117,7 @@
         }
         let wrong;
         do {
-          let offset = nonZeroRand(-10, 10);
+          let offset = nonZeroRand(-8, 8);
           wrong = (Math.random() < 0.4 && qObj.ans !== 0) ? -qObj.ans : (qObj.ans + offset);
         } while (wrong === qObj.ans);
         return wrong;
@@ -1173,7 +1190,10 @@
       } else {
         document.getElementById('app-overlay').style.display = 'flex';
         if(screenId === 'START') document.getElementById('startScreen').style.display = 'block';
-        if(screenId === 'LEADERBOARD') { renderLeaderboard(); document.getElementById('leaderboardScreen').style.display = 'block'; }
+        if(screenId === 'LEADERBOARD') {
+          renderLeaderboard();
+          document.getElementById('leaderboardScreen').style.display = 'flex';
+        }
       }
     }
 
@@ -1207,8 +1227,8 @@
         document.getElementById('p1-name').innerText = "Kırmızı Takım";
       }
 
-      p1.score = 0; p1.lives = 5; p1.currentQ = null;
-      p2.score = 0; p2.lives = 5; p2.currentQ = null;
+      p1.score = 0; p1.lives = 5; p1.currentQ = null; p1.qCount = 0; p1.hardCount = 0;
+      p2.score = 0; p2.lives = 5; p2.currentQ = null; p2.qCount = 0; p2.hardCount = 0;
       updateScores();
       updateLivesDisplay();
       
@@ -1321,7 +1341,7 @@
       else obj.style.animation = `swayFall ${speed}s ease-in-out forwards`;
 
       let targetPlayer = isAny ? p1 : (isLeft ? p1 : p2);
-      let wantCorrect = Math.random() < 0.42;
+      let wantCorrect = Math.random() < 0.48;
       let num = generateFallingAnswer(targetPlayer.currentQ, wantCorrect);
       
       let span = document.createElement('span');
@@ -1344,6 +1364,7 @@
         if (player.currentQ && val === player.currentQ.ans) {
           let earnedPts = player.currentQ.pts || 20;
           player.score += earnedPts;
+          playCorrectSound();
           popEffect(this, true, earnedPts);
           setQuestion(playerNum);
           clearSideFallingItems(player);
