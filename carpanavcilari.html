@@ -1,3 +1,17 @@
+Bahsettiğiniz puan hilesi (bug) ve liderlik tablosu düzenlemeleri tamamlandı:
+
+### Yapılan Düzeltmeler:
+1. **Çift / Hızlı Tıklama Puan Bug'ı Giderildi:**
+   - Eskiden doğru çarpana basıldığında hücrenin `"bulundu (found)"` olarak işaretlenmesi `300 ms` gecikmeli (`setTimeout` içinde) yapılıyordu. Bu yüzden öğrenci 300 milisaniye içinde aynı kutuya 4-5 kez hızlıca basarsa her basışta hem kombo hem ekstra puan kazanıyordu ve çarpan sayacı erken dolup diğer çarpanları bulmadan yeni sayıya geçiyordu.
+   - Artık bir çarpana tıklandığı **ilk milisaniyede** hücre kilitleniyor ve ayrıca o turda bulunan çarpanlar bir kümede (`foundFactorsSet`) takip ediliyor. Aynı sayıya ne kadar hızlı basılırsa basılsın **sadece 1 kez** puan alınabiliyor.
+2. **İlk 10 Liderlik Tablosuna Kutlama Eklendi & Tarih Kaldırıldı:**
+   - Tablodaki saat/tarih bilgisi kaldırıldı.
+   - Her satıra **👏 Kutla** butonu ve sesli/konfetili **Kutlama Kartı (Modal)** eklendi.
+   - Liderlik tablosu çerçevesi diğer oyundaki gibi her bilgisayar ekranına sığacak şekilde kompakt hale getirildi; en alttaki **"GERİ DÖN"** butonu hiçbir ekranda aşağı taşmaz.
+
+Güncellenmiş tam HTML kodu:
+
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -53,7 +67,6 @@ function validateStudentName(inputStr) {
             if(partMatched) matchedParts++;
         }
         
-        // Match conditions: matched multiple words
         if (matchedParts === inputParts.length || matchedParts >= 2) {
             matches.push({ student, score: matchScore + matchedParts });
         }
@@ -66,7 +79,6 @@ function validateStudentName(inputStr) {
     
     return { error: "İsminiz Öğrenci Listesinde bulunamadı! 👽\n\nLütfen uzaylı isimleri girmeyin. Sadece kendi adınızı ve soyadınızı doğru yazdığınızdan emin olun." };
 }
-
     </script>
     <style>
         :root {
@@ -110,7 +122,7 @@ function validateStudentName(inputStr) {
             justify-content: center;
             width: 100%; 
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
             animation: fadeIn 0.5s ease;
         }
@@ -277,7 +289,7 @@ function validateStudentName(inputStr) {
         }
         .cell:active:not(.found):not(.disabled) { transform: scale(0.95); }
 
-        .cell.correct { background: var(--correct-color); border-color: white; color: white; transform: scale(1.1); box-shadow: 0 0 20px rgba(16,185,129,0.8); z-index: 5; }
+        .cell.correct { background: var(--correct-color); border-color: white; color: white; transform: scale(1.1); box-shadow: 0 0 20px rgba(16,185,129,0.8); z-index: 5; cursor: default; }
         .cell.wrong { animation: shakeError 0.4s ease-in-out; background: var(--wrong-color); color: white; border-color: white; box-shadow: 0 0 20px rgba(244,63,94,0.8); z-index: 5; }
         
         .cell.found.p1 { background: var(--p1-color); border-color: var(--p1-color); color: white; opacity: 0.9; cursor: default; }
@@ -300,20 +312,85 @@ function validateStudentName(inputStr) {
             100% { transform: scale(1); opacity: 1; }
         }
 
+        /* Liderlik Tablosu (Her Ekrana Sığan Kompakt Yapı) */
         .leaderboard-panel {
-            background: var(--panel-bg); border: 1px solid var(--border-light);
-            border-radius: 20px; padding: 30px; width: 100%; max-width: 500px;
-            max-height: 80vh; overflow-y: auto;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 18px 24px;
+            width: 95%;
+            max-width: 620px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             box-sizing: border-box;
         }
-        .leaderboard-item {
-            display: flex; justify-content: space-between; padding: 12px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 1.1rem;
+        #leaderboard-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-right: 4px;
         }
-        .leaderboard-item:nth-child(1) { background: rgba(251, 191, 36, 0.2); font-weight: bold; color: #fbbf24; border-radius: 10px; border: 1px solid rgba(251, 191, 36, 0.3); }
-        .leaderboard-item:nth-child(2) { background: rgba(203, 213, 225, 0.1); color: #cbd5e1; border-radius: 10px; }
-        .leaderboard-item:nth-child(3) { background: rgba(180, 83, 9, 0.1); color: #d97706; border-radius: 10px; }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.98rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.15s, background 0.15s;
+        }
+        .leaderboard-item:hover {
+            transform: scale(1.01);
+            background: rgba(255,255,255,0.08);
+        }
+        .leaderboard-item:nth-child(1) { background: rgba(251, 191, 36, 0.2); font-weight: bold; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); }
+        .leaderboard-item:nth-child(2) { background: rgba(203, 213, 225, 0.12); color: #e2e8f0; border: 1px solid rgba(203, 213, 225, 0.25); }
+        .leaderboard-item:nth-child(3) { background: rgba(180, 83, 9, 0.15); color: #fdba74; border: 1px solid rgba(251, 146, 60, 0.3); }
+
+        .btn-celebrate-row {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-celebrate-row:hover {
+            background: #fbbf24;
+            color: #0f172a;
+        }
+
+        /* Kutlama Modalı */
+        .celebration-modal {
+            position: fixed; inset: 0; z-index: 300; display: none;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .celebration-backdrop {
+            position: absolute; inset: 0; background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(6px);
+        }
+        .celebration-card {
+            position: relative; width: 100%; max-width: 480px; border-radius: 24px; padding: 32px 26px;
+            text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6); animation: popIn 0.35s; z-index: 301;
+            background: #1e293b; color: #fff; border: 3px solid #fbbf24;
+        }
+        .cel-name { font-size: 1.9rem; font-weight: 800; margin-bottom: 4px; color: #fff; }
+        .cel-score { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 800; color: #fbbf24; margin-bottom: 12px; }
+        .btn-cel-close {
+            width: 100%; padding: 14px; border-radius: 14px; border: none; font-size: 1.1rem;
+            font-weight: 800; cursor: pointer; color: #0f172a; background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35); transition: transform 0.2s; font-family: 'Poppins', sans-serif;
+        }
+        .btn-cel-close:active { transform: scale(0.96); }
         
         .floating-text {
             position: absolute; font-weight: 800; font-size: 1.5rem; pointer-events: none;
@@ -348,11 +425,9 @@ function validateStudentName(inputStr) {
             .score-val { font-size: 1.8rem; }
             .board { gap: 6px; padding: 10px; }
             .cell { font-size: 1.4rem; }
-            .screen { padding: 10px; justify-content: flex-start; } 
+            .screen { padding: 10px; justify-content: center; } 
         }
     </style>
-    <!-- Confetti Library -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -377,8 +452,6 @@ function validateStudentName(inputStr) {
         </div>
         
         <button class="btn" style="margin-top: 20px; background: rgba(255,255,255,0.1);" onclick="showLeaderboard()">🏆 İLK 10 LİDERLİK TABLOSU</button>
-        
-        <!-- Oyunlar Arası Geçiş -->
         
         <!-- Öğretmen Ayarları -->
         <button class="btn" style="margin-top: 10px; background: rgba(100,116,139,0.2); border-color: #64748b; font-size: 1rem;" onclick="showScreen('screen-settings')">⚙️ ÖĞRETMEN AYARLARI</button>
@@ -490,11 +563,27 @@ function validateStudentName(inputStr) {
     <!-- LİDERLİK TABLOSU -->
     <div id="screen-leaderboard" class="screen">
         <div class="leaderboard-panel">
-            <h2 style="text-align: center; margin-top: 0; color: #fbbf24;">🏆 İLK 10 EFSANE 🏆</h2>
-            <div id="leaderboard-list" style="margin-top: 20px; display: flex; flex-direction: column; gap: 5px;"></div>
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="btn" onclick="showScreen('screen-menu')">GERİ DÖN</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+                <h2 style="margin: 0; color: #fbbf24; font-size: 1.5rem;">🏆 İLK 10 EFSANE</h2>
+                <button class="btn-celebrate-row" style="padding: 6px 14px; font-size: 0.9rem;" onclick="showScreen('screen-menu')">✕ Kapat</button>
             </div>
+            <div id="leaderboard-list"></div>
+            <div style="text-align: center; margin-top: 12px; flex-shrink: 0;">
+                <button class="btn btn-primary" style="margin: 0; padding: 11px 30px; width: 100%; font-size: 1.1rem;" onclick="showScreen('screen-menu')">🔄 ANA MENÜYE DÖN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KUTLAMA MODALI -->
+    <div class="celebration-modal" id="celebrationModal">
+        <div class="celebration-backdrop" onclick="closeCelebration()"></div>
+        <div class="celebration-card" id="celebrationCard">
+            <div style="font-size: 62px; margin-bottom: 5px;" id="celIcon">⭐</div>
+            <div class="cel-name" id="celName">Öğrenci</div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #fbbf24; margin-bottom: 8px;" id="celTitle">1. Sıra Şampiyonu!</div>
+            <div class="cel-score" id="celScore">0 Puan</div>
+            <p id="celMessage" style="font-size: 0.95rem; font-weight: 600; color: #cbd5e1; margin-bottom: 22px; line-height: 1.5;">Kutlama mesajı</p>
+            <button class="btn-cel-close" onclick="closeCelebration()">👏 Alkışla ve Kapat</button>
         </div>
     </div>
 
@@ -509,20 +598,76 @@ function validateStudentName(inputStr) {
                 
                 <button class="btn btn-primary" onclick="showScreen('screen-menu')" style="width: 250px; margin-top:10px;">ANA MENÜ</button>
                 <button class="btn" onclick="showLeaderboard()" style="width: 250px;">LİDERLİK TABLOSU</button>
-                
-                <!-- Oyun Geçiş Butonu -->
-                
             </div>
         </div>
     </div>
 
     <script>
+        /* ==============================
+           SES EFEKTLERİ (WEB AUDIO API)
+           ============================== */
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playFanfareSound(rank) {
+            try {
+                let ctx = getAudioContext();
+                let now = ctx.currentTime;
+                let notes = (rank === 1) ? [523.25, 659.25, 783.99, 1046.50] :
+                            (rank === 2) ? [440.00, 554.37, 659.25, 880.00] :
+                            (rank === 3) ? [392.00, 493.88, 587.33, 783.99] :
+                                          [349.23, 440.00, 523.25, 698.46];
+                notes.forEach((freq, idx) => {
+                    let osc = ctx.createOscillator();
+                    let gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+                    gain.gain.setValueAtTime(0, now + idx * 0.11);
+                    gain.gain.linearRampToValueAtTime(0.3, now + idx * 0.11 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + (idx === notes.length - 1 ? 0.6 : 0.22));
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.11);
+                    osc.stop(now + idx * 0.11 + 0.65);
+                });
+            } catch(e) {}
+        }
+
+        function playCloseSound() {
+            try {
+                let ctx = getAudioContext();
+                let now = ctx.currentTime;
+                let freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                freqs.forEach((freq, idx) => {
+                    let osc = ctx.createOscillator();
+                    let gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + idx * 0.05 + 0.18);
+                });
+            } catch(e) {}
+        }
+
         let gameMode = 1;
         let timeLeft = 60;
         let timerInterval;
         let currentTarget = 0;
         let targetFactors = [];
-        let factorsFoundCount = 0;
+        let foundFactorsSet = new Set(); // Aynı çarpandan birden fazla puan alınmasını kesin olarak engeller
+        let isTransitioningTarget = false;
         
         let selectedDuelTime = 90; 
         
@@ -565,7 +710,6 @@ function validateStudentName(inputStr) {
         function updateLocalLeaderboard(rawEntries) {
           let groups = [];
 
-          // Group by name with fuzzy matching
           rawEntries.forEach(entry => {
             if (!entry) return;
             let normName = (entry.name || '').trim().replace(/\s+/g, ' ');
@@ -658,7 +802,7 @@ function validateStudentName(inputStr) {
         }
 
         function fireConfetti() {
-            var duration = 3 * 1000;
+            var duration = 2.5 * 1000;
             var end = Date.now() + duration;
 
             (function frame() {
@@ -683,17 +827,67 @@ function validateStudentName(inputStr) {
             }());
         }
 
-        // --- NEW: Validation Layer ---
+        /* KUTLAMA MODALI */
+        function openCelebration(entry, rank) {
+            fireConfetti();
+            playFanfareSound(rank);
+            
+            let name = entry.name || 'Öğrenci';
+            document.getElementById('celName').innerText = name;
+            document.getElementById('celScore').innerText = entry.score + " Puan";
+            
+            let card = document.getElementById('celebrationCard');
+            let icon = document.getElementById('celIcon');
+            let title = document.getElementById('celTitle');
+            let msg = document.getElementById('celMessage');
+            
+            if (rank === 1) {
+                icon.innerText = "🥇";
+                title.innerText = "👑 ÇARPANLAR KRALI / KRALİÇESİ!";
+                title.style.color = "#fbbf24";
+                msg.innerText = "İNANILMAZ BİR PERFORMANS! Tüm çarpanları ışık hızında avlayarak zirvenin tek sahibi oldun!";
+                card.style.border = "4px solid #fbbf24";
+                card.style.background = "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)";
+            } else if (rank === 2) {
+                icon.innerText = "🥈";
+                title.innerText = "⚡ GÜMÜŞ MADALYA ŞAMPİYONU!";
+                title.style.color = "#e2e8f0";
+                msg.innerText = "MÜTHİŞ BİR BAŞARI! Çarpanları harika bir hızla bularak Gümüş Madalyayı kazandın!";
+                card.style.border = "4px solid #94a3b8";
+                card.style.background = "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)";
+            } else if (rank === 3) {
+                icon.innerText = "🥉";
+                title.innerText = "🔥 BRONZ MADALYA SAHİBİ!";
+                title.style.color = "#fdba74";
+                msg.innerText = "HARİKASIN! Gösterdiğin üstün performansla kürsüye çıkıp Bronz Madalyayı kazandın!";
+                card.style.border = "4px solid #f97316";
+                card.style.background = "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)";
+            } else {
+                icon.innerText = "🎖️";
+                title.innerText = `${rank}. SIRA EFSANE ÖDÜLÜ`;
+                title.style.color = "#38bdf8";
+                msg.innerText = `TEBRİKLER! Harika bir odaklanmayla ${rank}. olarak İlk 10 Efsane arasına adını gururla yazdırdın!`;
+                card.style.border = "4px solid #3b82f6";
+                card.style.background = "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)";
+            }
+            
+            document.getElementById('celebrationModal').style.display = 'flex';
+        }
+
+        function closeCelebration() {
+            playCloseSound();
+            document.getElementById('celebrationModal').style.display = 'none';
+        }
+
         function validateAndStart(mode) {
             if (mode === 1) {
                 let n = document.getElementById('input-p1-single').value.trim();
                 let result = validateStudentName(n);
                 if (result.error) {
                     alert(result.error);
-                    return; // Block starting
+                    return;
                 }
                 
-                // Set to Excel's exact correct name and start!
                 document.getElementById('input-p1-single').value = result.name;
                 startGame(1, result.name);
             } else {
@@ -703,7 +897,8 @@ function validateStudentName(inputStr) {
 
         function startGame(mode, validatedName = null) {
             gameMode = mode;
-            factorsFoundCount = 0;
+            foundFactorsSet.clear();
+            isTransitioningTarget = false;
             
             p1.score = 0; p1.combo = 0; p1.wrongStreak = 0;
             p2.score = 0; p2.combo = 0; p2.wrongStreak = 0;
@@ -758,6 +953,9 @@ function validateStudentName(inputStr) {
         }
 
         function generateNewTarget() {
+            isTransitioningTarget = false;
+            foundFactorsSet.clear();
+
             currentTarget = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
             document.getElementById('target-display').innerText = currentTarget;
             document.getElementById('target-display').style.animation = 'none';
@@ -767,7 +965,6 @@ function validateStudentName(inputStr) {
             for(let i=1; i<=currentTarget; i++) {
                 if(currentTarget % i === 0) targetFactors.push(i);
             }
-            factorsFoundCount = 0;
             updateProgress();
             
             createBoards();
@@ -812,31 +1009,44 @@ function validateStudentName(inputStr) {
         }
 
         function handleCellClick(num, cell, player, event) {
-            if(cell.classList.contains('found') || cell.classList.contains('disabled')) return;
+            // Hızlı tıklama veya geçiş anında tekrar puan alınmasını anında engelle
+            if (
+                isTransitioningTarget ||
+                cell.dataset.locked === 'true' ||
+                cell.classList.contains('found') ||
+                cell.classList.contains('correct') ||
+                cell.classList.contains('disabled')
+            ) {
+                return;
+            }
             
             const rect = cell.getBoundingClientRect();
             
             if(targetFactors.includes(num)) {
+                // Eğer bu çarpan zaten bulunduysa kesinlikle tekrar puan verme
+                if (foundFactorsSet.has(num)) return;
+
+                // Anında kilitle ve bulunanlar kümesine ekle
+                foundFactorsSet.add(num);
+                cell.dataset.locked = 'true';
+                cell.classList.add('found', gameMode === 1 ? 'single' : player.el, 'correct');
+                setTimeout(() => {
+                    cell.classList.remove('correct');
+                }, 300);
+
                 player.combo++;
                 player.wrongStreak = 0;
                 
                 let earned = 10 * Math.min(player.combo, 5);
                 player.score += earned;
                 
-                cell.classList.add('correct');
-                setTimeout(() => {
-                    cell.classList.remove('correct');
-                    cell.classList.add('found', gameMode === 1 ? 'single' : player.el);
-                }, 300);
-                
                 showFloatingText(`+${earned}`, rect.left + rect.width/2, rect.top, '#10b981');
-                
-                factorsFoundCount++;
                 
                 if(gameMode === 2) {
                     const otherBoardId = player.el === 'p1' ? 'board-p2' : 'board-p1';
                     const otherCell = document.querySelector(`#${otherBoardId} .cell[data-val="${num}"]`);
                     if(otherCell) {
+                        otherCell.dataset.locked = 'true';
                         otherCell.classList.add('disabled');
                         otherCell.innerHTML = '❌';
                     }
@@ -844,11 +1054,15 @@ function validateStudentName(inputStr) {
                 
                 updateProgress();
                 
-                if(factorsFoundCount >= targetFactors.length) {
+                if(foundFactorsSet.size >= targetFactors.length) {
+                    isTransitioningTarget = true;
                     setTimeout(generateNewTarget, 600);
                 }
                 
             } else {
+                // Yanlış hücreye art arda spam yapılmasını da kısa süreli kilitle
+                if (cell.classList.contains('wrong')) return;
+
                 player.combo = 0;
                 player.wrongStreak++;
                 
@@ -865,7 +1079,7 @@ function validateStudentName(inputStr) {
         }
 
         function updateProgress() {
-            document.getElementById('factor-progress').innerText = `${factorsFoundCount}/${targetFactors.length} Bulundu`;
+            document.getElementById('factor-progress').innerText = `${foundFactorsSet.size}/${targetFactors.length} Bulundu`;
         }
 
         function updateScores() {
@@ -918,7 +1132,7 @@ function validateStudentName(inputStr) {
             
             if(gameMode === 1) {
                 let scores = JSON.parse(localStorage.getItem('factorHunterTop10')) || [];
-                let newEntry = { name: p1.name, score: p1.score, date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), timestamp: Date.now(), id: Date.now() };
+                let newEntry = { name: p1.name, score: p1.score, timestamp: Date.now(), id: Date.now() };
                 
                 // Veritabanına kaydet (Firebase)
                 if(cloudDb) {
@@ -997,11 +1211,17 @@ function validateStudentName(inputStr) {
                     if(index === 0) medal = '🥇 ';
                     else if(index === 1) medal = '🥈 ';
                     else if(index === 2) medal = '🥉 ';
-                    else medal = `<span style="opacity:0.5; width:25px; display:inline-block;">${index+1}.</span>`;
+                    else medal = `<span style="opacity:0.6; width:28px; display:inline-block;">${index+1}.</span>`;
                     
+                    let safeName = (s.name || 'Öğrenci').replace(/'/g, "\\'");
+                    
+                    item.onclick = () => openCelebration({ name: s.name, score: s.score }, index + 1);
                     item.innerHTML = `
-                        <div>${medal} <strong>${s.name}</strong></div>
-                        <div style="font-family:'Orbitron', sans-serif;">${s.score} <span style="font-size:0.8rem; font-family:'Poppins', sans-serif; opacity:0.5;">(${s.date})</span></div>
+                        <div style="display:flex; align-items:center; gap:6px;">${medal} <strong>${s.name}</strong></div>
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <span style="font-family:'Orbitron', sans-serif; font-weight:800; font-size:1.1rem; color:#fbbf24;">${s.score}</span>
+                            <button class="btn-celebrate-row" onclick="event.stopPropagation(); openCelebration({ name: '${safeName}', score: ${s.score} }, ${index + 1});">👏 Kutla</button>
+                        </div>
                     `;
                     listEl.appendChild(item);
                 });
@@ -1012,3 +1232,4 @@ function validateStudentName(inputStr) {
     </script>
 </body>
 </html>
+```
