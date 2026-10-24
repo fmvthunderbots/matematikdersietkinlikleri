@@ -918,50 +918,57 @@
 
     /* MEB 7. Sınıf Kitabı Örneklerine Birebir Uygun Dinamik Tam Sayı İşlem Üretici */
     function generateIntegerProblem(prevAns = null) {
-      // Kitaptaki ikonik örnekler + dinamik üretim
+      // Kitaptaki ikonik örnekler + zorluk derecesine göre puanlar (15, 25, 35, 45 Puan)
       const presetPool = [
-        { expr: "(+7) + (+6)", ans: 13, traps: [1, -13, -1, 12] },
-        { expr: "(−2) + (−4)", ans: -6, traps: [6, -2, 2, -8] },
-        { expr: "(−5) + (−5)", ans: -10, traps: [0, 10, -25, -5] },
-        { expr: "(+12) + (+10)", ans: 22, traps: [2, -2, -22, 20] },
-        { expr: "(+7) + (−4)", ans: 3, traps: [-3, 11, -11, 4] },
-        { expr: "(+6) + (−8)", ans: -2, traps: [2, 14, -14, -3] },
-        { expr: "(−6) + (+2)", ans: -4, traps: [4, -8, 8, -3] },
-        { expr: "(−5) + (+11)", ans: 6, traps: [-6, 16, -16, 5] },
-        { expr: "(−6) + (+12)", ans: 6, traps: [-6, 18, -18, 8] },
-        { expr: "(−8) + (+2)", ans: -6, traps: [6, -10, 10, -4] },
-        { expr: "(+10) + (−10)", ans: 0, traps: [20, -20, 10, -10] },
-        { expr: "(+15) + (−4)", ans: 11, traps: [-11, 19, -19, 12] },
-        { expr: "(−6) + 2", ans: -4, traps: [4, -8, 8, -2] },
-        { expr: "18 + (−3)", ans: 15, traps: [-15, 21, -21, 16] },
-        { expr: "(−15) + 25", ans: 10, traps: [-10, 40, -40, 15] },
-        { expr: "9 + (−7) + (−9)", ans: -7, traps: [7, -25, 25, 9] },
-        { expr: "(−26) + 34 + (−15)", ans: -7, traps: [7, -17, 17, -5] },
-        { expr: "17 + (−18) + 19 + (−20)", ans: -2, traps: [2, 0, -4, 4] },
-        { expr: "(−6) + (−5) + (−12)", ans: -23, traps: [23, -11, -13, 1] },
-        { expr: "|−5| + |−9|", ans: 14, traps: [-14, -4, 4, -15] },
-        { expr: "9 + |−12|", ans: 21, traps: [-3, 3, -21, 19] },
-        { expr: "|+12| + |−7| + |−9|", ans: 28, traps: [-4, 10, -28, 14] },
-        { expr: "|10| + |−10| + (−10)", ans: 10, traps: [-10, 0, 30, -30] },
-        { expr: "(+10) − (−8)", ans: 18, traps: [2, -2, -18, 16] },
-        { expr: "(−12) − (+5)", ans: -17, traps: [-7, 7, 17, -15] },
-        { expr: "4 − (−5)", ans: 9, traps: [-1, 1, -9, 8] },
-        { expr: "6 − 9", ans: -3, traps: [3, 15, -15, -4] },
-        { expr: "(+5) − (+25)", ans: -20, traps: [20, 30, -30, -15] },
-        { expr: "(+13) − (−12)", ans: 25, traps: [1, -1, -25, 24] },
-        { expr: "(−24) − (−15)", ans: -9, traps: [9, -39, 39, -11] },
-        { expr: "(−3) − (−11)", ans: 8, traps: [-8, -14, 14, 7] },
-        { expr: "(−7) − (−7)", ans: 0, traps: [-14, 14, -7, 7] },
-        { expr: "(−7) − (+7)", ans: -14, traps: [0, 14, -7, 7] },
-        { expr: "|−14| − (−6)", ans: 20, traps: [8, -8, -20, 18] },
-        { expr: "|−2| − |+5|", ans: -3, traps: [3, -7, 7, -5] },
-        { expr: "(+9) + (−2) − (+1)", ans: 6, traps: [8, -6, 10, 12] },
-        { expr: "2 − 6", ans: -4, traps: [4, -8, 8, -3] },
-        { expr: "8 − (−18)", ans: 26, traps: [-10, 10, -26, 24] },
-        { expr: "−10 − 10", ans: -20, traps: [0, 20, -10, 10] },
-        { expr: "|−8| − 5", ans: 3, traps: [-13, 13, -3, 5] },
-        { expr: "−3 − 4 − 5", ans: -12, traps: [12, -2, -6, 4] },
-        { expr: "[(16 − 26) − 2]", ans: -12, traps: [12, -8, 8, -10] }
+        // 15 PUAN: İki terimli temel toplama / çıkarma
+        { expr: "(+7) + (+6)", ans: 13, pts: 15, traps: [1, -13, -1, 12] },
+        { expr: "(−2) + (−4)", ans: -6, pts: 15, traps: [6, -2, 2, -8] },
+        { expr: "(−5) + (−5)", ans: -10, pts: 15, traps: [0, 10, -25, -5] },
+        { expr: "(+12) + (+10)", ans: 22, pts: 15, traps: [2, -2, -22, 20] },
+        { expr: "(+7) + (−4)", ans: 3, pts: 15, traps: [-3, 11, -11, 4] },
+        { expr: "(+6) + (−8)", ans: -2, pts: 15, traps: [2, 14, -14, -3] },
+        { expr: "(−6) + (+2)", ans: -4, pts: 15, traps: [4, -8, 8, -3] },
+        { expr: "(−5) + (+11)", ans: 6, pts: 15, traps: [-6, 16, -16, 5] },
+        { expr: "(−6) + (+12)", ans: 6, pts: 15, traps: [-6, 18, -18, 8] },
+        { expr: "(−8) + (+2)", ans: -6, pts: 15, traps: [6, -10, 10, -4] },
+        { expr: "(+10) + (−10)", ans: 0, pts: 15, traps: [20, -20, 10, -10] },
+        { expr: "(+15) + (−4)", ans: 11, pts: 15, traps: [-11, 19, -19, 12] },
+        { expr: "(−6) + 2", ans: -4, pts: 15, traps: [4, -8, 8, -2] },
+        { expr: "18 + (−3)", ans: 15, pts: 15, traps: [-15, 21, -21, 16] },
+        { expr: "(−15) + 25", ans: 10, pts: 15, traps: [-10, 40, -40, 15] },
+        { expr: "6 − 9", ans: -3, pts: 15, traps: [3, 15, -15, -4] },
+        { expr: "2 − 6", ans: -4, pts: 15, traps: [4, -8, 8, -3] },
+        { expr: "−10 − 10", ans: -20, pts: 15, traps: [0, 20, -10, 10] },
+
+        // 25 PUAN: İşaret dönüşümlü çıkarma ve iki terimli mutlak değer işlemleri
+        { expr: "(+10) − (−8)", ans: 18, pts: 25, traps: [2, -2, -18, 16] },
+        { expr: "(−12) − (+5)", ans: -17, pts: 25, traps: [-7, 7, 17, -15] },
+        { expr: "4 − (−5)", ans: 9, pts: 25, traps: [-1, 1, -9, 8] },
+        { expr: "(+5) − (+25)", ans: -20, pts: 25, traps: [20, 30, -30, -15] },
+        { expr: "(+13) − (−12)", ans: 25, pts: 25, traps: [1, -1, -25, 24] },
+        { expr: "(−24) − (−15)", ans: -9, pts: 25, traps: [9, -39, 39, -11] },
+        { expr: "(−3) − (−11)", ans: 8, pts: 25, traps: [-8, -14, 14, 7] },
+        { expr: "(−7) − (−7)", ans: 0, pts: 25, traps: [-14, 14, -7, 7] },
+        { expr: "(−7) − (+7)", ans: -14, pts: 25, traps: [0, 14, -7, 7] },
+        { expr: "8 − (−18)", ans: 26, pts: 25, traps: [-10, 10, -26, 24] },
+        { expr: "|−5| + |−9|", ans: 14, pts: 25, traps: [-14, -4, 4, -15] },
+        { expr: "9 + |−12|", ans: 21, pts: 25, traps: [-3, 3, -21, 19] },
+        { expr: "|−14| − (−6)", ans: 20, pts: 25, traps: [8, -8, -20, 18] },
+        { expr: "|−2| − |+5|", ans: -3, pts: 25, traps: [3, -7, 7, -5] },
+        { expr: "|−8| − 5", ans: 3, pts: 25, traps: [-13, 13, -3, 5] },
+
+        // 35 PUAN: 3 terimli işlemler ve köşeli parantezler
+        { expr: "9 + (−7) + (−9)", ans: -7, pts: 35, traps: [7, -25, 25, 9] },
+        { expr: "(−6) + (−5) + (−12)", ans: -23, pts: 35, traps: [23, -11, -13, 1] },
+        { expr: "(+9) + (−2) − (+1)", ans: 6, pts: 35, traps: [8, -6, 10, 12] },
+        { expr: "−3 − 4 − 5", ans: -12, pts: 35, traps: [12, -2, -6, 4] },
+        { expr: "[(16 − 26) − 2]", ans: -12, pts: 35, traps: [12, -8, 8, -10] },
+        { expr: "|+12| + |−7| + |−9|", ans: 28, pts: 35, traps: [-4, 10, -28, 14] },
+        { expr: "|10| + |−10| + (−10)", ans: 10, pts: 35, traps: [-10, 0, 30, -30] },
+
+        // 45 PUAN: Çok adımlı uzun / büyük sayılı işlemler
+        { expr: "(−26) + 34 + (−15)", ans: -7, pts: 45, traps: [7, -17, 17, -5] },
+        { expr: "17 + (−18) + 19 + (−20)", ans: -2, pts: 45, traps: [2, 0, -4, 4] }
       ];
 
       for (let attempt = 0; attempt < 10; attempt++) {
@@ -969,31 +976,31 @@
         if (Math.random() < 0.45) {
           qObj = presetPool[Math.floor(Math.random() * presetPool.length)];
         } else {
-          let type = randInt(1, 6);
+          let type = randInt(1, 7);
           if (type === 1) {
-            // İki tam sayıyı toplama: (+a) + (-b)
+            // 15 PUAN: İki tam sayıyı toplama: (+a) + (-b)
             let a = nonZeroRand(-20, 20);
             let b = nonZeroRand(-20, 20);
             let ans = a + b;
             let expr = Math.random() < 0.6 ? `${fmtSigned(a)} + ${fmtSigned(b)}` : `${fmtPlainOrNegParen(a)} + ${fmtPlainOrNegParen(b)}`;
-            qObj = { expr, ans, traps: [-ans, a - b, b - a, ans + (Math.random() < 0.5 ? 2 : -2)] };
+            qObj = { expr, ans, pts: 15, traps: [-ans, a - b, b - a, ans + (Math.random() < 0.5 ? 2 : -2)] };
           } else if (type === 2) {
-            // İki tam sayıyı çıkarma: (+a) - (-b)
+            // 25 PUAN: İki tam sayıyı çıkarma: (+a) - (-b)
             let a = nonZeroRand(-20, 20);
             let b = nonZeroRand(-20, 20);
             let ans = a - b;
             let expr = Math.random() < 0.6 ? `${fmtSigned(a)} − ${fmtSigned(b)}` : `${fmtPlainOrNegParen(a)} − ${fmtSigned(b)}`;
-            qObj = { expr, ans, traps: [-ans, a + b, -(a + b), ans + (Math.random() < 0.5 ? 2 : -2)] };
+            qObj = { expr, ans, pts: 25, traps: [-ans, a + b, -(a + b), ans + (Math.random() < 0.5 ? 2 : -2)] };
           } else if (type === 3) {
-            // Parantezsiz çıkarma: a - b veya -a - b
+            // 15 PUAN: Parantezsiz çıkarma: a - b veya -a - b
             let a = nonZeroRand(-15, 15);
             let b = randInt(2, 18);
             let ans = a - b;
             let aStr = a < 0 ? `−${Math.abs(a)}` : `${a}`;
             let expr = `${aStr} − ${b}`;
-            qObj = { expr, ans, traps: [-ans, a + b, -(a + b), ans + 2] };
+            qObj = { expr, ans, pts: 15, traps: [-ans, a + b, -(a + b), ans + 2] };
           } else if (type === 4) {
-            // Mutlak değerli toplama/çıkarma: |-a| + |-b| veya |-a| - (-b)
+            // 25 PUAN: Mutlak değerli toplama/çıkarma: |-a| + |-b| veya |-a| - (-b)
             let a = nonZeroRand(-18, -2);
             let b = nonZeroRand(-15, 15);
             let isAdd = Math.random() < 0.5;
@@ -1003,24 +1010,24 @@
               let ans = Math.abs(a) + bVal;
               let bStr = useSecondAbs ? fmtAbs(b) : fmtSigned(b);
               let expr = `${fmtAbs(a)} + ${bStr}`;
-              qObj = { expr, ans, traps: [-ans, a + b, Math.abs(a) - bVal, a + Math.abs(b)] };
+              qObj = { expr, ans, pts: 25, traps: [-ans, a + b, Math.abs(a) - bVal, a + Math.abs(b)] };
             } else {
               let useSecondAbs = Math.random() < 0.5;
               let bVal = useSecondAbs ? Math.abs(b) : b;
               let ans = Math.abs(a) - bVal;
               let bStr = useSecondAbs ? fmtAbs(b) : fmtSigned(b);
               let expr = `${fmtAbs(a)} − ${bStr}`;
-              qObj = { expr, ans, traps: [-ans, Math.abs(a) + bVal, a - b, a + b] };
+              qObj = { expr, ans, pts: 25, traps: [-ans, Math.abs(a) + bVal, a - b, a + b] };
             }
           } else if (type === 5) {
-            // Üç terimli işlem: a + (-b) + (-c) veya -a - b - c
+            // 35 PUAN: Üç terimli işlem: a + (-b) + (-c) veya -a - b - c
             if (Math.random() < 0.5) {
               let a = randInt(2, 9);
               let b = randInt(2, 9);
               let c = randInt(2, 9);
               let ans = -a - b - c;
               let expr = `−${a} − ${b} − ${c}`;
-              qObj = { expr, ans, traps: [-ans, -a - b + c, a + b - c, ans + 2] };
+              qObj = { expr, ans, pts: 35, traps: [-ans, -a - b + c, a + b - c, ans + 2] };
             } else {
               let a = nonZeroRand(-12, 12);
               let b = nonZeroRand(-12, 12);
@@ -1028,17 +1035,35 @@
               let op2 = Math.random() < 0.5 ? '+' : '−';
               let ans = op2 === '+' ? (a + b + c) : (a + b - c);
               let expr = `${fmtSigned(a)} + ${fmtSigned(b)} ${op2} ${fmtSigned(c)}`;
-              qObj = { expr, ans, traps: [-ans, a - b + c, a + b + (op2 === '+' ? -c : c), ans + 2] };
+              qObj = { expr, ans, pts: 35, traps: [-ans, a - b + c, a + b + (op2 === '+' ? -c : c), ans + 2] };
             }
-          } else {
-            // Köşeli parantezli işlem: [(a - b) - c]
+          } else if (type === 6) {
+            // 35 PUAN: Köşeli parantezli işlem: [(a - b) - c]
             let a = randInt(5, 20);
             let b = randInt(a + 2, a + 15);
             let c = nonZeroRand(-10, 10);
             let ans = (a - b) - c;
             let cStr = c < 0 ? `(−${Math.abs(c)})` : `${c}`;
             let expr = `[(${a} − ${b}) − ${cStr}]`;
-            qObj = { expr, ans, traps: [-ans, (b - a) - c, (a - b) + c, ans + 2] };
+            qObj = { expr, ans, pts: 35, traps: [-ans, (b - a) - c, (a - b) + c, ans + 2] };
+          } else {
+            // 45 PUAN: 4 terimli veya mutlak değerli 3 terimli uzun işlem
+            if (Math.random() < 0.5) {
+              let a = nonZeroRand(-12, -2);
+              let b = nonZeroRand(-12, 12);
+              let c = nonZeroRand(-12, 12);
+              let ans = Math.abs(a) + Math.abs(b) + c;
+              let expr = `${fmtAbs(a)} + ${fmtAbs(b)} + ${fmtSigned(c)}`;
+              qObj = { expr, ans, pts: 45, traps: [-ans, a + b + c, Math.abs(a) + Math.abs(b) - c, ans + 4] };
+            } else {
+              let a = nonZeroRand(-15, 15);
+              let b = nonZeroRand(-15, 15);
+              let c = nonZeroRand(-15, 15);
+              let d = nonZeroRand(-15, 15);
+              let ans = a + b - c + d;
+              let expr = `${fmtPlainOrNegParen(a)} + ${fmtSigned(b)} − ${fmtSigned(c)} + ${fmtSigned(d)}`;
+              qObj = { expr, ans, pts: 45, traps: [-ans, a + b + c + d, a - b - c + d, ans - 2] };
+            }
           }
         }
 
@@ -1055,7 +1080,8 @@
       let qObj = generateIntegerProblem(prevAns);
       player.currentQ = qObj;
 
-      let text = `<span style="color:#FDE047;">${qObj.expr} = ?</span>`;
+      let badgeColor = qObj.pts >= 45 ? '#EF4444' : (qObj.pts >= 35 ? '#F97316' : (qObj.pts >= 25 ? '#10B981' : '#3B82F6'));
+      let text = `<span style="color:#FDE047;">${qObj.expr} = ?</span> <span style="display:inline-block; font-size:13px; background:${badgeColor}; color:#FFF; padding:2px 8px; border-radius:8px; vertical-align:middle; margin-left:6px; box-shadow:0 2px 4px rgba(0,0,0,0.3);">+${qObj.pts} P</span>`;
       if (playerNum === 1) {
         document.getElementById('p1-question').innerHTML = text;
       } else {
@@ -1229,7 +1255,7 @@
       setTimeout(() => ft.remove(), 800);
     }
 
-    function popEffect(element, isCorrect) {
+    function popEffect(element, isCorrect, ptsVal = 20) {
       let rect = element.getBoundingClientRect();
       let centerX = rect.left + rect.width / 2;
       
@@ -1252,7 +1278,7 @@
       if (isCorrect) {
         span.innerHTML = "✨";
         effectDiv.style.animation = "correctPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards";
-        showFloatingText(centerX, rect.top, "+20", "#10B981");
+        showFloatingText(centerX, rect.top, "+" + ptsVal, "#10B981");
       } else {
         span.innerHTML = "❌";
         effectDiv.style.animation = "wrongShake 0.5s ease-in forwards";
@@ -1264,6 +1290,15 @@
       
       element.remove();
       setTimeout(() => effectDiv.remove(), 600);
+    }
+
+    function clearSideFallingItems(player) {
+      let sideToRemove = (gameMode === '1P') ? 'any' : (player === p1 ? 'left' : 'right');
+      document.querySelectorAll('.falling-item').forEach(item => {
+        if (item.dataset.side === sideToRemove && !item.classList.contains('popping')) {
+          item.remove();
+        }
+      });
     }
 
     function createSingleObject(side) {
@@ -1303,20 +1338,15 @@
         let touchX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
         let isLeftClick = touchX < window.innerWidth / 2;
         let player = (gameMode === '1P') ? p1 : (isLeftClick ? p1 : p2);
+        let playerNum = (player === p1) ? 1 : 2;
         
         let val = parseInt(this.dataset.value, 10);
         if (player.currentQ && val === player.currentQ.ans) {
-          player.score += 20;
-          popEffect(this, true);
-          setQuestion(player === p1 ? 1 : 2);
-
-          // Yeni soruya geçince ekrandaki eski düşen sayıları temizle ki kafa karışmasın
-          let sideToRemove = (gameMode === '1P') ? 'any' : (player === p1 ? 'left' : 'right');
-          document.querySelectorAll('.falling-item').forEach(item => {
-            if (item.dataset.side === sideToRemove && !item.classList.contains('popping')) {
-              item.remove();
-            }
-          });
+          let earnedPts = player.currentQ.pts || 20;
+          player.score += earnedPts;
+          popEffect(this, true, earnedPts);
+          setQuestion(playerNum);
+          clearSideFallingItems(player);
         } else {
           player.score -= 5;
           player.lives--;
@@ -1328,6 +1358,10 @@
               setTimeout(() => {
                   endGame(player === p1 ? "P1_DEAD" : "P2_DEAD");
               }, 500);
+          } else {
+              // Yanlış yapınca da soru değişsin ve eski düşen sayılar temizlensin
+              setQuestion(playerNum);
+              clearSideFallingItems(player);
           }
         }
         updateScores();
