@@ -173,7 +173,6 @@
     .app-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       display: flex; justify-content: center; align-items: center;
-      padding: 12px;
       z-index: 100; background: rgba(80, 50, 20, 0.85); backdrop-filter: blur(8px);
     }
 
@@ -221,22 +220,15 @@
     .btn-view-leaderboard { background: #FEF3C7; color: #92400E; border: 2px solid #F59E0B; }
     .btn-restart { background: linear-gradient(135deg, #D97706, #B45309); color: white; }
 
-    /* Lider Tablosu Özel Tasarımı (Her Ekrana Sığacak Şekilde Kompakt) */
-    .leaderboard-card {
-      max-width: 650px;
-      width: 95%;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 22px;
-    }
-    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 3px; margin-bottom: 4px; }
-    .lb-table th { font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 2px 6px; }
-    .lb-row { background: #F8FAFC; border-radius: 10px; cursor: pointer; transition: transform 0.15s; }
-    .lb-row:hover { transform: scale(1.015); }
-    .lb-row td { padding: 5px 10px; font-size: 14px; font-weight: 700; text-align: center; line-height: 1.2; }
-    .lb-row td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-    .lb-row td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+    /* Lider Tablosu Özel Tasarımı */
+    .leaderboard-card { max-width: 780px; max-height: 95vh; display: flex; flex-direction: column; }
+    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 10px; }
+    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
+    .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
+    .lb-row:hover { transform: scale(1.02); }
+    .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; }
+    .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
     
     .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
     .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
@@ -389,20 +381,21 @@
     </div>
 
     <!-- LİDER TABLOSU EKRANI -->
-    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 6px; flex-shrink: 0;">
-        <h2 class="start-title" style="margin:0; font-size: 22px;">🏆 İlk 10 Sıralaması</h2>
-        <button class="btn-subtle" style="padding: 8px 16px; font-size: 14px;" onclick="showScreen('START')">✕ Kapat</button>
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
+        <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
       </div>
       
-      <div style="overflow-y: auto; flex-grow: 1; padding-right: 4px;">
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
         <table class="lb-table">
           <thead>
             <tr>
-              <th style="width: 55px;">Sıra</th>
+              <th style="width: 40px;">Sıra</th>
               <th style="text-align: left;">Adı Soyadı</th>
               <th>Puan</th>
-              <th style="width: 110px;">Kutla</th>
+              <th>Tarih</th>
+              <th>Kutla</th>
             </tr>
           </thead>
           <tbody id="leaderboardBody">
@@ -413,7 +406,7 @@
       </div>
       
       <!-- BAŞA DÖN / YENİDEN OYNA BUTONU -->
-      <button class="btn-start" style="margin-top: 8px; padding: 11px; font-size: 19px; border-radius: 14px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
     </div>
   </div>
 
@@ -526,51 +519,6 @@
           
           osc.start(now + idx * 0.05);
           osc.stop(now + idx * 0.05 + 0.18);
-        });
-      } catch(e) {}
-    }
-
-    // Doğru cevap verildiğinde temiz, parlak "Ding!" sesi
-    function playCorrectSound() {
-      try {
-        let ctx = getAudioContext();
-        let now = ctx.currentTime;
-        let notes = [587.33, 880.00]; // D5 -> A5
-        notes.forEach((freq, idx) => {
-          let osc = ctx.createOscillator();
-          let gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
-          gain.gain.setValueAtTime(0.22, now + idx * 0.06);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.18);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + idx * 0.06);
-          osc.stop(now + idx * 0.06 + 0.2);
-        });
-      } catch(e) {}
-    }
-
-    // Yanlış cevap verildiğinde temiz, yarışma tarzı iki notalı "Dıt-Dıııt" uyarı sesi
-    function playLifeLostSound() {
-      try {
-        let ctx = getAudioContext();
-        let now = ctx.currentTime;
-        let notes = [
-          { freq: 330.0, start: 0.0, dur: 0.11 }, // E4
-          { freq: 220.0, start: 0.12, dur: 0.22 } // A3
-        ];
-        notes.forEach(n => {
-          let osc = ctx.createOscillator();
-          let gain = ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(n.freq, now + n.start);
-          gain.gain.setValueAtTime(0.25, now + n.start);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + n.start + n.dur);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + n.start);
-          osc.stop(now + n.start + n.dur + 0.02);
         });
       } catch(e) {}
     }
@@ -801,11 +749,12 @@
         
         tr.onclick = () => openCelebration({name: nameToShow, score: e.score}, idx+1);
         tr.innerHTML = `
-          <td><span style="font-size:18px;">${rankStr}</span></td>
+          <td><span style="font-size:20px;">${rankStr}</span></td>
           <td style="text-align:left; font-weight:800;">${nameToShow}</td>
-          <td style="color:#D97706; font-weight:900; font-family:'Baloo 2'; font-size:19px;">${e.score}</td>
+          <td style="color:#D97706; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
+          <td style="color:#94A3B8; font-size:14px;">${e.date || '-'}</td>
           <td>
-            <button class="btn-subtle" style="padding: 4px 12px; font-size: 13px; border-radius: 9px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
+            <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -879,6 +828,24 @@
     let p2 = { score: 0, lives: 5, currentQ: null, qCount: 0, hardCount: 0 };
     let currentFullName = '';
     let selectedDuelTime = 90;
+
+    function playLifeLostSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        osc.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch(e) {}
+    }
 
     function updateLivesDisplay(lostPlayerObj = null) {
       const p1El = document.getElementById('p1-lives');
@@ -1190,10 +1157,7 @@
       } else {
         document.getElementById('app-overlay').style.display = 'flex';
         if(screenId === 'START') document.getElementById('startScreen').style.display = 'block';
-        if(screenId === 'LEADERBOARD') {
-          renderLeaderboard();
-          document.getElementById('leaderboardScreen').style.display = 'flex';
-        }
+        if(screenId === 'LEADERBOARD') { renderLeaderboard(); document.getElementById('leaderboardScreen').style.display = 'block'; }
       }
     }
 
@@ -1364,7 +1328,6 @@
         if (player.currentQ && val === player.currentQ.ans) {
           let earnedPts = player.currentQ.pts || 20;
           player.score += earnedPts;
-          playCorrectSound();
           popEffect(this, true, earnedPts);
           setQuestion(playerNum);
           clearSideFallingItems(player);
