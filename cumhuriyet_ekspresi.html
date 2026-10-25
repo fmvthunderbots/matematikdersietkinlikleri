@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cumhuriyet Ekspresi: Demir Ağlar - 29 Ekim Özel</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #DC2626; /* 29 Ekim Al-Beyaz & Altın teması */
+      --secondary: #991B1B;
+      --accent: #F59E0B;
+      --danger: #EF4444;
+      --success: #10B981;
+      --radius-lg: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #1E293B;
+      background: linear-gradient(to bottom, rgba(127, 29, 29, 0.35), rgba(15, 23, 42, 0.55)), url('cumhuriyet_ekspresi_bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+
+    /* 29 Ekim Gökyüzü Yıldız ve Konfeti/Kıvılcım Efektleri */
+    #festive-fx-container {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, rgba(239, 68, 68, 0.12), rgba(15, 23, 42, 0.3));
+    }
+    .bg-star {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 20px;
+      filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.8));
+      animation: floatStar linear infinite;
+    }
+    @keyframes floatStar {
+      0% { transform: translateY(108vh) rotate(0deg) scale(0.7); opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.9; }
+      100% { transform: translateY(-12vh) rotate(360deg) scale(1.1); opacity: 0; }
+    }
+
+    @keyframes heartBreakAnim {
+      0% { transform: scale(1); filter: grayscale(0); }
+      50% { transform: scale(1.5) rotate(-15deg); filter: grayscale(0); }
+      100% { transform: scale(0); filter: grayscale(1); opacity: 0; }
+    }
+    .heart-icon { display: inline-block; transition: all 0.2s; }
+    .heart-lost { animation: heartBreakAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    /* Oyun Arayüzü (HUD) */
+    #top-hud {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 12px 20px; position: relative; z-index: 10; width: 100%;
+    }
+    .hud-side { display: flex; align-items: center; gap: 14px; max-width: 44%; }
+    .hud-side.single-mode { max-width: 74%; }
+    .hud-side.right { justify-content: flex-end; }
+    
+    .team-box {
+      background: rgba(15, 23, 42, 0.93); backdrop-filter: blur(10px);
+      border-radius: 18px; padding: 10px 20px; text-align: center;
+      border: 3px solid; min-width: 290px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .red-box { border-color: #EF4444; box-shadow: 0 0 18px rgba(239, 68, 68, 0.55); }
+    .blue-box { border-color: #3B82F6; box-shadow: 0 0 18px rgba(59, 130, 246, 0.55); }
+    .single-box { border-color: #F59E0B; box-shadow: 0 0 18px rgba(245, 158, 11, 0.55); }
+
+    .team-name { font-family: 'Baloo 2'; font-size: 17px; font-weight: 800; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .red-box .team-name { color: #FCA5A5; }
+    .blue-box .team-name { color: #93C5FD; }
+    .single-box .team-name { color: #FDE68A; }
+
+    .question-text {
+      font-family: 'Baloo 2', 'Nunito', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFF;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 6px 14px;
+      border-radius: 12px;
+      margin: 4px 0;
+      line-height: 1.25;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+    
+    .score-display { 
+      font-family: 'Baloo 2'; font-size: 32px; font-weight: 800; 
+      background: rgba(255,255,255,0.96); color: #991B1B; 
+      padding: 6px 20px; border-radius: 14px; border: 3px solid #FCA5A5;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+
+    #timer-box {
+      background: rgba(255, 255, 255, 0.96); border: 3px solid #EF4444;
+      border-radius: 16px; padding: 8px 22px; text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 115px;
+    }
+    .timer-val { font-family: 'Baloo 2'; font-size: 34px; font-weight: 800; color: #991B1B; line-height: 1; }
+    .timer-label { font-size: 11px; font-weight: 900; color: #DC2626; letter-spacing: 0.8px; }
+
+    #center-line {
+      position: absolute; top: 0; left: 50%; width: 6px; height: 100vh;
+      background: repeating-linear-gradient(to bottom, #EF4444 0px, #EF4444 20px, #FFFFFF 20px, #FFFFFF 40px);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.8);
+      transform: translateX(-50%); z-index: 4; display: none;
+    }
+
+    /* Demir Ağlar (Tren Rayları) */
+    #game-area { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; pointer-events: none; overflow: hidden; }
+
+    .railway-track {
+      position: absolute;
+      left: 0;
+      width: 100vw;
+      height: 28px;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border-top: 4px solid #CBD5E1;
+      border-bottom: 4px solid #94A3B8;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      z-index: 1;
+      overflow: hidden;
+    }
+    .railway-sleepers {
+      position: absolute;
+      top: 0; left: -80px; width: calc(100vw + 160px); height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        #78350F 0px,
+        #78350F 12px,
+        transparent 12px,
+        transparent 36px
+      );
+      opacity: 0.85;
+    }
+
+    /* Ray Üzerinde İlerleyen Geometrik Cumhuriyet Vagonları */
+    .train-wagon {
+      position: absolute;
+      width: 162px;
+      height: 148px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FFF1F2 100%);
+      border: 4px solid #DC2626;
+      border-bottom: 8px solid #991B1B;
+      border-radius: 20px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.5), inset 0 0 12px rgba(255,255,255,0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 6px 8px 6px;
+      cursor: pointer;
+      z-index: 6;
+      pointer-events: auto;
+      transition: transform 0.12s, border-color 0.2s;
+    }
+    .train-wagon:hover {
+      border-color: #F59E0B;
+      box-shadow: 0 0 24px rgba(245, 158, 11, 0.95), inset 0 0 15px rgba(255,255,255,1);
+    }
+
+    /* Vagon Üst Bayrak / Başlık Bandı */
+    .wagon-roof {
+      width: 82%;
+      height: 16px;
+      background: linear-gradient(90deg, #DC2626, #EF4444, #B91C1C);
+      border: 2px solid #FEF2F2;
+      border-radius: 10px 10px 4px 4px;
+      margin-top: -13px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .wagon-roof span {
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: 0.8px;
+    }
+
+    /* Vagon İçindeki Geometrik Çizim Alanı (SVG) */
+    .wagon-svg-box {
+      width: 100%;
+      height: 92px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle, #F8FAFC 60%, #E2E8F0 100%);
+      border-radius: 12px;
+      border: 1.5px solid #CBD5E1;
+      overflow: hidden;
+    }
+
+    /* Vagon Alt Etiketi (Sembol / Bilgi Özeti) */
+    .wagon-label {
+      background: #0F172A;
+      color: #FDE047;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 8px;
+      width: 96%;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid #DC2626;
+      line-height: 1.2;
+    }
+
+    /* Vagon Tekerlekleri */
+    .wagon-wheels {
+      position: absolute;
+      bottom: -14px;
+      width: 80%;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .wheel {
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle, #F59E0B 30%, #334155 35%, #0F172A 100%);
+      border: 2.5px solid #CBD5E1;
+      border-radius: 50%;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.6);
+    }
+
+    /* Patlama ve Yanlış Animasyonları */
+    @keyframes correctPop {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      50% { transform: scale(1.35) rotate(8deg); opacity: 0.9; filter: brightness(1.3) drop-shadow(0 0 25px #10B981); }
+      100% { transform: scale(0) rotate(-8deg); opacity: 0; }
+    }
+    @keyframes wrongShake {
+      0% { transform: translateX(0) scale(1); filter: grayscale(0); }
+      20% { transform: translateX(-15px) scale(1.08); filter: grayscale(1); }
+      40% { transform: translateX(15px) scale(1.08); filter: grayscale(1); }
+      60% { transform: translateX(-15px) scale(1.08); filter: grayscale(1); }
+      80% { transform: translateX(15px) scale(1.08); filter: grayscale(1); }
+      100% { transform: translateY(50px) scale(0); opacity: 0; }
+    }
+
+    /* Menü Katmanı ve Kartlar */
+    .app-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(8px);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.98); border-radius: var(--radius-lg);
+      padding: 32px 30px; text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      border: 4px solid #DC2626;
+      width: 100%; max-width: 600px; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .start-title { font-family: 'Baloo 2'; font-size: 31px; font-weight: 800; color: #991B1B; margin-bottom: 4px; }
+    .start-subtitle { font-size: 16px; font-weight: 800; color: #475569; margin-bottom: 18px; }
+
+    .btn-subtle {
+      background: #FEF2F2; border: 2px solid #FECACA; color: #991B1B;
+      padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-subtle.active { background: #DC2626; color: white; border-color: #991B1B; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); }
+    
+    .input-player {
+      width: 100%; padding: 14px 18px; font-size: 17px; font-weight: 700;
+      border: 2px solid #CBD5E1; border-radius: 14px; outline: none; text-align: center;
+    }
+    .input-player:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15); }
+
+    .btn-start {
+      width: 100%; padding: 18px 30px; background: linear-gradient(135deg, #EF4444, #B91C1C);
+      border: none; border-radius: 18px; color: white; font-family: 'Baloo 2'; font-size: 25px;
+      font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4); transition: transform 0.2s;
+    }
+    .btn-start:active { transform: scale(0.95); }
+
+    .score-summary-grid { display: flex; justify-content: center; margin-bottom: 24px; }
+    .score-item { background: #FEF2F2; border: 2px solid #DC2626; border-radius: 16px; padding: 14px 30px; }
+    .score-item .label { font-size: 13px; font-weight: 800; color: #DC2626; text-transform: uppercase; }
+    .score-item .val { font-family: 'Baloo 2'; font-size: 38px; font-weight: 800; color: #1E293B; }
+
+    .btn-action {
+      padding: 14px 24px; border-radius: 14px; font-family: 'Baloo 2'; font-size: 20px; font-weight: 800;
+      cursor: pointer; border: none; width: 100%; margin-bottom: 10px; transition: transform 0.2s;
+    }
+    .btn-view-leaderboard { background: #FEF3C7; color: #92400E; border: 2px solid #F59E0B; }
+    .btn-restart { background: linear-gradient(135deg, #DC2626, #991B1B); color: white; }
+
+    /* Lider Tablosu Özel Tasarımı */
+    .leaderboard-card { max-width: 780px; max-height: 95vh; display: flex; flex-direction: column; }
+    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 10px; }
+    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
+    .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
+    .lb-row:hover { transform: scale(1.02); }
+    .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; }
+    .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+    
+    .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
+    .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
+    .lb-row.rank-3 { background: linear-gradient(90deg, #FFEDD5, #FFF7ED); border: 2px solid #FDBA74; }
+
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
+
+    /* Kutlama Modalı */
+    .celebration-modal {
+      position: fixed; inset: 0; z-index: 200; display: none;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .celebration-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.82); }
+    .celebration-card {
+      position: relative; width: 100%; max-width: 520px; border-radius: 28px; padding: 36px 28px;
+      text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5); animation: popIn 0.4s; z-index: 201; background: #FFF;
+    }
+    .cel-name { font-family: 'Baloo 2'; font-size: 36px; font-weight: 900; margin-bottom: 2px; color: #1E293B; }
+    .cel-score { font-size: 26px; font-weight: 800; color: #DC2626; margin-bottom: 12px; }
+    .btn-cel-close {
+      width: 100%; padding: 15px; border-radius: 16px; border: none; font-family: 'Baloo 2'; font-size: 20px;
+      font-weight: 800; cursor: pointer; color: #FFF; background: linear-gradient(135deg, #DC2626, #991B1B);
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35); transition: transform 0.2s;
+    }
+    .btn-cel-close:active { transform: scale(0.96); }
+
+    .btn-endgame {
+      position: absolute; bottom: -42px; left: 50%; transform: translateX(-50%);
+      background: #EF4444; color: white; border: 2px solid #FFF; padding: 5px 15px;
+      border-radius: 12px; font-family: 'Baloo 2'; font-weight: 800; font-size: 14px;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap;
+      transition: transform 0.2s, background 0.2s; z-index: 50;
+    }
+    .btn-endgame:hover { background: #DC2626; transform: translateX(-50%) scale(1.05); }
+    .btn-endgame:active { transform: translateX(-50%) scale(0.95); }
+  </style>
+</head>
+<body>
+
+  <!-- Arka Plan 29 Ekim Efektleri -->
+  <div id="festive-fx-container"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- HUD -->
+  <div id="top-hud" style="display: none;">
+    <div class="hud-side left single-mode" id="hud-left">
+      <div id="p1-box" class="team-box single-box">
+        <div class="team-name" id="p1-name">Oyuncu</div>
+        <div id="p1-question" class="question-text">Rota Bekleniyor...</div>
+        <div id="p1-lives" style="font-size:18px; letter-spacing: 2px; margin-top:4px;">❤️❤️❤️❤️❤️</div>
+      </div>
+      <div id="p1-score" class="score-display">0</div>
+    </div>
+
+    <!-- Zamanlayıcı ve Oyunu Bitir Butonu -->
+    <div id="timer-box" style="position: relative;">
+      <div id="timer" class="timer-val">60s</div>
+      <div class="timer-label">29 EKİM SEFERİ</div>
+      <button class="btn-endgame" onclick="endGame()">⏹️ Bitir</button>
+    </div>
+
+    <div class="hud-side right" id="hud-right" style="display: none;">
+      <div id="p2-score" class="score-display">0</div>
+      <div id="p2-box" class="team-box blue-box">
+        <div class="team-name">Bağımsızlık Hattı</div>
+        <div id="p2-question" class="question-text">Rota Bekleniyor...</div>
+        <div id="p2-lives" style="font-size:18px; letter-spacing: 2px; margin-top:4px;">❤️❤️❤️❤️❤️</div>
+      </div>
+    </div>
+  </div>
+  <div id="center-line"></div>
+
+  <!-- Oyun Alanı (Raylar ve Vagonlar) -->
+  <div id="game-area"></div>
+
+  <!-- Menüler Katmanı -->
+  <div class="app-overlay" id="app-overlay">
+    
+    <!-- BAŞLANGIÇ EKRANI -->
+    <div class="card" id="startScreen" style="position: relative;">
+      
+      <!-- AYARLAR TUŞU (SADECE ÖĞRETMEN VERSİYONUNDA) -->
+      <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
+      
+      <div style="display:inline-block; background:#DC2626; color:#FFF; font-weight:900; font-size:12px; padding:4px 12px; border-radius:20px; margin-bottom:6px; letter-spacing:1px;">🇹🇷 29 EKİM CUMHURİYET BAYRAMI ÖZEL 🇹🇷</div>
+      <h1 class="start-title">🚂 Cumhuriyet Ekspresi: Demir Ağlar</h1>
+      <p class="start-subtitle">5. Sınıf Temel Geometrik Çizimler, Açılar ve 3 Doğrunun Durumu</p>
+      
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 16px;">
+        <button id="btn-mode-1p" class="btn-subtle active" onclick="setMode('1P')">👤 Bireysel Sefer</button>
+        <button id="btn-mode-2p" class="btn-subtle" onclick="setMode('2P')">👥 İki Kişilik Düello</button>
+      </div>
+
+      <!-- AD SOYAD GİRİŞ ALANI (BİREYSEL İÇİN) -->
+      <div id="1p-form" style="display:flex; justify-content:center; margin-bottom: 16px;">
+        <input type="text" id="playerFullName" list="studentNamesList" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
+        <datalist id="studentNamesList"></datalist>
+      </div>
+
+      <!-- SÜRE SEÇİM ALANI (DÜELLO İÇİN) -->
+      <div id="2p-form" style="display:none; justify-content:center; gap:10px; margin-bottom: 16px;">
+        <span style="align-self:center; font-weight:800; color:#475569;">Düello Süresi:</span>
+        <button class="btn-subtle" id="time-30" onclick="setTime(30)">30s</button>
+        <button class="btn-subtle" id="time-60" onclick="setTime(60)">60s</button>
+        <button class="btn-subtle active" id="time-90" onclick="setTime(90)">90s</button>
+      </div>
+
+      <div style="background:#FFF1F2; border:2px dashed #FCA5A5; border-radius:14px; padding:10px 14px; margin-bottom:16px; font-size:13.5px; color:#881337; font-weight:700; text-align:left;">
+        🛤️ <b>Demir Ağlar Görevi:</b> Cumhuriyet Ekspresi'ni Ankara'ya ulaştırmak için üstte istenen geometrik şekli (<i>Doğru, Işın, Dar/Dik/Geniş Açı, Paralel/Dik Kesişen Doğrular ve 3 Doğrunun Durumları</i>) taşıyan vagona tıkla!
+      </div>
+
+      <button class="btn-start" onclick="startGame()">🇹🇷 SEFERİ BAŞLAT</button>
+      <button class="btn-subtle" onclick="showScreen('LEADERBOARD')" style="margin-top: 12px; width: 100%;">🏆 İlk 10 Sıralaması</button>
+    </div>
+
+    <!-- 1P SONUÇ EKRANI (BİREYSEL) -->
+    <div class="card" id="resultScreen1P" style="display:none;">
+      <div style="font-size: 60px; margin-bottom: 10px;">🇹🇷</div>
+      <h2 class="start-title">Ankara'ya Ulaştık!</h2>
+      <p class="start-subtitle" id="1p-result-sub">Demir ağlarla ana yurdu dört baştan geometrinle ördün!</p>
+      
+      <div class="score-summary-grid">
+        <div class="score-item">
+          <div class="label">Toplam Cumhuriyet Puanı</div>
+          <div class="val" id="finalScore1P">0</div>
+        </div>
+      </div>
+
+      <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
+      <button class="btn-action btn-restart" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+
+    <!-- 2P SONUÇ EKRANI (DÜELLO - KAZANANI KUTLAMA) -->
+    <div class="card" id="resultScreen2P" style="display:none;">
+      <div style="font-size: 70px; margin-bottom: 10px;">🚂</div>
+      <h2 class="start-title" id="winner-title-2p">Kazanan Belli Oldu!</h2>
+      <p class="start-subtitle" id="winner-sub-2p" style="margin-bottom:15px;">Demir ağlarda muhteşem bir 29 Ekim mücadelesi gerçekleşti!</p>
+      
+      <!-- PRO SKOR TABLOSU (VS KARTLARI) -->
+      <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin: 24px 0;">
+        <div style="background: #FEE2E2; border: 2px solid #EF4444; border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 130px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">
+          <div style="font-size: 13px; font-weight: 800; color: #DC2626; text-transform: uppercase;">🔴 Cumhuriyet Hattı</div>
+          <div style="font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; color: #991B1B; line-height: 1.1; margin-top: 4px;" id="winner-score-p1">0</div>
+        </div>
+        
+        <div style="font-family: 'Baloo 2'; font-size: 26px; font-weight: 900; color: #94A3B8;">VS</div>
+        
+        <div style="background: #DBEAFE; border: 2px solid #3B82F6; border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 130px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);">
+          <div style="font-size: 13px; font-weight: 800; color: #2563EB; text-transform: uppercase;">🔵 Bağımsızlık Hattı</div>
+          <div style="font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; color: #1E40AF; line-height: 1.1; margin-top: 4px;" id="winner-score-p2">0</div>
+        </div>
+      </div>
+
+      <button class="btn-start" style="margin-top: 10px;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+
+    <!-- LİDER TABLOSU EKRANI -->
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
+        <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
+      </div>
+      
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">Sıra</th>
+              <th style="text-align: left;">Adı Soyadı</th>
+              <th>Puan</th>
+              <th>Kutla</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- JS ile doldurulur -->
+          </tbody>
+        </table>
+        <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. İlk sen ol!</div>
+      </div>
+      
+      <!-- BAŞA DÖN / YENİDEN OYNA BUTONU -->
+      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+  </div>
+
+  <!-- KUTLAMA MODALI -->
+  <div class="celebration-modal" id="celebrationModal">
+    <div class="celebration-backdrop" onclick="closeCelebration()"></div>
+    <div class="celebration-card" id="celebrationCard">
+      <div style="font-size: 65px; margin-bottom: 5px;" id="celIcon">🇹🇷</div>
+      <div class="cel-name" id="celName">Öğrenci</div>
+      <div style="font-size: 18px; font-weight: 800; color: #DC2626; margin-bottom: 8px;" id="celTitle">1. Sıra Şampiyonu!</div>
+      <div class="cel-score" id="celScore">0 Puan</div>
+      <p id="celMessage" style="font-size: 15px; font-weight: 700; color: #475569; margin-bottom: 20px; line-height: 1.4;">Kutlama mesajı</p>
+      <button class="btn-cel-close" onclick="closeCelebration()">👏 Alkışla ve Kapat</button>
+    </div>
+  </div>
+
+  <!-- AYARLAR MODALI -->
+  <div class="celebration-modal" id="settingsModal">
+    <div class="celebration-backdrop" onclick="closeSettings()"></div>
+    <div class="celebration-card" style="padding: 30px;">
+      <h2 class="start-title" style="font-size: 28px; margin-bottom: 20px;">⚙️ Ayarlar</h2>
+      
+      <div id="authSection">
+        <input type="password" id="adminPassword" class="input-player" placeholder="Yönetici Şifresi" style="margin-bottom: 15px;">
+        <button class="btn-start" style="font-size: 18px; padding: 12px;" onclick="checkAdminPassword()">Giriş Yap</button>
+      </div>
+
+      <div id="adminSection" style="display: none;">
+        <p style="margin-bottom: 15px; font-weight: 700; color: #475569;">Yönetici paneline hoş geldiniz.</p>
+        
+        <div style="background: #F1F5F9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; border: 2px solid #CBD5E1;">
+          <h3 style="font-size: 16px; margin-bottom: 8px; color: #1E293B;">📋 Yeni Öğrencileri Ekle</h3>
+          <p style="font-size: 13px; color: #64748B; margin-bottom: 10px;">İsimleri alt alta, virgülle ayırarak veya tırnak içinde ("Ali","Veli" vb.) kopyalayıp yapıştırabilirsiniz. Sistem isimleri otomatik ayıklar ve eskilere dokunmadan listeye ekler.</p>
+          <textarea id="adminStudentList" style="width:100%; height:90px; padding:10px; border-radius:8px; border:1px solid #94A3B8; font-family:sans-serif;" placeholder="İsimleri buraya yapıştırın..."></textarea>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px; margin-bottom: 10px;">
+             <span id="totalStudentsText" style="font-size: 13px; color: #10B981; font-weight:800;">Sistemde 0 öğrenci kayıtlı.</span>
+             <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Listeyi Sıfırla</button>
+          </div>
+          
+          <button class="btn-start" style="font-size: 15px; padding: 10px; border-radius: 8px;" onclick="saveStudentList()">💾 Öğrencileri Sisteme Ekle</button>
+        </div>
+
+        <button class="btn-start" style="font-size: 15px; padding: 10px; background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); border-radius: 8px;" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
+      </div>
+
+      <button class="btn-subtle" style="margin-top: 20px; width: 100%;" onclick="closeSettings()">Kapat</button>
+    </div>
+  </div>
+
+  <script>
+    /* ==============================
+       SES EFEKTLERİ (WEB AUDIO API)
+       ============================== */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSuccessSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let freqs = [523.25, 659.25, 783.99];
+        freqs.forEach((f, i) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.06);
+          gain.gain.setValueAtTime(0.22, now + i * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.18);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.06);
+          osc.stop(now + i * 0.06 + 0.2);
+        });
+      } catch(e) {}
+    }
+
+    function playFanfareSound(rank) {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let notes = (rank === 1) ? [523.25, 659.25, 783.99, 1046.50] :
+                    (rank === 2) ? [440.00, 554.37, 659.25, 880.00] :
+                    (rank === 3) ? [392.00, 493.88, 587.33, 783.99] :
+                                  [349.23, 440.00, 523.25, 698.46];
+                                 
+        notes.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+          
+          gain.gain.setValueAtTime(0, now + idx * 0.11);
+          gain.gain.linearRampToValueAtTime(0.3, now + idx * 0.11 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + (idx === notes.length - 1 ? 0.6 : 0.22));
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(now + idx * 0.11);
+          osc.stop(now + idx * 0.11 + 0.65);
+        });
+      } catch(e) {}
+    }
+
+    function playCloseSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        freqs.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+          
+          gain.gain.setValueAtTime(0.2, now + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.15);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(now + idx * 0.05);
+          osc.stop(now + idx * 0.05 + 0.18);
+        });
+      } catch(e) {}
+    }
+
+
+    /* ==============================
+       FİREBASE VE AKILLI LİDER TABLOSU
+       ============================== */
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+      authDomain: "zihindencarpma.firebaseapp.com",
+      databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.firebasestorage.app",
+      messagingSenderId: "111639321624",
+      appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+    };
+
+    let cloudDb = null;
+    const DB_NODE = 'scores_cumhuriyetekspresi';
+    const STUDENTS_NODE = 'students_cumhuriyetekspresi';
+    let authorizedStudents = [];
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        cloudDb = firebase.database();
+        
+        cloudDb.ref(DB_NODE).on('value', snap => {
+          let data = snap.val();
+          let arr = [];
+          if(data) {
+            Object.keys(data).forEach(k => arr.push(data[k]));
+          }
+          updateLocalLeaderboard(arr);
+        });
+
+        cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+          let data = snap.val();
+          if (data) {
+             authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+             authorizedStudents = [];
+          }
+          
+          let ts = document.getElementById('totalStudentsText');
+          if(ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+          
+          let dl = document.getElementById('studentNamesList');
+          if(dl) {
+             dl.innerHTML = '';
+             authorizedStudents.forEach(name => {
+                 let op = document.createElement('option');
+                 op.value = name;
+                 dl.appendChild(op);
+             });
+          }
+        });
+      } catch(e) {}
+    }
+
+    function saveStudentList() {
+      let text = document.getElementById('adminStudentList').value;
+      if (!text.trim()) { alert('Lütfen eklenecek isimleri yazın.'); return; }
+      
+      let newNames = text.replace(/"/g, '')
+                         .split(/[\n,;]+/)
+                         .map(s => s.trim())
+                         .filter(s => s.length > 0);
+                         
+      let currentNamesLower = authorizedStudents.map(n => n.toLocaleLowerCase('tr-TR'));
+      let namesToAdd = [];
+      
+      newNames.forEach(n => {
+          if(!currentNamesLower.includes(n.toLocaleLowerCase('tr-TR'))) {
+              namesToAdd.push(n);
+              currentNamesLower.push(n.toLocaleLowerCase('tr-TR'));
+          }
+      });
+      
+      let updatedList = authorizedStudents.concat(namesToAdd);
+      
+      if(cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+          alert(namesToAdd.length + ' yeni benzersiz öğrenci sisteme eklendi!');
+          document.getElementById('adminStudentList').value = '';
+        }).catch(e => {
+          alert('Kaydedilirken hata oluştu.');
+        });
+      } else {
+        alert('Veritabanı bağlantısı kurulamadı.');
+      }
+    }
+    
+    function clearStudentList() {
+      if(confirm('Kayıtlı tüm öğrenci isimleri silinecek (oyun skorları silinmez). Emin misiniz?')) {
+         if(cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+      }
+    }
+
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    function getFuzzyKey(str) {
+      let clean = (str || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, '');
+      let noVowels = clean.replace(/[aeıioöuü]/g, '');
+      return noVowels || clean;
+    }
+
+    function capitalizeName(str) {
+      return (str || '').split(' ').map(w => {
+        if (!w) return '';
+        return w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR');
+      }).join(' ');
+    }
+
+    function updateLocalLeaderboard(rawEntries) {
+      let groups = [];
+
+      rawEntries.forEach(entry => {
+        if (!entry) return;
+        let fullName = entry.fullName || entry.name || '';
+        if (!fullName.trim()) return;
+
+        let normName = fullName.trim().replace(/\s+/g, ' ');
+        let normLower = normName.toLocaleLowerCase('tr-TR');
+        let fuzzyKey = getFuzzyKey(normName);
+
+        let foundGroup = null;
+        for (let g of groups) {
+          if (g.fuzzyKey === fuzzyKey) {
+            foundGroup = g;
+            break;
+          }
+          let dist = levenshtein(g.canonicalNorm, normLower);
+          if (dist <= 2 && Math.abs(g.canonicalNorm.length - normLower.length) <= 2) {
+            foundGroup = g;
+            break;
+          }
+        }
+
+        if (foundGroup) {
+          foundGroup.items.push(entry);
+          if (normName.length > foundGroup.canonicalName.length) {
+            foundGroup.canonicalName = normName;
+          }
+        } else {
+          groups.push({
+            canonicalName: normName,
+            canonicalNorm: normLower,
+            fuzzyKey: fuzzyKey,
+            items: [entry]
+          });
+        }
+      });
+
+      let bestList = [];
+      groups.forEach(g => {
+        g.items.sort((a, b) => b.score - a.score);
+        let best = g.items[0];
+        best.displayName = capitalizeName(g.canonicalName);
+        bestList.push(best);
+      });
+
+      bestList.sort((a, b) => b.score - a.score);
+      let top10 = bestList.slice(0, 10);
+      localStorage.setItem('meb_cumhuriyetekspresi_top10', JSON.stringify(top10));
+      renderLeaderboard();
+    }
+
+    function saveScoreToLeaderboardDirectly() {
+      let fullName = currentFullName;
+      let entry = {
+        name: fullName,
+        fullName: fullName,
+        score: p1.score,
+        date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now()
+      };
+      
+      if(cloudDb) {
+        cloudDb.ref(DB_NODE).push(entry);
+      } else {
+        fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, {
+          method: 'POST', body: JSON.stringify(entry)
+        });
+      }
+    }
+
+    function renderLeaderboard() {
+      let data = JSON.parse(localStorage.getItem('meb_cumhuriyetekspresi_top10') || '[]');
+      let tbody = document.getElementById('leaderboardBody');
+      tbody.innerHTML = '';
+      if(data.length === 0) {
+        document.getElementById('emptyLeaderboard').style.display = 'block';
+        return;
+      }
+      document.getElementById('emptyLeaderboard').style.display = 'none';
+
+      let medals = ['🥇', '🥈', '🥉'];
+      data.forEach((e, idx) => {
+        let tr = document.createElement('tr');
+        tr.className = `lb-row rank-${idx+1}`;
+        let rankStr = idx < 3 ? medals[idx] : `${idx+1}.`;
+        
+        let nameToShow = e.displayName || e.fullName || e.name || 'Öğrenci';
+        let safeName = nameToShow.replace(/'/g, "\\'");
+        
+        tr.onclick = () => openCelebration({name: nameToShow, score: e.score}, idx+1);
+        tr.innerHTML = `
+          <td><span style="font-size:20px;">${rankStr}</span></td>
+          <td style="text-align:left; font-weight:800;">${nameToShow}</td>
+          <td style="color:#DC2626; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
+          <td>
+            <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* 29 EKİM & GEOMETRİ TEMALI KUTLAMA MODALI */
+    function openCelebration(entry, rank) {
+      launchConfetti(110);
+      playFanfareSound(rank);
+      
+      let name = entry.name || entry.displayName || 'Öğrenci';
+      document.getElementById('celName').innerText = name;
+      document.getElementById('celScore').innerText = entry.score + " Puan";
+      
+      let card = document.getElementById('celebrationCard');
+      let icon = document.getElementById('celIcon');
+      let title = document.getElementById('celTitle');
+      let msg = document.getElementById('celMessage');
+      
+      card.style.background = "#FFF";
+      
+      if (rank === 1) {
+        icon.innerText = "🥇";
+        title.innerText = "🇹🇷 CUMHURİYET EKSPRESİ BAŞKAPTANI!";
+        title.style.color = "#DC2626";
+        msg.innerText = "DEMİR AĞLARLA ÖRDÜN ANA YURDU DÖRT BAŞTAN! Tıpkı bir ışın gibi başlangıç noktan sağlam, hedefin sonsuzluk! 29 Ekim Cumhuriyet Bayramımız Kutlu Olsun!";
+        card.style.border = "4px solid #DC2626";
+        card.style.background = "linear-gradient(180deg, #FEF2F2 0%, #FFFFFF 100%)";
+      } else if (rank === 2) {
+        icon.innerText = "🥈";
+        title.innerText = "⚡ DEMİR AĞLARIN GEOMETRİ KAHRAMANI!";
+        title.style.color = "#475569";
+        msg.innerText = "MÜTHİŞ BİR ROTA KONTROLÜ! Paralel rayları ve kesişen kavşakları hatasız birleştirerek Cumhuriyet Ekspresi'ni zirveye taşıdın! Gümüş Madalya senin!";
+        card.style.border = "4px solid #94A3B8";
+        card.style.background = "linear-gradient(180deg, #F1F5F9 0%, #FFFFFF 100%)";
+      } else if (rank === 3) {
+        icon.innerText = "🥉";
+        title.innerText = "🔥 29 EKİM ROTA USTASI (BRONZ MADALYA)!";
+        title.style.color = "#C2410C";
+        msg.innerText = "HARİKASIN! Doğruların birbirine göre durumlarını ve açıları keskin gözlerinle çözerek Cumhuriyet Ekspresi podyumundaki yerini aldın!";
+        card.style.border = "4px solid #F97316";
+        card.style.background = "linear-gradient(180deg, #FFEDD5 0%, #FFFFFF 100%)";
+      } else {
+        icon.innerText = "🎖️";
+        title.innerText = `${rank}. SIRA BAŞARI ÖDÜLÜ`;
+        title.style.color = "#DC2626";
+        msg.innerText = `TEBRİKLER! Cumhuriyetimizin hedeflerine paralel bir azimle yarışarak ${rank}. sıraya adını gururla yazdırdın. Yaşasın Cumhuriyet!`;
+        card.style.border = "4px solid #EF4444";
+        card.style.background = "linear-gradient(180deg, #FEF2F2 0%, #FFFFFF 100%)";
+      }
+      
+      document.getElementById('celebrationModal').style.display = 'flex';
+    }
+
+    function closeCelebration() {
+      playCloseSound();
+      document.getElementById('celebrationModal').style.display = 'none';
+    }
+
+
+    /* ==============================================================
+       5. SINIF GEOMETRİ GÖRSEL (SVG) VAGON VE SORU BANKASI
+       Konular (Baştan 3 Doğrunun Birbirine Göre Durumlarına Kadar):
+       1. Doğru (AB doğrusu), Doğru Parçası ([AB]), Işın ([AB ışını)
+       2. Açı Çeşitleri: Dar Açı (<90°), Dik Açı (90°), Geniş Açı (>90°), Doğru Açı (180°)
+       3. İki Doğrunun Durumu: Paralel Doğrular (d // k), Dik Kesişen Doğrular (d ⊥ k)
+       4. Üç Doğrunun Durumu:
+          - Üçü birbirine paralel (d // k // m) -> 0 kesişim noktası
+          - Üçü bir noktada kesişen (Noktadaş) -> 1 kesişim noktası
+          - İkişer ikişer kesişen (Üçgen oluşturan) -> 3 kesişim noktası
+          - İki paralel doğruyu kesen üçüncü doğru (Kesen) -> 2 kesişim noktası
+       5. Ters Açılar ve Açı Hesabı (Kesişen doğrularda verilmeyen açıyı bulma)
+       ============================================================== */
+    const GEOMETRY_ITEMS = [
+      {
+        id: 'DOGRU',
+        roof: 'TEMEL KAVRAM',
+        label: 'AB Doğrusu (↔)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="16" y1="44" x2="120" y2="44" stroke="#DC2626" stroke-width="4" stroke-linecap="round"/>
+          <polygon points="10,44 22,37 22,51" fill="#DC2626"/>
+          <polygon points="126,44 114,37 114,51" fill="#DC2626"/>
+          <circle cx="42" cy="44" r="4.5" fill="#0F172A"/>
+          <circle cx="94" cy="44" r="4.5" fill="#0F172A"/>
+          <text x="37" y="30" font-family="Nunito" font-weight="900" font-size="15" fill="#0F172A">A</text>
+          <text x="89" y="30" font-family="Nunito" font-weight="900" font-size="15" fill="#0F172A">B</text>
+        </svg>`,
+        prompts: [
+          { q: `İki yönden de sonsuza uzanan <span style="color:#FDE047;">AB DOĞRUSUNU</span> seç!`, pts: 15 },
+          { q: `Başlangıcı ve bitişi olmayan <span style="color:#FDE047;">DOĞRU</span> modelini seç!`, pts: 15 }
+        ]
+      },
+      {
+        id: 'DOGRU_PARCASI',
+        roof: 'TEMEL KAVRAM',
+        label: '[AB] Doğru Parçası',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="28" y1="44" x2="108" y2="44" stroke="#2563EB" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="28" cy="44" r="6" fill="#0F172A"/>
+          <circle cx="108" cy="44" r="6" fill="#0F172A"/>
+          <text x="22" y="28" font-family="Nunito" font-weight="900" font-size="15" fill="#0F172A">A</text>
+          <text x="102" y="28" font-family="Nunito" font-weight="900" font-size="15" fill="#0F172A">B</text>
+        </svg>`,
+        prompts: [
+          { q: `İki ucu da sınırlı olan <span style="color:#FDE047;">[AB] DOĞRU PARÇASINI</span> seç!`, pts: 15 },
+          { q: `Uzunluğu ölçülebilen <span style="color:#FDE047;">DOĞRU PARÇASI</span> vagonunu seç!`, pts: 15 }
+        ]
+      },
+      {
+        id: 'ISIN',
+        roof: 'TEMEL KAVRAM',
+        label: '[AB Işını (→)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="26" y1="44" x2="118" y2="44" stroke="#059669" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="26" cy="44" r="6" fill="#0F172A"/>
+          <polygon points="124,44 111,37 111,51" fill="#059669"/>
+          <circle cx="82" cy="44" r="4.5" fill="#0F172A"/>
+          <text x="20" y="28" font-family="Nunito" font-weight="900" font-size="15" fill="#0F172A">A</text>
+          <text x="77" y="28" font-family="Nunito" font-weight="900" font-size="15" fill="#0F172A">B</text>
+        </svg>`,
+        prompts: [
+          { q: `Başlangıç noktası sabit, bir ucu sonsuza giden <span style="color:#FDE047;">[AB IŞININI</span> seç!`, pts: 15 },
+          { q: `Sembolü <span style="color:#FDE047;">[AB</span> olan <span style="color:#4ADE80;">IŞIN</span> vagonunu seç!`, pts: 15 }
+        ]
+      },
+      {
+        id: 'DAR_ACI',
+        roof: 'AÇI ÇEŞİTLERİ',
+        label: 'Dar Açı (50°)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <path d="M 32,66 L 62,66 A 30,30 0 0,0 52,42 Z" fill="rgba(16,185,129,0.28)" stroke="#059669" stroke-width="2"/>
+          <line x1="32" y1="66" x2="112" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="32" y1="66" x2="88" y2="18" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="64" y="56" font-family="Nunito" font-weight="900" font-size="14" fill="#065F46">50°</text>
+        </svg>`,
+        prompts: [
+          { q: `Ölçüsü 90°'den küçük olan <span style="color:#4ADE80;">DAR AÇI</span> vagonunu seç!`, pts: 15 },
+          { q: `Dar açı (0° ile 90° arası) gösteren vagonu seç!`, pts: 15 }
+        ]
+      },
+      {
+        id: 'DIK_ACI',
+        roof: 'AÇI ÇEŞİTLERİ',
+        label: 'Dik Açı (90°)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <rect x="36" y="46" width="20" height="20" fill="rgba(239,68,68,0.2)" stroke="#DC2626" stroke-width="2"/>
+          <circle cx="46" cy="56" r="2.2" fill="#DC2626"/>
+          <line x1="36" y1="66" x2="110" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="36" y1="66" x2="36" y2="14" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="64" y="50" font-family="Nunito" font-weight="900" font-size="15" fill="#DC2626">90°</text>
+        </svg>`,
+        prompts: [
+          { q: `Ölçüsü tam <span style="color:#FDE047;">90°</span> olan <span style="color:#F87171;">DİK AÇI</span> vagonunu seç!`, pts: 15 },
+          { q: `Köşesinde diklik sembolü (⊡) bulunan <span style="color:#FDE047;">DİK AÇIYI</span> seç!`, pts: 15 }
+        ]
+      },
+      {
+        id: 'GENIS_ACI',
+        roof: 'AÇI ÇEŞİTLERİ',
+        label: 'Geniş Açı (130°)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <path d="M 64,66 L 90,66 A 26,26 0 0,0 46,47 Z" fill="rgba(245,158,11,0.3)" stroke="#D97706" stroke-width="2"/>
+          <line x1="64" y1="66" x2="118" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="64" y1="66" x2="22" y2="22" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="62" y="44" font-family="Nunito" font-weight="900" font-size="14" fill="#B45309">130°</text>
+        </svg>`,
+        prompts: [
+          { q: `Ölçüsü 90° ile 180° arasında olan <span style="color:#FBBF24;">GENİŞ AÇI</span> vagonunu seç!`, pts: 20 },
+          { q: `Geniş açı (130°) gösteren demiryolu makasını seç!`, pts: 20 }
+        ]
+      },
+      {
+        id: 'IKI_PARALEL',
+        roof: '2 DOĞRU DURUMU',
+        label: 'd // k (Paralel)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="18" y1="28" x2="118" y2="28" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+          <line x1="18" y1="58" x2="118" y2="58" stroke="#2563EB" stroke-width="4" stroke-linecap="round"/>
+          <text x="108" y="21" font-family="Nunito" font-weight="900" font-size="13" fill="#1E40AF">d</text>
+          <text x="108" y="74" font-family="Nunito" font-weight="900" font-size="13" fill="#1E40AF">k</text>
+        </svg>`,
+        prompts: [
+          { q: `Hiçbir noktada kesişmeyen <span style="color:#38BDF8;">PARALEL İKİ DOĞRUYU (d // k)</span> seç!`, pts: 20 },
+          { q: `Tren rayları gibi aralarındaki uzaklık hep eşit olan <span style="color:#38BDF8;">d // k</span> doğrularını seç!`, pts: 20 }
+        ]
+      },
+      {
+        id: 'DIK_KESISEN',
+        roof: '2 DOĞRU DURUMU',
+        label: 'd ⊥ k (Dik Kesişen)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <rect x="68" y="28" width="14" height="14" fill="rgba(239,68,68,0.22)" stroke="#DC2626" stroke-width="1.8"/>
+          <circle cx="75" cy="35" r="2" fill="#DC2626"/>
+          <line x1="20" y1="42" x2="116" y2="42" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <line x1="68" y1="10" x2="68" y2="74" stroke="#DC2626" stroke-width="3.8" stroke-linecap="round"/>
+          <text x="106" y="35" font-family="Nunito" font-weight="900" font-size="13" fill="#0F172A">d</text>
+          <text x="53" y="22" font-family="Nunito" font-weight="900" font-size="13" fill="#DC2626">k</text>
+        </svg>`,
+        prompts: [
+          { q: `Birbiriyle 90°'lik açıyla kesişen <span style="color:#F87171;">DİK KESİŞEN (d ⊥ k)</span> doğruları seç!`, pts: 20 },
+          { q: `Sembolü <span style="color:#FDE047;">d ⊥ k</span> olan dik kesişen ray kavşağını seç!`, pts: 20 }
+        ]
+      },
+      {
+        id: 'UC_PARALEL',
+        roof: '3 DOĞRU DURUMU',
+        label: 'd // k // m (0 Kesişim)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="18" y1="20" x2="118" y2="20" stroke="#7C3AED" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="18" y1="42" x2="118" y2="42" stroke="#7C3AED" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="18" y1="64" x2="118" y2="64" stroke="#7C3AED" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="119" y="24" font-family="Nunito" font-weight="900" font-size="12" fill="#5B21B6">d</text>
+          <text x="119" y="46" font-family="Nunito" font-weight="900" font-size="12" fill="#5B21B6">k</text>
+          <text x="119" y="68" font-family="Nunito" font-weight="900" font-size="12" fill="#5B21B6">m</text>
+        </svg>`,
+        prompts: [
+          { q: `<span style="color:#C084FC;">Üç doğrunun da birbirine PARALEL (d // k // m)</span> olduğu vagonu seç!`, pts: 25 },
+          { q: `Birbirini hiç kesmeyen <span style="color:#FDE047;">(0 kesişim noktası olan) 3 doğruyu</span> seç!`, pts: 25 }
+        ]
+      },
+      {
+        id: 'UC_NOKTADAS',
+        roof: '3 DOĞRU DURUMU',
+        label: 'Noktadaş (1 Noktada)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="20" y1="42" x2="116" y2="42" stroke="#0284C7" stroke-width="3.2" stroke-linecap="round"/>
+          <line x1="30" y1="14" x2="106" y2="70" stroke="#DC2626" stroke-width="3.2" stroke-linecap="round"/>
+          <line x1="30" y1="70" x2="106" y2="14" stroke="#059669" stroke-width="3.2" stroke-linecap="round"/>
+          <circle cx="68" cy="42" r="5.5" fill="#F59E0B" stroke="#0F172A" stroke-width="2"/>
+          <text x="64" y="26" font-family="Nunito" font-weight="900" font-size="13" fill="#0F172A">P</text>
+        </svg>`,
+        prompts: [
+          { q: `Üç doğrunun <span style="color:#FDE047;">TEK BİR NOKTADA (Noktadaş)</span> kesiştiği kavşağı seç!`, pts: 25 },
+          { q: `Ortak tek bir noktadan (P) geçen <span style="color:#4ADE80;">NOKTADAŞ 3 DOĞRUYU</span> seç!`, pts: 25 }
+        ]
+      },
+      {
+        id: 'UC_UCGEN',
+        roof: '3 DOĞRU DURUMU',
+        label: '3 Noktada (Üçgen)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <polygon points="68,22 44,60 92,60" fill="rgba(245,158,11,0.28)"/>
+          <line x1="16" y1="60" x2="120" y2="60" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round"/>
+          <line x1="32" y1="78" x2="82" y2="6" stroke="#DC2626" stroke-width="3.2" stroke-linecap="round"/>
+          <line x1="104" y1="78" x2="54" y2="6" stroke="#2563EB" stroke-width="3.2" stroke-linecap="round"/>
+          <circle cx="68" cy="22" r="4" fill="#F59E0B" stroke="#000" stroke-width="1.5"/>
+          <circle cx="44" cy="60" r="4" fill="#F59E0B" stroke="#000" stroke-width="1.5"/>
+          <circle cx="92" cy="60" r="4" fill="#F59E0B" stroke="#000" stroke-width="1.5"/>
+        </svg>`,
+        prompts: [
+          { q: `Üç doğrunun <span style="color:#FDE047;">İKİŞER İKİŞER KESİŞİP ÜÇGEN</span> oluşturduğu vagonu seç!`, pts: 25 },
+          { q: `Toplam <span style="color:#FDE047;">3 FARKLI NOKTADA</span> kesişen 3 doğruyu seç!`, pts: 25 }
+        ]
+      },
+      {
+        id: 'UC_KESEN',
+        roof: '3 DOĞRU DURUMU',
+        label: '2 Paralel + 1 Kesen',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="18" y1="26" x2="118" y2="26" stroke="#2563EB" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="18" y1="58" x2="118" y2="58" stroke="#2563EB" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="42" y1="76" x2="94" y2="8" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="80" cy="26" r="4.5" fill="#F59E0B" stroke="#000" stroke-width="1.5"/>
+          <circle cx="56" cy="58" r="4.5" fill="#F59E0B" stroke="#000" stroke-width="1.5"/>
+        </svg>`,
+        prompts: [
+          { q: `<span style="color:#38BDF8;">İkisi paralel</span> olan 3 doğrudan üçüncüsünün <span style="color:#F87171;">KESEN DOĞRU</span> olduğu vagonu seç!`, pts: 30 },
+          { q: `İki paralel doğruyu keserek toplam <span style="color:#FDE047;">2 NOKTADA</span> kesişen 3 doğruyu seç!`, pts: 30 }
+        ]
+      },
+      {
+        id: 'TERS_ACI_70',
+        roof: 'KESİŞEN AÇILAR',
+        label: 'x = 70° (Ters Açı)',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="22" y1="18" x2="114" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="22" y1="66" x2="114" y2="18" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="56" y="25" font-family="Nunito" font-weight="900" font-size="14" fill="#DC2626">70°</text>
+          <text x="61" y="72" font-family="Nunito" font-weight="900" font-size="15" fill="#2563EB">x=70°</text>
+        </svg>`,
+        prompts: [
+          { q: `Kesişen iki doğruda <span style="color:#FDE047;">70°'nin ters açısı (x = 70°)</span> olan vagonu seç!`, pts: 30 }
+        ]
+      },
+      {
+        id: 'BUTUNLER_110',
+        roof: 'DOĞRU AÇI (180°)',
+        label: '70° + 110° = 180°',
+        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
+          <line x1="16" y1="62" x2="120" y2="62" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <line x1="68" y1="62" x2="98" y2="16" stroke="#DC2626" stroke-width="3.5" stroke-linecap="round"/>
+          <text x="32" y="50" font-family="Nunito" font-weight="900" font-size="14" fill="#1E40AF">110°</text>
+          <text x="82" y="52" font-family="Nunito" font-weight="900" font-size="14" fill="#DC2626">70°</text>
+        </svg>`,
+        prompts: [
+          { q: `Doğru açı üzerinde 70°'yi <span style="color:#FDE047;">180°'ye tamamlayan (110°)</span> komşu açılı vagonu seç!`, pts: 30 }
+        ]
+      }
+    ];
+
+    let gameMode = '1P';
+    let isGameRunning = false;
+    let timerInterval, gameInterval;
+    let timeLeft = 90;
+    
+    let p1 = { score: 0, lives: 5, currentQ: null, qCount: 0, cratesSinceChange: 0, wrongStreak: 0 };
+    let p2 = { score: 0, lives: 5, currentQ: null, qCount: 0, cratesSinceChange: 0, wrongStreak: 0 };
+    let currentFullName = '';
+    let selectedDuelTime = 90;
+
+    function playLifeLostSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        osc.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch(e) {}
+    }
+
+    function updateLivesDisplay(lostPlayerObj = null) {
+      const p1El = document.getElementById('p1-lives');
+      let html1 = '';
+      for(let i=0; i<5; i++) {
+         if (i < p1.lives) html1 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p1 && i === p1.lives) html1 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html1 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p1El.innerHTML = html1;
+
+      const p2El = document.getElementById('p2-lives');
+      let html2 = '';
+      for(let i=0; i<5; i++) {
+         if (i < p2.lives) html2 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p2 && i === p2.lives) html2 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html2 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p2El.innerHTML = html2;
+    }
+
+    function validateRealName(nameStr) {
+        let trimmed = nameStr.trim().replace(/\s+/g, ' ');
+        if (!trimmed) {
+            return { valid: false, error: "Lütfen adınızı girin." };
+        }
+        
+        if (authorizedStudents.length === 0) {
+            return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce Sağ Üstteki (⚙️) Yönetici Ayarları'ndan sınıf listesini ekleyin." };
+        }
+        
+        let lowerInput = trimmed.toLocaleLowerCase('tr-TR');
+        let matchedName = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === lowerInput);
+        
+        if (matchedName) {
+            return { valid: true, name: matchedName };
+        } else {
+            return { valid: false, error: "İsminiz sistemdeki öğrenci listesinde bulunamadı! Lütfen listeye eklenen isminizi doğru yazdığınızdan emin olun (veya kutucuğa tıklayıp açılan listeden seçin)." };
+        }
+    }
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateGeometryMission(player) {
+      let prevId = player.currentQ ? player.currentQ.targetId : null;
+      let item;
+      do {
+        item = pickRandom(GEOMETRY_ITEMS);
+      } while (item.id === prevId);
+
+      let promptObj = pickRandom(item.prompts);
+      player.qCount++;
+      return {
+        targetId: item.id,
+        html: promptObj.q,
+        pts: promptObj.pts
+      };
+    }
+
+    function setQuestion(playerNum) {
+      let player = (playerNum === 1) ? p1 : p2;
+      let qObj = generateGeometryMission(player);
+      player.currentQ = qObj;
+      player.cratesSinceChange = 0;
+      player.wrongStreak = 0;
+
+      let badgeColor = qObj.pts >= 30 ? '#EF4444' : (qObj.pts >= 25 ? '#D97706' : '#10B981');
+      let text = `${qObj.html} <span style="display:inline-block; font-size:12px; background:${badgeColor}; color:#FFF; padding:2px 7px; border-radius:8px; vertical-align:middle; margin-left:5px;">+${qObj.pts}P</span>`;
+      if (playerNum === 1) {
+        document.getElementById('p1-question').innerHTML = text;
+      } else {
+        document.getElementById('p2-question').innerHTML = text;
+      }
+    }
+
+    function initFestiveFX() {
+      let fx = document.getElementById('festive-fx-container');
+      fx.innerHTML = '';
+      const symbols = ['⭐', '🌙', '✨', '🎈'];
+      for(let i=0; i<28; i++) {
+        let s = document.createElement('div');
+        s.className = 'bg-star';
+        s.innerText = symbols[i % symbols.length];
+        s.style.left = (Math.random() * 100) + 'vw';
+        s.style.fontSize = (Math.random() * 14 + 14) + 'px';
+        s.style.animationDuration = (Math.random() * 7 + 6) + 's';
+        s.style.animationDelay = (Math.random() * 6 - 6) + 's';
+        fx.appendChild(s);
+      }
+    }
+    initFestiveFX();
+
+    function setMode(mode) {
+      gameMode = mode;
+      document.getElementById('btn-mode-1p').className = (mode === '1P') ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('btn-mode-2p').className = (mode === '2P') ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('1p-form').style.display = (mode === '1P') ? 'flex' : 'none';
+      document.getElementById('2p-form').style.display = (mode === '2P') ? 'flex' : 'none';
+    }
+
+    function setTime(time) {
+      selectedDuelTime = time;
+      document.getElementById('time-30').className = (time === 30) ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('time-60').className = (time === 60) ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('time-90').className = (time === 90) ? 'btn-subtle active' : 'btn-subtle';
+    }
+
+    function showScreen(screenId) {
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('resultScreen1P').style.display = 'none';
+      document.getElementById('resultScreen2P').style.display = 'none';
+      document.getElementById('leaderboardScreen').style.display = 'none';
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('center-line').style.display = 'none';
+      
+      if (screenId === 'GAME') {
+        document.getElementById('app-overlay').style.display = 'none';
+        document.getElementById('top-hud').style.display = 'flex';
+        if(gameMode === '2P') document.getElementById('center-line').style.display = 'block';
+      } else {
+        document.getElementById('app-overlay').style.display = 'flex';
+        if(screenId === 'START') document.getElementById('startScreen').style.display = 'block';
+        if(screenId === 'LEADERBOARD') { renderLeaderboard(); document.getElementById('leaderboardScreen').style.display = 'block'; }
+      }
+    }
+
+    function updateScores() {
+      document.getElementById('p1-score').innerText = p1.score;
+      document.getElementById('p2-score').innerText = p2.score;
+    }
+
+    const TRACK_Y_POSITIONS = [45, 69, 91];
+
+    function buildRailwayTracks() {
+      const area = document.getElementById('game-area');
+      area.innerHTML = '';
+
+      TRACK_Y_POSITIONS.forEach((vhPos) => {
+        let track = document.createElement('div');
+        track.className = 'railway-track';
+        track.style.top = `${vhPos}vh`;
+
+        let sleepers = document.createElement('div');
+        sleepers.className = 'railway-sleepers';
+        track.appendChild(sleepers);
+        area.appendChild(track);
+      });
+    }
+
+    function startGame() {
+      if(gameMode === '1P') {
+        let rawName = document.getElementById('playerFullName').value;
+        let validation = validateRealName(rawName);
+        if(!validation.valid) {
+           alert(validation.error);
+           return;
+        }
+        currentFullName = validation.name;
+      }
+      
+      showScreen('GAME');
+      buildRailwayTracks();
+      
+      if(gameMode === '1P') {
+        document.getElementById('hud-right').style.display = 'none';
+        document.getElementById('hud-left').className = 'hud-side left single-mode';
+        document.getElementById('p1-box').className = 'team-box single-box';
+        document.getElementById('p1-name').innerText = currentFullName;
+      } else {
+        document.getElementById('hud-right').style.display = 'flex';
+        document.getElementById('hud-left').className = 'hud-side left';
+        document.getElementById('p1-box').className = 'team-box red-box';
+        document.getElementById('p1-name').innerText = "Cumhuriyet Hattı";
+      }
+
+      p1.score = 0; p1.lives = 5; p1.currentQ = null; p1.qCount = 0; p1.cratesSinceChange = 0; p1.wrongStreak = 0;
+      p2.score = 0; p2.lives = 5; p2.currentQ = null; p2.qCount = 0; p2.cratesSinceChange = 0; p2.wrongStreak = 0;
+      updateScores();
+      updateLivesDisplay();
+      
+      setQuestion(1);
+      if (gameMode === '2P') setQuestion(2);
+
+      isGameRunning = true;
+      timeLeft = gameMode === '1P' ? 60 : selectedDuelTime;
+      document.getElementById('timer').innerText = timeLeft + 's';
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = timeLeft + 's';
+        if(timeLeft <= 0) endGame();
+      }, 1000);
+
+      if (gameMode === '1P') {
+        spawnTrainWagon('any', 0);
+        setTimeout(() => { if(isGameRunning) spawnTrainWagon('any', 1); }, 550);
+      } else {
+        spawnTrainWagon('left', 0);
+        spawnTrainWagon('right', 0);
+      }
+
+      let spawnRate = gameMode === '1P' ? 1300 : 1600;
+      gameInterval = setInterval(() => {
+        if(gameMode === '1P') {
+          let lane = randInt(0, 2);
+          spawnTrainWagon('any', lane);
+        } else {
+          let lane1 = randInt(0, 2);
+          let lane2 = randInt(0, 2);
+          spawnTrainWagon('left', lane1);
+          spawnTrainWagon('right', lane2);
+        }
+      }, spawnRate);
+    }
+
+    function showFloatingText(x, y, text, color) {
+      let ft = document.createElement('div');
+      ft.innerText = text;
+      ft.style.position = 'fixed';
+      ft.style.left = x + 'px';
+      ft.style.top = y + 'px';
+      ft.style.color = color;
+      ft.style.fontSize = '36px';
+      ft.style.fontWeight = '900';
+      ft.style.fontFamily = "'Baloo 2', sans-serif";
+      ft.style.textShadow = '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000';
+      ft.style.zIndex = '999';
+      ft.style.pointerEvents = 'none';
+      ft.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      document.body.appendChild(ft);
+      
+      ft.getBoundingClientRect();
+      ft.style.transform = 'translate(-50%, -80px) scale(1.5)';
+      ft.style.opacity = '0';
+      
+      setTimeout(() => ft.remove(), 800);
+    }
+
+    function popEffect(element, isCorrect, ptsVal = 20) {
+      let rect = element.getBoundingClientRect();
+      let centerX = rect.left + rect.width / 2;
+      
+      let effectDiv = element.cloneNode(true);
+      effectDiv.classList.add('popping');
+      effectDiv.style.position = 'fixed';
+      effectDiv.style.left = rect.left + 'px';
+      effectDiv.style.top = rect.top + 'px';
+      effectDiv.style.zIndex = '999';
+      effectDiv.style.transition = 'none';
+      
+      if (isCorrect) {
+        effectDiv.style.animation = "correctPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards";
+        showFloatingText(centerX, rect.top, "+" + ptsVal + " 🇹🇷", "#10B981");
+      } else {
+        effectDiv.style.animation = "wrongShake 0.5s ease-in forwards";
+        showFloatingText(centerX, rect.top, "-5 ❌", "#EF4444");
+      }
+      
+      document.body.appendChild(effectDiv);
+      element.remove();
+      setTimeout(() => effectDiv.remove(), 550);
+    }
+
+    function clearSideWagons(player) {
+      let sideToRemove = (gameMode === '1P') ? 'any' : (player === p1 ? 'left' : 'right');
+      document.querySelectorAll('.train-wagon').forEach(item => {
+        if (item.dataset.side === sideToRemove && !item.classList.contains('popping')) {
+          item.remove();
+        }
+      });
+    }
+
+    function spawnTrainWagon(side, laneIdx) {
+      if(!isGameRunning) return;
+
+      let wagon = document.createElement('div');
+      wagon.className = 'train-wagon';
+      wagon.dataset.side = side;
+
+      let trackVh = TRACK_Y_POSITIONS[laneIdx];
+      wagon.style.top = `calc(${trackVh}vh - 152px)`;
+
+      let isLeft = (side === 'left');
+      let isAny = (side === 'any');
+      let targetPlayer = isAny ? p1 : (isLeft ? p1 : p2);
+
+      // İlk çıkan vagon hemen doğru cevap olmasın, ancak üst üste 3 yanlış vagondan sonra kesin doğru gelsin
+      let wantCorrect = false;
+      if (targetPlayer.cratesSinceChange === 0) {
+        wantCorrect = Math.random() < 0.20;
+      } else if (targetPlayer.wrongStreak >= 3) {
+        wantCorrect = true;
+      } else {
+        wantCorrect = Math.random() < 0.42;
+      }
+
+      targetPlayer.cratesSinceChange++;
+      if (wantCorrect) targetPlayer.wrongStreak = 0;
+      else targetPlayer.wrongStreak++;
+
+      let chosenItem;
+      if (wantCorrect && targetPlayer.currentQ) {
+        chosenItem = GEOMETRY_ITEMS.find(it => it.id === targetPlayer.currentQ.targetId) || GEOMETRY_ITEMS[0];
+      } else {
+        let wrongPool = GEOMETRY_ITEMS.filter(it => !targetPlayer.currentQ || it.id !== targetPlayer.currentQ.targetId);
+        chosenItem = pickRandom(wrongPool);
+      }
+
+      wagon.dataset.itemId = chosenItem.id;
+
+      // Vagon Çatısı
+      let roof = document.createElement('div');
+      roof.className = 'wagon-roof';
+      roof.innerHTML = `<span>🇹🇷 ${chosenItem.roof}</span>`;
+      wagon.appendChild(roof);
+
+      // SVG Geometri Çizimi
+      let svgBox = document.createElement('div');
+      svgBox.className = 'wagon-svg-box';
+      svgBox.innerHTML = chosenItem.svg;
+      wagon.appendChild(svgBox);
+
+      // Alt Etiket
+      let label = document.createElement('div');
+      label.className = 'wagon-label';
+      label.innerText = chosenItem.label;
+      wagon.appendChild(label);
+
+      // Vagon Tekerlekleri
+      let wheels = document.createElement('div');
+      wheels.className = 'wagon-wheels';
+      wheels.innerHTML = `<div class="wheel"></div><div class="wheel"></div>`;
+      wagon.appendChild(wheels);
+
+      let duration = randInt(7, 10);
+      let startX, endX;
+
+      if (isAny) {
+        if (laneIdx % 2 === 1) {
+          startX = '102vw'; endX = '-190px';
+        } else {
+          startX = '-180px'; endX = '102vw';
+        }
+      } else if (isLeft) {
+        startX = '-180px'; endX = '48vw';
+      } else {
+        startX = '102vw'; endX = '51vw';
+      }
+
+      wagon.style.left = startX;
+      wagon.style.transition = `left ${duration}s linear`;
+
+      let clicked = false;
+      function handleClick(e) {
+        if(!isGameRunning || clicked) return;
+        clicked = true;
+        e.preventDefault();
+
+        let player = targetPlayer;
+        let playerNum = (player === p1) ? 1 : 2;
+        let isMatch = player.currentQ && (this.dataset.itemId === player.currentQ.targetId);
+
+        if (isMatch) {
+          let earnedPts = player.currentQ.pts || 20;
+          player.score += earnedPts;
+          playSuccessSound();
+          popEffect(this, true, earnedPts);
+          setQuestion(playerNum);
+          // Bireysel modda diğer vagonlar yoluna devam etsin!
+          if (gameMode !== '1P') clearSideWagons(player);
+        } else {
+          player.score -= 5;
+          player.lives--;
+          playLifeLostSound();
+          popEffect(this, false);
+          updateLivesDisplay(player);
+
+          if(player.lives <= 0) {
+            setTimeout(() => {
+              endGame(player === p1 ? "P1_DEAD" : "P2_DEAD");
+            }, 500);
+          } else {
+            setQuestion(playerNum);
+            if (gameMode !== '1P') clearSideWagons(player);
+          }
+        }
+        updateScores();
+      }
+
+      wagon.addEventListener('mousedown', handleClick);
+      wagon.addEventListener('touchstart', handleClick, {passive: false});
+      wagon.addEventListener('transitionend', function() {
+        if(this.parentNode) this.parentNode.removeChild(this);
+      });
+
+      document.getElementById('game-area').appendChild(wagon);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          wagon.style.left = endX;
+        });
+      });
+    }
+
+    /* OYUN BİTİŞİ MANTIĞI */
+    function endGame(reason = null) {
+      isGameRunning = false;
+      clearInterval(timerInterval); clearInterval(gameInterval);
+      document.getElementById('game-area').innerHTML = '';
+      launchConfetti(120);
+
+      document.getElementById('app-overlay').style.display = 'flex';
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('center-line').style.display = 'none';
+      
+      if(gameMode === '1P') {
+        saveScoreToLeaderboardDirectly();
+        document.getElementById('resultScreen1P').style.display = 'block';
+        document.getElementById('finalScore1P').innerText = p1.score;
+        
+        let sub = document.getElementById('1p-result-sub');
+        if (reason === "P1_DEAD") {
+            sub.innerText = "Sefer hakların bitti! Ama Cumhuriyet gençliği asla pes etmez, tekrar dene!";
+            sub.style.color = "#EF4444";
+        } else {
+            sub.innerText = "Demir ağlarla ana yurdu dört baştan geometrinle ördün! 29 Ekim Kutlu Olsun!";
+            sub.style.color = "#475569";
+        }
+      } else {
+        document.getElementById('resultScreen2P').style.display = 'block';
+        let title = document.getElementById('winner-title-2p');
+        let sub = document.getElementById('winner-sub-2p');
+        document.getElementById('winner-score-p1').innerText = p1.score;
+        document.getElementById('winner-score-p2').innerText = p2.score;
+
+        if (reason === "P1_DEAD") {
+           title.innerText = "🔵 Bağımsızlık Hattı Kazandı!";
+           title.style.color = "#3B82F6";
+           sub.innerText = "Cumhuriyet Hattı'nın tüm hakları bitti! Bağımsızlık Hattı Ankara'ya ulaştı!";
+           playFanfareSound(1);
+        } else if (reason === "P2_DEAD") {
+           title.innerText = "🔴 Cumhuriyet Hattı Kazandı!";
+           title.style.color = "#EF4444";
+           sub.innerText = "Bağımsızlık Hattı'nın tüm hakları bitti! Cumhuriyet Hattı Ankara'ya ulaştı!";
+           playFanfareSound(1);
+        } else {
+            if(p1.score > p2.score) {
+              title.innerText = "🔴 Cumhuriyet Hattı Kazandı!";
+              title.style.color = "#EF4444";
+              sub.innerText = "Tebrikler! Cumhuriyet Hattı geometrik kavşakları hatasız birleştirerek zaferi kazandı!";
+              playFanfareSound(1);
+            } else if(p2.score > p1.score) {
+              title.innerText = "🔵 Bağımsızlık Hattı Kazandı!";
+              title.style.color = "#3B82F6";
+              sub.innerText = "Tebrikler! Bağımsızlık Hattı geometrik kavşakları hatasız birleştirerek zaferi kazandı!";
+              playFanfareSound(1);
+            } else {
+              title.innerText = "🤝 Paralel Doğrular Gibi Eşit! Berabere!";
+              title.style.color = "#10B981";
+              sub.innerText = "İki hat da paralel doğrular gibi başa baş ilerleyerek eşit puan topladı! Yaşasın 29 Ekim!";
+            }
+        }
+      }
+    }
+
+    /* ==============================
+       KONFETİ
+       ============================== */
+    const canvas = document.getElementById('confetti-canvas');
+    const canvasCtx = canvas.getContext('2d');
+    let confettiPieces = [];
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+    function launchConfetti(count = 70) {
+      const colors = ['#DC2626', '#FFFFFF', '#F59E0B', '#EF4444', '#3B82F6'];
+      for (let i = 0; i < count; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.3 - 50,
+          w: Math.random() * 10 + 6, h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 6, vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 8, life: 1
+        });
+      }
+    }
+    function animateConfetti() {
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = confettiPieces.length - 1; i >= 0; i--) {
+        let p = confettiPieces[i];
+        p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed; p.life -= 0.005;
+        canvasCtx.save(); canvasCtx.translate(p.x, p.y); canvasCtx.rotate((p.rot * Math.PI) / 180);
+        canvasCtx.fillStyle = p.color; canvasCtx.globalAlpha = Math.max(0, p.life);
+        canvasCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); canvasCtx.restore();
+        if (p.life <= 0) confettiPieces.splice(i, 1);
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+
+    /* ==============================
+       AYARLAR VE SIFIRLAMA
+       ============================== */
+    function openSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      
+      if (localStorage.getItem('isAdmin_cumhuriyetekspresi') === 'true') {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+      }
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function checkAdminPassword() {
+      const pwd = document.getElementById('adminPassword').value;
+      if (pwd === '26575982824.bati') {
+        localStorage.setItem('isAdmin_cumhuriyetekspresi', 'true');
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        alert('Hatalı şifre! Lütfen tekrar deneyin.');
+      }
+    }
+
+    function clearLeaderboard() {
+      if (confirm('Tüm lider tablosu hem veritabanından hem de bu cihazdan kalıcı olarak silinecek. Emin misiniz?')) {
+        if (cloudDb) {
+          cloudDb.ref(DB_NODE).remove();
+        } else {
+          fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'DELETE' });
+        }
+        localStorage.removeItem('meb_cumhuriyetekspresi_top10');
+        renderLeaderboard();
+        alert('Lider tablosu başarıyla sıfırlandı.');
+        closeSettings();
+      }
+    }
+  </script>
+</body>
+</html>
