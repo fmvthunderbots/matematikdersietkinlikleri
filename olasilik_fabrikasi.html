@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Olasılık Fabrikası - Öğretmen Versiyonu</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #7C3AED; /* Fabrika / Bilim kurgu mor-mavi-kehribar tonları */
+      --secondary: #5B21B6;
+      --accent: #F59E0B;
+      --danger: #EF4444;
+      --success: #10B981;
+      --radius-lg: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #1E293B;
+      background: linear-gradient(to bottom, rgba(30, 27, 75, 0.45), rgba(15, 23, 42, 0.65)), url('olasilik_fabrikasi_bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+
+    /* Arka Plan Fabrika Çarkları ve Buhar/Kıvılcım Efekti */
+    #factory-fx-container {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.08), rgba(15, 23, 42, 0.35));
+    }
+    .bg-spark {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FDE047 0%, #F59E0B 60%, transparent 100%);
+      box-shadow: 0 0 10px #F59E0B;
+      animation: floatSpark linear infinite;
+    }
+    .bg-gear {
+      position: absolute;
+      font-size: 64px;
+      opacity: 0.14;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+      animation: spinGear linear infinite;
+    }
+    @keyframes floatSpark {
+      0% { transform: translateY(110vh) scale(0.5); opacity: 0; }
+      20% { opacity: 0.85; }
+      80% { opacity: 0.85; }
+      100% { transform: translateY(-15vh) scale(1.2); opacity: 0; }
+    }
+    @keyframes spinGear {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes heartBreakAnim {
+      0% { transform: scale(1); filter: grayscale(0); }
+      50% { transform: scale(1.5) rotate(-15deg); filter: grayscale(0); }
+      100% { transform: scale(0); filter: grayscale(1); opacity: 0; }
+    }
+    .heart-icon { display: inline-block; transition: all 0.2s; }
+    .heart-lost { animation: heartBreakAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    /* Oyun Arayüzü (HUD) */
+    #top-hud {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 12px 20px; position: relative; z-index: 10; width: 100%;
+    }
+    .hud-side { display: flex; align-items: center; gap: 14px; max-width: 44%; }
+    .hud-side.single-mode { max-width: 72%; }
+    .hud-side.right { justify-content: flex-end; }
+    
+    .team-box {
+      background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(10px);
+      border-radius: 18px; padding: 10px 20px; text-align: center;
+      border: 3px solid; min-width: 280px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+    }
+    .red-box { border-color: #EF4444; box-shadow: 0 0 18px rgba(239, 68, 68, 0.5); }
+    .blue-box { border-color: #3B82F6; box-shadow: 0 0 18px rgba(59, 130, 246, 0.5); }
+    .single-box { border-color: #F59E0B; box-shadow: 0 0 18px rgba(245, 158, 11, 0.5); }
+
+    .team-name { font-family: 'Baloo 2'; font-size: 17px; font-weight: 800; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .red-box .team-name { color: #FCA5A5; }
+    .blue-box .team-name { color: #93C5FD; }
+    .single-box .team-name { color: #FDE68A; }
+
+    .question-text {
+      font-family: 'Baloo 2', 'Nunito', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFF;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 12px;
+      margin: 4px 0;
+      line-height: 1.25;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    
+    .score-display { 
+      font-family: 'Baloo 2'; font-size: 32px; font-weight: 800; 
+      background: rgba(255,255,255,0.96); color: #0F172A; 
+      padding: 6px 20px; border-radius: 14px; border: 3px solid #E2E8F0;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+
+    #timer-box {
+      background: rgba(255, 255, 255, 0.96); border: 3px solid #F59E0B;
+      border-radius: 16px; padding: 8px 22px; text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 115px;
+    }
+    .timer-val { font-family: 'Baloo 2'; font-size: 34px; font-weight: 800; color: #1E293B; line-height: 1; }
+    .timer-label { font-size: 12px; font-weight: 800; color: #D97706; letter-spacing: 1px; }
+
+    #center-line {
+      position: absolute; top: 0; left: 50%; width: 6px; height: 100vh;
+      background: repeating-linear-gradient(to bottom, #F59E0B 0px, #F59E0B 20px, #1E293B 20px, #1E293B 40px);
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.8);
+      transform: translateX(-50%); z-index: 4; display: none;
+    }
+
+    /* Yürüyen Fabrika Bantları (Conveyor Belts) */
+    #game-area { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2; pointer-events: none; overflow: hidden; }
+
+    .conveyor-track {
+      position: absolute;
+      left: 0;
+      width: 100vw;
+      height: 36px;
+      background: linear-gradient(180deg, #334155 0%, #1E293B 60%, #0F172A 100%);
+      border-top: 4px solid #94A3B8;
+      border-bottom: 5px solid #F59E0B;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      z-index: 1;
+      overflow: hidden;
+    }
+    .conveyor-treads {
+      position: absolute;
+      top: 0; left: -80px; width: calc(100vw + 160px); height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.12) 0px,
+        rgba(255,255,255,0.12) 14px,
+        transparent 14px,
+        transparent 40px
+      );
+      animation: beltRoll 1.2s linear infinite;
+    }
+    .conveyor-treads.reverse {
+      animation: beltRollReverse 1.2s linear infinite;
+    }
+    @keyframes beltRoll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(40px); }
+    }
+    @keyframes beltRollReverse {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-40px); }
+    }
+
+    /* Bant Üzerinde Giden Şeffaf Olasılık Kavanozları / Kutuları */
+    .factory-crate {
+      position: absolute;
+      width: 148px;
+      height: 138px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(224, 242, 254, 0.88) 100%);
+      border: 4px solid #38BDF8;
+      border-bottom: 8px solid #0284C7;
+      border-radius: 22px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.45), inset 0 0 15px rgba(255,255,255,0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px 8px 8px;
+      cursor: pointer;
+      z-index: 6;
+      pointer-events: auto;
+      transition: transform 0.12s, border-color 0.2s;
+    }
+    .factory-crate:hover {
+      border-color: #FDE047;
+      box-shadow: 0 0 22px rgba(253, 224, 71, 0.85), inset 0 0 15px rgba(255,255,255,0.9);
+    }
+    /* Kavanoz Kapağı */
+    .crate-lid {
+      width: 76%;
+      height: 14px;
+      background: linear-gradient(90deg, #F59E0B, #FBBF24, #D97706);
+      border: 2px solid #78350F;
+      border-radius: 8px 8px 4px 4px;
+      margin-top: -13px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .crate-lid span {
+      font-size: 9px;
+      font-weight: 900;
+      color: #451A03;
+      letter-spacing: 0.8px;
+    }
+
+    /* Topların Dizildiği İç Hazne */
+    .balls-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      flex-grow: 1;
+      padding: 4px 2px;
+    }
+    .prob-ball {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: inset -3px -3px 6px rgba(0,0,0,0.35), inset 3px 3px 5px rgba(255,255,255,0.7), 0 2px 4px rgba(0,0,0,0.25);
+      border: 1.5px solid rgba(0,0,0,0.25);
+    }
+    .ball-red { background: radial-gradient(circle at 35% 35%, #FCA5A5, #EF4444 55%, #991B1B); }
+    .ball-blue { background: radial-gradient(circle at 35% 35%, #93C5FD, #3B82F6 55%, #1E40AF); }
+    .ball-yellow { background: radial-gradient(circle at 35% 35%, #FEF08A, #EAB308 55%, #854D0E); }
+    .ball-green { background: radial-gradient(circle at 35% 35%, #86EFAC, #22C55E 55%, #166534); }
+
+    /* Kavanoz Alt Etiketi (Sayı Özeti) */
+    .crate-label {
+      background: #0F172A;
+      color: #FFF;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 8px;
+      width: 96%;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid #475569;
+      line-height: 1.2;
+    }
+
+    /* Patlama ve Yanlış Animasyonları */
+    @keyframes correctPop {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      50% { transform: scale(1.35) rotate(10deg); opacity: 0.9; filter: brightness(1.4) drop-shadow(0 0 25px #10B981); }
+      100% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    }
+    @keyframes wrongShake {
+      0% { transform: translateX(0) scale(1); filter: grayscale(0); }
+      20% { transform: translateX(-15px) scale(1.08); filter: grayscale(1); }
+      40% { transform: translateX(15px) scale(1.08); filter: grayscale(1); }
+      60% { transform: translateX(-15px) scale(1.08); filter: grayscale(1); }
+      80% { transform: translateX(15px) scale(1.08); filter: grayscale(1); }
+      100% { transform: translateY(50px) scale(0); opacity: 0; }
+    }
+
+    /* Menü Katmanı ve Kartlar */
+    .app-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(8px);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.97); border-radius: var(--radius-lg);
+      padding: 34px 32px; text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.55);
+      border: 4px solid #7C3AED;
+      width: 100%; max-width: 590px; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .start-title { font-family: 'Baloo 2'; font-size: 32px; font-weight: 800; color: #1E293B; margin-bottom: 4px; }
+    .start-subtitle { font-size: 16px; font-weight: 700; color: #475569; margin-bottom: 22px; }
+
+    .btn-subtle {
+      background: #F3E8FF; border: 2px solid #DDD6FE; color: #5B21B6;
+      padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-subtle.active { background: #7C3AED; color: white; border-color: #5B21B6; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35); }
+    
+    .input-player {
+      width: 100%; padding: 14px 18px; font-size: 17px; font-weight: 700;
+      border: 2px solid #CBD5E1; border-radius: 14px; outline: none; text-align: center;
+    }
+    .input-player:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15); }
+
+    .btn-start {
+      width: 100%; padding: 18px 30px; background: linear-gradient(135deg, #F59E0B, #D97706);
+      border: none; border-radius: 18px; color: white; font-family: 'Baloo 2'; font-size: 26px;
+      font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); transition: transform 0.2s;
+    }
+    .btn-start:active { transform: scale(0.95); }
+
+    .score-summary-grid { display: flex; justify-content: center; margin-bottom: 24px; }
+    .score-item { background: #F5F3FF; border: 2px solid #7C3AED; border-radius: 16px; padding: 14px 30px; }
+    .score-item .label { font-size: 13px; font-weight: 800; color: #7C3AED; text-transform: uppercase; }
+    .score-item .val { font-family: 'Baloo 2'; font-size: 38px; font-weight: 800; color: #1E293B; }
+
+    .btn-action {
+      padding: 14px 24px; border-radius: 14px; font-family: 'Baloo 2'; font-size: 20px; font-weight: 800;
+      cursor: pointer; border: none; width: 100%; margin-bottom: 10px; transition: transform 0.2s;
+    }
+    .btn-view-leaderboard { background: #FEF3C7; color: #92400E; border: 2px solid #F59E0B; }
+    .btn-restart { background: linear-gradient(135deg, #7C3AED, #5B21B6); color: white; }
+
+    /* Lider Tablosu Özel Tasarımı */
+    .leaderboard-card { max-width: 780px; max-height: 95vh; display: flex; flex-direction: column; }
+    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 10px; }
+    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
+    .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
+    .lb-row:hover { transform: scale(1.02); }
+    .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; }
+    .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+    
+    .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
+    .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
+    .lb-row.rank-3 { background: linear-gradient(90deg, #FFEDD5, #FFF7ED); border: 2px solid #FDBA74; }
+
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
+
+    /* Kutlama Modalı */
+    .celebration-modal {
+      position: fixed; inset: 0; z-index: 200; display: none;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .celebration-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.82); }
+    .celebration-card {
+      position: relative; width: 100%; max-width: 520px; border-radius: 28px; padding: 36px 28px;
+      text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5); animation: popIn 0.4s; z-index: 201; background: #FFF;
+    }
+    .cel-name { font-family: 'Baloo 2'; font-size: 36px; font-weight: 900; margin-bottom: 2px; color: #1E293B; }
+    .cel-score { font-size: 26px; font-weight: 800; color: #7C3AED; margin-bottom: 12px; }
+    .btn-cel-close {
+      width: 100%; padding: 15px; border-radius: 16px; border: none; font-family: 'Baloo 2'; font-size: 20px;
+      font-weight: 800; cursor: pointer; color: #FFF; background: linear-gradient(135deg, #7C3AED, #5B21B6);
+      box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35); transition: transform 0.2s;
+    }
+    .btn-cel-close:active { transform: scale(0.96); }
+
+    .btn-endgame {
+      position: absolute; bottom: -42px; left: 50%; transform: translateX(-50%);
+      background: #EF4444; color: white; border: 2px solid #FFF; padding: 5px 15px;
+      border-radius: 12px; font-family: 'Baloo 2'; font-weight: 800; font-size: 14px;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap;
+      transition: transform 0.2s, background 0.2s; z-index: 50;
+    }
+    .btn-endgame:hover { background: #DC2626; transform: translateX(-50%) scale(1.05); }
+    .btn-endgame:active { transform: translateX(-50%) scale(0.95); }
+  </style>
+</head>
+<body>
+
+  <!-- Arka Plan Fabrika Efektleri -->
+  <div id="factory-fx-container"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- HUD -->
+  <div id="top-hud" style="display: none;">
+    <div class="hud-side left single-mode" id="hud-left">
+      <div id="p1-box" class="team-box single-box">
+        <div class="team-name" id="p1-name">Oyuncu</div>
+        <div id="p1-question" class="question-text">Sipariş Bekleniyor...</div>
+        <div id="p1-lives" style="font-size:18px; letter-spacing: 2px; margin-top:4px;">❤️❤️❤️❤️❤️</div>
+      </div>
+      <div id="p1-score" class="score-display">0</div>
+    </div>
+
+    <!-- Zamanlayıcı ve Oyunu Bitir Butonu -->
+    <div id="timer-box" style="position: relative;">
+      <div id="timer" class="timer-val">60s</div>
+      <div class="timer-label">VARDİYA</div>
+      <button class="btn-endgame" onclick="endGame()">⏹️ Bitir</button>
+    </div>
+
+    <div class="hud-side right" id="hud-right" style="display: none;">
+      <div id="p2-score" class="score-display">0</div>
+      <div id="p2-box" class="team-box blue-box">
+        <div class="team-name">Mavi Vardiya</div>
+        <div id="p2-question" class="question-text">Sipariş Bekleniyor...</div>
+        <div id="p2-lives" style="font-size:18px; letter-spacing: 2px; margin-top:4px;">❤️❤️❤️❤️❤️</div>
+      </div>
+    </div>
+  </div>
+  <div id="center-line"></div>
+
+  <!-- Oyun Alanı (Bantlar ve Kavanozlar) -->
+  <div id="game-area"></div>
+
+  <!-- Menüler Katmanı -->
+  <div class="app-overlay" id="app-overlay">
+    
+    <!-- BAŞLANGIÇ EKRANI -->
+    <div class="card" id="startScreen" style="position: relative;">
+      
+      <!-- AYARLAR TUŞU (SADECE ÖĞRETMEN VERSİYONUNDA) -->
+      <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
+      
+      <h1 class="start-title">🏭 Olasılık Fabrikası ⚙️</h1>
+      <p class="start-subtitle">6. Sınıf Olayların Olasılığı Kalite Kontrol Yarışması</p>
+      
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 18px;">
+        <button id="btn-mode-1p" class="btn-subtle active" onclick="setMode('1P')">👤 Bireysel Vardiya</button>
+        <button id="btn-mode-2p" class="btn-subtle" onclick="setMode('2P')">👥 İki Kişilik Düello</button>
+      </div>
+
+      <!-- AD SOYAD GİRİŞ ALANI (BİREYSEL İÇİN) -->
+      <div id="1p-form" style="display:flex; justify-content:center; margin-bottom: 18px;">
+        <input type="text" id="playerFullName" list="studentNamesList" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
+        <datalist id="studentNamesList"></datalist>
+      </div>
+
+      <!-- SÜRE SEÇİM ALANI (DÜELLO İÇİN) -->
+      <div id="2p-form" style="display:none; justify-content:center; gap:10px; margin-bottom: 18px;">
+        <span style="align-self:center; font-weight:800; color:#475569;">Düello Süresi:</span>
+        <button class="btn-subtle" id="time-30" onclick="setTime(30)">30s</button>
+        <button class="btn-subtle" id="time-60" onclick="setTime(60)">60s</button>
+        <button class="btn-subtle active" id="time-90" onclick="setTime(90)">90s</button>
+      </div>
+
+      <div style="background:#F8FAFC; border:2px dashed #CBD5E1; border-radius:14px; padding:10px 14px; margin-bottom:18px; font-size:13.5px; color:#334155; font-weight:700; text-align:left;">
+        🎯 <b>Nasıl Oynanır?</b> Üstteki sipariş ekranında istenen olasılık durumuna (<i>Kesin, İmkânsız, Eşit Olasılıklı, Daha Fazla/Az Olası veya Kesir</i>) uyan kavanozlara banttan geçerken tıkla!
+      </div>
+
+      <button class="btn-start" onclick="startGame()">🚀 BANDI ÇALIŞTIR</button>
+      <button class="btn-subtle" onclick="showScreen('LEADERBOARD')" style="margin-top: 14px; width: 100%;">🏆 İlk 10 Lider Tablosu</button>
+    </div>
+
+    <!-- 1P SONUÇ EKRANI (BİREYSEL) -->
+    <div class="card" id="resultScreen1P" style="display:none;">
+      <div style="font-size: 60px; margin-bottom: 10px;">🏆</div>
+      <h2 class="start-title">Vardiya Tamamlandı!</h2>
+      <p class="start-subtitle" id="1p-result-sub">Olasılık Fabrikası'nda başarına kesin olay gözüyle bakıyoruz!</p>
+      
+      <div class="score-summary-grid">
+        <div class="score-item">
+          <div class="label">Toplam Kalite Puanı</div>
+          <div class="val" id="finalScore1P">0</div>
+        </div>
+      </div>
+
+      <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
+      <button class="btn-action btn-restart" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+
+    <!-- 2P SONUÇ EKRANI (DÜELLO - KAZANANI KUTLAMA) -->
+    <div class="card" id="resultScreen2P" style="display:none;">
+      <div style="font-size: 70px; margin-bottom: 10px;">⚙️</div>
+      <h2 class="start-title" id="winner-title-2p">Kazanan Belli Oldu!</h2>
+      <p class="start-subtitle" id="winner-sub-2p" style="margin-bottom:15px;">Fabrikada müthiş bir kalite kontrol düellosu gerçekleşti!</p>
+      
+      <!-- PRO SKOR TABLOSU (VS KARTLARI) -->
+      <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin: 24px 0;">
+        <div style="background: #FEE2E2; border: 2px solid #EF4444; border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 130px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">
+          <div style="font-size: 13px; font-weight: 800; color: #DC2626; text-transform: uppercase;">🔴 Kırmızı Vardiya</div>
+          <div style="font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; color: #991B1B; line-height: 1.1; margin-top: 4px;" id="winner-score-p1">0</div>
+        </div>
+        
+        <div style="font-family: 'Baloo 2'; font-size: 26px; font-weight: 900; color: #94A3B8;">VS</div>
+        
+        <div style="background: #DBEAFE; border: 2px solid #3B82F6; border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 130px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);">
+          <div style="font-size: 13px; font-weight: 800; color: #2563EB; text-transform: uppercase;">🔵 Mavi Vardiya</div>
+          <div style="font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; color: #1E40AF; line-height: 1.1; margin-top: 4px;" id="winner-score-p2">0</div>
+        </div>
+      </div>
+
+      <button class="btn-start" style="margin-top: 10px;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+
+    <!-- LİDER TABLOSU EKRANI -->
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
+        <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
+      </div>
+      
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">Sıra</th>
+              <th style="text-align: left;">Adı Soyadı</th>
+              <th>Puan</th>
+              <th>Kutla</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- JS ile doldurulur -->
+          </tbody>
+        </table>
+        <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. İlk sen ol!</div>
+      </div>
+      
+      <!-- BAŞA DÖN / YENİDEN OYNA BUTONU -->
+      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
+    </div>
+  </div>
+
+  <!-- KUTLAMA MODALI -->
+  <div class="celebration-modal" id="celebrationModal">
+    <div class="celebration-backdrop" onclick="closeCelebration()"></div>
+    <div class="celebration-card" id="celebrationCard">
+      <div style="font-size: 65px; margin-bottom: 5px;" id="celIcon">⭐</div>
+      <div class="cel-name" id="celName">Öğrenci</div>
+      <div style="font-size: 18px; font-weight: 800; color: #7C3AED; margin-bottom: 8px;" id="celTitle">1. Sıra Şampiyonu!</div>
+      <div class="cel-score" id="celScore">0 Puan</div>
+      <p id="celMessage" style="font-size: 15px; font-weight: 700; color: #475569; margin-bottom: 20px; line-height: 1.4;">Kutlama mesajı</p>
+      <button class="btn-cel-close" onclick="closeCelebration()">👏 Alkışla ve Kapat</button>
+    </div>
+  </div>
+
+  <!-- AYARLAR MODALI -->
+  <div class="celebration-modal" id="settingsModal">
+    <div class="celebration-backdrop" onclick="closeSettings()"></div>
+    <div class="celebration-card" style="padding: 30px;">
+      <h2 class="start-title" style="font-size: 28px; margin-bottom: 20px;">⚙️ Ayarlar</h2>
+      
+      <div id="authSection">
+        <input type="password" id="adminPassword" class="input-player" placeholder="Yönetici Şifresi" style="margin-bottom: 15px;">
+        <button class="btn-start" style="font-size: 18px; padding: 12px;" onclick="checkAdminPassword()">Giriş Yap</button>
+      </div>
+
+      <div id="adminSection" style="display: none;">
+        <p style="margin-bottom: 15px; font-weight: 700; color: #475569;">Yönetici paneline hoş geldiniz.</p>
+        
+        <div style="background: #F1F5F9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; border: 2px solid #CBD5E1;">
+          <h3 style="font-size: 16px; margin-bottom: 8px; color: #1E293B;">📋 Yeni Öğrencileri Ekle</h3>
+          <p style="font-size: 13px; color: #64748B; margin-bottom: 10px;">İsimleri alt alta, virgülle ayırarak veya tırnak içinde ("Ali","Veli" vb.) kopyalayıp yapıştırabilirsiniz. Sistem isimleri otomatik ayıklar ve eskilere dokunmadan listeye ekler.</p>
+          <textarea id="adminStudentList" style="width:100%; height:90px; padding:10px; border-radius:8px; border:1px solid #94A3B8; font-family:sans-serif;" placeholder="İsimleri buraya yapıştırın..."></textarea>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px; margin-bottom: 10px;">
+             <span id="totalStudentsText" style="font-size: 13px; color: #10B981; font-weight:800;">Sistemde 0 öğrenci kayıtlı.</span>
+             <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Listeyi Sıfırla</button>
+          </div>
+          
+          <button class="btn-start" style="font-size: 15px; padding: 10px; border-radius: 8px;" onclick="saveStudentList()">💾 Öğrencileri Sisteme Ekle</button>
+        </div>
+
+        <button class="btn-start" style="font-size: 15px; padding: 10px; background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); border-radius: 8px;" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
+      </div>
+
+      <button class="btn-subtle" style="margin-top: 20px; width: 100%;" onclick="closeSettings()">Kapat</button>
+    </div>
+  </div>
+
+  <script>
+    /* ==============================
+       SES EFEKTLERİ (WEB AUDIO API)
+       ============================== */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSuccessSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let freqs = [523.25, 659.25, 783.99];
+        freqs.forEach((f, i) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.06);
+          gain.gain.setValueAtTime(0.22, now + i * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.18);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.06);
+          osc.stop(now + i * 0.06 + 0.2);
+        });
+      } catch(e) {}
+    }
+
+    function playFanfareSound(rank) {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let notes = (rank === 1) ? [523.25, 659.25, 783.99, 1046.50] :
+                    (rank === 2) ? [440.00, 554.37, 659.25, 880.00] :
+                    (rank === 3) ? [392.00, 493.88, 587.33, 783.99] :
+                                  [349.23, 440.00, 523.25, 698.46];
+                                 
+        notes.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+          
+          gain.gain.setValueAtTime(0, now + idx * 0.11);
+          gain.gain.linearRampToValueAtTime(0.3, now + idx * 0.11 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + (idx === notes.length - 1 ? 0.6 : 0.22));
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(now + idx * 0.11);
+          osc.stop(now + idx * 0.11 + 0.65);
+        });
+      } catch(e) {}
+    }
+
+    function playCloseSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        freqs.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+          
+          gain.gain.setValueAtTime(0.2, now + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.15);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(now + idx * 0.05);
+          osc.stop(now + idx * 0.05 + 0.18);
+        });
+      } catch(e) {}
+    }
+
+
+    /* ==============================
+       FİREBASE VE AKILLI LİDER TABLOSU
+       ============================== */
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+      authDomain: "zihindencarpma.firebaseapp.com",
+      databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.firebasestorage.app",
+      messagingSenderId: "111639321624",
+      appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+    };
+
+    let cloudDb = null;
+    const DB_NODE = 'scores_olasilikfabrikasi';
+    const STUDENTS_NODE = 'students_olasilikfabrikasi';
+    let authorizedStudents = [];
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        cloudDb = firebase.database();
+        
+        cloudDb.ref(DB_NODE).on('value', snap => {
+          let data = snap.val();
+          let arr = [];
+          if(data) {
+            Object.keys(data).forEach(k => arr.push(data[k]));
+          }
+          updateLocalLeaderboard(arr);
+        });
+
+        cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+          let data = snap.val();
+          if (data) {
+             authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+             authorizedStudents = [];
+          }
+          
+          let ts = document.getElementById('totalStudentsText');
+          if(ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+          
+          let dl = document.getElementById('studentNamesList');
+          if(dl) {
+             dl.innerHTML = '';
+             authorizedStudents.forEach(name => {
+                 let op = document.createElement('option');
+                 op.value = name;
+                 dl.appendChild(op);
+             });
+          }
+        });
+      } catch(e) {}
+    }
+
+    function saveStudentList() {
+      let text = document.getElementById('adminStudentList').value;
+      if (!text.trim()) { alert('Lütfen eklenecek isimleri yazın.'); return; }
+      
+      let newNames = text.replace(/"/g, '')
+                         .split(/[\n,;]+/)
+                         .map(s => s.trim())
+                         .filter(s => s.length > 0);
+                         
+      let currentNamesLower = authorizedStudents.map(n => n.toLocaleLowerCase('tr-TR'));
+      let namesToAdd = [];
+      
+      newNames.forEach(n => {
+          if(!currentNamesLower.includes(n.toLocaleLowerCase('tr-TR'))) {
+              namesToAdd.push(n);
+              currentNamesLower.push(n.toLocaleLowerCase('tr-TR'));
+          }
+      });
+      
+      let updatedList = authorizedStudents.concat(namesToAdd);
+      
+      if(cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+          alert(namesToAdd.length + ' yeni benzersiz öğrenci sisteme eklendi!');
+          document.getElementById('adminStudentList').value = '';
+        }).catch(e => {
+          alert('Kaydedilirken hata oluştu.');
+        });
+      } else {
+        alert('Veritabanı bağlantısı kurulamadı.');
+      }
+    }
+    
+    function clearStudentList() {
+      if(confirm('Kayıtlı tüm öğrenci isimleri silinecek (oyun skorları silinmez). Emin misiniz?')) {
+         if(cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+      }
+    }
+
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    function getFuzzyKey(str) {
+      let clean = (str || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, '');
+      let noVowels = clean.replace(/[aeıioöuü]/g, '');
+      return noVowels || clean;
+    }
+
+    function capitalizeName(str) {
+      return (str || '').split(' ').map(w => {
+        if (!w) return '';
+        return w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR');
+      }).join(' ');
+    }
+
+    function updateLocalLeaderboard(rawEntries) {
+      let groups = [];
+
+      rawEntries.forEach(entry => {
+        if (!entry) return;
+        let fullName = entry.fullName || entry.name || '';
+        if (!fullName.trim()) return;
+
+        let normName = fullName.trim().replace(/\s+/g, ' ');
+        let normLower = normName.toLocaleLowerCase('tr-TR');
+        let fuzzyKey = getFuzzyKey(normName);
+
+        let foundGroup = null;
+        for (let g of groups) {
+          if (g.fuzzyKey === fuzzyKey) {
+            foundGroup = g;
+            break;
+          }
+          let dist = levenshtein(g.canonicalNorm, normLower);
+          if (dist <= 2 && Math.abs(g.canonicalNorm.length - normLower.length) <= 2) {
+            foundGroup = g;
+            break;
+          }
+        }
+
+        if (foundGroup) {
+          foundGroup.items.push(entry);
+          if (normName.length > foundGroup.canonicalName.length) {
+            foundGroup.canonicalName = normName;
+          }
+        } else {
+          groups.push({
+            canonicalName: normName,
+            canonicalNorm: normLower,
+            fuzzyKey: fuzzyKey,
+            items: [entry]
+          });
+        }
+      });
+
+      let bestList = [];
+      groups.forEach(g => {
+        g.items.sort((a, b) => b.score - a.score);
+        let best = g.items[0];
+        best.displayName = capitalizeName(g.canonicalName);
+        bestList.push(best);
+      });
+
+      bestList.sort((a, b) => b.score - a.score);
+      let top10 = bestList.slice(0, 10);
+      localStorage.setItem('meb_olasilikfabrikasi_top10', JSON.stringify(top10));
+      renderLeaderboard();
+    }
+
+    function saveScoreToLeaderboardDirectly() {
+      let fullName = currentFullName;
+      let entry = {
+        name: fullName,
+        fullName: fullName,
+        score: p1.score,
+        date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now()
+      };
+      
+      if(cloudDb) {
+        cloudDb.ref(DB_NODE).push(entry);
+      } else {
+        fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, {
+          method: 'POST', body: JSON.stringify(entry)
+        });
+      }
+    }
+
+    function renderLeaderboard() {
+      let data = JSON.parse(localStorage.getItem('meb_olasilikfabrikasi_top10') || '[]');
+      let tbody = document.getElementById('leaderboardBody');
+      tbody.innerHTML = '';
+      if(data.length === 0) {
+        document.getElementById('emptyLeaderboard').style.display = 'block';
+        return;
+      }
+      document.getElementById('emptyLeaderboard').style.display = 'none';
+
+      let medals = ['🥇', '🥈', '🥉'];
+      data.forEach((e, idx) => {
+        let tr = document.createElement('tr');
+        tr.className = `lb-row rank-${idx+1}`;
+        let rankStr = idx < 3 ? medals[idx] : `${idx+1}.`;
+        
+        let nameToShow = e.displayName || e.fullName || e.name || 'Öğrenci';
+        let safeName = nameToShow.replace(/'/g, "\\'");
+        
+        tr.onclick = () => openCelebration({name: nameToShow, score: e.score}, idx+1);
+        tr.innerHTML = `
+          <td><span style="font-size:20px;">${rankStr}</span></td>
+          <td style="text-align:left; font-weight:800;">${nameToShow}</td>
+          <td style="color:#7C3AED; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
+          <td>
+            <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* OLASILIK TEMALI KUTLAMA MODALI */
+    function openCelebration(entry, rank) {
+      launchConfetti(100);
+      playFanfareSound(rank);
+      
+      let name = entry.name || entry.displayName || 'Öğrenci';
+      document.getElementById('celName').innerText = name;
+      document.getElementById('celScore').innerText = entry.score + " Puan";
+      
+      let card = document.getElementById('celebrationCard');
+      let icon = document.getElementById('celIcon');
+      let title = document.getElementById('celTitle');
+      let msg = document.getElementById('celMessage');
+      
+      card.style.background = "#FFF";
+      
+      if (rank === 1) {
+        icon.innerText = "🥇";
+        title.innerText = "👑 %100 KESİN OLAY ŞAMPİYONU!";
+        title.style.color = "#D97706";
+        msg.innerText = "BU BAŞARI ŞANS DEĞİL, %100 KESİN OLAY! Olasılık Fabrikası'ndaki tüm kavanozları sıfır hatayla analiz ettin, seni geçmeleri artık İMKÂNSIZ OLAY!";
+        card.style.border = "4px solid #F59E0B";
+        card.style.background = "linear-gradient(180deg, #FEF3C7 0%, #FFFFFF 100%)";
+      } else if (rank === 2) {
+        icon.innerText = "🥈";
+        title.innerText = "⚡ DAHA FAZLA OLASI ZİRVE ORTAĞI!";
+        title.style.color = "#475569";
+        msg.innerText = "MÜTHİŞ BİR KALİTE KONTROL! Olasılık hesaplarında zirveye çıkma ihtimalin her zaman DAHA FAZLA OLASI! Gümüş Madalya senin!";
+        card.style.border = "4px solid #94A3B8";
+        card.style.background = "linear-gradient(180deg, #F1F5F9 0%, #FFFFFF 100%)";
+      } else if (rank === 3) {
+        icon.innerText = "🥉";
+        title.innerText = "🔥 OLASILIK ÜSTADI (BRONZ MADALYA)!";
+        title.style.color = "#C2410C";
+        msg.innerText = "HARİKASIN! Fabrika bantlarından geçen olası durumları keskin gözlerinle ayıkladın ve podyumdaki yerini KESİNLEŞTİRDİN!";
+        card.style.border = "4px solid #F97316";
+        card.style.background = "linear-gradient(180deg, #FFEDD5 0%, #FFFFFF 100%)";
+      } else {
+        icon.innerText = "🎖️";
+        title.innerText = `${rank}. SIRA BAŞARI ÖDÜLÜ`;
+        title.style.color = "#7C3AED";
+        msg.innerText = `TEBRİKLER! Binlerce olasılık arasından sıyrılarak ${rank}. sıraya yerleşmeyi başardın. Senin için başarı asla İMKÂNSIZ OLAY değildir!`;
+        card.style.border = "4px solid #7C3AED";
+        card.style.background = "linear-gradient(180deg, #F3E8FF 0%, #FFFFFF 100%)";
+      }
+      
+      document.getElementById('celebrationModal').style.display = 'flex';
+    }
+
+    function closeCelebration() {
+      playCloseSound();
+      document.getElementById('celebrationModal').style.display = 'none';
+    }
+
+
+    /* ==============================
+       OYUN MOTORU VE 6. SINIF OLASILIK SORULARI
+       ============================== */
+    let gameMode = '1P';
+    let isGameRunning = false;
+    let timerInterval, gameInterval;
+    let timeLeft = 90;
+    
+    let p1 = { score: 0, lives: 5, currentQ: null, qCount: 0 };
+    let p2 = { score: 0, lives: 5, currentQ: null, qCount: 0 };
+    let currentFullName = '';
+    let selectedDuelTime = 90;
+
+    const COLORS = [
+      { key: 'red', name: 'KIRMIZI', short: 'K', css: 'ball-red', hex: '#FCA5A5' },
+      { key: 'blue', name: 'MAVİ', short: 'M', css: 'ball-blue', hex: '#93C5FD' },
+      { key: 'yellow', name: 'SARI', short: 'S', css: 'ball-yellow', hex: '#FEF08A' },
+      { key: 'green', name: 'YEŞİL', short: 'Y', css: 'ball-green', hex: '#86EFAC' }
+    ];
+
+    function playLifeLostSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch(e) {}
+    }
+
+    function updateLivesDisplay(lostPlayerObj = null) {
+      const p1El = document.getElementById('p1-lives');
+      let html1 = '';
+      for(let i=0; i<5; i++) {
+         if (i < p1.lives) html1 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p1 && i === p1.lives) html1 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html1 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p1El.innerHTML = html1;
+
+      const p2El = document.getElementById('p2-lives');
+      let html2 = '';
+      for(let i=0; i<5; i++) {
+         if (i < p2.lives) html2 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p2 && i === p2.lives) html2 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html2 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p2El.innerHTML = html2;
+    }
+
+    function validateRealName(nameStr) {
+        let trimmed = nameStr.trim().replace(/\s+/g, ' ');
+        if (!trimmed) {
+            return { valid: false, error: "Lütfen adınızı girin." };
+        }
+        
+        if (authorizedStudents.length === 0) {
+            return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce Sağ Üstteki (⚙️) Yönetici Ayarları'ndan sınıf listesini ekleyin." };
+        }
+        
+        let lowerInput = trimmed.toLocaleLowerCase('tr-TR');
+        let matchedName = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === lowerInput);
+        
+        if (matchedName) {
+            return { valid: true, name: matchedName };
+        } else {
+            return { valid: false, error: "İsminiz sistemdeki öğrenci listesinde bulunamadı! Lütfen listeye eklenen isminizi doğru yazdığınızdan emin olun (veya kutucuğa tıklayıp açılan listeden seçin)." };
+        }
+    }
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    /*
+      6. Sınıf Olasılık Fabrikası Sipariş (Soru) Üretici:
+      Kazanımlar:
+      1) KESİN OLAY: Kavanozdaki tüm topların istenen renkte olması
+      2) İMKÂNSIZ OLAY: Kavanozda istenen renkten hiç top olmaması
+      3) EŞİT OLASILIKLI: İki rengin birbirine eşit sayıda olması
+      4) DAHA FAZLA OLASI: Kutuda her iki renk de varken 1. rengin 2. renkten fazla olması
+      5) DAHA AZ OLASI: Kutuda her iki renk de varken 1. rengin 2. renkten az olması
+      6) KESİR OLASILIK (Sadeleşmemiş doğrudan toplama hesabı: örn. 2 Sarı + 4 Mavi = 6 top -> 2/6)
+    */
+    function generateProbabilityMission(player) {
+      let prevType = player.currentQ ? player.currentQ.typeKey : null;
+
+      let chosenType;
+      do {
+        let roll = Math.random();
+        if (roll < 0.14) chosenType = 'CERTAIN';
+        else if (roll < 0.28) chosenType = 'IMPOSSIBLE';
+        else if (roll < 0.44) chosenType = 'EQUAL';
+        else if (roll < 0.62) chosenType = 'MORE_LIKELY';
+        else if (roll < 0.78) chosenType = 'LESS_LIKELY';
+        else chosenType = 'FRACTION'; // %22 oranında kesir/hesap sorusu (2/6, 3/7, 2/5 vb.)
+      } while (chosenType === prevType);
+
+      let c1 = pickRandom(COLORS);
+      let otherColors = COLORS.filter(c => c.key !== c1.key);
+      let c2 = pickRandom(otherColors);
+
+      let mission = {
+        type: chosenType,
+        typeKey: chosenType + '_' + c1.key,
+        c1: c1,
+        c2: c2,
+        pts: 20,
+        html: '',
+        checkFn: null
+      };
+
+      if (chosenType === 'CERTAIN') {
+        mission.pts = 15;
+        mission.html = `<span style="color:${c1.hex};">${c1.name}</span> gelmesi <span style="color:#4ADE80; text-decoration:underline;">KESİN OLAY</span> olan kutuyu seç!`;
+        mission.checkFn = (counts, total) => total > 0 && counts[c1.key] === total;
+      } 
+      else if (chosenType === 'IMPOSSIBLE') {
+        mission.pts = 15;
+        mission.html = `<span style="color:${c1.hex};">${c1.hex ? c1.name : ''}</span> gelmesi <span style="color:#F87171; text-decoration:underline;">İMKÂNSIZ OLAY</span> olan kutuyu seç!`;
+        mission.checkFn = (counts, total) => total > 0 && counts[c1.key] === 0;
+      } 
+      else if (chosenType === 'EQUAL') {
+        mission.pts = 20;
+        mission.html = `<span style="color:${c1.hex};">${c1.name}</span> ve <span style="color:${c2.hex};">${c2.name}</span> gelmesi <span style="color:#38BDF8; text-decoration:underline;">EŞİT OLASILIKLI</span> olan kutuyu seç!`;
+        mission.checkFn = (counts, total) => counts[c1.key] > 0 && counts[c1.key] === counts[c2.key] && (counts[c1.key] + counts[c2.key] === total);
+      } 
+      else if (chosenType === 'MORE_LIKELY') {
+        mission.pts = 20;
+        mission.html = `<span style="color:${c1.hex};">${c1.name}</span> gelmesi, <span style="color:${c2.hex};">${c2.name}</span> gelmesinden <span style="color:#FBBF24; text-decoration:underline;">DAHA FAZLA OLASI</span> olanı seç!`;
+        mission.checkFn = (counts, total) => {
+          let myCount = counts[c1.key];
+          let otherCount = counts[c2.key];
+          return myCount > 0 && otherCount > 0 && myCount > otherCount && (myCount + otherCount === total);
+        };
+      } 
+      else if (chosenType === 'LESS_LIKELY') {
+        mission.pts = 25;
+        mission.html = `<span style="color:${c1.hex};">${c1.name}</span> gelmesi, <span style="color:${c2.hex};">${c2.name}</span> gelmesinden <span style="color:#C084FC; text-decoration:underline;">DAHA AZ OLASI</span> olanı seç!`;
+        mission.checkFn = (counts, total) => {
+          let myCount = counts[c1.key];
+          let otherCount = counts[c2.key];
+          return myCount > 0 && otherCount > 0 && myCount < otherCount && (myCount + otherCount === total);
+        };
+      } 
+      else if (chosenType === 'FRACTION') {
+        // Doğrudan kutudaki top sayılarını toplayıp bulabileceği kesirler (Örn: 2 Sarı, 4 Mavi -> 2/6 veya 3 Kırmızı, 5 Yeşil -> 3/8)
+        const fracPairs = [
+          { a: 2, b: 4 }, // 2/6
+          { a: 4, b: 2 }, // 4/6
+          { a: 3, b: 5 }, // 3/8
+          { a: 2, b: 5 }, // 2/7
+          { a: 3, b: 4 }, // 3/7
+          { a: 1, b: 4 }, // 1/5
+          { a: 2, b: 3 }, // 2/5
+          { a: 3, b: 6 }, // 3/9
+          { a: 5, b: 3 }  // 5/8
+        ];
+        let pair = pickRandom(fracPairs);
+        let num = pair.a;
+        let den = pair.a + pair.b;
+        mission.frac = { num: num, den: den, other: pair.b };
+        mission.pts = 30;
+        mission.html = `<span style="color:${c1.hex};">${c1.name}</span> gelme olasılığı <span style="color:#FDE047; font-size:23px;">${num}/${den}</span> olan kutuyu seç!`;
+        mission.checkFn = (counts, total) => total > 0 && (counts[c1.key] * den === total * num);
+      }
+
+      player.qCount++;
+      return mission;
+    }
+
+    function setQuestion(playerNum) {
+      let player = (playerNum === 1) ? p1 : p2;
+      let qObj = generateProbabilityMission(player);
+      player.currentQ = qObj;
+
+      let badgeColor = qObj.pts >= 30 ? '#EF4444' : (qObj.pts >= 25 ? '#9333EA' : (qObj.pts >= 20 ? '#10B981' : '#3B82F6'));
+      let text = `${qObj.html} <span style="display:inline-block; font-size:12px; background:${badgeColor}; color:#FFF; padding:2px 7px; border-radius:8px; vertical-align:middle; margin-left:5px;">+${qObj.pts}P</span>`;
+      if (playerNum === 1) {
+        document.getElementById('p1-question').innerHTML = text;
+      } else {
+        document.getElementById('p2-question').innerHTML = text;
+      }
+    }
+
+    /* Hedef Göreve Göre Doğru veya Tuzak Kavanoz İçeriği Üretir */
+    function generateCrateBalls(qObj, wantCorrect) {
+      let counts = { red: 0, blue: 0, yellow: 0, green: 0 };
+      if (!qObj) {
+        counts.red = 2; counts.blue = 2;
+        return counts;
+      }
+
+      let c1 = qObj.c1.key;
+      let c2 = qObj.c2.key;
+      let others = COLORS.map(c => c.key).filter(k => k !== c1);
+
+      for (let attempt = 0; attempt < 25; attempt++) {
+        counts = { red: 0, blue: 0, yellow: 0, green: 0 };
+
+        if (wantCorrect) {
+          if (qObj.type === 'CERTAIN') {
+            counts[c1] = randInt(4, 7);
+          } else if (qObj.type === 'IMPOSSIBLE') {
+            let o1 = pickRandom(others);
+            let o2 = pickRandom(others.filter(k => k !== o1));
+            counts[o1] = randInt(2, 4);
+            counts[o2] = randInt(2, 4);
+          } else if (qObj.type === 'EQUAL') {
+            let n = randInt(2, 4);
+            counts[c1] = n;
+            counts[c2] = n;
+          } else if (qObj.type === 'MORE_LIKELY') {
+            let low = randInt(1, 3);
+            counts[c2] = low;
+            counts[c1] = low + randInt(2, 4);
+          } else if (qObj.type === 'LESS_LIKELY') {
+            let low = randInt(1, 2);
+            counts[c1] = low;
+            counts[c2] = low + randInt(2, 4);
+          } else if (qObj.type === 'FRACTION') {
+            counts[c1] = qObj.frac.num;
+            counts[c2] = qObj.frac.other;
+          }
+        } else {
+          // Yanlış (Tuzak) Kavanoz Üretimi
+          if (qObj.type === 'MORE_LIKELY') {
+            // Kutuda her zaman c1 ve c2 birlikte bulunur (farklı sayılarda veya eşit)
+            let tMode = randInt(1, 2);
+            if (tMode === 1) {
+              let low = randInt(1, 3);
+              counts[c1] = low;
+              counts[c2] = low + randInt(1, 3); // Ters oran (c1 daha az)
+            } else {
+              let eq = randInt(2, 4);
+              counts[c1] = eq;
+              counts[c2] = eq; // Eşit olasılıklı
+            }
+          } else if (qObj.type === 'LESS_LIKELY') {
+            // Kutuda her zaman c1 ve c2 birlikte bulunur
+            let tMode = randInt(1, 2);
+            if (tMode === 1) {
+              let low = randInt(1, 3);
+              counts[c2] = low;
+              counts[c1] = low + randInt(1, 3); // Ters oran (c1 daha fazla)
+            } else {
+              let eq = randInt(2, 4);
+              counts[c1] = eq;
+              counts[c2] = eq; // Eşit olasılıklı
+            }
+          } else if (qObj.type === 'FRACTION') {
+            // Kesir sorusunda harika çeldiriciler:
+            // Örn: Soru "SARI gelme olasılığı 2/6 olanı seç" (Doğrusu: 2 Sarı, 4 Mavi -> Toplam 6)
+            // Tuzak 1: 2 Sarı, 6 Mavi (Öğrenci toplamı değil diğer rengi payda sanırsa -> 2/8)
+            // Tuzak 2: 4 Sarı, 2 Mavi (Ters renk -> 4/6)
+            // Tuzak 3: Farklı sayılar
+            let tMode = randInt(1, 3);
+            if (tMode === 1 && qObj.frac.den <= 7) {
+              counts[c1] = qObj.frac.num;
+              counts[c2] = qObj.frac.den; // Paydayı diğer top sayısı sanma tuzağı! (Örn: 2 Sarı, 6 Mavi)
+            } else if (tMode === 2 && qObj.frac.num !== qObj.frac.other) {
+              counts[c1] = qObj.frac.other;
+              counts[c2] = qObj.frac.num; // Renkleri ters okuma tuzağı! (Örn: 4 Sarı, 2 Mavi)
+            } else {
+              counts[c1] = randInt(1, 4);
+              counts[c2] = randInt(2, 5);
+            }
+          } else {
+            let trapStyle = randInt(1, 3);
+            if (trapStyle === 1) {
+              let o1 = pickRandom(others);
+              counts[c1] = randInt(1, 3);
+              counts[o1] = randInt(2, 4);
+            } else if (trapStyle === 2) {
+              counts[c1] = 2;
+              counts[c2] = 4;
+            } else {
+              let o1 = pickRandom(others);
+              counts[o1] = randInt(4, 6);
+            }
+          }
+        }
+
+        let total = counts.red + counts.blue + counts.yellow + counts.green;
+        let isValid = qObj.checkFn(counts, total);
+        if (wantCorrect && isValid) return counts;
+        if (!wantCorrect && !isValid) return counts;
+      }
+
+      // Fallback
+      if (wantCorrect) {
+        counts = { red: 0, blue: 0, yellow: 0, green: 0 };
+        counts[c1] = 4;
+      } else {
+        counts = { red: 0, blue: 0, yellow: 0, green: 0 };
+        counts[c1] = 1; counts[c2] = 3;
+      }
+      return counts;
+    }
+
+    function initFactoryFX() {
+      let fx = document.getElementById('factory-fx-container');
+      fx.innerHTML = '';
+      
+      // Arka planda dönen fabrika çarkları
+      const gearPositions = [
+        { left: '4%', top: '18%', size: '90px', dur: '18s' },
+        { left: '91%', top: '22%', size: '110px', dur: '24s' },
+        { left: '8%', top: '78%', size: '80px', dur: '15s' },
+        { left: '88%', top: '80%', size: '95px', dur: '20s' }
+      ];
+      gearPositions.forEach(gp => {
+        let g = document.createElement('div');
+        g.className = 'bg-gear';
+        g.innerText = '⚙️';
+        g.style.left = gp.left;
+        g.style.top = gp.top;
+        g.style.fontSize = gp.size;
+        g.style.animationDuration = gp.dur;
+        fx.appendChild(g);
+      });
+
+      // Enerji kıvılcımları
+      for(let i=0; i<35; i++) {
+        let s = document.createElement('div');
+        s.className = 'bg-spark';
+        let sz = Math.random() * 6 + 4;
+        s.style.width = sz + 'px';
+        s.style.height = sz + 'px';
+        s.style.left = (Math.random() * 100) + 'vw';
+        s.style.animationDuration = (Math.random() * 6 + 5) + 's';
+        s.style.animationDelay = (Math.random() * 5 - 5) + 's';
+        fx.appendChild(s);
+      }
+    }
+    initFactoryFX();
+
+    function setMode(mode) {
+      gameMode = mode;
+      document.getElementById('btn-mode-1p').className = (mode === '1P') ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('btn-mode-2p').className = (mode === '2P') ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('1p-form').style.display = (mode === '1P') ? 'flex' : 'none';
+      document.getElementById('2p-form').style.display = (mode === '2P') ? 'flex' : 'none';
+    }
+
+    function setTime(time) {
+      selectedDuelTime = time;
+      document.getElementById('time-30').className = (time === 30) ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('time-60').className = (time === 60) ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('time-90').className = (time === 90) ? 'btn-subtle active' : 'btn-subtle';
+    }
+
+    function showScreen(screenId) {
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('resultScreen1P').style.display = 'none';
+      document.getElementById('resultScreen2P').style.display = 'none';
+      document.getElementById('leaderboardScreen').style.display = 'none';
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('center-line').style.display = 'none';
+      
+      if (screenId === 'GAME') {
+        document.getElementById('app-overlay').style.display = 'none';
+        document.getElementById('top-hud').style.display = 'flex';
+        if(gameMode === '2P') document.getElementById('center-line').style.display = 'block';
+      } else {
+        document.getElementById('app-overlay').style.display = 'flex';
+        if(screenId === 'START') document.getElementById('startScreen').style.display = 'block';
+        if(screenId === 'LEADERBOARD') { renderLeaderboard(); document.getElementById('leaderboardScreen').style.display = 'block'; }
+      }
+    }
+
+    function updateScores() {
+      document.getElementById('p1-score').innerText = p1.score;
+      document.getElementById('p2-score').innerText = p2.score;
+    }
+
+    /* Yürüyen Bantların (Conveyor Tracks) Kurulumu */
+    const BELT_Y_POSITIONS = [44, 68, 90]; // vh cinsinden bantların alt hizası
+
+    function buildConveyorTracks() {
+      const area = document.getElementById('game-area');
+      area.innerHTML = '';
+
+      BELT_Y_POSITIONS.forEach((vhPos, idx) => {
+        let track = document.createElement('div');
+        track.className = 'conveyor-track';
+        track.style.top = `${vhPos}vh`;
+
+        let treads = document.createElement('div');
+        treads.className = (idx % 2 === 1 && gameMode === '1P') ? 'conveyor-treads reverse' : 'conveyor-treads';
+        track.appendChild(treads);
+        area.appendChild(track);
+      });
+    }
+
+    function startGame() {
+      if(gameMode === '1P') {
+        let rawName = document.getElementById('playerFullName').value;
+        let validation = validateRealName(rawName);
+        if(!validation.valid) {
+           alert(validation.error);
+           return;
+        }
+        currentFullName = validation.name;
+      }
+      
+      showScreen('GAME');
+      buildConveyorTracks();
+      
+      if(gameMode === '1P') {
+        document.getElementById('hud-right').style.display = 'none';
+        document.getElementById('hud-left').className = 'hud-side left single-mode';
+        document.getElementById('p1-box').className = 'team-box single-box';
+        document.getElementById('p1-name').innerText = currentFullName;
+      } else {
+        document.getElementById('hud-right').style.display = 'flex';
+        document.getElementById('hud-left').className = 'hud-side left';
+        document.getElementById('p1-box').className = 'team-box red-box';
+        document.getElementById('p1-name').innerText = "Kırmızı Vardiya";
+      }
+
+      p1.score = 0; p1.lives = 5; p1.currentQ = null; p1.qCount = 0;
+      p2.score = 0; p2.lives = 5; p2.currentQ = null; p2.qCount = 0;
+      updateScores();
+      updateLivesDisplay();
+      
+      setQuestion(1);
+      if (gameMode === '2P') setQuestion(2);
+
+      isGameRunning = true;
+      timeLeft = gameMode === '1P' ? 60 : selectedDuelTime;
+      document.getElementById('timer').innerText = timeLeft + 's';
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = timeLeft + 's';
+        if(timeLeft <= 0) endGame();
+      }, 1000);
+
+      // İlk kutuları hemen üret
+      if (gameMode === '1P') {
+        spawnConveyorCrate('any', 0);
+        setTimeout(() => { if(isGameRunning) spawnConveyorCrate('any', 1); }, 600);
+      } else {
+        spawnConveyorCrate('left', 0);
+        spawnConveyorCrate('right', 0);
+      }
+
+      let spawnRate = gameMode === '1P' ? 1250 : 1550;
+      gameInterval = setInterval(() => {
+        if(gameMode === '1P') {
+          let lane = randInt(0, 2);
+          spawnConveyorCrate('any', lane);
+        } else {
+          let lane1 = randInt(0, 2);
+          let lane2 = randInt(0, 2);
+          spawnConveyorCrate('left', lane1);
+          spawnConveyorCrate('right', lane2);
+        }
+      }, spawnRate);
+    }
+
+    function showFloatingText(x, y, text, color) {
+      let ft = document.createElement('div');
+      ft.innerText = text;
+      ft.style.position = 'fixed';
+      ft.style.left = x + 'px';
+      ft.style.top = y + 'px';
+      ft.style.color = color;
+      ft.style.fontSize = '36px';
+      ft.style.fontWeight = '900';
+      ft.style.fontFamily = "'Baloo 2', sans-serif";
+      ft.style.textShadow = '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000';
+      ft.style.zIndex = '999';
+      ft.style.pointerEvents = 'none';
+      ft.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      document.body.appendChild(ft);
+      
+      ft.getBoundingClientRect();
+      ft.style.transform = 'translate(-50%, -80px) scale(1.5)';
+      ft.style.opacity = '0';
+      
+      setTimeout(() => ft.remove(), 800);
+    }
+
+    function popEffect(element, isCorrect, ptsVal = 20) {
+      let rect = element.getBoundingClientRect();
+      let centerX = rect.left + rect.width / 2;
+      
+      let effectDiv = element.cloneNode(true);
+      effectDiv.classList.add('popping');
+      effectDiv.style.position = 'fixed';
+      effectDiv.style.left = rect.left + 'px';
+      effectDiv.style.top = rect.top + 'px';
+      effectDiv.style.zIndex = '999';
+      effectDiv.style.transition = 'none';
+      
+      if (isCorrect) {
+        effectDiv.style.animation = "correctPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards";
+        showFloatingText(centerX, rect.top, "+" + ptsVal + " ✅", "#10B981");
+      } else {
+        effectDiv.style.animation = "wrongShake 0.5s ease-in forwards";
+        showFloatingText(centerX, rect.top, "-5 ❌", "#EF4444");
+      }
+      
+      document.body.appendChild(effectDiv);
+      element.remove();
+      setTimeout(() => effectDiv.remove(), 550);
+    }
+
+    function clearSideCrates(player) {
+      let sideToRemove = (gameMode === '1P') ? 'any' : (player === p1 ? 'left' : 'right');
+      document.querySelectorAll('.factory-crate').forEach(item => {
+        if (item.dataset.side === sideToRemove && !item.classList.contains('popping')) {
+          item.remove();
+        }
+      });
+    }
+
+    function spawnConveyorCrate(side, laneIdx) {
+      if(!isGameRunning) return;
+
+      let crate = document.createElement('div');
+      crate.className = 'factory-crate';
+      crate.dataset.side = side;
+
+      let beltVh = BELT_Y_POSITIONS[laneIdx];
+      // Kavanozu bandın tam üstüne oturt (138px kavanoz yüksekliği)
+      crate.style.top = `calc(${beltVh}vh - 136px)`;
+
+      let isLeft = (side === 'left');
+      let isAny = (side === 'any');
+      let targetPlayer = isAny ? p1 : (isLeft ? p1 : p2);
+
+      // %52 ihtimalle doğru kavanoz gelsin ki öğrenci çok beklemesin
+      let wantCorrect = Math.random() < 0.52;
+      let counts = generateCrateBalls(targetPlayer.currentQ, wantCorrect);
+      let total = counts.red + counts.blue + counts.yellow + counts.green;
+
+      // Kavanoz Kapağı
+      let lid = document.createElement('div');
+      lid.className = 'crate-lid';
+      lid.innerHTML = `<span>TOPLAM: ${total}</span>`;
+      crate.appendChild(lid);
+
+      // Topların Dizildiği Alan
+      let ballsGrid = document.createElement('div');
+      ballsGrid.className = 'balls-grid';
+      let ballElements = [];
+      COLORS.forEach(c => {
+        for (let i = 0; i < counts[c.key]; i++) {
+          let b = document.createElement('span');
+          b.className = `prob-ball ${c.css}`;
+          ballElements.push(b);
+        }
+      });
+      // Topları hafif karıştırarak dizelim ama sayması kolay olsun
+      ballElements.forEach(b => ballsGrid.appendChild(b));
+      crate.appendChild(ballsGrid);
+
+      // Alt Etiket (Örn: 3 K • 3 M)
+      let labelParts = [];
+      COLORS.forEach(c => {
+        if (counts[c.key] > 0) {
+          labelParts.push(`<span style="color:${c.hex}">${counts[c.key]} ${c.name}</span>`);
+        }
+      });
+      let label = document.createElement('div');
+      label.className = 'crate-label';
+      label.innerHTML = labelParts.join(' • ');
+      crate.appendChild(label);
+
+      // Bant üzerinde hareket yönü ve hızı
+      let duration = randInt(7, 10);
+      let startX, endX;
+
+      if (isAny) {
+        if (laneIdx % 2 === 1) {
+          startX = '102vw'; endX = '-180px';
+        } else {
+          startX = '-160px'; endX = '102vw';
+        }
+      } else if (isLeft) {
+        startX = '-160px'; endX = '48vw';
+      } else {
+        startX = '102vw'; endX = '51vw';
+      }
+
+      crate.style.left = startX;
+      crate.style.transition = `left ${duration}s linear`;
+
+      let clicked = false;
+      function handleClick(e) {
+        if(!isGameRunning || clicked) return;
+        clicked = true;
+        e.preventDefault();
+
+        let player = targetPlayer;
+        let playerNum = (player === p1) ? 1 : 2;
+        let isMatch = player.currentQ && player.currentQ.checkFn(counts, total);
+
+        if (isMatch) {
+          let earnedPts = player.currentQ.pts || 20;
+          player.score += earnedPts;
+          playSuccessSound();
+          popEffect(this, true, earnedPts);
+          setQuestion(playerNum);
+          clearSideCrates(player);
+        } else {
+          player.score -= 5;
+          player.lives--;
+          playLifeLostSound();
+          popEffect(this, false);
+          updateLivesDisplay(player);
+
+          if(player.lives <= 0) {
+            setTimeout(() => {
+              endGame(player === p1 ? "P1_DEAD" : "P2_DEAD");
+            }, 500);
+          } else {
+            setQuestion(playerNum);
+            clearSideCrates(player);
+          }
+        }
+        updateScores();
+      }
+
+      crate.addEventListener('mousedown', handleClick);
+      crate.addEventListener('touchstart', handleClick, {passive: false});
+      crate.addEventListener('transitionend', function() {
+        if(this.parentNode) this.parentNode.removeChild(this);
+      });
+
+      document.getElementById('game-area').appendChild(crate);
+
+      // Hareketi başlat
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          crate.style.left = endX;
+        });
+      });
+    }
+
+    /* OYUN BİTİŞİ MANTIĞI */
+    function endGame(reason = null) {
+      isGameRunning = false;
+      clearInterval(timerInterval); clearInterval(gameInterval);
+      document.getElementById('game-area').innerHTML = '';
+      launchConfetti(120);
+
+      document.getElementById('app-overlay').style.display = 'flex';
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('center-line').style.display = 'none';
+      
+      if(gameMode === '1P') {
+        saveScoreToLeaderboardDirectly();
+        document.getElementById('resultScreen1P').style.display = 'block';
+        document.getElementById('finalScore1P').innerText = p1.score;
+        
+        let sub = document.getElementById('1p-result-sub');
+        if (reason === "P1_DEAD") {
+            sub.innerText = "Kalite kontrol hakların bitti! Ama pes etmek bizim için İMKÂNSIZ OLAY, tekrar dene!";
+            sub.style.color = "#EF4444";
+        } else {
+            sub.innerText = "Olasılık Fabrikası'nda başarına KESİN OLAY gözüyle bakıyoruz!";
+            sub.style.color = "#475569";
+        }
+      } else {
+        document.getElementById('resultScreen2P').style.display = 'block';
+        let title = document.getElementById('winner-title-2p');
+        let sub = document.getElementById('winner-sub-2p');
+        document.getElementById('winner-score-p1').innerText = p1.score;
+        document.getElementById('winner-score-p2').innerText = p2.score;
+
+        if (reason === "P1_DEAD") {
+           title.innerText = "🔵 Mavi Vardiya Kazandı!";
+           title.style.color = "#3B82F6";
+           sub.innerText = "Kırmızı Vardiya'nın tüm hakları bitti! Mavi Vardiya'nın zaferi KESİN OLAY oldu!";
+           playFanfareSound(1);
+        } else if (reason === "P2_DEAD") {
+           title.innerText = "🔴 Kırmızı Vardiya Kazandı!";
+           title.style.color = "#EF4444";
+           sub.innerText = "Mavi Vardiya'nın tüm hakları bitti! Kırmızı Vardiya'nın zaferi KESİN OLAY oldu!";
+           playFanfareSound(1);
+        } else {
+            if(p1.score > p2.score) {
+              title.innerText = "🔴 Kırmızı Vardiya Kazandı!";
+              title.style.color = "#EF4444";
+              sub.innerText = "Tebrikler! Kırmızı Vardiya olasılıkları kusursuz hesaplayarak zaferi KESİN OLAY haline getirdi!";
+              playFanfareSound(1);
+            } else if(p2.score > p1.score) {
+              title.innerText = "🔵 Mavi Vardiya Kazandı!";
+              title.style.color = "#3B82F6";
+              sub.innerText = "Tebrikler! Mavi Vardiya olasılıkları kusursuz hesaplayarak zaferi KESİN OLAY haline getirdi!";
+              playFanfareSound(1);
+            } else {
+              title.innerText = "🤝 Eşit Olasılıklı Dostluk! Berabere!";
+              title.style.color = "#10B981";
+              sub.innerText = "İki vardiya da birebir aynı puanı toplayarak EŞİT OLASILIKLI muhteşem bir mücadele sergiledi!";
+            }
+        }
+      }
+    }
+
+    /* ==============================
+       KONFETİ
+       ============================== */
+    const canvas = document.getElementById('confetti-canvas');
+    const canvasCtx = canvas.getContext('2d');
+    let confettiPieces = [];
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+    function launchConfetti(count = 70) {
+      const colors = ['#7C3AED', '#F59E0B', '#10B981', '#EF4444', '#06B6D4'];
+      for (let i = 0; i < count; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.3 - 50,
+          w: Math.random() * 10 + 6, h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 6, vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 8, life: 1
+        });
+      }
+    }
+    function animateConfetti() {
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = confettiPieces.length - 1; i >= 0; i--) {
+        let p = confettiPieces[i];
+        p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed; p.life -= 0.005;
+        canvasCtx.save(); canvasCtx.translate(p.x, p.y); canvasCtx.rotate((p.rot * Math.PI) / 180);
+        canvasCtx.fillStyle = p.color; canvasCtx.globalAlpha = Math.max(0, p.life);
+        canvasCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); canvasCtx.restore();
+        if (p.life <= 0) confettiPieces.splice(i, 1);
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+
+    /* ==============================
+       AYARLAR VE SIFIRLAMA
+       ============================== */
+    function openSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      
+      if (localStorage.getItem('isAdmin_olasilikfabrikasi') === 'true') {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+      }
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function checkAdminPassword() {
+      const pwd = document.getElementById('adminPassword').value;
+      if (pwd === '26575982824.bati') {
+        localStorage.setItem('isAdmin_olasilikfabrikasi', 'true');
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        alert('Hatalı şifre! Lütfen tekrar deneyin.');
+      }
+    }
+
+    function clearLeaderboard() {
+      if (confirm('Tüm lider tablosu hem veritabanından hem de bu cihazdan kalıcı olarak silinecek. Emin misiniz?')) {
+        if (cloudDb) {
+          cloudDb.ref(DB_NODE).remove();
+        } else {
+          fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'DELETE' });
+        }
+        localStorage.removeItem('meb_olasilikfabrikasi_top10');
+        renderLeaderboard();
+        alert('Lider tablosu başarıyla sıfırlandı.');
+        closeSettings();
+      }
+    }
+  </script>
+</body>
+</html>
