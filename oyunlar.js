@@ -79,7 +79,13 @@ const SISTEM_OYUNLARI = [
         image: "./tam_sayi_firtinasi.jpg",
         url: "./tam_sayi_firtinasi.html"
     },
-    
+     {
+        id: "oyun-12",
+        title: "Olasılık Fabrikası",
+        grade: "6",
+        image: "./olasilik_fabrikasi_kapak.jpg",
+        url: "./olasilik_fabrikasi.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
