@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -129,11 +129,11 @@
       position: absolute;
       left: 0;
       width: 100vw;
-      height: 28px;
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.9) 100%);
-      border-top: 4px solid #CBD5E1;
+      height: 22px;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border-top: 4px solid #E2E8F0;
       border-bottom: 4px solid #94A3B8;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.65);
       z-index: 1;
       overflow: hidden;
     }
@@ -143,105 +143,168 @@
       background: repeating-linear-gradient(
         90deg,
         #78350F 0px,
-        #78350F 12px,
-        transparent 12px,
-        transparent 36px
+        #78350F 14px,
+        transparent 14px,
+        transparent 34px
       );
-      opacity: 0.85;
+      opacity: 0.9;
     }
 
-    /* Ray Üzerinde İlerleyen Geometrik Cumhuriyet Vagonları */
+    /* Ray Üzerinde İlerleyen Gerçekçi Cumhuriyet Tren Vagonları */
     .train-wagon {
       position: absolute;
-      width: 162px;
-      height: 148px;
-      background: linear-gradient(180deg, #FFFFFF 0%, #FFF1F2 100%);
-      border: 4px solid #DC2626;
-      border-bottom: 8px solid #991B1B;
-      border-radius: 20px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.5), inset 0 0 12px rgba(255,255,255,0.9);
+      width: 196px;
+      height: 158px;
+      background: linear-gradient(180deg, #DC2626 0%, #B91C1C 72%, #1E293B 72%, #0F172A 100%);
+      border: 3px solid #FEF08A;
+      border-radius: 16px 16px 8px 8px;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.6), inset 0 2px 6px rgba(255,255,255,0.4);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 6px 8px 6px;
+      padding: 6px 8px 10px 8px;
       cursor: pointer;
       z-index: 6;
       pointer-events: auto;
-      transition: transform 0.12s, border-color 0.2s;
+      transition: transform 0.12s, border-color 0.2s, box-shadow 0.2s;
     }
     .train-wagon:hover {
-      border-color: #F59E0B;
-      box-shadow: 0 0 24px rgba(245, 158, 11, 0.95), inset 0 0 15px rgba(255,255,255,1);
+      border-color: #FFFFFF;
+      box-shadow: 0 0 26px rgba(253, 224, 71, 0.95), 0 12px 26px rgba(0,0,0,0.6);
     }
 
-    /* Vagon Üst Bayrak / Başlık Bandı */
+    /* Vagon Yan Bağlantı Tamponları (Couplers / Buffers) */
+    .train-wagon::before,
+    .train-wagon::after {
+      content: '';
+      position: absolute;
+      bottom: 14px;
+      width: 12px;
+      height: 14px;
+      background: linear-gradient(180deg, #64748B, #1E293B);
+      border: 2px solid #94A3B8;
+      border-radius: 3px;
+      z-index: -1;
+    }
+    .train-wagon::before { left: -13px; border-left: 4px solid #F59E0B; }
+    .train-wagon::after { right: -13px; border-right: 4px solid #F59E0B; }
+
+    /* Vagon Kavisli Tavanı ve Baca/Fener Detayı */
     .wagon-roof {
-      width: 82%;
-      height: 16px;
-      background: linear-gradient(90deg, #DC2626, #EF4444, #B91C1C);
-      border: 2px solid #FEF2F2;
-      border-radius: 10px 10px 4px 4px;
-      margin-top: -13px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      width: 106%;
+      height: 22px;
+      background: linear-gradient(180deg, #334155 0%, #0F172A 100%);
+      border: 2px solid #F59E0B;
+      border-radius: 16px 16px 4px 4px;
+      margin-top: -15px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.45);
       display: flex;
       justify-content: center;
       align-items: center;
+      gap: 5px;
+      padding: 0 8px;
     }
     .wagon-roof span {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 900;
-      color: #FFFFFF;
-      letter-spacing: 0.8px;
+      color: #FDE047;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
     }
 
-    /* Vagon İçindeki Geometrik Çizim Alanı (SVG) */
+    /* Vagonun Geniş Panoramik Penceresi (İçinde Geometri Çizimi) */
     .wagon-svg-box {
       width: 100%;
       height: 92px;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(circle, #F8FAFC 60%, #E2E8F0 100%);
-      border-radius: 12px;
-      border: 1.5px solid #CBD5E1;
+      background: #FFFFFF;
+      border-radius: 10px;
+      border: 3px solid #FDE047;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.12);
       overflow: hidden;
+      margin-top: 2px;
     }
 
-    /* Vagon Alt Etiketi (Sembol / Bilgi Özeti) */
+    /* Vagon Alt Şasi Plakası (Sembol / Bilgi Özeti) */
     .wagon-label {
-      background: #0F172A;
+      background: linear-gradient(90deg, #0F172A, #1E293B, #0F172A);
       color: #FDE047;
       font-family: 'Baloo 2', sans-serif;
       font-size: 13px;
       font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 8px;
-      width: 96%;
+      padding: 2px 10px;
+      border-radius: 6px;
+      width: 98%;
       text-align: center;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      border: 1px solid #DC2626;
-      line-height: 1.2;
+      border: 1.5px solid #F59E0B;
+      line-height: 1.25;
+      margin-top: 2px;
     }
 
-    /* Vagon Tekerlekleri */
+    /* Gerçekçi Tren Tekerlekleri (4 Tekerlek + Biyel Kolu) */
     .wagon-wheels {
       position: absolute;
-      bottom: -14px;
-      width: 80%;
+      bottom: -15px;
+      width: 88%;
       display: flex;
       justify-content: space-between;
+      align-items: center;
       pointer-events: none;
     }
+    .wheel-bogie {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      position: relative;
+    }
+    .wheel-bogie::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 8px;
+      right: 8px;
+      height: 4px;
+      background: #CBD5E1;
+      border: 1px solid #0F172A;
+      transform: translateY(-50%);
+      border-radius: 2px;
+    }
     .wheel {
-      width: 22px;
-      height: 22px;
-      background: radial-gradient(circle, #F59E0B 30%, #334155 35%, #0F172A 100%);
-      border: 2.5px solid #CBD5E1;
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle, #F59E0B 24%, #DC2626 28%, #1E293B 55%, #0F172A 100%);
+      border: 3px solid #E2E8F0;
       border-radius: 50%;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.7);
+      animation: spinWheel 1.4s linear infinite;
+    }
+    @keyframes spinWheel {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* SVG Türk Bayrağı Rozeti (Windows Chrome'da "TR" harfi çıkmasını önler!) */
+    .tr-flag-svg {
+      display: inline-block;
+      vertical-align: middle;
+      width: 22px;
+      height: 15px;
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .tr-flag-lg {
+      width: 58px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid #DC2626;
+      box-shadow: 0 6px 15px rgba(220,38,38,0.35);
     }
 
     /* Patlama ve Yanlış Animasyonları */
@@ -403,7 +466,11 @@
       <!-- AYARLAR TUŞU (SADECE ÖĞRETMEN VERSİYONUNDA) -->
       <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
       
-      <div style="display:inline-block; background:#DC2626; color:#FFF; font-weight:900; font-size:12px; padding:4px 12px; border-radius:20px; margin-bottom:6px; letter-spacing:1px;">🇹🇷 29 EKİM CUMHURİYET BAYRAMI ÖZEL 🇹🇷</div>
+      <div style="display:inline-flex; align-items:center; gap:8px; background:#DC2626; color:#FFF; font-weight:900; font-size:13px; padding:5px 14px; border-radius:20px; margin-bottom:8px; letter-spacing:1px; box-shadow: 0 4px 10px rgba(220,38,38,0.3);">
+        <svg class="tr-flag-svg" viewBox="0 0 30 20"><rect width="30" height="20" fill="#E30A17"/><circle cx="11" cy="10" r="5" fill="#FFF"/><circle cx="12.4" cy="10" r="4" fill="#E30A17"/><polygon points="19,10 15.5,11.2 16.8,7.8 16.8,12.2 15.5,8.8" fill="#FFF"/></svg>
+        29 EKİM CUMHURİYET BAYRAMI ÖZEL
+        <svg class="tr-flag-svg" viewBox="0 0 30 20"><rect width="30" height="20" fill="#E30A17"/><circle cx="11" cy="10" r="5" fill="#FFF"/><circle cx="12.4" cy="10" r="4" fill="#E30A17"/><polygon points="19,10 15.5,11.2 16.8,7.8 16.8,12.2 15.5,8.8" fill="#FFF"/></svg>
+      </div>
       <h1 class="start-title">🚂 Cumhuriyet Ekspresi: Demir Ağlar</h1>
       <p class="start-subtitle">5. Sınıf Temel Geometrik Çizimler, Açılar ve 3 Doğrunun Durumu</p>
       
@@ -430,13 +497,15 @@
         🛤️ <b>Demir Ağlar Görevi:</b> Cumhuriyet Ekspresi'ni Ankara'ya ulaştırmak için üstte istenen geometrik şekli (<i>Doğru, Işın, Dar/Dik/Geniş Açı, Paralel/Dik Kesişen Doğrular ve 3 Doğrunun Durumları</i>) taşıyan vagona tıkla!
       </div>
 
-      <button class="btn-start" onclick="startGame()">🇹🇷 SEFERİ BAŞLAT</button>
+      <button class="btn-start" onclick="startGame()">🚂 SEFERİ BAŞLAT</button>
       <button class="btn-subtle" onclick="showScreen('LEADERBOARD')" style="margin-top: 12px; width: 100%;">🏆 İlk 10 Sıralaması</button>
     </div>
 
     <!-- 1P SONUÇ EKRANI (BİREYSEL) -->
     <div class="card" id="resultScreen1P" style="display:none;">
-      <div style="font-size: 60px; margin-bottom: 10px;">🇹🇷</div>
+      <div style="margin-bottom: 12px;">
+        <svg class="tr-flag-svg tr-flag-lg" viewBox="0 0 30 20"><rect width="30" height="20" fill="#E30A17"/><circle cx="11" cy="10" r="5" fill="#FFF"/><circle cx="12.4" cy="10" r="4" fill="#E30A17"/><polygon points="19,10 15.5,11.2 16.8,7.8 16.8,12.2 15.5,8.8" fill="#FFF"/></svg>
+      </div>
       <h2 class="start-title">Ankara'ya Ulaştık!</h2>
       <p class="start-subtitle" id="1p-result-sub">Demir ağlarla ana yurdu dört baştan geometrinle ördün!</p>
       
@@ -892,7 +961,7 @@
       
       if (rank === 1) {
         icon.innerText = "🥇";
-        title.innerText = "🇹🇷 CUMHURİYET EKSPRESİ BAŞKAPTANI!";
+        title.innerText = "👑 CUMHURİYET EKSPRESİ BAŞKAPTANI!";
         title.style.color = "#DC2626";
         msg.innerText = "DEMİR AĞLARLA ÖRDÜN ANA YURDU DÖRT BAŞTAN! Tıpkı bir ışın gibi başlangıç noktan sağlam, hedefin sonsuzluk! 29 Ekim Cumhuriyet Bayramımız Kutlu Olsun!";
         card.style.border = "4px solid #DC2626";
@@ -998,11 +1067,13 @@
         id: 'DAR_ACI',
         roof: 'AÇI ÇEŞİTLERİ',
         label: 'Dar Açı (50°)',
-        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
-          <path d="M 32,66 L 62,66 A 30,30 0 0,0 52,42 Z" fill="rgba(16,185,129,0.28)" stroke="#059669" stroke-width="2"/>
-          <line x1="32" y1="66" x2="112" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="32" y1="66" x2="88" y2="18" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
-          <text x="64" y="56" font-family="Nunito" font-weight="900" font-size="14" fill="#065F46">50°</text>
+        svg: `<svg width="150" height="84" viewBox="0 0 150 84">
+          <!-- Köşe: (32,68), Alt kol: (118,68) [0°], Üst kol: (94,16) [40° eğim, r=28'de tam (53.4, 50) noktasında biter] -->
+          <path d="M 32,68 L 60,68 A 28,28 0 0,0 53.4,50 Z" fill="rgba(16,185,129,0.28)" stroke="#059669" stroke-width="2"/>
+          <line x1="32" y1="68" x2="118" y2="68" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <line x1="32" y1="68" x2="94" y2="16" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <circle cx="32" cy="68" r="4" fill="#0F172A"/>
+          <text x="66" y="59" font-family="Nunito" font-weight="900" font-size="14" fill="#065F46">50°</text>
         </svg>`,
         prompts: [
           { q: `Ölçüsü 90°'den küçük olan <span style="color:#4ADE80;">DAR AÇI</span> vagonunu seç!`, pts: 15 },
@@ -1013,12 +1084,13 @@
         id: 'DIK_ACI',
         roof: 'AÇI ÇEŞİTLERİ',
         label: 'Dik Açı (90°)',
-        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
-          <rect x="36" y="46" width="20" height="20" fill="rgba(239,68,68,0.2)" stroke="#DC2626" stroke-width="2"/>
-          <circle cx="46" cy="56" r="2.2" fill="#DC2626"/>
-          <line x1="36" y1="66" x2="110" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="36" y1="66" x2="36" y2="14" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
-          <text x="64" y="50" font-family="Nunito" font-weight="900" font-size="15" fill="#DC2626">90°</text>
+        svg: `<svg width="150" height="84" viewBox="0 0 150 84">
+          <rect x="38" y="48" width="20" height="20" fill="rgba(239,68,68,0.2)" stroke="#DC2626" stroke-width="2"/>
+          <circle cx="48" cy="58" r="2.2" fill="#DC2626"/>
+          <line x1="38" y1="68" x2="116" y2="68" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <line x1="38" y1="68" x2="38" y2="14" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <circle cx="38" cy="68" r="4" fill="#0F172A"/>
+          <text x="66" y="52" font-family="Nunito" font-weight="900" font-size="15" fill="#DC2626">90°</text>
         </svg>`,
         prompts: [
           { q: `Ölçüsü tam <span style="color:#FDE047;">90°</span> olan <span style="color:#F87171;">DİK AÇI</span> vagonunu seç!`, pts: 15 },
@@ -1029,11 +1101,13 @@
         id: 'GENIS_ACI',
         roof: 'AÇI ÇEŞİTLERİ',
         label: 'Geniş Açı (130°)',
-        svg: `<svg width="136" height="84" viewBox="0 0 136 84">
-          <path d="M 64,66 L 90,66 A 26,26 0 0,0 46,47 Z" fill="rgba(245,158,11,0.3)" stroke="#D97706" stroke-width="2"/>
-          <line x1="64" y1="66" x2="118" y2="66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="64" y1="66" x2="22" y2="22" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
-          <text x="62" y="44" font-family="Nunito" font-weight="900" font-size="14" fill="#B45309">130°</text>
+        svg: `<svg width="150" height="84" viewBox="0 0 150 84">
+          <!-- Köşe: (68,68), Sağ kol: (124,68) [0°], Sol üst kol: (24,24) [135° eğim, r=26'da tam (49.6, 49.6) noktasında biter] -->
+          <path d="M 68,68 L 94,68 A 26,26 0 0,0 49.6,49.6 Z" fill="rgba(245,158,11,0.3)" stroke="#D97706" stroke-width="2"/>
+          <line x1="68" y1="68" x2="124" y2="68" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <line x1="68" y1="68" x2="24" y2="24" stroke="#0F172A" stroke-width="3.8" stroke-linecap="round"/>
+          <circle cx="68" cy="68" r="4" fill="#0F172A"/>
+          <text x="64" y="42" font-family="Nunito" font-weight="900" font-size="14" fill="#B45309">130°</text>
         </svg>`,
         prompts: [
           { q: `Ölçüsü 90° ile 180° arasında olan <span style="color:#FBBF24;">GENİŞ AÇI</span> vagonunu seç!`, pts: 20 },
@@ -1185,15 +1259,7 @@
         let now = ctx.currentTime;
         let osc = ctx.createOscillator();
         let gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.connect(gain);
-        osc.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.3);
+        let notes = [330, 261.63]; notes.forEach((freq, idx) => { let o = ctx.createOscillator(); let g = ctx.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(freq, now + idx * 0.11); g.gain.setValueAtTime(0.22, now + idx * 0.11); g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.16); o.connect(g); g.connect(ctx.destination); o.start(now + idx * 0.11); o.stop(now + idx * 0.11 + 0.18); });
       } catch(e) {}
     }
 
@@ -1454,7 +1520,7 @@
       
       if (isCorrect) {
         effectDiv.style.animation = "correctPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards";
-        showFloatingText(centerX, rect.top, "+" + ptsVal + " 🇹🇷", "#10B981");
+        showFloatingText(centerX, rect.top, "+" + ptsVal + " ⭐", "#10B981");
       } else {
         effectDiv.style.animation = "wrongShake 0.5s ease-in forwards";
         showFloatingText(centerX, rect.top, "-5 ❌", "#EF4444");
@@ -1482,7 +1548,7 @@
       wagon.dataset.side = side;
 
       let trackVh = TRACK_Y_POSITIONS[laneIdx];
-      wagon.style.top = `calc(${trackVh}vh - 152px)`;
+      wagon.style.top = `calc(${trackVh}vh - 164px)`;
 
       let isLeft = (side === 'left');
       let isAny = (side === 'any');
@@ -1512,10 +1578,10 @@
 
       wagon.dataset.itemId = chosenItem.id;
 
-      // Vagon Çatısı
+      // Vagon Çatısı (Gerçek SVG Türk Bayrağı + Başlık)
       let roof = document.createElement('div');
       roof.className = 'wagon-roof';
-      roof.innerHTML = `<span>🇹🇷 ${chosenItem.roof}</span>`;
+      roof.innerHTML = `<svg class="tr-flag-svg" style="width:18px;height:12px;" viewBox="0 0 30 20"><rect width="30" height="20" fill="#E30A17"/><circle cx="11" cy="10" r="5" fill="#FFF"/><circle cx="12.4" cy="10" r="4" fill="#E30A17"/><polygon points="19,10 15.5,11.2 16.8,7.8 16.8,12.2 15.5,8.8" fill="#FFF"/></svg><span>${chosenItem.roof}</span>`;
       wagon.appendChild(roof);
 
       // SVG Geometri Çizimi
@@ -1530,10 +1596,13 @@
       label.innerText = chosenItem.label;
       wagon.appendChild(label);
 
-      // Vagon Tekerlekleri
+      // Vagon Tekerlekleri (Ön ve Arka Çiftli Boji Tekerlekler + Biyel Kolu)
       let wheels = document.createElement('div');
       wheels.className = 'wagon-wheels';
-      wheels.innerHTML = `<div class="wheel"></div><div class="wheel"></div>`;
+      wheels.innerHTML = `
+        <div class="wheel-bogie"><div class="wheel"></div><div class="wheel"></div></div>
+        <div class="wheel-bogie"><div class="wheel"></div><div class="wheel"></div></div>
+      `;
       wagon.appendChild(wheels);
 
       let duration = randInt(7, 10);
@@ -1749,3 +1818,4 @@
   </script>
 </body>
 </html>
+
