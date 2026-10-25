@@ -491,7 +491,7 @@
     <!-- LİDER TABLOSU EKRANI -->
     <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
-        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 Üretim Liderleri</h2>
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
         <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
       </div>
       
@@ -950,8 +950,8 @@
     let timerInterval, gameInterval;
     let timeLeft = 90;
     
-    let p1 = { score: 0, lives: 5, currentQ: null, qCount: 0 };
-    let p2 = { score: 0, lives: 5, currentQ: null, qCount: 0 };
+    let p1 = { score: 0, lives: 5, currentQ: null, qCount: 0, cratesSinceChange: 0, wrongStreak: 0 };
+    let p2 = { score: 0, lives: 5, currentQ: null, qCount: 0, cratesSinceChange: 0, wrongStreak: 0 };
     let currentFullName = '';
     let selectedDuelTime = 90;
 
@@ -1129,6 +1129,8 @@
       let player = (playerNum === 1) ? p1 : p2;
       let qObj = generateProbabilityMission(player);
       player.currentQ = qObj;
+      player.cratesSinceChange = 0;
+      player.wrongStreak = 0;
 
       let badgeColor = qObj.pts >= 30 ? '#EF4444' : (qObj.pts >= 25 ? '#9333EA' : (qObj.pts >= 20 ? '#10B981' : '#3B82F6'));
       let text = `${qObj.html} <span style="display:inline-block; font-size:12px; background:${badgeColor}; color:#FFF; padding:2px 7px; border-radius:8px; vertical-align:middle; margin-left:5px;">+${qObj.pts}P</span>`;
@@ -1488,8 +1490,23 @@
       let isAny = (side === 'any');
       let targetPlayer = isAny ? p1 : (isLeft ? p1 : p2);
 
-      // %52 ihtimalle doğru kavanoz gelsin ki öğrenci çok beklemesin
-      let wantCorrect = Math.random() < 0.52;
+      // Yeni soru geldiğinde hemen İLK çıkan kutu doğru cevap olmasın! (Öğrenci kutuları gerçekten incelesin)
+      // Ancak üst üste çok fazla yanlış kutu da gelmesin (en fazla 3 yanlış kutudan sonra kesin doğru gelsin)
+      let wantCorrect = false;
+      if (targetPlayer.cratesSinceChange === 0) {
+        // Soru değiştikten sonraki ilk kutu %80 ihtimalle çeldirici (yanlış) olsun
+        wantCorrect = Math.random() < 0.20;
+      } else if (targetPlayer.wrongStreak >= 3) {
+        // 3 kutu üst üste yanlış geldiyse sıradaki kesin doğru olsun ki öğrenci beklemesin
+        wantCorrect = true;
+      } else {
+        wantCorrect = Math.random() < 0.42;
+      }
+
+      targetPlayer.cratesSinceChange++;
+      if (wantCorrect) targetPlayer.wrongStreak = 0;
+      else targetPlayer.wrongStreak++;
+
       let counts = generateCrateBalls(targetPlayer.currentQ, wantCorrect);
       let total = counts.red + counts.blue + counts.yellow + counts.green;
 
@@ -1561,7 +1578,8 @@
           playSuccessSound();
           popEffect(this, true, earnedPts);
           setQuestion(playerNum);
-          clearSideCrates(player);
+          // Bireysel modda diğer kutular yok olmasın, bant sonuna kadar yürümeye devam etsin!
+          if (gameMode !== '1P') clearSideCrates(player);
         } else {
           player.score -= 5;
           player.lives--;
@@ -1575,7 +1593,7 @@
             }, 500);
           } else {
             setQuestion(playerNum);
-            clearSideCrates(player);
+            if (gameMode !== '1P') clearSideCrates(player);
           }
         }
         updateScores();
