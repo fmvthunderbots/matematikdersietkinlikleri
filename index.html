@@ -200,7 +200,7 @@
             <button id="btn-grade-5" onclick="setGrade('5')" class="nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-2">
                 <i class="fas fa-shapes"></i> 5. Sınıflar
             </button>
-                       <button id="btn-grade-6" onclick="setGrade('6')" class="nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-2.5">
+            <button id="btn-grade-6" onclick="setGrade('6')" class="nav-btn px-6 py-2.5 rounded-full font-bold shadow-sm flex items-center gap-2.5">
                 <div class="flex items-center font-extrabold text-blue-300 leading-none tracking-tighter">
                     <span class="text-sm -translate-y-1.5 translate-x-1">2</span>
                     <span class="text-[10px] translate-y-1.5">3</span>
@@ -219,10 +219,8 @@
             </button>
         </div>
         
-        <!-- Yenile Butonu -->
-        <button onclick="window.location.href = window.location.pathname + '?t=' + new Date().getTime()" title="Sayfayı Yenile" class="w-12 h-12 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
-            <i class="fas fa-sync-alt text-xl transition-transform duration-500 group-hover:rotate-180"></i>
-        </button>
+        <!-- Sağ tarafın dengeli durması için boş tutucu -->
+        <div class="w-12 h-12 hidden md:block"></div>
     </nav>
     <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto p-8 relative z-0">
