@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cumhuriyet Meşalesi: 1923'e Yolculuk - 6. Sınıf</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #DC2626; /* Cumhuriyet Kırmızısı */
+      --secondary: #991B1B;
+      --gold: #F59E0B;
+      --danger: #EF4444;
+      --success: #10B981;
+      --radius-lg: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #1E293B;
+      background: linear-gradient(to bottom, rgba(15, 23, 42, 0.45), rgba(127, 29, 29, 0.55)), url('cumhuriyet_background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+
+    /* Arka Plan Kıvılcım ve Bayram Işıkları Efekti */
+    #spark-container {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .bg-spark {
+      position: absolute;
+      border-radius: 50%;
+      animation: floatUpSpark linear infinite;
+    }
+    @keyframes floatUpSpark {
+      0% { transform: translateY(105vh) translateX(0) scale(0.5); opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.9; }
+      100% { transform: translateY(-10vh) translateX(40px) scale(1.2); opacity: 0; }
+    }
+
+    @keyframes heartBreakAnim {
+      0% { transform: scale(1); filter: grayscale(0); }
+      50% { transform: scale(1.5) rotate(-15deg); filter: grayscale(0); }
+      100% { transform: scale(0); filter: grayscale(1); opacity: 0; }
+    }
+    .heart-icon { display: inline-block; transition: all 0.2s; }
+    .heart-lost { animation: heartBreakAnim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    /* Üst HUD */
+    #top-hud {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 12px 20px; position: relative; z-index: 10; width: 100%;
+    }
+    .hud-side { display: flex; align-items: center; gap: 12px; }
+    .hud-side.right { justify-content: flex-end; }
+    
+    .team-box {
+      background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(10px);
+      border-radius: 16px; padding: 8px 18px; text-align: center;
+      border: 2px solid; min-width: 210px;
+    }
+    .red-box { border-color: #EF4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+    .blue-box { border-color: #3B82F6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+    .single-box { border-color: #F59E0B; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+
+    .team-name { font-family: 'Baloo 2'; font-size: 17px; font-weight: 800; margin-bottom: 2px; text-transform: uppercase; }
+    .red-box .team-name { color: #FCA5A5; }
+    .blue-box .team-name { color: #93C5FD; }
+    .single-box .team-name { color: #FDE68A; }
+
+    .streak-badge {
+      display: inline-block;
+      font-family: 'Baloo 2';
+      font-size: 13px;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #F59E0B, #DC2626);
+      color: #FFF;
+      margin-top: 2px;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
+    }
+    
+    .score-display { 
+      font-family: 'Baloo 2'; font-size: 30px; font-weight: 800; 
+      background: rgba(255,255,255,0.95); color: #0F172A; 
+      padding: 4px 20px; border-radius: 12px; border: 3px solid #E2E8F0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+
+    #timer-box {
+      background: rgba(255, 255, 255, 0.95); border: 3px solid #FCA5A5;
+      border-radius: 16px; padding: 8px 22px; text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4); min-width: 115px;
+    }
+    .timer-val { font-family: 'Baloo 2'; font-size: 34px; font-weight: 800; color: #DC2626; line-height: 1; }
+    .timer-label { font-size: 12px; font-weight: 800; color: #64748B; }
+
+    #center-line {
+      position: absolute; top: 0; left: 50%; width: 4px; height: 100vh;
+      background: rgba(255,255,255,0.25); box-shadow: 0 0 15px rgba(255,255,255,0.6);
+      transform: translateX(-50%); z-index: 2; display: none;
+    }
+
+    /* Oyun Alanı ve Kule Düzeni */
+    #game-area {
+      position: relative;
+      z-index: 5;
+      width: 100vw;
+      height: calc(100vh - 95px);
+      display: none;
+      padding: 10px 20px 20px;
+      gap: 20px;
+    }
+
+    .player-arena {
+      flex: 1;
+      display: flex;
+      gap: 18px;
+      align-items: stretch;
+      justify-content: center;
+      max-width: 900px;
+      margin: 0 auto;
+      height: 100%;
+    }
+
+    /* Cumhuriyet Kulesi (Meşale Tırmanışı) */
+    .torch-tower {
+      width: 155px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(245, 158, 11, 0.6);
+      border-radius: 20px;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+    .tower-header {
+      text-align: center;
+      font-family: 'Baloo 2';
+      font-weight: 800;
+      font-size: 14px;
+      color: #FDE68A;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+    .tower-steps {
+      flex: 1;
+      display: flex;
+      flex-direction: column-reverse;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .tower-step {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94A3B8;
+      font-family: 'Baloo 2';
+      font-size: 14px;
+      font-weight: 800;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tower-step.reached {
+      background: rgba(220, 38, 38, 0.35);
+      border-color: rgba(252, 165, 165, 0.6);
+      color: #FECACA;
+    }
+    .tower-step.current {
+      background: linear-gradient(90deg, #DC2626, #F59E0B);
+      border-color: #FEF08A;
+      color: #FFFFFF;
+      transform: scale(1.06);
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.8);
+    }
+    .tower-step.step-1923 {
+      border: 2px solid #F59E0B;
+      background: rgba(245, 158, 11, 0.2);
+      color: #FDE047;
+    }
+    .tower-step.step-1923.current {
+      background: linear-gradient(90deg, #F59E0B, #EF4444);
+      color: #FFF;
+    }
+    .torch-icon {
+      font-size: 18px;
+      filter: drop-shadow(0 0 6px #F59E0B);
+      animation: torchPulse 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes torchPulse {
+      0% { transform: scale(1) rotate(-5deg); }
+      100% { transform: scale(1.22) rotate(5deg); }
+    }
+
+    /* Soru ve Seçenekler Paneli */
+    .question-panel {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.55);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .q-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .q-category-badge {
+      font-family: 'Baloo 2';
+      font-size: 14px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 10px;
+      background: rgba(220, 38, 38, 0.25);
+      border: 1px solid #FCA5A5;
+      color: #FECACA;
+    }
+    .q-points-badge {
+      font-family: 'Baloo 2';
+      font-size: 15px;
+      font-weight: 900;
+      padding: 4px 14px;
+      border-radius: 10px;
+      color: #FFF;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    .q-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .q-main-text {
+      font-family: 'Baloo 2', 'Nunito', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.3;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .q-highlight {
+      color: #FDE047;
+      font-weight: 900;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .option-btn {
+      background: linear-gradient(145deg, #FFFFFF, #F1F5F9);
+      border: 3px solid #CBD5E1;
+      border-radius: 18px;
+      padding: 16px 12px;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      color: #1E293B;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #94A3B8, 0 8px 15px rgba(0,0,0,0.3);
+      transition: transform 0.12s, background 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 74px;
+    }
+    .option-btn:hover {
+      border-color: #F59E0B;
+      background: #FFFBEB;
+      transform: translateY(-2px);
+    }
+    .option-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #94A3B8;
+    }
+    .option-btn.correct-anim {
+      background: linear-gradient(135deg, #10B981, #059669) !important;
+      border-color: #A7F3D0 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.8) !important;
+      transform: scale(1.05);
+    }
+    .option-btn.wrong-anim {
+      background: linear-gradient(135deg, #EF4444, #B91C1C) !important;
+      border-color: #FECACA !important;
+      color: #FFFFFF !important;
+      animation: shakeBtn 0.4s ease;
+    }
+    @keyframes shakeBtn {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-8px); }
+    }
+
+    /* 2 Kişilik Düello Modunda Boyut Uyarlaması */
+    #game-area.duel-mode .torch-tower {
+      width: 115px;
+      padding: 8px 6px;
+    }
+    #game-area.duel-mode .tower-step {
+      font-size: 12px;
+      padding: 3px 6px;
+    }
+    #game-area.duel-mode .q-main-text {
+      font-size: 20px;
+    }
+    #game-area.duel-mode .option-btn {
+      font-size: 19px;
+      padding: 12px 8px;
+      min-height: 60px;
+    }
+
+    /* Menü Katmanı ve Kartlar */
+    .app-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      z-index: 100; background: rgba(45, 10, 15, 0.82); backdrop-filter: blur(8px);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.97); border-radius: var(--radius-lg);
+      padding: 34px 30px; text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      border: 3px solid #FCA5A5;
+      width: 100%; max-width: 580px; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .start-title { font-family: 'Baloo 2'; font-size: 30px; font-weight: 800; color: #991B1B; margin-bottom: 4px; white-space: nowrap; }
+    .start-subtitle { font-size: 16px; font-weight: 800; color: #475569; margin-bottom: 20px; }
+
+    .btn-subtle {
+      background: #FEF2F2; border: 2px solid #FECACA; color: #991B1B;
+      padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-subtle.active { background: #DC2626; color: white; border-color: #991B1B; box-shadow: 0 4px 12px rgba(220,38,38,0.35); }
+    
+    .input-player {
+      width: 100%; padding: 14px 18px; font-size: 17px; font-weight: 700;
+      border: 2px solid #CBD5E1; border-radius: 14px; outline: none; text-align: center;
+    }
+    .input-player:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15); }
+
+    .btn-start {
+      width: 100%; padding: 18px 30px; background: linear-gradient(135deg, #EF4444, #B91C1C);
+      border: none; border-radius: 18px; color: white; font-family: 'Baloo 2'; font-size: 26px;
+      font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(220, 38, 38, 0.45); transition: transform 0.2s;
+    }
+    .btn-start:active { transform: scale(0.95); }
+
+    .score-summary-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 24px; }
+    .score-item { background: #FEF2F2; border: 2px solid #EF4444; border-radius: 16px; padding: 14px 26px; }
+    .score-item .label { font-size: 13px; font-weight: 800; color: #DC2626; text-transform: uppercase; }
+    .score-item .val { font-family: 'Baloo 2'; font-size: 38px; font-weight: 800; color: #1E293B; }
+
+    .btn-action {
+      padding: 14px 24px; border-radius: 14px; font-family: 'Baloo 2'; font-size: 20px; font-weight: 800;
+      cursor: pointer; border: none; width: 100%; margin-bottom: 10px; transition: transform 0.2s;
+    }
+    .btn-view-leaderboard { background: #FEF3C7; color: #92400E; border: 2px solid #F59E0B; }
+    .btn-restart { background: linear-gradient(135deg, #DC2626, #991B1B); color: white; }
+
+    /* Lider Tablosu Özel Tasarımı */
+    .leaderboard-card { max-width: 780px; max-height: 95vh; display: flex; flex-direction: column; }
+    .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 10px; }
+    .lb-table th { font-size: 13px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
+    .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
+    .lb-row:hover { transform: scale(1.02); }
+    .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 700; text-align: center; }
+    .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+    .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+    
+    .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
+    .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
+    .lb-row.rank-3 { background: linear-gradient(90deg, #FEE2E2, #FEF2F2); border: 2px solid #FCA5A5; }
+
+    #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
+
+    /* Kutlama Modalı */
+    .celebration-modal {
+      position: fixed; inset: 0; z-index: 200; display: none;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .celebration-backdrop { position: absolute; inset: 0; background: rgba(45, 10, 15, 0.82); }
+    .celebration-card {
+      position: relative; width: 100%; max-width: 500px; border-radius: 28px; padding: 36px 28px;
+      text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5); animation: popIn 0.4s; z-index: 201; background: #FFF;
+    }
+    .cel-name { font-family: 'Baloo 2'; font-size: 36px; font-weight: 900; margin-bottom: 2px; color: #1E293B; }
+    .cel-score { font-size: 26px; font-weight: 800; color: #DC2626; margin-bottom: 12px; }
+    .btn-cel-close {
+      width: 100%; padding: 15px; border-radius: 16px; border: none; font-family: 'Baloo 2'; font-size: 20px;
+      font-weight: 800; cursor: pointer; color: #FFF; background: linear-gradient(135deg, #DC2626, #991B1B);
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35); transition: transform 0.2s;
+    }
+    .btn-cel-close:active { transform: scale(0.96); }
+
+    .btn-endgame {
+      position: absolute; bottom: -42px; left: 50%; transform: translateX(-50%);
+      background: #EF4444; color: white; border: 2px solid #FFF; padding: 5px 15px;
+      border-radius: 12px; font-family: 'Baloo 2'; font-weight: 800; font-size: 14px;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap;
+      transition: transform 0.2s, background 0.2s; z-index: 50;
+    }
+    .btn-endgame:hover { background: #DC2626; transform: translateX(-50%) scale(1.05); }
+    .btn-endgame:active { transform: translateX(-50%) scale(0.95); }
+  </style>
+</head>
+<body>
+
+  <!-- Arka Plan Kıvılcımlar ve Havai Fişek Kanvası -->
+  <div id="spark-container"></div>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- HUD -->
+  <div id="top-hud" style="display: none;">
+    <div class="hud-side left" id="hud-left">
+      <div id="p1-box" class="team-box single-box">
+        <div class="team-name" id="p1-name">Oyuncu</div>
+        <div id="p1-lives" style="font-size:17px; letter-spacing: 2px; margin-top:2px;">❤️❤️❤️</div>
+        <div id="p1-streak" class="streak-badge">🔥 1923 Turu: 0</div>
+      </div>
+      <div id="p1-score" class="score-display">0</div>
+    </div>
+
+    <!-- Zamanlayıcı ve Oyunu Bitir Butonu -->
+    <div id="timer-box" style="position: relative;">
+      <div id="timer" class="timer-val">75s</div>
+      <div class="timer-label">SÜRE</div>
+      <button class="btn-endgame" onclick="endGame()">⏹️ Bitir</button>
+    </div>
+
+    <div class="hud-side right" id="hud-right" style="display: none;">
+      <div id="p2-score" class="score-display">0</div>
+      <div id="p2-box" class="team-box blue-box">
+        <div class="team-name">Mavi Takım</div>
+        <div id="p2-lives" style="font-size:17px; letter-spacing: 2px; margin-top:2px;">❤️❤️❤️</div>
+        <div id="p2-streak" class="streak-badge">🔥 1923 Turu: 0</div>
+      </div>
+    </div>
+  </div>
+  <div id="center-line"></div>
+
+  <!-- Oyun Alanı (Kule + Soru Paneli) -->
+  <div id="game-area">
+    <!-- 1. Oyuncu / Sol Düello Alanı -->
+    <div class="player-arena" id="arena-p1">
+      <div class="torch-tower">
+        <div class="tower-header">🇹🇷 1923 KULESİ</div>
+        <div class="tower-steps" id="tower-p1"></div>
+      </div>
+      <div class="question-panel">
+        <div class="q-top-bar">
+          <span class="q-category-badge" id="cat-p1">🌟 Asal Çarpanlar</span>
+          <span class="q-points-badge" id="pts-p1" style="background:#10B981;">+25 P</span>
+        </div>
+        <div class="q-box">
+          <div class="q-main-text" id="qtext-p1">Soru yükleniyor...</div>
+        </div>
+        <div class="options-grid" id="opts-p1"></div>
+      </div>
+    </div>
+
+    <!-- 2. Oyuncu / Sağ Düello Alanı -->
+    <div class="player-arena" id="arena-p2" style="display: none;">
+      <div class="torch-tower">
+        <div class="tower-header">🇹🇷 1923 KULESİ</div>
+        <div class="tower-steps" id="tower-p2"></div>
+      </div>
+      <div class="question-panel">
+        <div class="q-top-bar">
+          <span class="q-category-badge" id="cat-p2">🌟 Asal Çarpanlar</span>
+          <span class="q-points-badge" id="pts-p2" style="background:#10B981;">+25 P</span>
+        </div>
+        <div class="q-box">
+          <div class="q-main-text" id="qtext-p2">Soru yükleniyor...</div>
+        </div>
+        <div class="options-grid" id="opts-p2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menüler Katmanı -->
+  <div class="app-overlay" id="app-overlay">
+    
+    <!-- BAŞLANGIÇ EKRANI -->
+    <div class="card" id="startScreen" style="position: relative;">
+      
+      <!-- AYARLAR TUŞU -->
+      <button onclick="openSettings()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 26px; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">⚙️</button>
+      
+      <div style="font-size: 42px; margin-bottom: 2px;">🇹🇷 🔥 🎆</div>
+      <h1 class="start-title">Cumhuriyet Meşalesi</h1>
+      <p class="start-subtitle">6. Sınıf Çarpanlar, Bölenler ve Asal Çarpanlar Yarışması</p>
+      
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 18px;">
+        <button id="btn-mode-1p" class="btn-subtle active" onclick="setMode('1P')">👤 Bireysel Yarış</button>
+        <button id="btn-mode-2p" class="btn-subtle" onclick="setMode('2P')">👥 İki Kişilik Düello</button>
+      </div>
+
+      <!-- AD SOYAD GİRİŞ ALANI (BİREYSEL İÇİN) -->
+      <div id="1p-form" style="display:flex; justify-content:center; margin-bottom: 18px;">
+        <input type="text" id="playerFullName" list="studentNamesList" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
+        <datalist id="studentNamesList"></datalist>
+      </div>
+
+      <!-- SÜRE SEÇİM ALANI (DÜELLO İÇİN) -->
+      <div id="2p-form" style="display:none; justify-content:center; gap:10px; margin-bottom: 18px;">
+        <span style="align-self:center; font-weight:800; color:#475569;">Düello Süresi:</span>
+        <button class="btn-subtle" id="time-60" onclick="setTime(60)">60s</button>
+        <button class="btn-subtle active" id="time-90" onclick="setTime(90)">90s</button>
+        <button class="btn-subtle" id="time-120" onclick="setTime(120)">120s</button>
+      </div>
+
+      <button class="btn-start" onclick="startGame()">🔥 MEŞALEYİ YAK (BAŞLA)</button>
+      <button class="btn-subtle" onclick="showScreen('LEADERBOARD')" style="margin-top: 14px; width: 100%;">🏆 İlk 10 Lider Tablosu</button>
+    </div>
+
+    <!-- 1P SONUÇ EKRANI (BİREYSEL) -->
+    <div class="card" id="resultScreen1P" style="display:none;">
+      <div style="font-size: 58px; margin-bottom: 8px;">🇹🇷🏆🎆</div>
+      <h2 class="start-title">Yolculuk Tamamlandı!</h2>
+      <p class="start-subtitle" id="1p-result-sub">Cumhuriyet meşalesini zirveye gururla taşıdın!</p>
+      
+      <div class="score-summary-grid">
+        <div class="score-item">
+          <div class="label">Toplam Puan</div>
+          <div class="val" id="finalScore1P">0</div>
+        </div>
+        <div class="score-item" style="border-color:#F59E0B; background:#FFFBEB;">
+          <div class="label" style="color:#B45309;">1923 Zirvesi</div>
+          <div class="val" id="finalTours1P">0</div>
+        </div>
+      </div>
+
+      <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
+      <button class="btn-action btn-restart" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+    </div>
+
+    <!-- 2P SONUÇ EKRANI (DÜELLO) -->
+    <div class="card" id="resultScreen2P" style="display:none;">
+      <div style="font-size: 65px; margin-bottom: 10px;">🇹🇷⚔️🎆</div>
+      <h2 class="start-title" id="winner-title-2p">Kazanan Belli Oldu!</h2>
+      <p class="start-subtitle" id="winner-sub-2p" style="margin-bottom:15px;">Harika bir Cumhuriyet Bayramı mücadelesiydi!</p>
+      
+      <div style="display:flex; justify-content:center; align-items:center; gap:15px; margin: 24px 0;">
+        <div style="background: #FEE2E2; border: 2px solid #EF4444; border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 130px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);">
+          <div style="font-size: 13px; font-weight: 800; color: #DC2626; text-transform: uppercase;">🔴 Kırmızı</div>
+          <div style="font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; color: #991B1B; line-height: 1.1; margin-top: 4px;" id="winner-score-p1">0</div>
+        </div>
+        
+        <div style="font-family: 'Baloo 2'; font-size: 26px; font-weight: 900; color: #94A3B8;">VS</div>
+        
+        <div style="background: #DBEAFE; border: 2px solid #3B82F6; border-radius: 18px; padding: 14px 22px; text-align: center; min-width: 130px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);">
+          <div style="font-size: 13px; font-weight: 800; color: #2563EB; text-transform: uppercase;">🔵 Mavi</div>
+          <div style="font-family: 'Baloo 2'; font-size: 38px; font-weight: 900; color: #1E40AF; line-height: 1.1; margin-top: 4px;" id="winner-score-p2">0</div>
+        </div>
+      </div>
+
+      <button class="btn-start" style="margin-top: 10px;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+    </div>
+
+    <!-- LİDER TABLOSU EKRANI -->
+    <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Cumhuriyet Muhafızları</h2>
+        <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
+      </div>
+      
+      <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">Sıra</th>
+              <th style="text-align: left;">Adı Soyadı</th>
+              <th>Puan</th>
+              <th>Tarih</th>
+              <th>Kutla</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+        <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. Meşaleyi ilk taşıyan sen ol!</div>
+      </div>
+      
+      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+    </div>
+  </div>
+
+  <!-- KUTLAMA MODALI -->
+  <div class="celebration-modal" id="celebrationModal">
+    <div class="celebration-backdrop" onclick="closeCelebration()"></div>
+    <div class="celebration-card" id="celebrationCard">
+      <div style="font-size: 65px; margin-bottom: 5px;" id="celIcon">⭐</div>
+      <div class="cel-name" id="celName">Öğrenci</div>
+      <div style="font-size: 18px; font-weight: 800; color: #DC2626; margin-bottom: 8px;" id="celTitle">1. Sıra Şampiyonu!</div>
+      <div class="cel-score" id="celScore">0 Puan</div>
+      <p id="celMessage" style="font-size: 15px; font-weight: 700; color: #475569; margin-bottom: 20px; line-height: 1.4;">Kutlama mesajı</p>
+      <button class="btn-cel-close" onclick="closeCelebration()">👏 Alkışla ve Kapat</button>
+    </div>
+  </div>
+
+  <!-- AYARLAR MODALI -->
+  <div class="celebration-modal" id="settingsModal">
+    <div class="celebration-backdrop" onclick="closeSettings()"></div>
+    <div class="celebration-card" style="padding: 30px;">
+      <h2 class="start-title" style="font-size: 28px; margin-bottom: 20px;">⚙️ Ayarlar</h2>
+      
+      <div id="authSection">
+        <input type="password" id="adminPassword" class="input-player" placeholder="Yönetici Şifresi" style="margin-bottom: 15px;">
+        <button class="btn-start" style="font-size: 18px; padding: 12px;" onclick="checkAdminPassword()">Giriş Yap</button>
+      </div>
+
+      <div id="adminSection" style="display: none;">
+        <p style="margin-bottom: 15px; font-weight: 700; color: #475569;">Yönetici paneline hoş geldiniz.</p>
+        
+        <div style="background: #F1F5F9; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; border: 2px solid #CBD5E1;">
+          <h3 style="font-size: 16px; margin-bottom: 8px; color: #1E293B;">📋 Yeni Öğrencileri Ekle</h3>
+          <p style="font-size: 13px; color: #64748B; margin-bottom: 10px;">İsimleri alt alta, virgülle ayırarak veya tırnak içinde ("Ali","Veli" vb.) kopyalayıp yapıştırabilirsiniz. Sistem isimleri otomatik ayıklar ve eskilere dokunmadan listeye ekler.</p>
+          <textarea id="adminStudentList" style="width:100%; height:90px; padding:10px; border-radius:8px; border:1px solid #94A3B8; font-family:sans-serif;" placeholder="İsimleri buraya yapıştırın..."></textarea>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 5px; margin-bottom: 10px;">
+             <span id="totalStudentsText" style="font-size: 13px; color: #10B981; font-weight:800;">Sistemde 0 öğrenci kayıtlı.</span>
+             <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Listeyi Sıfırla</button>
+          </div>
+          
+          <button class="btn-start" style="font-size: 15px; padding: 10px; border-radius: 8px;" onclick="saveStudentList()">💾 Öğrencileri Sisteme Ekle</button>
+        </div>
+
+        <button class="btn-start" style="font-size: 15px; padding: 10px; background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); border-radius: 8px;" onclick="clearLeaderboard()">🗑️ Tüm Skorları Sıfırla</button>
+      </div>
+
+      <button class="btn-subtle" style="margin-top: 20px; width: 100%;" onclick="closeSettings()">Kapat</button>
+    </div>
+  </div>
+
+  <script>
+    /* ==============================
+       SES EFEKTLERİ (WEB AUDIO API)
+       ============================== */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playCorrectSound(isSummit = false) {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let notes = isSummit ? [523.25, 659.25, 783.99, 1046.50, 1318.51] : [523.25, 659.25, 783.99];
+        notes.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          gain.gain.setValueAtTime(0.25, now + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.22);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.25);
+        });
+      } catch(e) {}
+    }
+
+    function playLifeLostSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch(e) {}
+    }
+
+    function playFanfareSound(rank) {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let notes = (rank === 1) ? [523.25, 659.25, 783.99, 1046.50] :
+                    (rank === 2) ? [440.00, 554.37, 659.25, 880.00] :
+                    (rank === 3) ? [392.00, 493.88, 587.33, 783.99] :
+                                  [349.23, 440.00, 523.25, 698.46];
+                                 
+        notes.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+          gain.gain.setValueAtTime(0, now + idx * 0.11);
+          gain.gain.linearRampToValueAtTime(0.3, now + idx * 0.11 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + (idx === notes.length - 1 ? 0.6 : 0.22));
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.11);
+          osc.stop(now + idx * 0.11 + 0.65);
+        });
+      } catch(e) {}
+    }
+
+    function playCloseSound() {
+      try {
+        let ctx = getAudioContext();
+        let now = ctx.currentTime;
+        let freqs = [523.25, 659.25, 783.99, 1046.50];
+        freqs.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.15);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.05);
+          osc.stop(now + idx * 0.05 + 0.18);
+        });
+      } catch(e) {}
+    }
+
+
+    /* ==============================
+       FİREBASE VE AKILLI LİDER TABLOSU
+       ============================== */
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+      authDomain: "zihindencarpma.firebaseapp.com",
+      databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.firebasestorage.app",
+      messagingSenderId: "111639321624",
+      appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+    };
+
+    let cloudDb = null;
+    const DB_NODE = 'scores_cumhuriyetmesalesi';
+    const STUDENTS_NODE = 'students_cumhuriyetmesalesi';
+    let authorizedStudents = [];
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        cloudDb = firebase.database();
+        
+        cloudDb.ref(DB_NODE).on('value', snap => {
+          let data = snap.val();
+          let arr = [];
+          if(data) {
+            Object.keys(data).forEach(k => arr.push(data[k]));
+          }
+          updateLocalLeaderboard(arr);
+        });
+
+        cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+          let data = snap.val();
+          if (data) {
+             authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+             authorizedStudents = [];
+          }
+          
+          let ts = document.getElementById('totalStudentsText');
+          if(ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+          
+          let dl = document.getElementById('studentNamesList');
+          if(dl) {
+             dl.innerHTML = '';
+             authorizedStudents.forEach(name => {
+                 let op = document.createElement('option');
+                 op.value = name;
+                 dl.appendChild(op);
+             });
+          }
+        });
+      } catch(e) {}
+    }
+
+    function saveStudentList() {
+      let text = document.getElementById('adminStudentList').value;
+      if (!text.trim()) { alert('Lütfen eklenecek isimleri yazın.'); return; }
+      
+      let newNames = text.replace(/"/g, '')
+                         .split(/[\n,;]+/)
+                         .map(s => s.trim())
+                         .filter(s => s.length > 0);
+                         
+      let currentNamesLower = authorizedStudents.map(n => n.toLocaleLowerCase('tr-TR'));
+      let namesToAdd = [];
+      
+      newNames.forEach(n => {
+          if(!currentNamesLower.includes(n.toLocaleLowerCase('tr-TR'))) {
+              namesToAdd.push(n);
+              currentNamesLower.push(n.toLocaleLowerCase('tr-TR'));
+          }
+      });
+      
+      let updatedList = authorizedStudents.concat(namesToAdd);
+      
+      if(cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+          alert(namesToAdd.length + ' yeni benzersiz öğrenci sisteme eklendi!');
+          document.getElementById('adminStudentList').value = '';
+        }).catch(e => {
+          alert('Kaydedilirken hata oluştu.');
+        });
+      } else {
+        alert('Veritabanı bağlantısı kurulamadı.');
+      }
+    }
+    
+    function clearStudentList() {
+      if(confirm('Kayıtlı tüm öğrenci isimleri silinecek (oyun skorları silinmez). Emin misiniz?')) {
+         if(cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+      }
+    }
+
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    function getFuzzyKey(str) {
+      let clean = (str || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, '');
+      let noVowels = clean.replace(/[aeıioöuü]/g, '');
+      return noVowels || clean;
+    }
+
+    function capitalizeName(str) {
+      return (str || '').split(' ').map(w => {
+        if (!w) return '';
+        return w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR');
+      }).join(' ');
+    }
+
+    function updateLocalLeaderboard(rawEntries) {
+      let groups = [];
+
+      rawEntries.forEach(entry => {
+        if (!entry) return;
+        let fullName = entry.fullName || entry.name || '';
+        if (!fullName.trim()) return;
+
+        let normName = fullName.trim().replace(/\s+/g, ' ');
+        let normLower = normName.toLocaleLowerCase('tr-TR');
+        let fuzzyKey = getFuzzyKey(normName);
+
+        let foundGroup = null;
+        for (let g of groups) {
+          if (g.fuzzyKey === fuzzyKey) {
+            foundGroup = g;
+            break;
+          }
+          let dist = levenshtein(g.canonicalNorm, normLower);
+          if (dist <= 2 && Math.abs(g.canonicalNorm.length - normLower.length) <= 2) {
+            foundGroup = g;
+            break;
+          }
+        }
+
+        if (foundGroup) {
+          foundGroup.items.push(entry);
+          if (normName.length > foundGroup.canonicalName.length) {
+            foundGroup.canonicalName = normName;
+          }
+        } else {
+          groups.push({
+            canonicalName: normName,
+            canonicalNorm: normLower,
+            fuzzyKey: fuzzyKey,
+            items: [entry]
+          });
+        }
+      });
+
+      let bestList = [];
+      groups.forEach(g => {
+        g.items.sort((a, b) => b.score - a.score);
+        let best = g.items[0];
+        best.displayName = capitalizeName(g.canonicalName);
+        bestList.push(best);
+      });
+
+      bestList.sort((a, b) => b.score - a.score);
+      let top10 = bestList.slice(0, 10);
+      localStorage.setItem('meb_cumhuriyetmesalesi_top10', JSON.stringify(top10));
+      renderLeaderboard();
+    }
+
+    function saveScoreToLeaderboardDirectly() {
+      let fullName = currentFullName;
+      let entry = {
+        name: fullName,
+        fullName: fullName,
+        score: p1.score,
+        date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now()
+      };
+      
+      if(cloudDb) {
+        cloudDb.ref(DB_NODE).push(entry);
+      } else {
+        fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, {
+          method: 'POST', body: JSON.stringify(entry)
+        });
+      }
+    }
+
+    function renderLeaderboard() {
+      let data = JSON.parse(localStorage.getItem('meb_cumhuriyetmesalesi_top10') || '[]');
+      let tbody = document.getElementById('leaderboardBody');
+      tbody.innerHTML = '';
+      if(data.length === 0) {
+        document.getElementById('emptyLeaderboard').style.display = 'block';
+        return;
+      }
+      document.getElementById('emptyLeaderboard').style.display = 'none';
+
+      let medals = ['🥇', '🥈', '🥉'];
+      data.forEach((e, idx) => {
+        let tr = document.createElement('tr');
+        tr.className = `lb-row rank-${idx+1}`;
+        let rankStr = idx < 3 ? medals[idx] : `${idx+1}.`;
+        
+        let nameToShow = e.displayName || e.fullName || e.name || 'Öğrenci';
+        let safeName = nameToShow.replace(/'/g, "\\'");
+        
+        tr.onclick = () => openCelebration({name: nameToShow, score: e.score}, idx+1);
+        tr.innerHTML = `
+          <td><span style="font-size:20px;">${rankStr}</span></td>
+          <td style="text-align:left; font-weight:800;">${nameToShow}</td>
+          <td style="color:#DC2626; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
+          <td style="color:#94A3B8; font-size:14px;">${e.date || '-'}</td>
+          <td>
+            <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* KUTLAMA MODALI */
+    function openCelebration(entry, rank) {
+      launchConfetti(100);
+      playFanfareSound(rank);
+      
+      let name = entry.name || entry.displayName || 'Öğrenci';
+      document.getElementById('celName').innerText = name;
+      document.getElementById('celScore').innerText = entry.score + " Puan";
+      
+      let card = document.getElementById('celebrationCard');
+      let icon = document.getElementById('celIcon');
+      let title = document.getElementById('celTitle');
+      let msg = document.getElementById('celMessage');
+      
+      card.style.background = "#FFF";
+      
+      if (rank === 1) {
+        icon.innerText = "🇹🇷🥇";
+        title.innerText = "👑 CUMHURİYET MEŞALESİ ŞAMPİYONU!";
+        title.style.color = "#DC2626";
+        msg.innerText = "MUHTEŞEM BİR ZAFER! Çarpanlar ve asal sayılar bilginle Cumhuriyet Meşalesini en zirveye taşıdın!";
+        card.style.border = "4px solid #F59E0B";
+        card.style.background = "linear-gradient(180deg, #FEF3C7 0%, #FFFFFF 100%)";
+      } else if (rank === 2) {
+        icon.innerText = "🥈";
+        title.innerText = "⚡ GÜMÜŞ MEŞALE MADALYASI!";
+        title.style.color = "#475569";
+        msg.innerText = "HARİKA BİR BAŞARI! Hızın ve keskin matematik bilginle Gümüş Madalyanın sahibi oldun!";
+        card.style.border = "4px solid #94A3B8";
+        card.style.background = "linear-gradient(180deg, #F1F5F9 0%, #FFFFFF 100%)";
+      } else if (rank === 3) {
+        icon.innerText = "🥉";
+        title.innerText = "🔥 BRONZ MEŞALE MADALYASI!";
+        title.style.color = "#C2410C";
+        msg.innerText = "TEBRİKLER! Gösterdiğin üstün performansla podyuma çıkıp Bronz Madalyayı kazandın!";
+        card.style.border = "4px solid #F97316";
+        card.style.background = "linear-gradient(180deg, #FFEDD5 0%, #FFFFFF 100%)";
+      } else {
+        icon.innerText = "🎖️";
+        title.innerText = `${rank}. SIRA CUMHURİYET MUHAFIZI`;
+        title.style.color = "#DC2626";
+        msg.innerText = `TEBRİKLER! Harika bir odaklanmayla ${rank}. olarak İlk 10 Lider Tablosuna adını gururla yazdırdın!`;
+        card.style.border = "4px solid #EF4444";
+        card.style.background = "linear-gradient(180deg, #FEF2F2 0%, #FFFFFF 100%)";
+      }
+      
+      document.getElementById('celebrationModal').style.display = 'flex';
+    }
+
+    function closeCelebration() {
+      playCloseSound();
+      document.getElementById('celebrationModal').style.display = 'none';
+    }
+
+
+    /* ==============================
+       6. SINIF ÇARPANLAR, BÖLENLER VE ASAL ÇARPANLAR SORU MOTORU
+       ============================== */
+    const TOWER_LABELS = [
+      "1. Adım",
+      "2. Adım",
+      "3. Adım",
+      "4. Adım",
+      "5. Adım",
+      "6. Adım",
+      "1919 Samsun",
+      "1920 TBMM",
+      "1922 Zafer",
+      "1923 CUMHURİYET"
+    ];
+
+    let gameMode = '1P';
+    let isGameRunning = false;
+    let timerInterval;
+    let timeLeft = 75;
+    let selectedDuelTime = 90;
+    let currentFullName = '';
+
+    let p1 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
+    let p2 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
+
+    function initSparks() {
+      let sc = document.getElementById('spark-container');
+      sc.innerHTML = '';
+      const colors = ['rgba(254, 240, 138, 0.85)', 'rgba(252, 165, 165, 0.85)', 'rgba(255, 255, 255, 0.8)'];
+      for (let i = 0; i < 65; i++) {
+        let d = document.createElement('div');
+        d.className = 'bg-spark';
+        let size = Math.random() * 5 + 3;
+        d.style.width = size + 'px';
+        d.style.height = size + 'px';
+        d.style.background = colors[Math.floor(Math.random() * colors.length)];
+        d.style.boxShadow = `0 0 8px ${d.style.background}`;
+        d.style.left = (Math.random() * 100) + 'vw';
+        d.style.animationDuration = (Math.random() * 5 + 4) + 's';
+        d.style.animationDelay = (Math.random() * 5 - 5) + 's';
+        sc.appendChild(d);
+      }
+    }
+    initSparks();
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(arr) {
+      let copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function isPrime(n) {
+      if (n < 2) return false;
+      for (let i = 2; i * i <= n; i++) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
+
+    function getDivisors(n) {
+      let divs = [];
+      for (let i = 1; i <= n; i++) {
+        if (n % i === 0) divs.push(i);
+      }
+      return divs;
+    }
+
+    function getPrimeFactors(n) {
+      let pf = [];
+      for (let i = 2; i <= n; i++) {
+        if (n % i === 0 && isPrime(i)) pf.push(i);
+      }
+      return pf;
+    }
+
+    function toSup(exp) {
+      const map = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶' };
+      return String(exp).split('').map(c => map[c] || c).join('');
+    }
+
+    function formatPrimeFactorization(n) {
+      let temp = n;
+      let parts = [];
+      for (let p = 2; p <= temp; p++) {
+        if (temp % p === 0) {
+          let count = 0;
+          while (temp % p === 0) {
+            count++;
+            temp = Math.floor(temp / p);
+          }
+          parts.push(count > 1 ? `${p}${toSup(count)}` : `${p}`);
+        }
+      }
+      return parts.join(' · ');
+    }
+
+    function makeUniqueOptions(correctStr, distractors) {
+      let unique = [String(correctStr)];
+      for (let d of distractors) {
+        let s = String(d);
+        if (!unique.includes(s)) unique.push(s);
+        if (unique.length === 4) break;
+      }
+      let fallback = 2;
+      while (unique.length < 4) {
+        let candidate = String(fallback++);
+        if (!unique.includes(candidate)) unique.push(candidate);
+      }
+      return shuffleArray(unique);
+    }
+
+    /* 6. Sınıf Çarpanlar, Bölenler, Asal Sayılar ve Asal Çarpanlar Dinamik Soru Üretici */
+    function generateQuestion(prevQuestionText = '') {
+      const presets = [
+        {
+          cat: "🇹🇷 29 Ekim Özel",
+          pts: 25,
+          q: "Cumhuriyet Bayramımızı kutladığımız <span class='q-highlight'>29</span> Ekim'deki <span class='q-highlight'>29</span> sayısı için hangisi doğrudur?",
+          ans: "Asal sayıdır",
+          traps: ["Çift sayıdır", "3'e tam bölünür", "4 tane böleni vardır"]
+        },
+        {
+          cat: "🇹🇷 Cumhuriyet Özel",
+          pts: 35,
+          q: "Cumhuriyetimizin ilan edildiği <span class='q-highlight'>1923</span> sayısının en küçük asal çarpanı kaçtır?",
+          ans: "3",
+          traps: ["2", "5", "7"]
+        },
+        {
+          cat: "🇹🇷 1919 Özel",
+          pts: 35,
+          q: "Milli Mücadele'nin başladığı <span class='q-highlight'>19</span> Mayıs'taki <span class='q-highlight'>19</span> sayısının doğal sayı bölenlerinin toplamı kaçtır?",
+          ans: "20",
+          traps: ["19", "21", "18"]
+        },
+        {
+          cat: "🇹🇷 1920 TBMM Özel",
+          pts: 35,
+          q: "TBMM'nin açıldığı <span class='q-highlight'>23</span> Nisan'daki <span class='q-highlight'>23</span> sayısı ile <span class='q-highlight'>29</span> Ekim'deki <span class='q-highlight'>29</span> sayısının ortak özelliği nedir?",
+          ans: "İkisi de asal sayıdır",
+          traps: ["İkisi de 3'e bölünür", "Asal çarpanları aynıdır", "Çift sayılardır"]
+        },
+        {
+          cat: "⭐ Asal Sayılar",
+          pts: 15,
+          q: "Hem <span class='q-highlight'>çift</span> hem de <span class='q-highlight'>asal</span> olan tek doğal sayı kaçtır?",
+          ans: "2",
+          traps: ["1", "4", "0"]
+        },
+        {
+          cat: "⭐ Asal Sayılar",
+          pts: 25,
+          q: "İki basamaklı <span class='q-highlight'>en küçük</span> asal sayı ile bir basamaklı <span class='q-highlight'>en büyük</span> asal sayının toplamı kaçtır?",
+          ans: "18",
+          traps: ["16", "19", "20"]
+        },
+        {
+          cat: "⭐ Asal Sayılar",
+          pts: 25,
+          q: "İki basamaklı <span class='q-highlight'>en büyük</span> asal sayı kaçtır?",
+          ans: "97",
+          traps: ["99", "91", "93"]
+        },
+        {
+          cat: "🌳 Çarpan Ağacı",
+          pts: 35,
+          q: "Bir çarpan ağacının en üstünde <span class='q-highlight'>A</span> sayısı, ilk dallarında ise <span class='q-highlight'>3</span> ve <span class='q-highlight'>28</span> yazmaktadır. Buna göre <span class='q-highlight'>A</span> kaçtır?",
+          ans: "84",
+          traps: ["56", "72", "96"]
+        },
+        {
+          cat: "📊 Bölen Listesi",
+          pts: 45,
+          q: "Asal çarpanlarının çarpımı <span class='q-highlight'>2³ · 3² · 5</span> olan doğal sayı kaçtır?",
+          ans: "360",
+          traps: ["180", "240", "720"]
+        },
+        {
+          cat: "📊 Bölen Listesi",
+          pts: 45,
+          q: "<span class='q-highlight'>180 = 2ᵃ · 3ᵇ · 5ᶜ</span> eşitliğinde <span class='q-highlight'>a + b + c</span> toplamı kaçtır?",
+          ans: "5",
+          traps: ["4", "6", "7"]
+        }
+      ];
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        let qObj = null;
+
+        if (Math.random() < 0.22) {
+          let p = presets[Math.floor(Math.random() * presets.length)];
+          qObj = {
+            cat: p.cat,
+            pts: p.pts,
+            q: p.q,
+            ans: String(p.ans),
+            options: makeUniqueOptions(p.ans, p.traps)
+          };
+        } else {
+          let type = randInt(1, 9);
+
+          if (type === 1) {
+            // 15 PUAN: Hangisi asal sayıdır? (91, 51, 57 gibi çeldiricilerle)
+            const primes = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+            const trickyComposites = [1, 9, 15, 21, 27, 33, 39, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93, 99];
+            let ans = primes[Math.floor(Math.random() * primes.length)];
+            let traps = shuffleArray(trickyComposites).slice(0, 3);
+            qObj = {
+              cat: "⭐ Asal Sayılar",
+              pts: 15,
+              q: "Aşağıdaki sayılardan hangisi bir <span class='q-highlight'>asal sayıdır</span>?",
+              ans: String(ans),
+              options: makeUniqueOptions(ans, traps)
+            };
+          } else if (type === 2) {
+            // 15 PUAN: Hangisi N sayısının bir çarpanı (böleni) değildir?
+            const nums = [24, 30, 36, 40, 42, 45, 48, 54, 60, 72, 80, 90];
+            let n = nums[Math.floor(Math.random() * nums.length)];
+            let divs = getDivisors(n).filter(d => d > 1 && d < n);
+            let traps = shuffleArray(divs).slice(0, 3);
+            let nonDivs = [];
+            for (let k = 2; k < n; k++) {
+              if (n % k !== 0) nonDivs.push(k);
+            }
+            let ans = nonDivs[Math.floor(Math.random() * Math.min(12, nonDivs.length))];
+            qObj = {
+              cat: "🔢 Çarpanlar ve Bölenler",
+              pts: 15,
+              q: "Aşağıdakilerden hangisi <span class='q-highlight'>" + n + "</span> sayısının doğal sayı bölenlerinden (çarpanlarından) biri <span class='q-highlight'>değildir</span>?",
+              ans: String(ans),
+              options: makeUniqueOptions(ans, traps)
+            };
+          } else if (type === 3) {
+            // 25 PUAN: N sayısının kaç tane asal çarpanı vardır? ve nelerdir?
+            const pool = [
+              { n: 18, text: "2 ve 3", traps: ["2, 3 ve 6", "3 ve 9", "2, 3 ve 9"] },
+              { n: 20, text: "2 ve 5", traps: ["2, 4 ve 5", "4 ve 5", "2, 5 ve 10"] },
+              { n: 28, text: "2 ve 7", traps: ["2, 4 ve 7", "4 ve 7", "2, 7 ve 14"] },
+              { n: 30, text: "2, 3 ve 5", traps: ["2, 5 ve 6", "3, 5 ve 10", "2, 3, 5 ve 6"] },
+              { n: 42, text: "2, 3 ve 7", traps: ["2, 6 ve 7", "3, 6 ve 7", "2, 3 ve 14"] },
+              { n: 45, text: "3 ve 5", traps: ["3, 5 ve 9", "5 ve 9", "3, 5 ve 15"] },
+              { n: 60, text: "2, 3 ve 5", traps: ["2, 3, 4 ve 5", "2, 5 ve 6", "3, 4 ve 5"] },
+              { n: 70, text: "2, 5 ve 7", traps: ["2, 7 ve 10", "5, 7 ve 10", "2, 5 ve 14"] },
+              { n: 84, text: "2, 3 ve 7", traps: ["2, 4 ve 7", "2, 3, 4 ve 7", "3, 4 ve 7"] },
+              { n: 90, text: "2, 3 ve 5", traps: ["2, 3, 5 ve 9", "3, 5 ve 9", "2, 5 ve 9"] }
+            ];
+            let item = pool[Math.floor(Math.random() * pool.length)];
+            qObj = {
+              cat: "🔥 Asal Çarpanlar",
+              pts: 25,
+              q: "<span class='q-highlight'>" + item.n + "</span> sayısının <span class='q-highlight'>asal çarpanları</span> aşağıdakilerden hangisinde tam ve doğru verilmiştir?",
+              ans: item.text,
+              options: makeUniqueOptions(item.text, item.traps)
+            };
+          } else if (type === 4) {
+            // 25 PUAN: N sayısının en büyük asal çarpanı kaçtır?
+            const nums = [28, 35, 42, 44, 52, 55, 65, 66, 70, 75, 78, 84, 88, 90, 98, 105, 110];
+            let n = nums[Math.floor(Math.random() * nums.length)];
+            let pfs = getPrimeFactors(n);
+            let ans = pfs[pfs.length - 1];
+            let divs = getDivisors(n).filter(d => d !== ans && d > 1 && d < n);
+            let traps = shuffleArray(divs.concat([2, 3, 5, 7, 11, 13].filter(x => x !== ans)));
+            qObj = {
+              cat: "🔥 Asal Çarpanlar",
+              pts: 25,
+              q: "<span class='q-highlight'>" + n + "</span> sayısının <span class='q-highlight'>en büyük asal çarpanı</span> kaçtır?",
+              ans: String(ans),
+              options: makeUniqueOptions(ans, traps)
+            };
+          } else if (type === 5) {
+            // 25 PUAN: N sayısının kaç tane doğal sayı böleni vardır?
+            const nums = [12, 16, 18, 20, 24, 28, 30, 32, 36, 40, 45, 48, 50];
+            let n = nums[Math.floor(Math.random() * nums.length)];
+            let count = getDivisors(n).length;
+            let traps = [count - 2, count - 1, count + 1, count + 2].filter(x => x > 1);
+            qObj = {
+              cat: "🔢 Doğal Sayı Bölenleri",
+              pts: 25,
+              q: "<span class='q-highlight'>" + n + "</span> sayısının toplam <span class='q-highlight'>kaç tane</span> doğal sayı çarpanı (böleni) vardır?",
+              ans: String(count),
+              options: makeUniqueOptions(count, traps)
+            };
+          } else if (type === 6) {
+            // 35 PUAN: Üslü asal çarpanlarına ayrılmış hali hangisidir?
+            const nums = [24, 36, 40, 45, 48, 50, 54, 60, 72, 75, 80, 90, 96, 100, 108, 120];
+            let n = nums[Math.floor(Math.random() * nums.length)];
+            let ans = formatPrimeFactorization(n);
+            let otherNums = shuffleArray(nums.filter(x => x !== n)).slice(0, 3);
+            let traps = otherNums.map(x => formatPrimeFactorization(x));
+            qObj = {
+              cat: "📊 Üslü Asal Çarpanlar",
+              pts: 35,
+              q: "<span class='q-highlight'>" + n + "</span> sayısının asal çarpanlarının üslü ifadelerin çarpımı şeklinde yazılışı hangisidir?",
+              ans: ans,
+              options: makeUniqueOptions(ans, traps)
+            };
+          } else if (type === 7) {
+            // 35 PUAN: Üslü biçimde verilen sayının değeri kaçtır?
+            const nums = [24, 36, 40, 45, 48, 54, 60, 72, 75, 80, 90, 108, 120, 144, 150];
+            let n = nums[Math.floor(Math.random() * nums.length)];
+            let expr = formatPrimeFactorization(n);
+            let traps = [n - 12, n + 12, n * 2, Math.floor(n / 2), n + 10].filter(x => x > 10 && x !== n);
+            qObj = {
+              cat: "📊 Asal Çarpanlardan Sayıya",
+              pts: 35,
+              q: "Asal çarpanlarının çarpımı <span class='q-highlight'>" + expr + "</span> olan doğal sayı kaçtır?",
+              ans: String(n),
+              options: makeUniqueOptions(n, traps)
+            };
+          } else if (type === 8) {
+            // 45 PUAN: N sayısının asal çarpanlarının toplamı kaçtır?
+            const nums = [30, 42, 60, 66, 70, 78, 84, 90, 105, 110, 120, 126, 130, 140];
+            let n = nums[Math.floor(Math.random() * nums.length)];
+            let pfs = getPrimeFactors(n);
+            let sum = pfs.reduce((a, b) => a + b, 0);
+            let traps = [sum - 2, sum + 2, sum + 3, sum - 1, sum + 5].filter(x => x > 2 && x !== sum);
+            qObj = {
+              cat: "🔥 Asal Çarpanlar Toplamı",
+              pts: 45,
+              q: "<span class='q-highlight'>" + n + "</span> sayısının <span class='q-highlight'>asal çarpanlarının toplamı</span> kaçtır?",
+              ans: String(sum),
+              options: makeUniqueOptions(sum, traps)
+            };
+          } else {
+            // 45 PUAN: Gökkuşağı / Sıralı çarpan bulma: 1, 2, 3, A, 6, 9, B, 18 -> A + B kaçtır?
+            const items = [
+              { seq: "1, 2, 3, <span class='q-highlight'>A</span>, 6, 8, <span class='q-highlight'>B</span>, 24", ans: 16, traps: [14, 18, 20] },
+              { seq: "1, 2, <span class='q-highlight'>A</span>, 4, 6, 9, <span class='q-highlight'>B</span>, 18, 36", ans: 15, traps: [12, 16, 18] },
+              { seq: "1, 2, 3, <span class='q-highlight'>A</span>, 6, 10, <span class='q-highlight'>B</span>, 30", ans: 20, traps: [18, 19, 22] },
+              { seq: "1, 2, 4, <span class='q-highlight'>A</span>, 8, 10, <span class='q-highlight'>B</span>, 40", ans: 25, traps: [20, 24, 26] },
+              { seq: "1, 3, <span class='q-highlight'>A</span>, 9, <span class='q-highlight'>B</span>, 45", ans: 20, traps: [18, 21, 24] }
+            ];
+            let it = items[Math.floor(Math.random() * items.length)];
+            qObj = {
+              cat: "🌈 Çarpan Gökkuşağı",
+              pts: 45,
+              q: "Bir sayının tüm doğal sayı çarpanları küçükten büyüğe <span class='q-highlight'>" + it.seq + "</span> şeklinde sıralanmıştır. Buna göre <span class='q-highlight'>A + B</span> kaçtır?",
+              ans: String(it.ans),
+              options: makeUniqueOptions(it.ans, it.traps)
+            };
+          }
+        }
+
+        if (qObj && qObj.q !== prevQuestionText) {
+          return qObj;
+        }
+      }
+      return {
+        cat: "⭐ Asal Sayılar",
+        pts: 15,
+        q: "En küçük asal sayı kaçtır?",
+        ans: "2",
+        options: ["1", "2", "3", "5"]
+      };
+    }
+
+    function renderTower(playerNum) {
+      let player = (playerNum === 1) ? p1 : p2;
+      let container = document.getElementById(playerNum === 1 ? 'tower-p1' : 'tower-p2');
+      container.innerHTML = '';
+
+      for (let i = 0; i < 10; i++) {
+        let div = document.createElement('div');
+        let classes = ['tower-step'];
+        if (i === 9) classes.push('step-1923');
+        if (i < player.step) classes.push('reached');
+        if (i === player.step) classes.push('current');
+        div.className = classes.join(' ');
+
+        let label = TOWER_LABELS[i];
+        let rightIcon = (i === player.step) ? `<span class="torch-icon">🔥</span>` : (i < player.step ? `✨` : (i === 9 ? `🇹🇷` : ``));
+        div.innerHTML = `<span>${label}</span><span>${rightIcon}</span>`;
+        container.appendChild(div);
+      }
+    }
+
+    function updateLivesDisplay(lostPlayerObj = null) {
+      const p1El = document.getElementById('p1-lives');
+      let html1 = '';
+      for(let i=0; i<3; i++) {
+         if (i < p1.lives) html1 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p1 && i === p1.lives) html1 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html1 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p1El.innerHTML = html1;
+
+      const p2El = document.getElementById('p2-lives');
+      let html2 = '';
+      for(let i=0; i<3; i++) {
+         if (i < p2.lives) html2 += `<span class="heart-icon">❤️</span>`;
+         else if (lostPlayerObj === p2 && i === p2.lives) html2 += `<span class="heart-icon heart-lost">💔</span>`;
+         else html2 += `<span style="opacity:0.3">🖤</span>`;
+      }
+      p2El.innerHTML = html2;
+    }
+
+    function updateScores() {
+      document.getElementById('p1-score').innerText = p1.score;
+      document.getElementById('p2-score').innerText = p2.score;
+      document.getElementById('p1-streak').innerText = `🔥 1923 Zirvesi: ${p1.tours}`;
+      document.getElementById('p2-streak').innerText = `🔥 1923 Zirvesi: ${p2.tours}`;
+    }
+
+    function loadNextQuestion(playerNum) {
+      let player = (playerNum === 1) ? p1 : p2;
+      let prevQ = player.currentQ ? player.currentQ.q : '';
+      let qObj = generateQuestion(prevQ);
+      player.currentQ = qObj;
+      player.locked = false;
+
+      let suffix = (playerNum === 1) ? 'p1' : 'p2';
+      document.getElementById(`cat-${suffix}`).innerText = qObj.cat;
+
+      let ptsEl = document.getElementById(`pts-${suffix}`);
+      ptsEl.innerText = `+${qObj.pts} P`;
+      ptsEl.style.background = qObj.pts >= 45 ? '#EF4444' : (qObj.pts >= 35 ? '#F97316' : (qObj.pts >= 25 ? '#10B981' : '#3B82F6'));
+
+      document.getElementById(`qtext-${suffix}`).innerHTML = qObj.q;
+
+      let optsContainer = document.getElementById(`opts-${suffix}`);
+      optsContainer.innerHTML = '';
+
+      qObj.options.forEach(optVal => {
+        let btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = optVal;
+        btn.onclick = (e) => handleOptionClick(playerNum, optVal, btn, e);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function showFloatingText(x, y, text, color) {
+      let ft = document.createElement('div');
+      ft.innerText = text;
+      ft.style.position = 'fixed';
+      ft.style.left = x + 'px';
+      ft.style.top = y + 'px';
+      ft.style.color = color;
+      ft.style.fontSize = '34px';
+      ft.style.fontWeight = '900';
+      ft.style.fontFamily = "'Baloo 2', sans-serif";
+      ft.style.textShadow = '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000';
+      ft.style.zIndex = '999';
+      ft.style.pointerEvents = 'none';
+      ft.style.transition = 'all 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      document.body.appendChild(ft);
+      
+      ft.getBoundingClientRect();
+      ft.style.transform = 'translate(-50%, -85px) scale(1.35)';
+      ft.style.opacity = '0';
+      
+      setTimeout(() => ft.remove(), 850);
+    }
+
+    function handleOptionClick(playerNum, selectedVal, btnEl, event) {
+      if (!isGameRunning) return;
+      let player = (playerNum === 1) ? p1 : p2;
+      if (player.locked || !player.currentQ) return;
+      player.locked = true;
+
+      let rect = btnEl.getBoundingClientRect();
+      let centerX = rect.left + rect.width / 2;
+      let centerY = rect.top;
+
+      if (String(selectedVal) === String(player.currentQ.ans)) {
+        btnEl.classList.add('correct-anim');
+        let earned = player.currentQ.pts || 20;
+        player.score += earned;
+        player.step++;
+
+        if (player.step >= 10) {
+          // 1923 CUMHURİYET ZİRVESİ BONUS!
+          player.tours++;
+          player.score += 100;
+          player.lives = 3; // Zirveye ulaşınca canlar yenilenir!
+          updateLivesDisplay();
+          playCorrectSound(true);
+          launchConfetti(80);
+          showFloatingText(centerX, centerY, `🇹🇷 1923 ZİRVESİ! +${earned + 100}`, "#FDE047");
+          player.step = 0;
+        } else {
+          playCorrectSound(false);
+          showFloatingText(centerX, centerY, `+${earned}`, "#10B981");
+        }
+
+        renderTower(playerNum);
+        updateScores();
+        setTimeout(() => {
+          if (isGameRunning) loadNextQuestion(playerNum);
+        }, 380);
+      } else {
+        btnEl.classList.add('wrong-anim');
+        player.score = Math.max(0, player.score - 5);
+        player.lives--;
+        if (player.step > 0) player.step--; // Yanlışta meşale 1 basamak geriler
+        playLifeLostSound();
+        showFloatingText(centerX, centerY, "-5", "#EF4444");
+        updateLivesDisplay(player);
+        renderTower(playerNum);
+        updateScores();
+
+        if (player.lives <= 0) {
+          setTimeout(() => {
+            endGame(player === p1 ? "P1_DEAD" : "P2_DEAD");
+          }, 500);
+        } else {
+          // Yanlış yapınca da soru değişsin!
+          setTimeout(() => {
+            if (isGameRunning) loadNextQuestion(playerNum);
+          }, 480);
+        }
+      }
+    }
+
+    function validateRealName(nameStr) {
+      let trimmed = nameStr.trim().replace(/\s+/g, ' ');
+      if (!trimmed) {
+        return { valid: false, error: "Lütfen adınızı girin." };
+      }
+      if (authorizedStudents.length === 0) {
+        return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce Sağ Üstteki (⚙️) Yönetici Ayarları'ndan sınıf listesini ekleyin." };
+      }
+      let lowerInput = trimmed.toLocaleLowerCase('tr-TR');
+      let matchedName = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === lowerInput);
+      if (matchedName) {
+        return { valid: true, name: matchedName };
+      } else {
+        return { valid: false, error: "İsminiz sistemdeki öğrenci listesinde bulunamadı! Lütfen listeye eklenen isminizi doğru yazdığınızdan emin olun (veya kutucuğa tıklayıp açılan listeden seçin)." };
+      }
+    }
+
+    function setMode(mode) {
+      gameMode = mode;
+      document.getElementById('btn-mode-1p').className = (mode === '1P') ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('btn-mode-2p').className = (mode === '2P') ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('1p-form').style.display = (mode === '1P') ? 'flex' : 'none';
+      document.getElementById('2p-form').style.display = (mode === '2P') ? 'flex' : 'none';
+    }
+
+    function setTime(time) {
+      selectedDuelTime = time;
+      document.getElementById('time-60').className = (time === 60) ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('time-90').className = (time === 90) ? 'btn-subtle active' : 'btn-subtle';
+      document.getElementById('time-120').className = (time === 120) ? 'btn-subtle active' : 'btn-subtle';
+    }
+
+    function showScreen(screenId) {
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('resultScreen1P').style.display = 'none';
+      document.getElementById('resultScreen2P').style.display = 'none';
+      document.getElementById('leaderboardScreen').style.display = 'none';
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('center-line').style.display = 'none';
+      document.getElementById('game-area').style.display = 'none';
+      
+      if (screenId === 'GAME') {
+        document.getElementById('app-overlay').style.display = 'none';
+        document.getElementById('top-hud').style.display = 'flex';
+        document.getElementById('game-area').style.display = 'flex';
+        if(gameMode === '2P') document.getElementById('center-line').style.display = 'block';
+      } else {
+        document.getElementById('app-overlay').style.display = 'flex';
+        if(screenId === 'START') document.getElementById('startScreen').style.display = 'block';
+        if(screenId === 'LEADERBOARD') { renderLeaderboard(); document.getElementById('leaderboardScreen').style.display = 'flex'; }
+      }
+    }
+
+    function startGame() {
+      if(gameMode === '1P') {
+        let rawName = document.getElementById('playerFullName').value;
+        let validation = validateRealName(rawName);
+        if(!validation.valid) {
+           alert(validation.error);
+           return;
+        }
+        currentFullName = validation.name;
+      }
+      
+      showScreen('GAME');
+      let gameArea = document.getElementById('game-area');
+      
+      if(gameMode === '1P') {
+        gameArea.classList.remove('duel-mode');
+        document.getElementById('hud-right').style.display = 'none';
+        document.getElementById('arena-p2').style.display = 'none';
+        document.getElementById('p1-box').className = 'team-box single-box';
+        document.getElementById('p1-name').innerText = currentFullName;
+      } else {
+        gameArea.classList.add('duel-mode');
+        document.getElementById('hud-right').style.display = 'flex';
+        document.getElementById('arena-p2').style.display = 'flex';
+        document.getElementById('p1-box').className = 'team-box red-box';
+        document.getElementById('p1-name').innerText = "Kırmızı Takım";
+      }
+
+      p1 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
+      p2 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
+      updateScores();
+      updateLivesDisplay();
+      renderTower(1);
+      loadNextQuestion(1);
+
+      if (gameMode === '2P') {
+        renderTower(2);
+        loadNextQuestion(2);
+      }
+
+      isGameRunning = true;
+      timeLeft = gameMode === '1P' ? 75 : selectedDuelTime;
+      document.getElementById('timer').innerText = timeLeft + 's';
+      
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = timeLeft + 's';
+        if(timeLeft <= 0) endGame();
+      }, 1000);
+    }
+
+    function endGame(reason = null) {
+      isGameRunning = false;
+      clearInterval(timerInterval);
+      launchConfetti(120);
+
+      document.getElementById('app-overlay').style.display = 'flex';
+      document.getElementById('top-hud').style.display = 'none';
+      document.getElementById('center-line').style.display = 'none';
+      document.getElementById('game-area').style.display = 'none';
+      
+      if(gameMode === '1P') {
+        saveScoreToLeaderboardDirectly();
+        document.getElementById('resultScreen1P').style.display = 'block';
+        document.getElementById('finalScore1P').innerText = p1.score;
+        document.getElementById('finalTours1P').innerText = p1.tours + " Kez";
+        
+        let sub = document.getElementById('1p-result-sub');
+        if (reason === "P1_DEAD") {
+            sub.innerText = "3 hakkın bitti ama Cumhuriyet Meşalesini harika taşıdın!";
+            sub.style.color = "#EF4444";
+        } else {
+            sub.innerText = "29 Ekim Cumhuriyet Bayramımız Kutlu Olsun! Harika yarıştın!";
+            sub.style.color = "#475569";
+        }
+      } else {
+        document.getElementById('resultScreen2P').style.display = 'block';
+        let title = document.getElementById('winner-title-2p');
+        let sub = document.getElementById('winner-sub-2p');
+        document.getElementById('winner-score-p1').innerText = p1.score;
+        document.getElementById('winner-score-p2').innerText = p2.score;
+
+        if (reason === "P1_DEAD") {
+           title.innerText = "🔵 Mavi Takım Kazandı!";
+           title.style.color = "#3B82F6";
+           sub.innerText = "Kırmızı takımın tüm canları bitti! Mavi Takım meşaleyi zirveye taşıdı!";
+           playFanfareSound(1);
+        } else if (reason === "P2_DEAD") {
+           title.innerText = "🔴 Kırmızı Takım Kazandı!";
+           title.style.color = "#EF4444";
+           sub.innerText = "Mavi takımın tüm canları bitti! Kırmızı Takım meşaleyi zirveye taşıdı!";
+           playFanfareSound(1);
+        } else {
+            if(p1.score > p2.score) {
+              title.innerText = "🔴 Kırmızı Takım Kazandı!";
+              title.style.color = "#EF4444";
+              sub.innerText = "Tebrikler! Kırmızı Takım üstün bir mücadeleyle düelloyu galip tamamladı!";
+              playFanfareSound(1);
+            } else if(p2.score > p1.score) {
+              title.innerText = "🔵 Mavi Takım Kazandı!";
+              title.style.color = "#3B82F6";
+              sub.innerText = "Tebrikler! Mavi Takım üstün bir mücadeleyle düelloyu galip tamamladı!";
+              playFanfareSound(1);
+            } else {
+              title.innerText = "🤝 Cumhuriyet Kazandı! Berabere!";
+              title.style.color = "#10B981";
+              sub.innerText = "İki takım da eşit puan toplayarak muhteşem bir mücadele sergiledi!";
+            }
+        }
+      }
+    }
+
+    /* ==============================
+       KONFETİ / HAVAİ FİŞEK
+       ============================== */
+    const canvas = document.getElementById('confetti-canvas');
+    const canvasCtx = canvas.getContext('2d');
+    let confettiPieces = [];
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+    function launchConfetti(count = 70) {
+      const colors = ['#EF4444', '#FFFFFF', '#F59E0B', '#DC2626', '#FDE047'];
+      for (let i = 0; i < count; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.3 - 50,
+          w: Math.random() * 10 + 6, h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 6, vy: Math.random() * 4 + 3,
+          rot: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 8, life: 1
+        });
+      }
+    }
+    function animateConfetti() {
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = confettiPieces.length - 1; i >= 0; i--) {
+        let p = confettiPieces[i];
+        p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed; p.life -= 0.005;
+        canvasCtx.save(); canvasCtx.translate(p.x, p.y); canvasCtx.rotate((p.rot * Math.PI) / 180);
+        canvasCtx.fillStyle = p.color; canvasCtx.globalAlpha = Math.max(0, p.life);
+        canvasCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); canvasCtx.restore();
+        if (p.life <= 0) confettiPieces.splice(i, 1);
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+    animateConfetti();
+
+    /* ==============================
+       AYARLAR VE SIFIRLAMA
+       ============================== */
+    function openSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      
+      if (localStorage.getItem('isAdmin_cumhuriyetmesalesi') === 'true') {
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+      }
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function checkAdminPassword() {
+      const pwd = document.getElementById('adminPassword').value;
+      if (pwd === '26575982824.bati') {
+        localStorage.setItem('isAdmin_cumhuriyetmesalesi', 'true');
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+      } else {
+        alert('Hatalı şifre! Lütfen tekrar deneyin.');
+      }
+    }
+
+    function clearLeaderboard() {
+      if (confirm('Tüm lider tablosu hem veritabanından hem de bu cihazdan kalıcı olarak silinecek. Emin misiniz?')) {
+        if (cloudDb) {
+          cloudDb.ref(DB_NODE).remove();
+        } else {
+          fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'DELETE' });
+        }
+        localStorage.removeItem('meb_cumhuriyetmesalesi_top10');
+        renderLeaderboard();
+        alert('Lider tablosu başarıyla sıfırlandı.');
+        closeSettings();
+      }
+    }
+  </script>
+</body>
+</html>
