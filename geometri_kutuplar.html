@@ -2,16 +2,18 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kutuplarda Geometri</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kutuplarda Geometri | 5. Sınıf Bireysel & Grup Yarışması</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         /* KUTUP TEMASI ARKA PLANI */
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(to bottom, rgba(2, 132, 199, 0.6), rgba(15, 23, 42, 0.9)), url('polar_background.jpg');
+            background: linear-gradient(to bottom, rgba(2, 132, 199, 0.55), rgba(15, 23, 42, 0.88)), url('polar_background.jpg');
             background-size: cover;
             background-position: center;
             color: #f8fafc;
@@ -30,17 +32,18 @@
         .bg-snow-flake {
             position: absolute; top: -50px;
             background: white; border-radius: 50%;
-            opacity: 0.8;
-            box-shadow: 0 0 5px rgba(255,255,255,0.8);
+            opacity: 0.85;
+            box-shadow: 0 0 6px rgba(255,255,255,0.9);
             animation: bgSnowFall linear infinite;
         }
         @keyframes bgSnowFall {
             0% { transform: translateY(0) translateX(0); opacity: 1; }
-            100% { transform: translateY(110vh) translateX(20px); opacity: 0; }
+            100% { transform: translateY(110vh) translateX(25px); opacity: 0; }
         }
 
         .font-baloo { font-family: 'Baloo 2', cursive; }
 
+        /* 30 KUTULU GRUP OYUNU IZGARASI */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -143,23 +146,24 @@
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(2, 6, 23, 0.85);
-            z-index: 50;
+            z-index: 80;
             display: none;
             align-items: center; justify-content: center;
             backdrop-filter: blur(10px);
+            padding: 16px;
         }
-        .modal-active { display: flex; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .modal-active { display: flex; animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
         
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         .modal-box {
-            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.98), rgba(240, 249, 255, 0.95));
-            border: 6px solid #0284c7;
-            padding: 35px 30px;
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.98), rgba(240, 249, 255, 0.96));
+            border: 5px solid #0284c7;
+            padding: 30px 26px;
             border-radius: 28px;
-            width: 90%; max-width: 650px;
+            width: 100%; max-width: 640px;
             text-align: center;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.65);
             position: relative;
             color: #1e293b;
         }
@@ -176,7 +180,7 @@
         }
         
         .active-team {
-            transform: scale(1.1) translateY(-6px);
+            transform: scale(1.08) translateY(-5px);
             z-index: 10;
             background: rgba(255, 255, 255, 1);
             box-shadow: 0 15px 30px rgba(0,0,0,0.6);
@@ -184,63 +188,215 @@
 
         /* BİLDİRİM YERİ */
         .toast {
-            position: absolute;
-            top: 25px;
+            position: fixed;
+            top: 22px;
             left: 50%;
             transform: translateX(-50%) scale(0);
-            padding: 12px 35px;
+            padding: 12px 32px;
             border-radius: 50px;
             color: white; 
             font-weight: 800;
             z-index: 9999; 
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s;
             text-align: center; 
-            border: 3px solid rgba(255,255,255,0.6);
-            font-size: 1.4rem;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            letter-spacing: 1px;
+            border: 3px solid rgba(255,255,255,0.7);
+            font-size: 1.35rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.45);
+            letter-spacing: 0.5px;
             opacity: 0;
             white-space: nowrap;
+            pointer-events: none;
         }
         .toast.toast-show { 
             transform: translateX(-50%) scale(1); 
             opacity: 1;
         }
-        
-        #winner-screen {
-            background: rgba(2, 6, 23, 0.92);
-            backdrop-filter: blur(12px);
+
+        /* GİRİŞ VE MENÜ EKRANLARI */
+        .screen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
         }
+
+        .menu-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 4px solid #38bdf8;
+            border-radius: 28px;
+            padding: 30px 28px;
+            width: 100%;
+            max-width: 580px;
+            text-align: center;
+            color: #1e293b;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 16px;
+            font-family: 'Baloo 2', cursive;
+            font-size: 18px;
+            font-weight: 800;
+            border: 3px solid #cbd5e1;
+            background: #f8fafc;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border-color: #0369a1;
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* BİREYSEL OYUN (1P) BUZUL KEŞİF SANDIKLARI (3 KUTU SEÇİMİ) */
+        .chest-card {
+            position: relative;
+            height: 165px;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+        .chest-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.35);
+        }
+        .chest-card:hover:not(.opened) .chest-inner {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 16px 32px rgba(2, 132, 199, 0.5);
+        }
+        .chest-card.opened .chest-inner {
+            transform: rotateY(180deg);
+            cursor: default;
+        }
+        .chest-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 4px solid;
+        }
+        .chest-front {
+            background: linear-gradient(145deg, #0ea5e9, #0369a1);
+            border-color: #bae6fd;
+            color: white;
+        }
+        .chest-back {
+            background: white;
+            border-color: #38bdf8;
+            transform: rotateY(180deg);
+            color: #0f172a;
+        }
+
+        /* İLK 10 LİDER TABLOSU SATIRLARI */
+        .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+        .lb-row { background: #f8fafc; border-radius: 14px; cursor: pointer; transition: transform 0.2s; }
+        .lb-row:hover { transform: scale(1.015); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .lb-row td { padding: 10px 12px; font-weight: 800; color: #1e293b; text-align: center; }
+        .lb-row td:first-child { border-top-left-radius: 14px; border-bottom-left-radius: 14px; }
+        .lb-row td:last-child { border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
+        .lb-row.rank-1 { background: linear-gradient(90deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; }
+        .lb-row.rank-2 { background: linear-gradient(90deg, #e0f2fe, #f0f9ff); border: 2px solid #38bdf8; }
+        .lb-row.rank-3 { background: linear-gradient(90deg, #ffedd5, #fff7ed); border: 2px solid #fb923c; }
     </style>
 </head>
 <body class="p-2 relative flex flex-col justify-center items-center h-screen">
 
-    <!-- Yağmur Konteyneri -->
+    <!-- Kar Konteyneri -->
     <div id="snow-container"></div>
 
-    <div class="absolute top-4 left-4 flex flex-col gap-2 z-20 w-40">
-        <button id="btn-last-round" onclick="triggerLastRound()" class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-yellow-900 border-b-4 border-yellow-700 font-bold py-2 px-3 rounded-xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-base font-baloo flex items-center justify-center gap-2 w-full">
+    <!-- Bildirim Toast -->
+    <div id="toast" class="toast font-baloo"></div>
+
+    <!-- =========================================================
+         BAŞLANGIÇ EKRANI (BİREYSEL Mİ, 3 TAKIMLI GRUP OYUNU MU?)
+         ========================================================= -->
+    <div id="start-overlay" class="screen-overlay">
+        <div class="menu-card">
+            <!-- Sağ Üst Öğretmen Ayarları Butonu -->
+            <button onclick="openSettings()" title="Öğretmen Ayarları (Öğrenci Listesi & Sıfırlama)" class="absolute top-4 right-5 text-2xl hover:rotate-90 transition-transform">⚙️</button>
+
+            <div class="text-5xl mb-1">🦊 🐧 🦭</div>
+            <h1 class="font-baloo text-4xl font-extrabold text-sky-700 tracking-wide mb-1">KUTUPLARDA GEOMETRİ</h1>
+            <p class="text-slate-500 font-bold text-sm mb-5">5. Sınıf Temel Geometrik Kavramlar, Açılar ve Çember Yarışması</p>
+
+            <!-- Oyun Modu Seçimi -->
+            <div class="text-left text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-2">Oyun Modunu Seçin:</div>
+            <div class="flex gap-3 mb-5">
+                <button id="btn-mode-1p" class="mode-btn active" onclick="selectGameMode('1P')">
+                    <span class="text-3xl">👤</span>
+                    <span>Bireysel Keşif</span>
+                    <span class="text-xs font-bold opacity-80">İlk 10 Yarışı + Sürpriz Buzullar</span>
+                </button>
+                <button id="btn-mode-group" class="mode-btn" onclick="selectGameMode('GROUP')">
+                    <span class="text-3xl">👥</span>
+                    <span>3 Gruba Bölünmüş Sınıf</span>
+                    <span class="text-xs font-bold opacity-80">30 Kutulu Takım Yarışması</span>
+                </button>
+            </div>
+
+            <!-- Bireysel Mod: Öğrenci Ad-Soyad Girişi -->
+            <div id="form-1p" class="mb-5 text-left">
+                <label class="block text-sm font-extrabold text-slate-700 mb-1.5">Öğrenci Adı ve Soyadı:</label>
+                <input type="text" id="player-fullname" list="studentNamesList" placeholder="Adınızı ve soyadınızı yazın veya seçin..." autocomplete="off" class="w-full p-3.5 rounded-2xl border-3 border-sky-300 focus:border-sky-500 outline-none text-center text-lg font-extrabold text-slate-800 bg-sky-50/50">
+                <datalist id="studentNamesList"></datalist>
+            </div>
+
+            <!-- Grup Modu: Bilgilendirme -->
+            <div id="form-group-info" class="hidden mb-5 p-3.5 rounded-2xl bg-sky-50 border-2 border-sky-200 text-slate-700 text-sm font-bold">
+                🦊 <strong>Kutup Tilkileri</strong>, 🐧 <strong>Penguenler</strong> ve 🦭 <strong>Foklar</strong> olmak üzere 3 takım sırayla 30 buz kutusunu açarak yarışır!
+            </div>
+
+            <button onclick="handleStartButtonClick()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-baloo text-2xl font-black py-4 rounded-2xl shadow-[0_8px_20px_rgba(2,132,199,0.45)] border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2 mb-3">
+                <span>🚀 MACERAYA BAŞLA</span>
+            </button>
+
+            <button onclick="openLeaderboard()" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-amber-400 font-baloo text-lg font-extrabold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                <span>🏆 İlk 10 Kutup Kaşifleri Tablosu</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         1. GRUP OYUNU ARAYÜZÜ (3 TAKIMLI 30 KUTU)
+         ========================================================= -->
+    <div id="group-controls" class="hidden absolute top-4 left-4 flex-col gap-2 z-20 w-44">
+        <button id="btn-last-round" onclick="triggerLastRound()" class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-yellow-900 border-b-4 border-yellow-700 font-bold py-2 px-3 rounded-xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-sm font-baloo flex items-center justify-center gap-1.5 w-full">
             ⏳ SON TUR
         </button>
-        <button onclick="startGame()" class="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white border-b-4 border-cyan-800 font-bold py-2 px-3 rounded-xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-base font-baloo flex items-center justify-center gap-2 w-full">
-            🔄 YENİ OYUN
+        <button onclick="startGroupGame()" class="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white border-b-4 border-cyan-800 font-bold py-2 px-3 rounded-xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] transition transform hover:scale-105 active:border-b-0 active:translate-y-1 text-sm font-baloo flex items-center justify-center gap-1.5 w-full">
+            🔄 YENİ GRUP OYUNU
+        </button>
+        <button onclick="showMainMenu()" class="bg-slate-800/90 hover:bg-slate-700 text-white border-b-4 border-slate-950 font-bold py-2 px-3 rounded-xl shadow-[0_3px_10px_rgba(0,0,0,0.3)] transition transform hover:scale-105 text-sm font-baloo flex items-center justify-center gap-1.5 w-full">
+            🏠 ANA MENÜ
         </button>
     </div>
 
-    <!-- Kazanan Ekranı -->
-    <div id="winner-screen" class="fixed inset-0 z-[9999] hidden flex-col items-center justify-center text-center">
-        <div class="text-9xl mb-6 drop-shadow-[0_0_30px_rgba(56,189,248,0.6)]">🏆</div>
-        <div id="winner-name" class="text-6xl md:text-8xl font-bold font-baloo text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-500 mb-3 drop-shadow-xl" style="-webkit-text-stroke: 2px rgba(0,0,0,0.5);">TAKIM ADI</div>
-        <div id="winner-theme-message" class="text-3xl text-gray-300 font-bold mb-8 italic drop-shadow-md"></div>
-        <div id="winner-score" class="text-4xl font-black text-white bg-green-500 px-8 py-3 rounded-full border-4 border-green-700 shadow-[0_10px_25px_rgba(34,197,94,0.5)] mb-10">0 Puan</div>
-        <button onclick="startGame()" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white py-4 px-10 rounded-full text-3xl font-baloo font-bold border-b-4 border-blue-700 transition transform hover:scale-110 active:scale-95 shadow-[0_10px_30px_rgba(14,165,233,0.6)]">
-            YENİDEN OYNA
-        </button>
-    </div>
-
-    <div id="app" class="w-full max-w-5xl relative z-10 flex flex-col justify-between h-full py-2">
-        
-        <!-- HAVALI PRO BAŞLIK PANELİ -->
+    <div id="app" class="hidden w-full max-w-5xl relative z-10 flex-col justify-between h-full py-2">
         <div class="text-center mb-2 mt-1">
             <div class="inline-block bg-slate-900/60 backdrop-blur-md border-2 border-cyan-500/50 rounded-3xl px-6 py-2 shadow-[0_0_30px_rgba(14,165,233,0.4)] relative">
                 <div class="absolute -top-3 -right-3 text-3xl drop-shadow-md">🧊</div>
@@ -251,16 +407,234 @@
             </div>
         </div>
 
-        <div class="relative w-full flex justify-center z-50" style="height: 0;">
-            <div id="toast" class="toast font-baloo"></div>
-        </div>
-
         <div id="teams" class="grid grid-cols-3 gap-4 mb-2 mt-1 max-w-3xl mx-auto w-full"></div>
 
         <div id="grid" class="card-grid mb-1 w-full"></div>
     </div>
 
-    <!-- Soru Modalı -->
+    <!-- Grup Oyunu Kazanan Ekranı -->
+    <div id="winner-screen" class="fixed inset-0 z-[9999] hidden flex-col items-center justify-center text-center bg-slate-950/90 backdrop-blur-md">
+        <div class="text-9xl mb-6 drop-shadow-[0_0_30px_rgba(56,189,248,0.6)]">🏆</div>
+        <div id="winner-name" class="text-6xl md:text-8xl font-bold font-baloo text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-500 mb-3 drop-shadow-xl" style="-webkit-text-stroke: 2px rgba(0,0,0,0.5);">TAKIM ADI</div>
+        <div id="winner-theme-message" class="text-3xl text-gray-300 font-bold mb-8 italic drop-shadow-md"></div>
+        <div id="winner-score" class="text-4xl font-black text-white bg-green-500 px-8 py-3 rounded-full border-4 border-green-700 shadow-[0_10px_25px_rgba(34,197,94,0.5)] mb-10">0 Puan</div>
+        <div class="flex gap-4">
+            <button onclick="startGroupGame()" class="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white py-4 px-10 rounded-full text-2xl font-baloo font-bold border-b-4 border-blue-700 transition transform hover:scale-105 shadow-[0_10px_30px_rgba(14,165,233,0.6)]">
+                🔄 YENİDEN OYNA
+            </button>
+            <button onclick="showMainMenu()" class="bg-slate-700 hover:bg-slate-600 text-white py-4 px-8 rounded-full text-2xl font-baloo font-bold border-b-4 border-slate-900 transition transform hover:scale-105">
+                🏠 ANA MENÜ
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         2. BİREYSEL OYUN (1P) ARAYÜZÜ (SORULAR + BUZUL KEŞİF SANDIKLARI)
+         ========================================================= -->
+    <div id="solo-app" class="hidden w-full max-w-3xl relative z-10 flex-col justify-between h-full py-4 px-3">
+        <!-- Üst Bilgi Çubuğu -->
+        <div class="flex items-center justify-between bg-slate-900/80 backdrop-blur-md border-2 border-sky-400/60 rounded-2xl px-5 py-3 shadow-xl">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🦊</span>
+                <div>
+                    <div class="text-xs font-extrabold text-sky-300 uppercase">Kutup Kaşifi</div>
+                    <div id="solo-player-name" class="font-baloo text-xl font-extrabold text-white leading-tight">Öğrenci</div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <div class="text-xs font-extrabold text-sky-300 uppercase">İlerleme</div>
+                <div id="solo-progress" class="font-baloo text-2xl font-black text-amber-300">Soru 1 / 12</div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <div class="text-xs font-extrabold text-sky-300 uppercase">Toplam Puan</div>
+                    <div id="solo-score" class="font-baloo text-3xl font-black text-emerald-400 leading-none">0</div>
+                </div>
+                <button onclick="finishSoloGame()" title="Oyunu Bitir ve Skoru Kaydet" class="bg-red-500 hover:bg-red-600 text-white font-baloo font-bold px-3.5 py-2 rounded-xl border-b-4 border-red-800 text-sm">
+                    ⏹️ Bitir
+                </button>
+            </div>
+        </div>
+
+        <!-- Orta Alan: Soru Kartı VEYA Buzul Keşif Sandığı (3 Kutu) -->
+        <div class="flex-1 flex items-center justify-center my-3">
+            
+            <!-- A) Bireysel Soru Paneli -->
+            <div id="solo-question-box" class="w-full bg-white/95 backdrop-blur-md border-4 border-sky-500 rounded-3xl p-7 text-center text-slate-800 shadow-2xl relative">
+                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-baloo font-black px-5 py-1.5 rounded-full text-lg shadow-md mb-4">
+                    <span>⭐ Değer:</span>
+                    <span id="solo-q-points">20</span>
+                    <span>PUAN</span>
+                </div>
+
+                <div class="text-5xl mb-3">📜❄️</div>
+                <div id="solo-q-text" class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-6 leading-snug">
+                    Soru yükleniyor...
+                </div>
+
+                <input type="text" id="solo-input" placeholder="Cevabını buraya yaz..." autocomplete="off" class="w-full p-4 rounded-2xl text-slate-900 text-2xl text-center font-extrabold mb-5 outline-none border-4 border-sky-300 focus:border-sky-500 bg-sky-50/40 shadow-inner">
+
+                <button onclick="submitSoloAnswer()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-2xl font-black py-4 rounded-2xl shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all font-baloo tracking-wider flex items-center justify-center gap-2">
+                    <span>CEVABI GÖNDER</span> 🏔️
+                </button>
+            </div>
+
+            <!-- B) Soru Arası Sürpriz: 3 Kutup Buzul Sandığı (İsterse Açabilir, İsterse Pas Geçebilir) -->
+            <div id="solo-chest-stage" class="hidden w-full bg-slate-900/90 backdrop-blur-md border-4 border-cyan-400 rounded-3xl p-6 text-center text-white shadow-2xl animate-[popIn_0.4s_ease]">
+                <div class="inline-block bg-amber-400 text-slate-900 font-baloo font-black px-4 py-1 rounded-full text-sm uppercase tracking-wider mb-2">
+                    🧊 KUTUP KEŞİF MOLASI!
+                </div>
+                <h2 class="font-baloo text-3xl md:text-4xl font-extrabold text-cyan-200 mb-1">
+                    Karşına 3 Gizemli Buzul Küpü Çıktı!
+                </h2>
+                <p class="text-sky-200 font-bold text-sm md:text-base mb-5">
+                    Küplerin içinden <strong class="text-emerald-300">Kutup Tilkisi / Sıcak Çikolata (+Puan)</strong> da çıkabilir, <strong class="text-rose-300">Buzlanma / Kar Fırtınası (-Puan)</strong> da! Riske girip birini seçebilir veya hiç açmadan sıradaki soruya geçebilirsin.
+                </p>
+
+                <!-- 3 Buzul Küpü -->
+                <div id="solo-chests-grid" class="grid grid-cols-3 gap-4 mb-6">
+                    <!-- JS ile doldurulur -->
+                </div>
+
+                <!-- Pas Geç / Sıradaki Soruya Geç Butonu -->
+                <button id="btn-skip-chest" onclick="skipChestAndContinue()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-baloo text-xl font-black py-3.5 rounded-2xl border-b-4 border-orange-700 transition transform hover:scale-[1.01] flex items-center justify-center gap-2">
+                    <span>🛡️ Riske Girme, Kutu Açmadan Sıradaki Soruya Geç ➡️</span>
+                </button>
+            </div>
+
+        </div>
+
+        <div class="text-center text-xs font-bold text-sky-200/80">
+            💡 İpucu: Cevapları büyük/küçük harf fark etmeksizin yazabilirsin (ör. "geniş açı" veya "geniş", "yarıçap" veya "yarı çap").
+        </div>
+    </div>
+
+    <!-- Bireysel Oyun Sonuç Ekranı -->
+    <div id="solo-result-overlay" class="screen-overlay" style="display: none;">
+        <div class="menu-card">
+            <div class="text-7xl mb-2">🐻‍❄️🏆❄️</div>
+            <h2 class="font-baloo text-4xl font-extrabold text-sky-800 mb-1">Kutup Keşfi Tamamlandı!</h2>
+            <p id="solo-result-msg" class="text-slate-600 font-bold mb-5">Geometri bilginle buzulları fethettin!</p>
+
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-sky-600 uppercase">Toplam Puan</div>
+                    <div id="solo-final-score" class="font-baloo text-4xl font-black text-slate-900">0</div>
+                </div>
+                <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-emerald-600 uppercase">Doğru Cevap</div>
+                    <div id="solo-final-correct" class="font-baloo text-4xl font-black text-emerald-700">0</div>
+                </div>
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3">
+                    <div class="text-xs font-extrabold text-amber-600 uppercase">Buzul Şansı</div>
+                    <div id="solo-final-bonus" class="font-baloo text-4xl font-black text-amber-700">0</div>
+                </div>
+            </div>
+
+            <button onclick="openLeaderboard()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 font-baloo text-2xl font-black py-3.5 rounded-2xl border-b-4 border-amber-700 mb-3 flex items-center justify-center gap-2">
+                <span>🏆 İlk 10 Lider Tablosunu Gör</span>
+            </button>
+            <button onclick="showMainMenu()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-baloo text-xl font-black py-3.5 rounded-2xl border-b-4 border-blue-800 flex items-center justify-center gap-2">
+                <span>🔄 Yeniden Oyna (Ana Menü)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         İLK 10 LİDER TABLOSU VE KUTUP TEMALI KUTLAMA MODALI
+         ========================================================= -->
+    <div id="leaderboard-overlay" class="screen-overlay" style="display: none;">
+        <div class="menu-card" style="max-width: 720px; max-height: 92vh; display: flex; flex-direction: column;">
+            <div class="flex justify-between items-center border-b-2 border-slate-200 pb-3 mb-3">
+                <div class="text-left">
+                    <h2 class="font-baloo text-3xl font-extrabold text-sky-800">🏆 İlk 10 Kutup Kaşifleri</h2>
+                    <p class="text-xs font-bold text-slate-500">Öğrencinin üzerine tıklayarak Kutup Şampiyonluk Kutlamasını açabilirsiniz!</p>
+                </div>
+                <button onclick="closeLeaderboard()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl">✕ Kapat</button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 pr-1 mb-4">
+                <table class="lb-table">
+                    <thead>
+                        <tr class="text-xs font-extrabold text-slate-400 uppercase">
+                            <th class="py-1 w-14">Sıra</th>
+                            <th class="py-1 text-left pl-3">Kaşif Adı Soyadı</th>
+                            <th class="py-1">Puan</th>
+                            <th class="py-1">Saat</th>
+                            <th class="py-1">Kutla</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body"></tbody>
+                </table>
+                <div id="empty-leaderboard" class="py-10 text-slate-500 font-bold hidden">
+                    Henüz kayıtlı skor yok. İlk Kutup Şampiyonu sen ol! 🦊❄️
+                </div>
+            </div>
+
+            <button onclick="closeLeaderboard(); showMainMenu();" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-baloo text-xl font-black py-3 rounded-2xl border-b-4 border-blue-800">
+                🔄 Ana Menüye Dön
+            </button>
+        </div>
+    </div>
+
+    <!-- KUTUP TEMALI KUTLAMA MODALI -->
+    <div id="celebration-modal" class="modal-overlay" style="z-index: 120;">
+        <div id="celebration-card" class="modal-box" style="max-width: 520px;">
+            <div id="cel-icon" class="text-7xl mb-2">🥇🦊</div>
+            <div id="cel-badge" class="inline-block bg-sky-600 text-white font-baloo font-black px-4 py-1 rounded-full text-sm uppercase mb-2">
+                KUTUP ŞAMPİYONU
+            </div>
+            <h2 id="cel-name" class="font-baloo text-4xl font-black text-slate-900 mb-1">Öğrenci Adı</h2>
+            <div id="cel-title" class="text-lg font-extrabold text-sky-700 mb-2">1. Sıra Kuzey Işıkları Lideri!</div>
+            <div id="cel-score" class="font-baloo text-3xl font-black text-emerald-600 mb-3">0 Puan</div>
+            <p id="cel-desc" class="text-slate-700 font-bold text-base leading-relaxed mb-6">
+                Kutlama mesajı
+            </p>
+            <button onclick="closeCelebration()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-baloo text-2xl font-black py-3.5 rounded-2xl border-b-4 border-blue-800">
+                👏 Alkışla ve Kapat
+            </button>
+        </div>
+    </div>
+
+    <!-- ÖĞRETMEN AYARLARI MODALI (ÖĞRENCİ LİSTESİ & SKOR SIFIRLAMA) -->
+    <div id="settings-modal" class="modal-overlay" style="z-index: 130;">
+        <div class="modal-box" style="max-width: 520px;">
+            <h2 class="font-baloo text-3xl font-extrabold text-sky-800 mb-4">⚙️ Öğretmen Ayarları</h2>
+
+            <div id="settings-auth">
+                <p class="text-sm font-bold text-slate-600 mb-3">Yönetici paneline erişmek için öğretmen şifresini girin:</p>
+                <input type="password" id="admin-pwd-input" placeholder="Yönetici Şifresi..." class="w-full p-3.5 rounded-xl border-2 border-slate-300 text-center text-lg font-bold mb-3 outline-none focus:border-sky-500">
+                <button onclick="checkAdminPwd()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-baloo text-xl font-bold py-3 rounded-xl mb-2">Giriş Yap</button>
+            </div>
+
+            <div id="settings-panel" class="hidden text-left">
+                <div class="bg-slate-100 border-2 border-slate-300 rounded-2xl p-4 mb-4">
+                    <h3 class="font-extrabold text-slate-800 text-base mb-1">📋 5. Sınıf Öğrenci Listesini Ekle</h3>
+                    <p class="text-xs font-bold text-slate-500 mb-2">
+                        İsimleri alt alta, virgülle veya tırnak içinde yapıştırabilirsiniz. Sadece listedeki öğrenciler bireysel oyuna girebilir ve İlk 10'da yer alır.
+                    </p>
+                    <textarea id="admin-student-list" class="w-full h-24 p-2.5 rounded-xl border border-slate-400 text-sm font-bold text-slate-800" placeholder="Öğrenci isimlerini buraya yapıştırın..."></textarea>
+                    <div class="flex justify-between items-center my-2">
+                        <span id="total-students-text" class="text-xs font-extrabold text-emerald-600">Sistemde 0 öğrenci kayıtlı.</span>
+                        <button onclick="clearStudentList()" class="text-xs font-extrabold text-red-600 underline">Listeyi Sıfırla</button>
+                    </div>
+                    <button onclick="saveStudentList()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-baloo font-bold py-2.5 rounded-xl text-base">
+                        💾 Öğrencileri Sisteme Ekle
+                    </button>
+                </div>
+
+                <button onclick="clearLeaderboardScores()" class="w-full bg-red-600 hover:bg-red-500 text-white font-baloo font-bold py-3 rounded-xl text-base mb-2">
+                    🗑️ Tüm İlk 10 Skorlarını Sıfırla
+                </button>
+            </div>
+
+            <button onclick="closeSettings()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl mt-2">Kapat</button>
+        </div>
+    </div>
+
+    <!-- Grup Oyunu Soru Modalı -->
     <div id="modal-q" class="modal-overlay">
         <div class="modal-box">
             <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-2 rounded-full font-black border-4 border-white shadow-[0_5px_15px_rgba(0,0,0,0.4)] text-xl tracking-wider">
@@ -272,14 +646,13 @@
             
             <input type="text" id="modal-input" class="w-full p-4 rounded-2xl text-slate-900 text-2xl text-center font-bold mb-6 outline-none border-4 border-cyan-300 focus:border-cyan-500 transition-colors bg-white shadow-inner" placeholder="Cevabını Yaz..." autocomplete="off">
             
-            <!-- TEMATİK GÖNDER BUTONU -->
             <button onclick="submitAnswer()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-2xl font-black py-4 rounded-2xl shadow-[0_8px_20px_rgba(14,165,233,0.5)] border-b-4 border-blue-800 active:border-b-0 active:translate-y-1 transition-all font-baloo tracking-widest flex items-center justify-center gap-3">
                 <span>GÖNDER</span> 🏔️
             </button>
         </div>
     </div>
 
-    <!-- Şans Kartı Modalı -->
+    <!-- Grup Oyunu Şans Kartı Modalı -->
     <div id="modal-j" class="modal-overlay">
         <div id="joker-box" class="modal-box">
             <div id="joker-icon" class="text-8xl mb-4 animate-bounce drop-shadow-lg">🧊</div>
@@ -292,83 +665,373 @@
     </div>
 
 <script>
-    // Kar Efekti Başlatma
+    /* =========================================================
+       SES EFEKTLERİ (WEB AUDIO API)
+       ========================================================= */
+    let audioCtx = null;
+    function getAudioCtx() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+    }
+
+    function playSoundEffect(type) {
+        try {
+            const ctx = getAudioCtx();
+            const now = ctx.currentTime;
+            if (type === 'correct') {
+                [523.25, 659.25, 783.99].forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(f, now + i * 0.07);
+                    g.gain.setValueAtTime(0.22, now + i * 0.07);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.22);
+                    osc.connect(g); g.connect(ctx.destination);
+                    osc.start(now + i * 0.07); osc.stop(now + i * 0.07 + 0.25);
+                });
+            } else if (type === 'wrong') {
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(60, now + 0.3);
+                g.gain.setValueAtTime(0.25, now);
+                g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(g); g.connect(ctx.destination);
+                osc.start(now); osc.stop(now + 0.32);
+            } else if (type === 'fanfare') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(f, now + i * 0.11);
+                    g.gain.setValueAtTime(0.28, now + i * 0.11);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.11 + 0.45);
+                    osc.connect(g); g.connect(ctx.destination);
+                    osc.start(now + i * 0.11); osc.stop(now + i * 0.11 + 0.5);
+                });
+            }
+        } catch(e) {}
+    }
+
+    /* =========================================================
+       KAR EFEKTİ
+       ========================================================= */
     function initSnow() {
         const rc = document.getElementById('snow-container');
         rc.innerHTML = '';
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 55; i++) {
             let d = document.createElement('div');
             d.className = 'bg-snow-flake';
             let size = Math.random() * 5 + 3;
             d.style.width = size + 'px';
             d.style.height = size + 'px';
             d.style.left = Math.random() * 100 + 'vw';
-            d.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            d.style.animationDuration = (Math.random() * 3 + 2.2) + 's';
             d.style.animationDelay = Math.random() * 3 + 's';
             rc.appendChild(d);
         }
     }
     initSnow();
 
-    // DİNAMİK SORU ÜRETİCİ (Geometri - MEB Kitabı Müfredatı)
+    /* =========================================================
+       FİREBASE VE ÖĞRENCİ LİSTESİ / İLK 10 SİSTEMİ
+       ========================================================= */
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+        authDomain: "zihindencarpma.firebaseapp.com",
+        databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+        projectId: "zihindencarpma",
+        storageBucket: "zihindencarpma.firebasestorage.app",
+        messagingSenderId: "111639321624",
+        appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+    };
+
+    let cloudDb = null;
+    const DB_NODE = 'scores_geometrikutuplar';
+    const STUDENTS_NODE = 'students_geometrikutuplar';
+    let authorizedStudents = [];
+    let rawScoreEntries = [];
+
+    function normalizePersonName(name) {
+        if (!name) return '';
+        return String(name)
+            .trim()
+            .replace(/[\s\-_.]+/g, '')
+            .toLocaleLowerCase('tr-TR')
+            .replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ğ/g, 'g')
+            .replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+            .replace(/[^a-z0-9]/g, '');
+    }
+
+    function levenshteinDist(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        let matrix = [];
+        for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
+                else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    function matchAuthorizedStudent(inputName) {
+        if (!inputName || authorizedStudents.length === 0) return null;
+        const normIn = normalizePersonName(inputName);
+        if (!normIn) return null;
+
+        for (const official of authorizedStudents) {
+            if (normalizePersonName(official) === normIn) return official;
+        }
+        for (const official of authorizedStudents) {
+            const normOff = normalizePersonName(official);
+            if (normOff.length >= 6 && normIn.length >= 6) {
+                const d = levenshteinDist(normOff, normIn);
+                if (d <= 2 && Math.abs(normOff.length - normIn.length) <= 2) return official;
+            }
+        }
+        return null;
+    }
+
+    function validateStudentEntry(rawName) {
+        let trimmed = (rawName || '').trim().replace(/\s+/g, ' ');
+        if (!trimmed) return { valid: false, error: "Lütfen adınızı ve soyadınızı girin." };
+        if (authorizedStudents.length === 0) {
+            return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce sağ üstteki (⚙️) Öğretmen Ayarları'ndan sınıf listesini ekleyin." };
+        }
+        const matched = matchAuthorizedStudent(trimmed);
+        if (matched) return { valid: true, name: matched };
+        return { valid: false, error: "İsminiz sistemdeki öğrenci listesinde bulunamadı! Lütfen listeye eklenen isminizi doğru yazdığınızdan emin olun (veya kutucuğa tıklayıp listeden seçin)." };
+    }
+
+    function updateLocalLeaderboard(entries) {
+        const groups = new Map();
+        (entries || []).forEach(entry => {
+            if (!entry) return;
+            let rawName = entry.fullName || entry.name || '';
+            if (!rawName.trim()) return;
+
+            let canonical = rawName.trim();
+            let key = '';
+            if (authorizedStudents.length > 0) {
+                const matched = matchAuthorizedStudent(rawName);
+                if (!matched) return; // Sadece listedeki öğrenciler İlk 10'da yer alır
+                canonical = matched;
+                key = normalizePersonName(matched);
+            } else {
+                key = normalizePersonName(rawName);
+            }
+            if (!key) return;
+
+            if (!groups.has(key)) groups.set(key, { officialName: canonical, items: [] });
+            groups.get(key).items.push(entry);
+        });
+
+        let bestList = [];
+        for (const [k, g] of groups.entries()) {
+            g.items.sort((a, b) => (b.score || 0) - (a.score || 0));
+            let best = { ...g.items[0], displayName: g.officialName };
+            bestList.push(best);
+        }
+
+        bestList.sort((a, b) => (b.score || 0) - (a.score || 0));
+        let top10 = bestList.slice(0, 10);
+        localStorage.setItem('meb_geometrikutuplar_top10', JSON.stringify(top10));
+        renderLeaderboardTable();
+    }
+
+    if (typeof firebase !== 'undefined') {
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+            cloudDb = firebase.database();
+
+            cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+                let data = snap.val();
+                if (data && typeof data === 'string') {
+                    authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                } else {
+                    authorizedStudents = [];
+                }
+                const ts = document.getElementById('total-students-text');
+                if (ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+
+                const dl = document.getElementById('studentNamesList');
+                if (dl) {
+                    dl.innerHTML = '';
+                    authorizedStudents.forEach(name => {
+                        let op = document.createElement('option');
+                        op.value = name;
+                        dl.appendChild(op);
+                    });
+                }
+                updateLocalLeaderboard(rawScoreEntries);
+            });
+
+            cloudDb.ref(DB_NODE).on('value', snap => {
+                let data = snap.val();
+                let arr = [];
+                if (data) Object.keys(data).forEach(k => arr.push(data[k]));
+                rawScoreEntries = arr;
+                updateLocalLeaderboard(arr);
+            });
+        } catch (e) {}
+    }
+
+    function saveStudentList() {
+        let text = document.getElementById('admin-student-list').value;
+        if (!text.trim()) { alert('Lütfen eklenecek isimleri yazın.'); return; }
+
+        let newNames = text.replace(/"/g, '').split(/[\n,;]+/).map(s => s.trim()).filter(s => s.length > 0);
+        let currentNorms = authorizedStudents.map(n => normalizePersonName(n));
+        let namesToAdd = [];
+
+        newNames.forEach(n => {
+            let norm = normalizePersonName(n);
+            if (norm && !currentNorms.includes(norm)) {
+                namesToAdd.push(n);
+                currentNorms.push(norm);
+            }
+        });
+
+        let updatedList = authorizedStudents.concat(namesToAdd);
+        if (cloudDb) {
+            cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+                alert(namesToAdd.length + ' yeni öğrenci sisteme eklendi!');
+                document.getElementById('admin-student-list').value = '';
+            });
+        }
+    }
+
+    function clearStudentList() {
+        if (confirm('Kayıtlı tüm öğrenci isimleri silinecek (skorlar silinmez). Emin misiniz?')) {
+            if (cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+        }
+    }
+
+    function clearLeaderboardScores() {
+        if (confirm('Tüm İlk 10 liderlik tablosu kalıcı olarak sıfırlanacak. Emin misiniz?')) {
+            if (cloudDb) cloudDb.ref(DB_NODE).remove();
+            localStorage.removeItem('meb_geometrikutuplar_top10');
+            rawScoreEntries = [];
+            renderLeaderboardTable();
+            alert('Lider tablosu sıfırlandı.');
+        }
+    }
+
+    /* =========================================================
+       GENİŞLETİLMİŞ VE ZENGİNLEŞTİRİLMİŞ SORU HAVUZU (100+ ÇEŞİT)
+       ========================================================= */
     function generateQuestionsPool() {
         let pool = [];
 
-        // Temel Kavramlar
+        // 1. Temel Geometrik Kavramlar (Nokta, Doğru, Işın, Doğru Parçası, Düzlem)
         pool.push({ q: "Eni, boyu ve derinliği olmayan, kalemin kâğıtta bıraktığı ize ne denir?", a: "nokta", aliases: ["noktadır"], p: 10 });
-        pool.push({ q: "İki nokta arasında düz bir şekilde hizalanmış noktaların oluşturduğu şekle ne denir?", a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasi", "doğru parçasıdır"], p: 15 });
-        pool.push({ q: "Bir noktadan başlayarak aynı hizada sonsuza kadar giden noktaların oluşturduğu şekle ne denir?", a: "ışın", aliases: ["ısın", "isin", "ışındır", "isindir"], p: 15 });
+        pool.push({ q: "Gökyüzündeki yıldızlar ve cümle sonundaki işaret hangi geometrik kavramın modelidir?", a: "nokta", aliases: ["noktadır", "nokta modeli"], p: 10 });
+        pool.push({ q: "Harita üzerinde şehirlerin yerini göstermek için kullanılan geometrik kavram nedir?", a: "nokta", aliases: ["noktadır"], p: 10 });
+
+        pool.push({ q: "İki nokta arasında düz bir şekilde hizalanmış noktaların oluşturduğu, başlangıcı ve bitişi belli şekle ne denir?", a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasi", "doğru parçasıdır", "parça"], p: 15 });
+        pool.push({ q: "Masadaki cetvel, kalem veya iki direk arasına gerilmiş ip hangi geometrik kavramın modelidir?", a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasıdır"], p: 15 });
+        pool.push({ q: "İki ucu da sınırlı olan ve uzunluğu ölçülebilen düz çizgi modeline ne ad verilir?", a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasıdır"], p: 15 });
+
+        pool.push({ q: "Bir noktadan başlayarak aynı hizada bir yönde sonsuza kadar giden noktaların oluşturduğu şekle ne denir?", a: "ışın", aliases: ["ısın", "isin", "ışındır", "isindir"], p: 15 });
+        pool.push({ q: "El fenerinden veya lazerden çıkan ışık demeti hangi geometrik kavramın modelidir?", a: "ışın", aliases: ["ısın", "isin", "ışındır", "ışın modeli"], p: 15 });
+        pool.push({ q: "Başlangıç noktası belli olan ancak bitiş noktası olmayan (bir ucu sonsuza giden) şekle ne denir?", a: "ışın", aliases: ["ısın", "isin", "ışındır"], p: 15 });
+        pool.push({ q: "Başlangıç ucu kapalı, diğer ucu ok işareti olan geometrik şekil nedir?", a: "ışın", aliases: ["ısın", "isin", "ışındır"], p: 15 });
+
         pool.push({ q: "İki ucu da sonsuza kadar giden düz bir şekilde hizalanmış noktaların oluşturduğu şekle ne denir?", a: "doğru", aliases: ["dogru", "doğrudur", "dogrudur"], p: 15 });
-        
-        // Semboller
-        pool.push({ q: "[AB] sembolü hangi geometrik kavramı temsil eder?", a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasıdır"], p: 20 });
-        pool.push({ q: "[KL sembolü hangi geometrik kavramı temsil eder?", a: "ışın", aliases: ["ısın", "isin", "ışındır", "isindir"], p: 20 });
-        pool.push({ q: "Köşeli parantez olmadan sadece AB şeklindeki sembol hangi geometrik kavramı temsil eder?", a: "doğru", aliases: ["dogru", "doğrudur", "dogrudur"], p: 20 });
-        pool.push({ q: "|AB| = 5 cm gösterimindeki dik çizgiler ( | | ) AB doğru parçasının nesini ifade eder?", a: "uzunluğunu", aliases: ["uzunluk", "uzunlugu", "uzunluğu", "boyunu", "boyu", "boy", "uzunluktur"], p: 25 });
+        pool.push({ q: "Her iki yönde de sınırsız uzadığı için iki ucuna ok işareti konulan geometrik şekil nedir?", a: "doğru", aliases: ["dogru", "doğrudur"], p: 15 });
+        pool.push({ q: "Başlangıç ve bitiş noktası olmayan, sonsuza uzanan düz çizgi modeline ne denir?", a: "doğru", aliases: ["dogru", "doğrudur"], p: 15 });
 
-        // Doğruların Durumları
+        // 2. Sembollerle Gösterim (Farklı Harf Kombinasyonlarıyla Zenginleştirilmiş)
+        const pairs = [["A", "B"], ["K", "L"], ["M", "N"], ["P", "R"], ["C", "D"], ["E", "F"], ["S", "T"], ["X", "Y"]];
+        for (let [h1, h2] of pairs) {
+            pool.push({ q: `[${h1}${h2}] sembolü hangi geometrik kavramı temsil eder?`, a: "doğru parçası", aliases: ["doğruparçası", "dogruparcasi", "doğru parçasıdır", `${h1}${h2} doğru parçası`], p: 20 });
+            pool.push({ q: `[${h1}${h2} veya ${h1}${h2}] sembolü (yalnızca bir ucunda köşeli parantez olan gösterim) hangi kavramı temsil eder?`, a: "ışın", aliases: ["ısın", "isin", "ışındır", `${h1}${h2} ışını`], p: 20 });
+        }
+        pool.push({ q: "Köşeli parantez olmadan sadece AB veya d şeklinde yazılan sembol hangi geometrik kavramı temsil eder?", a: "doğru", aliases: ["dogru", "doğrudur", "dogrudur", "ab doğrusu"], p: 20 });
+        pool.push({ q: "|AB| = 5 cm gösterimindeki dik çizgiler ( | | ) AB doğru parçasının nesini ifade eder?", a: "uzunluğunu", aliases: ["uzunluk", "uzunlugu", "uzunluğu", "boyunu", "boyu", "boy", "uzunluktur", "ölçüsünü"], p: 25 });
+        pool.push({ q: "|KL| = 12 cm ifadesinde KL doğru parçasının uzunluğu kaç santimetredir?", a: "12", aliases: ["12 cm", "on iki", "oniki"], p: 15 });
+        pool.push({ q: "[MN ışınının başlangıç noktası hangi harftir?", a: "M", aliases: ["m noktası", "m harfi", "m dir"], p: 20 });
+        pool.push({ q: "PR] ışınının başlangıç noktası hangi harftir?", a: "R", aliases: ["r noktası", "r harfi", "r dir"], p: 25 });
+
+        // 3. İki Doğrunun Birbirine Göre Durumu
         pool.push({ q: "Düzlemde yalnız bir ortak noktası bulunan doğrulara ne ad verilir?", a: "kesişen", aliases: ["kesişen doğrular", "kesisendogrular", "kesişen doğru", "kesisendogru", "kesisen", "kesişen doğrulardır", "kesişendir"], p: 20 });
+        pool.push({ q: "Makasın kolları veya X harfinin çizgileri hangi doğrulara örnektir?", a: "kesişen", aliases: ["kesişen doğrular", "kesişen doğru", "kesisen"], p: 20 });
         pool.push({ q: "Ortak noktası olmayan ve aralarındaki uzaklık hiç değişmeyen doğrulara ne denir?", a: "paralel", aliases: ["paralel doğrular", "paraleldogrular", "paralel doğru", "paraleldogru", "paraleller", "paraleldir", "paraleldoğrulardır"], p: 20 });
+        pool.push({ q: "Tren rayları veya defterimizin satır çizgileri hangi doğrulara model oluşturur?", a: "paralel", aliases: ["paralel doğrular", "paralel doğru", "paraleldir"], p: 15 });
         pool.push({ q: "Tüm noktaları ortak olan ve tamamen üst üste binen doğrulara ne ad verilir?", a: "çakışık", aliases: ["çakışık doğrular", "cakisikdogrular", "çakışık doğru", "cakisikdogru", "cakisik", "çakışık doğrulardır", "çakışıktır"], p: 25 });
-        pool.push({ q: "Kesişen iki doğru arasındaki açı 90 derece ise bu doğrulara ne ad verilir?", a: "dik", aliases: ["dik doğrular", "dikdogrular", "dik doğru", "dikdogru", "diktir", "dik doğrulardır"], p: 20 });
+        pool.push({ q: "Kesişen iki doğru arasındaki açı 90 derece ise bu doğrulara ne ad verilir?", a: "dik", aliases: ["dik doğrular", "dikdogrular", "dik doğru", "dikdogru", "diktir", "dik doğrulardır", "dik kesişen", "dik kesişen doğrular"], p: 20 });
+        pool.push({ q: "Duvar ile zemin veya artı (+) işareti nasıl kesişen doğrulara örnektir?", a: "dik", aliases: ["dik doğrular", "dik doğru", "dik kesişen", "diktir"], p: 20 });
         pool.push({ q: "Paralellik sembolü klavyedeki hangi işarettir?", a: "//", aliases: ["/ /", "eğik çizgi", "iki eğik çizgi", "slash", "çift slash", "çift bölü", "iki bölü", "bölü", "yan çizgi"], p: 15 });
-        pool.push({ q: "Diklik sembolü nedir? (Cevap: ters t)", a: "ters t", aliases: ["terst", "ters büyük t", "ters t harfi", "Ters T"], p: 20 });
+        pool.push({ q: "Diklik sembolü hangi büyük harfin ters çevrilmiş hâline benzer?", a: "T", aliases: ["ters t", "terst", "ters büyük t", "ters t harfi", "t harfi"], p: 20 });
 
-        // Açılar
+        // 4. Açılar ve Açı Çeşitleri
+        pool.push({ q: "Başlangıç noktaları ortak olan iki ışının birleşimine ne ad verilir?", a: "açı", aliases: ["aci", "açıdır"], p: 15 });
+        pool.push({ q: "Açıyı oluşturan iki ışının ortak başlangıç noktasına açının nesi denir?", a: "köşesi", aliases: ["köşe", "kose", "köşesidir"], p: 20 });
+        pool.push({ q: "Bir açının ölçüsünü ölçmek için kullandığımız yarım daire şeklindeki cetvel aracına ne denir?", a: "açıölçer", aliases: ["aciolcer", "açı ölçer", "iletki", "iletkidir"], p: 20 });
         pool.push({ q: "Ölçüsü tam 90 derece olan açıya ne denir?", a: "dik açı", aliases: ["dik", "dikaci", "dikaçı", "diktir", "dik açıdır"], p: 10 });
         pool.push({ q: "Ölçüsü tam 180 derece olan açıya ne denir?", a: "doğru açı", aliases: ["doğru", "dogru", "dogruaci", "doğruaçı", "doğruaçıdır", "doğrudur"], p: 15 });
         pool.push({ q: "Ölçüsü tam 360 derece olan açıya ne denir?", a: "tam açı", aliases: ["tam", "tamaci", "tamaçı", "tam açıdır", "tamdır"], p: 15 });
         pool.push({ q: "Ölçüsü 0 ile 90 derece arasında olan açılara genel olarak ne denir?", a: "dar açı", aliases: ["dar", "daraci", "daraçı", "dar açıdır", "dardır"], p: 10 });
         pool.push({ q: "Ölçüsü 90 ile 180 derece arasında olan açılara genel olarak ne denir?", a: "geniş açı", aliases: ["geniş", "genis", "genisaci", "genişaçı", "geniş açıdır", "geniştir"], p: 15 });
         pool.push({ q: "A açısının ölçüsü 45 derecedir cümlesi sembolle m(...) = 45° şeklinde yazılır. Parantez içine ne yazılmalıdır?", a: "A", aliases: ["a açısı", "aacisi", "a açisi", "a harfi"], p: 20 });
-        
-        // Çember ve Daire
-        pool.push({ q: "Düz bir yüzeyde belirlenen bir merkeze eşit uzaklıktaki noktaların oluşturduğu geometrik şekle ne denir?", a: "çember", aliases: ["cember", "çemberdir"], p: 15 });
-        pool.push({ q: "Çember ile o çemberin iç bölgesinin tamamının birleşiminden oluşan şekle ne ad verilir?", a: "daire", aliases: ["dairedir"], p: 15 });
-        pool.push({ q: "Çemberin merkezi ile üzerindeki herhangi bir noktayı birleştiren doğru parçasına ne denir?", a: "yarıçap", aliases: ["yaricap", "yarı çaptır", "yarı çap", "yarıçapı", "r"], p: 15 });
-        pool.push({ q: "Çember üzerindeki iki noktayı, merkezden geçecek şekilde birleştiren doğru parçasına ne denir?", a: "çap", aliases: ["cap", "çaptır", "çapı", "R", "büyük r"], p: 15 });
-        pool.push({ q: "Çember çizmek için pergelin sivri ucu ile kalem ucu arasındaki mesafe, çemberin hangi özelliğini belirler?", a: "yarıçapını", aliases: ["yarıçap", "yaricap", "yaricapini", "yarı çapını", "yarı çap", "çapının yarısını", "yarıçap uzunluğunu", "uzunluğunu", "yarıçapı", "yaricapi"], p: 25 });
-        pool.push({ q: "Bozuk para bir daire modeliyse, yüzük ne modelidir?", a: "çember", aliases: ["cember", "çemberdir"], p: 15 });
+        pool.push({ q: "ABC açısının köşe noktası hangi harftir?", a: "B", aliases: ["b noktası", "b harfi", "b köşesi"], p: 20 });
+        pool.push({ q: "KLM açısının köşe noktası hangi harftir?", a: "L", aliases: ["l noktası", "l harfi", "l köşesi"], p: 20 });
+        pool.push({ q: "En büyük dar açının doğal sayı ölçüsü kaç derecedir?", a: "89", aliases: ["89 derece", "seksen dokuz"], p: 25 });
+        pool.push({ q: "En küçük geniş açının doğal sayı ölçüsü kaç derecedir?", a: "91", aliases: ["91 derece", "doksan bir"], p: 25 });
+        pool.push({ q: "Saat tam 03.00 iken akrep ile yelkovan arasındaki açı ne açısıdır?", a: "dik açı", aliases: ["dik", "dikaçı", "90", "90 derece"], p: 20 });
+        pool.push({ q: "Saat tam 06.00 iken akrep ile yelkovan arasındaki açı ne açısıdır?", a: "doğru açı", aliases: ["doğru", "dogru", "180", "180 derece"], p: 20 });
 
-        // Hesaplama / Yorum
-        for (let i = 0; i < 6; i++) {
-            let darAci = Math.floor(Math.random() * 70) + 15;
-            pool.push({ q: `Ölçüsü ${darAci}° olan bir açı hangi açı çeşidine girer?`, a: "dar açı", aliases: ["dar", "daraci", "daraçı", "dar açıdır", "dardır"], p: 10 });
+        // 5. Çember ve Daire
+        pool.push({ q: "Düz bir yüzeyde belirlenen bir merkeze eşit uzaklıktaki noktaların oluşturduğu içi boş geometrik şekle ne denir?", a: "çember", aliases: ["cember", "çemberdir"], p: 15 });
+        pool.push({ q: "Çember ile o çemberin iç bölgesinin tamamının birleşiminden oluşan içi dolu şekle ne ad verilir?", a: "daire", aliases: ["dairedir"], p: 15 });
+        pool.push({ q: "Çemberin merkezi ile üzerindeki herhangi bir noktayı birleştiren doğru parçasına ne denir?", a: "yarıçap", aliases: ["yaricap", "yarı çaptır", "yarı çap", "yarıçapı", "r"], p: 15 });
+        pool.push({ q: "Çember üzerindeki iki noktayı, merkezden geçecek şekilde birleştiren en uzun doğru parçasına ne denir?", a: "çap", aliases: ["cap", "çaptır", "çapı", "R", "büyük r"], p: 15 });
+        pool.push({ q: "Çember çizmek için kullandığımız iki kollu geometrik çizim aracının adı nedir?", a: "pergel", aliases: ["pergeldir"], p: 15 });
+        pool.push({ q: "Çember çizmek için pergelin sivri ucu ile kalem ucu arasındaki mesafe, çemberin hangi özelliğini belirler?", a: "yarıçapını", aliases: ["yarıçap", "yaricap", "yaricapini", "yarı çapını", "yarı çap", "çapının yarısını", "yarıçap uzunluğunu", "uzunluğunu", "yarıçapı", "yaricapi"], p: 25 });
+        pool.push({ q: "Bozuk para bir daire modeliyse, yüzük veya simit ne modelidir?", a: "çember", aliases: ["cember", "çemberdir"], p: 15 });
+        pool.push({ q: "Basketbol potasının çemberi veya hulahop halkası hangi geometrik şekil modelidir?", a: "çember", aliases: ["cember", "çemberdir"], p: 15 });
+        pool.push({ q: "Duvar saatinin cam yüzeyi veya madeni para hangi geometrik şekil modelidir?", a: "daire", aliases: ["dairedir"], p: 15 });
+        pool.push({ q: "Bir çemberin çap uzunluğu, yarıçap uzunluğunun kaç katıdır?", a: "2", aliases: ["iki", "2 katı", "iki katı", "2 katıdır"], p: 15 });
+
+        // 6. Dinamik Sayısal Sorular (Her Oyunda Farklı Sayılarla Çoğaltılır)
+        const darAngles = [12, 18, 25, 32, 37, 45, 54, 63, 71, 78, 84, 88];
+        for (let ang of darAngles) {
+            pool.push({ q: `Ölçüsü ${ang}° olan bir açı hangi açı çeşidine girer?`, a: "dar açı", aliases: ["dar", "daraci", "daraçı", "dar açıdır", "dardır"], p: 10 });
         }
-        for (let i = 0; i < 6; i++) {
-            let genisAci = Math.floor(Math.random() * 70) + 100;
-            pool.push({ q: `Ölçüsü ${genisAci}° olan bir açı hangi açı çeşidine girer?`, a: "geniş açı", aliases: ["geniş", "genis", "genisaci", "genişaçı", "geniş açıdır", "geniştir"], p: 15 });
+
+        const genisAngles = [92, 98, 105, 112, 120, 128, 135, 144, 150, 162, 170, 176];
+        for (let ang of genisAngles) {
+            pool.push({ q: `Ölçüsü ${ang}° olan bir açı hangi açı çeşidine girer?`, a: "geniş açı", aliases: ["geniş", "genis", "genisaci", "genişaçı", "geniş açıdır", "geniştir"], p: 15 });
         }
-        for (let i = 0; i < 5; i++) {
-            let r = Math.floor(Math.random() * 12) + 4;
-            pool.push({ q: `Yarıçapı (r) ${r} cm olan bir çemberin çapı (R) kaç cm'dir?`, a: `${r*2}`, p: 20 });
+
+        for (let ang of [30, 40, 50, 55, 60, 65, 70, 75]) {
+            let diff = 90 - ang;
+            pool.push({ q: `Ölçüsü ${ang}° olan bir dar açının dik açı (90°) olması için ölçüsü kaç derece artırılmalıdır?`, a: `${diff}`, aliases: [`${diff} derece`], p: 25 });
         }
-        for (let i = 0; i < 5; i++) {
-            let r = Math.floor(Math.random() * 15) + 10;
-            if(r%2 !== 0) r++; // Çift yapalım
-            pool.push({ q: `Çapı (R) ${r} cm olan bir çemberin yarıçapı (r) kaç cm'dir?`, a: `${r/2}`, p: 20 });
+
+        for (let ang of [100, 110, 120, 130, 140, 150]) {
+            let diff = ang - 90;
+            pool.push({ q: `Ölçüsü ${ang}° olan bir geniş açının dik açı (90°) olması için ölçüsü kaç derece azaltılmalıdır?`, a: `${diff}`, aliases: [`${diff} derece`], p: 25 });
         }
-        
+
+        for (let r of [3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 18, 20, 25]) {
+            pool.push({ q: `Yarıçapı (r) ${r} cm olan bir çemberin çapı (R) kaç cm'dir?`, a: `${r * 2}`, aliases: [`${r * 2} cm`], p: 20 });
+        }
+
+        for (let d of [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 30, 36, 40, 50]) {
+            pool.push({ q: `Çapı (R) ${d} cm olan bir çemberin yarıçapı (r) kaç cm'dir?`, a: `${d / 2}`, aliases: [`${d / 2} cm`], p: 20 });
+        }
+
+        for (let r of [4, 5, 6, 7, 8, 10]) {
+            pool.push({ q: `Pergelin kolları arasındaki açıklık ${r} cm olacak şekilde çizilen bir çemberin çapı kaç cm olur?`, a: `${r * 2}`, aliases: [`${r * 2} cm`], p: 25 });
+        }
+
         let uniquePool = [];
         let seen = new Set();
         for (let item of pool) {
@@ -380,6 +1043,434 @@
         return uniquePool;
     }
 
+    /* ORTAK CEVAP KONTROL FONKSİYONU (Büyük/küçük harf, boşluk ve eş anlamlılara tam esnek) */
+    function isAnswerMatch(userInput, cardObj) {
+        let val = (userInput || '').toLocaleLowerCase('tr-TR').trim();
+        let correct = String(cardObj.a).toLocaleLowerCase('tr-TR').trim();
+        if (!val) return false;
+
+        let valText = val.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
+        let correctText = correct.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
+
+        let valNum = val.replace(/\s+/g, '').replace(',', '.');
+        let correctNum = correct.replace(/\s+/g, '').replace(',', '.');
+
+        if (valNum !== '' && correctNum !== '' && !isNaN(valNum) && !isNaN(correctNum)) {
+            if (Number(valNum) === Number(correctNum)) return true;
+        }
+
+        if (valText === correctText) return true;
+
+        if (cardObj.aliases) {
+            for (let alias of cardObj.aliases) {
+                let cleanAlias = alias.toLocaleLowerCase('tr-TR')
+                    .replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's')
+                    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o')
+                    .replace(/\s+/g, '');
+                if (valText === cleanAlias) return true;
+            }
+        }
+        return false;
+    }
+
+    /* =========================================================
+       MOD SEÇİMİ VE ANA MENÜ YÖNETİMİ
+       ========================================================= */
+    let selectedMode = '1P'; // '1P' veya 'GROUP'
+
+    function selectGameMode(mode) {
+        selectedMode = mode;
+        document.getElementById('btn-mode-1p').classList.toggle('active', mode === '1P');
+        document.getElementById('btn-mode-group').classList.toggle('active', mode === 'GROUP');
+        document.getElementById('form-1p').classList.toggle('hidden', mode !== '1P');
+        document.getElementById('form-group-info').classList.toggle('hidden', mode !== 'GROUP');
+    }
+
+    function showMainMenu() {
+        document.getElementById('winner-screen').classList.add('hidden');
+        document.getElementById('winner-screen').classList.remove('flex');
+        document.getElementById('solo-result-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('hidden');
+        document.getElementById('app').classList.remove('flex');
+        document.getElementById('group-controls').classList.add('hidden');
+        document.getElementById('group-controls').classList.remove('flex');
+        document.getElementById('solo-app').classList.add('hidden');
+        document.getElementById('solo-app').classList.remove('flex');
+        document.getElementById('start-overlay').style.display = 'flex';
+    }
+
+    function handleStartButtonClick() {
+        if (selectedMode === '1P') {
+            startSoloGame();
+        } else {
+            startGroupGame();
+        }
+    }
+
+    /* =========================================================
+       BİREYSEL OYUN (1P) MOTORU + 3 BUZUL KEŞİF SANDIĞI SİSTEMİ
+       ========================================================= */
+    const SOLO_TOTAL_QUESTIONS = 12;
+    const soloChestEvents = [
+        { icon: "🦊", title: "Kutup Tilkisi Rehberi!", desc: "Sevimli kutup tilkisi sana gizli bir balık zulası buldu!", pts: 35 },
+        { icon: "☕", title: "Sıcak Çikolata Molası!", desc: "İglo içinde içilen sıcak çikolata enerjini ikiye katladı!", pts: 30 },
+        { icon: "🛷", title: "Hızlı Kızak Takımı!", desc: "Kızak köpekleri seni fırtınadan hızla geçirdi!", pts: 25 },
+        { icon: "🌌", title: "Kuzey Işıkları (Aurora)!", desc: "Gökyüzünde beliren muhteşem Kuzey Işıkları sana büyük şans getirdi!", pts: 50 },
+        { icon: "🦭", title: "Neşeli Fok Gösterisi!", desc: "Buz üstündeki sevimli fok sana moral verdi!", pts: 20 },
+        { icon: "🧊", title: "Gizli Buzlanma!", desc: "Ayağın buzda kaydı ve dengeni kaybettin!", pts: -15 },
+        { icon: "🌨️", title: "Tipi ve Kar Fırtınası!", desc: "Aniden bastıran tipi görüş mesafeni düşürdü!", pts: -20 },
+        { icon: "🥶", title: "Dondurucu Ayaz!", desc: "Eldivenin teki karların arasına düştü, vakit kaybettin!", pts: -10 }
+    ];
+
+    let soloState = {
+        playerName: '',
+        questions: [],
+        currentIndex: 0,
+        score: 0,
+        correctCount: 0,
+        bonusPoints: 0,
+        chestPicked: false,
+        currentChests: []
+    };
+
+    function getRandomSubarray(arr, size) {
+        let shuffled = arr.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, size);
+    }
+
+    function startSoloGame() {
+        const rawName = document.getElementById('player-fullname').value;
+        const validation = validateStudentEntry(rawName);
+        if (!validation.valid) {
+            alert(validation.error);
+            return;
+        }
+
+        soloState.playerName = validation.name;
+        const fullPool = generateQuestionsPool();
+        soloState.questions = getRandomSubarray(fullPool, SOLO_TOTAL_QUESTIONS);
+        soloState.currentIndex = 0;
+        soloState.score = 0;
+        soloState.correctCount = 0;
+        soloState.bonusPoints = 0;
+
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('solo-result-overlay').style.display = 'none';
+        document.getElementById('solo-app').classList.remove('hidden');
+        document.getElementById('solo-app').classList.add('flex');
+
+        document.getElementById('solo-player-name').innerText = soloState.playerName;
+        updateSoloHeader();
+        loadSoloQuestion();
+    }
+
+    function updateSoloHeader() {
+        document.getElementById('solo-score').innerText = soloState.score;
+        document.getElementById('solo-progress').innerText = `Soru ${Math.min(soloState.currentIndex + 1, SOLO_TOTAL_QUESTIONS)} / ${SOLO_TOTAL_QUESTIONS}`;
+    }
+
+    function loadSoloQuestion() {
+        if (soloState.currentIndex >= SOLO_TOTAL_QUESTIONS) {
+            finishSoloGame();
+            return;
+        }
+
+        updateSoloHeader();
+        document.getElementById('solo-chest-stage').classList.add('hidden');
+        document.getElementById('solo-question-box').classList.remove('hidden');
+
+        const qObj = soloState.questions[soloState.currentIndex];
+        document.getElementById('solo-q-points').innerText = qObj.p;
+        document.getElementById('solo-q-text').innerHTML = qObj.q;
+        const inp = document.getElementById('solo-input');
+        inp.value = '';
+        setTimeout(() => inp.focus(), 100);
+    }
+
+    function submitSoloAnswer() {
+        const qObj = soloState.questions[soloState.currentIndex];
+        const userVal = document.getElementById('solo-input').value;
+
+        if (!userVal.trim()) {
+            showToast("Lütfen önce cevabını yaz! ✍️", "info");
+            return;
+        }
+
+        const correct = isAnswerMatch(userVal, qObj);
+        if (correct) {
+            soloState.score += qObj.p;
+            soloState.correctCount++;
+            playSoundEffect('correct');
+            showToast(`Harika! Doğru Cevap! +${qObj.p} Puan ⭐`, 'success');
+        } else {
+            const pen = Math.floor(qObj.p / 2);
+            soloState.score = Math.max(0, soloState.score - pen);
+            playSoundEffect('wrong');
+            showToast(`Yanlış! Doğru Cevap: "${qObj.a}" (-${pen} P) ❄️`, 'error');
+        }
+
+        soloState.currentIndex++;
+        updateSoloHeader();
+
+        // Her 2 soruda bir (2., 4., 6., 8., 10. sorulardan sonra) 3 Buzul Keşif Sandığı sun!
+        if (soloState.currentIndex < SOLO_TOTAL_QUESTIONS && soloState.currentIndex % 2 === 0) {
+            setTimeout(() => {
+                openSoloChestStage();
+            }, 900);
+        } else {
+            setTimeout(() => {
+                loadSoloQuestion();
+            }, 900);
+        }
+    }
+
+    function openSoloChestStage() {
+        document.getElementById('solo-question-box').classList.add('hidden');
+        const stage = document.getElementById('solo-chest-stage');
+        stage.classList.remove('hidden');
+
+        soloState.chestPicked = false;
+        // 3 sandıktan en az 2'si pozitif veya dengeli karışık olsun
+        const positives = soloChestEvents.filter(e => e.pts > 0);
+        const negatives = soloChestEvents.filter(e => e.pts < 0);
+        let chosen = [
+            positives[Math.floor(Math.random() * positives.length)],
+            negatives[Math.floor(Math.random() * negatives.length)],
+            soloChestEvents[Math.floor(Math.random() * soloChestEvents.length)]
+        ];
+        soloState.currentChests = getRandomSubarray(chosen, 3);
+
+        const skipBtn = document.getElementById('btn-skip-chest');
+        skipBtn.innerHTML = `<span>🛡️ Riske Girme, Kutu Açmadan Sıradaki Soruya Geç ➡️</span>`;
+
+        const grid = document.getElementById('solo-chests-grid');
+        grid.innerHTML = soloState.currentChests.map((c, idx) => `
+            <div class="chest-card" id="solo-chest-${idx}" onclick="pickSoloChest(${idx})">
+                <div class="chest-inner">
+                    <div class="chest-face chest-front">
+                        <div class="text-5xl mb-2 animate-bounce">🧊</div>
+                        <div class="font-baloo text-xl font-black">${idx + 1}. BUZUL KÜPÜ</div>
+                        <div class="text-xs font-bold text-sky-200 mt-1">Açmak için tıkla</div>
+                    </div>
+                    <div class="chest-face chest-back" id="solo-chest-back-${idx}">
+                        <div class="text-4xl mb-1">${c.icon}</div>
+                        <div class="font-baloo text-base font-black leading-tight">${c.title}</div>
+                        <div class="font-baloo text-2xl font-black mt-1 ${c.pts >= 0 ? 'text-emerald-600' : 'text-red-600'}">
+                            ${c.pts >= 0 ? '+' + c.pts : c.pts} Puan
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function pickSoloChest(idx) {
+        if (soloState.chestPicked) return;
+        soloState.chestPicked = true;
+
+        const chosen = soloState.currentChests[idx];
+        const cardEl = document.getElementById(`solo-chest-${idx}`);
+        cardEl.classList.add('opened');
+
+        soloState.score = Math.max(0, soloState.score + chosen.pts);
+        soloState.bonusPoints += chosen.pts;
+        updateSoloHeader();
+
+        if (chosen.pts >= 0) {
+            playSoundEffect('correct');
+            showToast(`${chosen.icon} ${chosen.title} (+${chosen.pts} Puan)`, 'success');
+        } else {
+            playSoundEffect('wrong');
+            showToast(`${chosen.icon} ${chosen.title} (${chosen.pts} Puan)`, 'error');
+        }
+
+        // Diğer kutuları da soluk şekilde aç ki içinde ne olduğunu görsün
+        setTimeout(() => {
+            soloState.currentChests.forEach((_, otherIdx) => {
+                if (otherIdx !== idx) {
+                    const el = document.getElementById(`solo-chest-${otherIdx}`);
+                    if (el) {
+                        el.classList.add('opened');
+                        el.style.opacity = '0.55';
+                    }
+                }
+            });
+            const skipBtn = document.getElementById('btn-skip-chest');
+            skipBtn.innerHTML = `<span>➡️ Sıradaki Soruya Devam Et</span>`;
+        }, 650);
+    }
+
+    function skipChestAndContinue() {
+        loadSoloQuestion();
+    }
+
+    function finishSoloGame() {
+        document.getElementById('solo-app').classList.add('hidden');
+        document.getElementById('solo-app').classList.remove('flex');
+
+        // Skoru Firebase'e kaydet
+        const entry = {
+            name: soloState.playerName,
+            fullName: soloState.playerName,
+            score: soloState.score,
+            date: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+            timestamp: Date.now()
+        };
+        rawScoreEntries.push(entry);
+        updateLocalLeaderboard(rawScoreEntries);
+
+        if (cloudDb) {
+            cloudDb.ref(DB_NODE).push(entry);
+        } else {
+            fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, {
+                method: 'POST', body: JSON.stringify(entry)
+            }).catch(() => {});
+        }
+
+        document.getElementById('solo-final-score').innerText = soloState.score;
+        document.getElementById('solo-final-correct').innerText = `${soloState.correctCount} / ${SOLO_TOTAL_QUESTIONS}`;
+        document.getElementById('solo-final-bonus').innerText = (soloState.bonusPoints >= 0 ? '+' : '') + soloState.bonusPoints;
+
+        document.getElementById('solo-result-overlay').style.display = 'flex';
+        playSoundEffect('fanfare');
+        triggerConfetti();
+    }
+
+    /* =========================================================
+       İLK 10 LİDER TABLOSU VE KUTUP KUTLAMASI
+       ========================================================= */
+    function openLeaderboard() {
+        renderLeaderboardTable();
+        document.getElementById('leaderboard-overlay').style.display = 'flex';
+    }
+
+    function closeLeaderboard() {
+        document.getElementById('leaderboard-overlay').style.display = 'none';
+    }
+
+    function renderLeaderboardTable() {
+        let data = JSON.parse(localStorage.getItem('meb_geometrikutuplar_top10') || '[]');
+        const tbody = document.getElementById('leaderboard-body');
+        const emptyEl = document.getElementById('empty-leaderboard');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            emptyEl.classList.remove('hidden');
+            return;
+        }
+        emptyEl.classList.add('hidden');
+
+        const medals = ['🥇', '🥈', '🥉'];
+        data.forEach((e, idx) => {
+            const tr = document.createElement('tr');
+            tr.className = `lb-row rank-${idx + 1}`;
+            const rankStr = idx < 3 ? medals[idx] : `${idx + 1}.`;
+            const nameToShow = e.displayName || e.fullName || e.name || 'Öğrenci';
+            const safeName = nameToShow.replace(/'/g, "\\'");
+
+            tr.onclick = () => openCelebration({ name: nameToShow, score: e.score }, idx + 1);
+            tr.innerHTML = `
+                <td><span class="text-xl">${rankStr}</span></td>
+                <td class="text-left pl-3 font-extrabold text-slate-800">${nameToShow}</td>
+                <td class="font-baloo text-2xl font-black text-sky-600">${e.score}</td>
+                <td class="text-slate-400 text-sm">${e.date || '-'}</td>
+                <td>
+                    <button class="bg-sky-100 hover:bg-sky-200 text-sky-800 px-3 py-1 rounded-lg text-xs font-extrabold" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx + 1});">
+                        ❄️ Kutla
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openCelebration(entry, rank) {
+        triggerConfetti();
+        playSoundEffect('fanfare');
+
+        document.getElementById('cel-name').innerText = entry.name || 'Kutup Kaşifi';
+        document.getElementById('cel-score').innerText = `${entry.score} Puan`;
+
+        const card = document.getElementById('celebration-card');
+        const icon = document.getElementById('cel-icon');
+        const badge = document.getElementById('cel-badge');
+        const title = document.getElementById('cel-title');
+        const desc = document.getElementById('cel-desc');
+
+        if (rank === 1) {
+            icon.innerText = "👑🐻‍❄️🥇";
+            badge.innerText = "1. SIRA KUTUP KRALI / KRALİÇESİ";
+            badge.className = "inline-block bg-amber-500 text-white font-baloo font-black px-4 py-1 rounded-full text-sm uppercase mb-2";
+            title.innerText = "🌌 KUZEY IŞIKLARI ŞAMPİYONU!";
+            desc.innerText = "İNANILMAZ BİR KEŞİF! Geometri bilginle tüm buzulları erittin ve Kutuplarda Geometri zirvesinin tek sahibi oldun!";
+            card.style.borderColor = "#f59e0b";
+        } else if (rank === 2) {
+            icon.innerText = "🥈🦊❄️";
+            badge.innerText = "2. SIRA GÜMÜŞ BUZUL MADALYASI";
+            badge.className = "inline-block bg-sky-500 text-white font-baloo font-black px-4 py-1 rounded-full text-sm uppercase mb-2";
+            title.innerText = "⚡ KUTUP TİLKİSİ HIZ ÖDÜLÜ!";
+            desc.innerText = "MUHTEŞEM BİR BAŞARI! Keskin zekanla kutup fırtınasında harika ilerledin ve Gümüş Madalyayı kazandın!";
+            card.style.borderColor = "#38bdf8";
+        } else if (rank === 3) {
+            icon.innerText = "🥉🐧🧊";
+            badge.innerText = "3. SIRA BRONZ BUZUL MADALYASI";
+            badge.className = "inline-block bg-orange-500 text-white font-baloo font-black px-4 py-1 rounded-full text-sm uppercase mb-2";
+            title.innerText = "🔥 ALTIN PENGUEN KÜRSÜSÜ!";
+            desc.innerText = "HARİKASIN! Gösterdiğin üstün performansla podyuma çıkıp Bronz Madalyayı boynuna taktın!";
+            card.style.borderColor = "#fb923c";
+        } else {
+            icon.innerText = "🦭🎖️❄️";
+            badge.innerText = `${rank}. SIRA KUTUP KAŞİFİ ROZETİ`;
+            badge.className = "inline-block bg-indigo-600 text-white font-baloo font-black px-4 py-1 rounded-full text-sm uppercase mb-2";
+            title.innerText = "🌟 İLK 10 ŞAMPİYONLAR KULÜBÜ!";
+            desc.innerText = `TEBRİKLER! Harika bir odaklanmayla ${rank}. olarak İlk 10 Kutup Kaşifleri Tablosuna adını gururla yazdırdın!`;
+            card.style.borderColor = "#6366f1";
+        }
+
+        document.getElementById('celebration-modal').classList.add('modal-active');
+    }
+
+    function closeCelebration() {
+        document.getElementById('celebration-modal').classList.remove('modal-active');
+    }
+
+    /* =========================================================
+       ÖĞRETMEN AYARLARI MODALI
+       ========================================================= */
+    function openSettings() {
+        document.getElementById('settings-modal').classList.add('modal-active');
+        if (localStorage.getItem('isAdmin_geometrikutuplar') === 'true') {
+            document.getElementById('settings-auth').classList.add('hidden');
+            document.getElementById('settings-panel').classList.remove('hidden');
+        } else {
+            document.getElementById('settings-auth').classList.remove('hidden');
+            document.getElementById('settings-panel').classList.add('hidden');
+            document.getElementById('admin-pwd-input').value = '';
+        }
+    }
+
+    function closeSettings() {
+        document.getElementById('settings-modal').classList.remove('modal-active');
+    }
+
+    function checkAdminPwd() {
+        const val = document.getElementById('admin-pwd-input').value.trim();
+        if (val === '26575982824.bati' || val === 'bati.1234') {
+            localStorage.setItem('isAdmin_geometrikutuplar', 'true');
+            document.getElementById('settings-auth').classList.add('hidden');
+            document.getElementById('settings-panel').classList.remove('hidden');
+        } else {
+            alert('Hatalı şifre! Lütfen tekrar deneyin.');
+        }
+    }
+
+    /* =========================================================
+       3 TAKIMLI GRUP OYUNU (30 KUTU)
+       ========================================================= */
     const jokersData = [
       { type: 'joker', subType: 'standard', points: 40, msg: "🦊 Kutup Tilkisi Yardımı!", desc: "Sevimli bir kutup tilkisi sana balık getirdi! (Anında +40 Puan)" },
       { type: 'joker', subType: 'standard', points: 30, msg: "☕ Sıcak Çikolata!", desc: "Kutup soğuğunda içilen sıcak çikolata zihnini açtı! (+30 Puan)" },
@@ -404,29 +1495,24 @@
         pendingJokerAction: null
     };
 
-    function getRandomSubarray(arr, size) {
-        let shuffled = arr.slice();
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled.slice(0, size);
-    }
-
-    function startGame() {
+    function startGroupGame() {
+        document.getElementById('start-overlay').style.display = 'none';
         document.getElementById('winner-screen').classList.add('hidden');
         document.getElementById('winner-screen').classList.remove('flex');
+        document.getElementById('solo-app').classList.add('hidden');
+        document.getElementById('solo-app').classList.remove('flex');
+
+        document.getElementById('group-controls').classList.remove('hidden');
+        document.getElementById('group-controls').classList.add('flex');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('app').classList.add('flex');
         document.getElementById('btn-last-round').style.display = 'flex';
 
-        // OYUN HER BAŞLADIĞINDA YENİ BİR SORU HAVUZU ÜRET
         const dynamicQuestionsData = generateQuestionsPool();
-        
-        // 22 soru 8 şans kartı = 30 kart
         const selectedQuestions = getRandomSubarray(dynamicQuestionsData, 22).map(d => ({ ...d, type: 'q', solved: false }));
         const j = jokersData.map(d => ({ ...d, type: 'j', solved: false }));
         let deck = [...selectedQuestions, ...j];
         
-        // Kartları karıştır
         for (let i = deck.length - 1; i > 0; i--) {
             const r = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[r]] = [deck[r], deck[i]];
@@ -486,8 +1572,6 @@
             }
 
             const finalBackClass = c.solved ? `card-back ${backClass}` : 'card-back';
-            
-            // Sırayla düşme efekti için gecikme (her karta 0.06s ekstra)
             const animDelay = i * 0.06;
 
             return `
@@ -529,46 +1613,22 @@
     function submitAnswer() {
         const index = gameState.activeIndex;
         const card = gameState.cards[index];
-        let val = document.getElementById('modal-input').value.toLowerCase();
-        let correct = String(card.a).toLowerCase();
-        
-        // Türkçe karakter ve boşluk temizliği
-        let valText = val.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
-        let correctText = correct.replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
+        const val = document.getElementById('modal-input').value;
 
         document.getElementById('modal-q').classList.remove('modal-active');
 
-        let isCorrect = false;
-        let valNum = val.replace(/\s+/g, '').replace(',', '.'); // Virgülü noktaya çevir numerik kontrol için
-        let correctNum = correct.replace(/\s+/g, '').replace(',', '.');
-
-        if (valNum !== '' && correctNum !== '' && !isNaN(valNum) && !isNaN(correctNum)) {
-            if (Number(valNum) === Number(correctNum)) {
-                isCorrect = true;
-            }
-        } 
-        else {
-            if (valText === correctText) {
-                isCorrect = true;
-            } else if (card.aliases) {
-                for (let alias of card.aliases) {
-                    let cleanAlias = alias.toLowerCase().replace(/ı/g, 'i').replace(/ç/g, 'c').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/\s+/g, '');
-                    if (valText === cleanAlias) {
-                        isCorrect = true;
-                        break;
-                    }
-                }
-            }
-        }
+        const isCorrect = isAnswerMatch(val, card);
 
         if (isCorrect) {
             gameState.teams[gameState.currentTeam].score += card.p;
             card.status = 'correct';
+            playSoundEffect('correct');
             finalizeTurn(true, "Aferin! Balığı Kaptın! ⭐");
         } else {
             const pen = Math.floor(card.p / 2);
             gameState.teams[gameState.currentTeam].score -= pen;
             card.status = 'wrong';
+            playSoundEffect('wrong');
             finalizeTurn(false, `Yanlış! Buzu Kırdın! -${pen} Puan 📉`);
         }
     }
@@ -702,7 +1762,7 @@
     }
 
     function triggerConfetti() {
-        var duration = 4 * 1000;
+        var duration = 3 * 1000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
 
@@ -714,7 +1774,7 @@
             var timeLeft = animationEnd - Date.now();
             if (timeLeft <= 0) return clearInterval(interval);
 
-            var particleCount = 50 * (timeLeft / duration);
+            var particleCount = 45 * (timeLeft / duration);
             confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
             confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
         }, 250);
@@ -747,6 +1807,7 @@
 
         screen.classList.remove('hidden');
         screen.classList.add('flex');
+        playSoundEffect('fanfare');
         triggerConfetti();
     }
 
@@ -767,16 +1828,20 @@
         
         t.classList.add('toast-show');
         clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => t.classList.remove('toast-show'), 2000);
+        toastTimeout = setTimeout(() => t.classList.remove('toast-show'), 2200);
     }
 
     document.getElementById('modal-input').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') submitAnswer();
     });
 
-    window.onload = function() {
-        startGame();
-    };
+    document.getElementById('solo-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') submitSoloAnswer();
+    });
+
+    document.getElementById('player-fullname').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') handleStartButtonClick();
+    });
 </script>
 </body>
 </html>
