@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full w-full overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geometri Tombalası (Geombala)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100vh; width: 100vw; overflow: hidden; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+        body { 
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+        .font-baloo { font-family: 'Baloo 2', cursive; }
+        
+        .card-enter { animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .shake { animation: shake 0.4s; }
+        .pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-spin-fast { animation: spinFast 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px) scale(0.85); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes spinFast {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(0.85); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; backdrop-filter: blur(0px); }
+            to { opacity: 1; backdrop-filter: blur(6px); }
+        }
+
+        @keyframes partyBounce {
+            0%, 100% { transform: translateY(0) scale(1) rotate(-8deg); }
+            50% { transform: translateY(-12px) scale(1.15) rotate(8deg); }
+        }
+
+        @keyframes pulseBg {
+            0%, 100% { box-shadow: 0 0 0 0px rgba(255,255,255,0.7); }
+            50% { box-shadow: 0 0 0 30px rgba(255,255,255,0); }
+        }
+
+        .game-cell {
+            box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+            transition: all 0.12s ease;
+        }
+        .game-cell:active:not(.marked) {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 rgba(0,0,0,0.08);
+        }
+        .game-cell.marked {
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.18);
+            transform: translateY(2px);
+        }
+        
+        .angle-svg { width: 1.3em; height: 0.45em; }
+
+        @keyframes floatMagic {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50% { transform: translateY(-8px) rotate(8deg) scale(1.05); }
+        }
+        .animate-float-magic { animation: floatMagic 2.5s ease-in-out infinite; }
+
+        /* Menü ve Lider Tablosu Stilleri */
+        .app-overlay {
+            position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
+            z-index: 80; background: rgba(15, 23, 42, 0.82); backdrop-filter: blur(8px); padding: 16px;
+        }
+        .menu-card {
+            background: rgba(255, 255, 255, 0.98); border-radius: 28px; padding: 30px 28px;
+            text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+            border: 4px solid #4F46E5; width: 100%; max-width: 560px;
+            animation: slideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .mode-btn {
+            background: #EEF2FF; border: 2px solid #C7D2FE; color: #3730A3;
+            padding: 12px 18px; border-radius: 14px; font-size: 15px; font-weight: 800;
+            cursor: pointer; transition: all 0.2s; flex: 1;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED); color: white; border-color: #4338CA;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35); transform: translateY(-1px);
+        }
+        .input-player {
+            width: 100%; padding: 13px 16px; font-size: 16px; font-weight: 800;
+            border: 2px solid #CBD5E1; border-radius: 14px; outline: none; text-align: center; color: #1E293B;
+        }
+        .input-player:focus { border-color: #4F46E5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15); }
+        .btn-main-start {
+            width: 100%; padding: 16px 26px; background: linear-gradient(135deg, #F59E0B, #D97706);
+            border: none; border-radius: 18px; color: white; font-family: 'Baloo 2', cursive; font-size: 24px;
+            font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); transition: transform 0.15s;
+        }
+        .btn-main-start:active { transform: scale(0.96); }
+
+        .lb-table { width: 100%; border-collapse: separate; border-spacing: 0 5px; margin-bottom: 10px; }
+        .lb-table th { font-size: 12px; font-weight: 800; color: #64748B; text-transform: uppercase; padding: 4px; }
+        .lb-row { background: #F8FAFC; border-radius: 12px; cursor: pointer; transition: transform 0.15s; }
+        .lb-row:hover { transform: scale(1.015); }
+        .lb-row td { padding: 8px 10px; font-size: 14px; font-weight: 800; text-align: center; }
+        .lb-row td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .lb-row td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        .lb-row.rank-1 { background: linear-gradient(90deg, #FEF3C7, #FFFBEB); border: 2px solid #F59E0B; }
+        .lb-row.rank-2 { background: linear-gradient(90deg, #F1F5F9, #F8FAFC); border: 2px solid #CBD5E1; }
+        .lb-row.rank-3 { background: linear-gradient(90deg, #FFEDD5, #FFF7ED); border: 2px solid #FDBA74; }
+
+        /* Hız Barı Animasyonu */
+        #speed-bar-fill { transition: width 0.1s linear, background-color 0.2s ease; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden text-slate-800 p-2 flex flex-col font-sans select-none">
+
+    <!-- ==========================================
+         BAŞLANGIÇ MENÜSÜ VE LİDER TABLOSU KATMANI
+         ========================================== -->
+    <div id="app-overlay" class="app-overlay">
+        
+        <!-- ANA MENÜ KARTI -->
+        <div id="startScreen" class="menu-card">
+            <!-- Öğretmen Ayarlar Butonu -->
+            <button onclick="openSettings()" title="Yönetici Ayarları" class="absolute top-4 right-5 text-2xl hover:rotate-90 transition-transform">⚙️</button>
+
+            <div class="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-800 font-black text-xs px-3 py-1 rounded-full mb-2">
+                <span>📐</span> 5. SINIF GEOMETRİ EŞLEŞTİRME HEYECANI
+            </div>
+            <h1 class="font-baloo text-3xl sm:text-4xl font-extrabold text-slate-800 mb-1">Geometri Tombalası</h1>
+            <p class="text-sm font-bold text-slate-500 mb-5">Doğru, Işın, Doğru Parçası ve Açı Sembollerini Yakala!</p>
+
+            <!-- Mod Seçim Butonları -->
+            <div class="flex gap-2.5 mb-4">
+                <button id="btn-mode-1p" class="mode-btn active" onclick="setGameMode('1P')">
+                    🤖 Bireysel Mod (Bilgisayara Karşı)
+                </button>
+                <button id="btn-mode-class" class="mode-btn" onclick="setGameMode('CLASS')">
+                    🙋‍♀️ Sınıf Modu (Kızlar vs Erkekler)
+                </button>
+            </div>
+
+            <!-- 1P Bireysel Öğrenci Giriş ve Bilgi Alanı -->
+            <div id="form-1p" class="mb-4">
+                <input type="text" id="playerFullName" list="studentNamesList" class="input-player mb-3" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
+                <datalist id="studentNamesList"></datalist>
+
+                <div class="bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-3 text-left text-xs sm:text-sm text-amber-950 font-bold space-y-1">
+                    <div>⚡ <b>Hız Bonusu:</b> Kart çekildiği an ne kadar hızlı bulursan o kadar çok puan (+50'ye kadar ek hız puanı) kazanırsın!</div>
+                    <div>🔥 <b>Seri (Combo) Çarpanı:</b> Üst üste doğru yaptıkça her doğruda <b>+25 Seri Bonusu</b> eklenir!</div>
+                    <div>🤖 <b>Dikkat:</b> Ortak pullarda Robo-Geometri senden önce davranırsa kartı kapar! Kartında <b>Çinko (1. ve 2. satır)</b> ve <b>Tombala</b> ödüllerini topla!</div>
+                </div>
+            </div>
+
+            <!-- Sınıf Modu Bilgi Alanı -->
+            <div id="form-class" class="hidden mb-4">
+                <div class="bg-pink-50 border-2 border-dashed border-pink-300 rounded-2xl p-3.5 text-left text-xs sm:text-sm text-pink-950 font-bold space-y-1">
+                    <div>🙋‍♀️🙋‍♂️ <b>Kızlar Takımı vs Erkekler Takımı:</b> Akıllı tahtada sınıfça oynanan klasik Geombala modu!</div>
+                    <div>✨ Torbadan kart çekilir; kart kendi tablosunda olan takım işaretler, olmayan takım <b>PAS</b> butonuna basar!</div>
+                    <div>🏆 Doğru hamle <b>+100 Puan</b>, yanlış hamle <b>-50 Puan</b>. İlk 10 pulu tamamlayan takım <b>TOMBALA</b> yapar!</div>
+                </div>
+            </div>
+
+            <button class="btn-main-start" onclick="startSelectedGame()">🚀 OYUNA BAŞLA</button>
+            <button onclick="showMenuScreen('LEADERBOARD')" class="mt-3 w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border-2 border-indigo-200 font-extrabold py-2.5 rounded-xl text-sm transition-colors">
+                🏆 İlk 10 Sıralaması (Bireysel Şampiyonlar)
+            </button>
+        </div>
+
+        <!-- LİDER TABLOSU KARTI -->
+        <div id="leaderboardScreen" class="menu-card hidden" style="max-width: 720px; max-height: 92vh; display: none; flex-direction: column;">
+            <div class="flex justify-between items-center border-b-2 border-slate-200 pb-2.5 mb-2.5 shrink-0">
+                <h2 class="font-baloo text-2xl font-extrabold text-slate-800">🏆 İlk 10 Sıralaması</h2>
+                <button onclick="showMenuScreen('START')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold px-3.5 py-1.5 rounded-xl text-sm">✕ Kapat</button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 pr-1">
+                <table class="lb-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">Sıra</th>
+                            <th style="text-align: left;">Adı Soyadı</th>
+                            <th>Puan</th>
+                            <th>Kutla</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+                <div id="emptyLeaderboard" class="text-slate-400 font-extrabold py-8 hidden">Henüz kayıtlı skor yok. İlk şampiyon sen ol!</div>
+            </div>
+
+            <button class="btn-main-start mt-3 py-3 text-xl shrink-0" onclick="showMenuScreen('START')">🔄 Ana Menüye Dön</button>
+        </div>
+
+    </div>
+
+    <!-- KUTLAMA MODALI -->
+    <div id="celebrationModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+        <div id="celebrationCard" class="bg-white rounded-3xl p-7 text-center max-w-md w-full shadow-2xl border-4 border-amber-400 pop">
+            <div id="celIcon" class="text-6xl mb-2">🥇</div>
+            <div id="celName" class="font-baloo text-3xl font-black text-slate-800">Öğrenci</div>
+            <div id="celTitle" class="text-base font-extrabold text-amber-600 mb-1">1. Sıra Şampiyonu!</div>
+            <div id="celScore" class="text-2xl font-black text-indigo-600 mb-3">0 Puan</div>
+            <p id="celMessage" class="text-sm font-bold text-slate-600 mb-5 leading-relaxed"></p>
+            <button onclick="closeCelebration()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-baloo font-extrabold text-xl py-3 rounded-2xl shadow-lg active:scale-95 transition-transform">
+                👏 Alkışla ve Kapat
+            </button>
+        </div>
+    </div>
+
+    <!-- YÖNETİCİ AYARLARI MODALI -->
+    <div id="settingsModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl p-6 text-center max-w-md w-full shadow-2xl border-4 border-slate-300 pop">
+            <h2 class="font-baloo text-2xl font-extrabold text-slate-800 mb-4">⚙️ Yönetici Ayarları</h2>
+            
+            <div id="authSection">
+                <input type="password" id="adminPassword" class="input-player mb-3" placeholder="Yönetici Şifresi">
+                <button class="btn-main-start py-2.5 text-lg" onclick="checkAdminPassword()">Giriş Yap</button>
+            </div>
+
+            <div id="adminSection" class="hidden text-left">
+                <div class="bg-slate-100 rounded-2xl p-3.5 mb-3 border border-slate-300">
+                    <h3 class="font-extrabold text-sm text-slate-800 mb-1">📋 Sınıf Öğrenci Listesini Ekle</h3>
+                    <p class="text-xs text-slate-500 font-semibold mb-2">İsimleri alt alta, virgülle veya tırnak içinde yapıştırabilirsiniz.</p>
+                    <textarea id="adminStudentList" class="w-full h-24 p-2 rounded-xl border border-slate-300 text-xs font-bold" placeholder="İsimleri buraya yapıştırın..."></textarea>
+                    <div class="flex justify-between items-center my-1.5">
+                        <span id="totalStudentsText" class="text-xs text-emerald-600 font-extrabold">Sistemde 0 öğrenci kayıtlı.</span>
+                        <button onclick="clearStudentList()" class="text-xs text-rose-600 font-extrabold underline">Listeyi Sıfırla</button>
+                    </div>
+                    <button onclick="saveStudentList()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2 rounded-xl text-sm">💾 Öğrencileri Sisteme Ekle</button>
+                </div>
+                <button onclick="clearLeaderboard()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold py-2.5 rounded-xl text-sm shadow">🗑️ Tüm İlk 10 Skorlarını Sıfırla</button>
+            </div>
+
+            <button onclick="closeSettings()" class="mt-3 w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold py-2 rounded-xl text-sm">Kapat</button>
+        </div>
+    </div>
+    
+    <!-- Üst Bar -->
+    <div class="w-full mb-2 bg-white rounded-xl shadow-sm border border-slate-200 px-3 py-1.5 flex items-center justify-between relative shrink-0 h-11">
+        <!-- Sol Taraf: Başlık ve Butonlar -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5">
+                <span class="text-xl">📐</span>
+                <h1 class="text-sm sm:text-base md:text-lg font-extrabold text-slate-800 tracking-tight">Geometri Tombalası</h1>
+            </div>
+            <button onclick="showMenuScreen('START')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm shrink-0 flex items-center gap-1 active:scale-95 transition-all">
+                <span>🏠</span> Ana Menü
+            </button>
+            <button onclick="endGameEarly(false)" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm shrink-0 flex items-center gap-1 active:scale-95 transition-all">
+                <span>🏁</span> Oyunu Bitir
+            </button>
+        </div>
+        
+        <!-- Orta Kısım: Puan Kuralı veya Bireysel Seri/Hız Bilgisi -->
+        <div id="top-rule-banner" class=" hidden lg:flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 whitespace-nowrap">
+            Doğru: <span class="text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">+100 Puan</span> | Yanlış: <span class="text-red-700 font-bold bg-red-100 px-1.5 py-0.5 rounded">-50 Puan</span>
+        </div>
+
+        <!-- Sağ Taraf: Bireysel Modda Canlı Seri (Combo) Göstergesi -->
+        <div id="combo-badge" class="hidden items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black px-3 py-1 rounded-full text-xs shadow-sm">
+            <span>🔥</span> SERİ: <span id="combo-count">0</span>x
+        </div>
+    </div>
+    
+    <!-- Ana İçerik Konteyneri -->
+    <div class="flex-1 w-full grid grid-cols-12 gap-2 min-h-0 h-[calc(100vh-3.5rem)]">
+        
+        <!-- Sol Taraf: Torba ve Çekilen Kart (4 Sütun) -->
+        <div class="col-span-4 flex flex-col gap-2 h-full min-h-0">
+            <!-- Torba Kutusu -->
+            <div class="bg-white rounded-xl shadow-sm p-2 flex flex-col items-center justify-between border border-slate-200 relative overflow-hidden flex-1 min-h-0">
+                <div class="w-full flex justify-between items-center px-1 z-10">
+                    <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Kart Çekim Torbası</h2>
+                    <span id="mode-indicator-pill" class="text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">SINIF MODU</span>
+                </div>
+                
+                <div id="bag-container" class="relative cursor-pointer group flex-1 flex flex-col items-center justify-center min-h-0 w-full z-10" onclick="drawCard()">
+                    <div id="bag-icon" class="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-amber-500 via-amber-600 to-indigo-700 rounded-full flex items-center justify-center shadow-md border-2 border-amber-100 transition-transform group-hover:scale-105 shrink-0">
+                        <svg viewBox="0 0 64 64" class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 drop-shadow-md group-hover:animate-bounce">
+                          <path d="M24 10 C20 4, 44 4, 40 10 C40 15, 24 15, 24 10 Z" fill="#fde047" stroke="#b45309" stroke-width="2"/>
+                          <path d="M18 16 Q32 21 46 16" stroke="#78350f" stroke-width="3.5" stroke-linecap="round"/>
+                          <path d="M28 19 L25 26" stroke="#78350f" stroke-width="2.5" stroke-linecap="round"/>
+                          <path d="M36 19 L39 27" stroke="#78350f" stroke-width="2.5" stroke-linecap="round"/>
+                          <circle cx="25" cy="27" r="1.5" fill="#78350f"/>
+                          <circle cx="39" cy="28" r="1.5" fill="#78350f"/>
+                          <path d="M18 18 C8 25, 6 52, 17 57 C27 61, 37 61, 47 57 C58 52, 56 25, 46 18 C36 21, 28 21, 18 18 Z" fill="#f59e0b" stroke="#b45309" stroke-width="2.5"/>
+                          <path d="M24 24 C22 35, 24 46, 27 54" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+                          <path d="M40 24 C42 35, 40 46, 37 54" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+                          <path d="M32 23 C31 35, 32 46, 32 55" stroke="#d97706" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div class="absolute bottom-1 right-2 bg-amber-400 text-indigo-900 font-extrabold px-2.5 py-0.5 rounded-full shadow border border-white text-xs">
+                        Kalan: <span id="cards-left">20</span>
+                    </div>
+                </div>
+
+                <button onclick="drawCard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 rounded-lg shadow transition-colors w-full text-xs sm:text-sm shrink-0 mt-1 flex items-center justify-center gap-1.5 active:scale-95 z-10">
+                    <span>✨</span> Yeni Kart Çek
+                </button>
+            </div>
+
+            <!-- Çekilen Kart Gösterimi -->
+            <div class="bg-white rounded-xl shadow-sm p-2 border border-slate-200 flex-1 flex flex-col items-center justify-center relative min-h-0 overflow-hidden">
+                <div id="drawn-card" class="hidden w-full h-full absolute inset-0 bg-gradient-to-br from-amber-100 to-amber-300 p-2 text-center flex flex-col items-center justify-between rounded-xl border-2 border-amber-400 shadow-inner z-20">
+                    <div class="w-full flex justify-between items-center px-1">
+                        <span class="text-[10px] text-amber-900 font-extrabold tracking-widest uppercase bg-white/80 px-2 py-0.5 rounded-full shadow-sm">Sıradaki Kart</span>
+                        <span id="speed-bonus-label" class="hidden text-[11px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">⚡ Hız Bonusu: +50</span>
+                    </div>
+
+                    <p id="drawn-text" class="text-base sm:text-lg md:text-xl font-black text-slate-800 leading-tight drop-shadow-sm px-2 my-auto"></p>
+
+                    <!-- Bireysel Mod Hız & Robot Süre Çubuğu -->
+                    <div id="speed-bar-container" class="hidden w-full bg-white/60 h-2.5 rounded-full overflow-hidden border border-amber-400/60 p-0.5">
+                        <div id="speed-bar-fill" class="h-full bg-emerald-500 rounded-full" style="width: 100%;"></div>
+                    </div>
+                </div>
+                
+                <div id="empty-state" class="w-full h-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-b from-transparent to-indigo-50/50 rounded-lg">
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl animate-pulse"></div>
+                        <div class="absolute w-24 h-24 bg-pink-400/20 rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
+                    </div>
+                    
+                    <div class="relative flex items-center justify-center mb-2">
+                        <span class="text-4xl sm:text-5xl md:text-6xl animate-float-magic drop-shadow-xl z-10 relative">🪄✨</span>
+                    </div>
+                    
+                    <h3 class="font-black text-base sm:text-lg md:text-xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-pink-500 leading-tight drop-shadow-sm px-2 text-center relative z-10 uppercase tracking-wide">
+                        YENİ KART ÇEKİNİZ
+                    </h3>
+                    
+                    <div class="flex items-center gap-2 mt-2 text-indigo-400 animate-bounce relative z-10">
+                        <span class="text-lg">⬆️</span>
+                        <span class="font-bold text-xs tracking-widest text-indigo-500/80">TORBAYA TIKLA</span>
+                        <span class="text-lg">⬆️</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Taraf: Tombala Kartları (8 Sütun) -->
+        <div class="col-span-8 flex flex-col gap-2 h-full min-h-0">
+            
+            <!-- Üst Kart: Kızlar Takımı (Sınıf Modu) VEYA Öğrenci Kartı (Bireysel Mod) -->
+            <div id="panel-top" class="bg-white rounded-xl shadow-sm overflow-hidden border border-pink-200 flex flex-col flex-1 min-h-0">
+                <div id="header-top" class="bg-gradient-to-r from-pink-500 to-rose-400 px-3.5 py-1.5 text-white flex items-center justify-between relative shadow-sm shrink-0 h-11 sm:h-12">
+                    <h2 class="text-sm sm:text-base md:text-lg font-black flex items-center gap-2 truncate max-w-[38%]">
+                        <span id="icon-top" class="text-lg sm:text-xl bg-white/20 p-1 rounded-lg">🙋‍♀️</span>
+                        <span id="title-top" class="truncate">Kızlar Takımı</span>
+                    </h2>
+
+                    <div class="flex items-center gap-2">
+                        <button id="pass-btn-k" onclick="handlePass('k', this)" class="bg-black/25 hover:bg-black/40 text-white font-extrabold px-3 py-1 rounded-lg text-xs sm:text-sm shadow-md flex items-center gap-1 active:scale-95 transition-all border border-white/30">
+                            <span>✋</span> <span id="pass-label-k">PAS (Kartımda Yok)</span>
+                        </button>
+                        <div class="bg-black/30 px-2.5 py-1 rounded-lg text-xs font-black shadow-inner border border-white/20 hidden sm:flex items-center gap-1">
+                            Bulunan: <span id="found-kizlar" class="text-emerald-300">0/10</span>
+                        </div>
+                        <div class="bg-black/35 px-3 py-1 rounded-lg text-xs sm:text-sm font-black shadow-inner flex items-center gap-1 border border-white/20">
+                            Puan: <span id="score-kizlar" class="font-mono text-amber-200 text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="body-top" class="p-1 bg-pink-50 flex-1 flex flex-col min-h-0">
+                    <div class="grid grid-cols-6 grid-rows-3 gap-1 w-full flex-1 min-h-0" id="grid-kizlar"></div>
+                </div>
+            </div>
+
+            <!-- Alt Kart: Erkekler Takımı (Sınıf Modu) VEYA Robo-Geometri (Bireysel Mod) -->
+            <div id="panel-bottom" class="bg-white rounded-xl shadow-sm overflow-hidden border border-blue-200 flex flex-col flex-1 min-h-0">
+                <div id="header-bottom" class="bg-gradient-to-r from-blue-500 to-cyan-400 px-3.5 py-1.5 text-white flex items-center justify-between relative shadow-sm shrink-0 h-11 sm:h-12">
+                    <h2 class="text-sm sm:text-base md:text-lg font-black flex items-center gap-2 truncate max-w-[42%]">
+                        <span id="icon-bottom" class="text-lg sm:text-xl bg-white/20 p-1 rounded-lg">🙋‍♂️</span>
+                        <span id="title-bottom" class="truncate">Erkekler Takımı</span>
+                    </h2>
+
+                    <div class="flex items-center gap-2">
+                        <button id="pass-btn-e" onclick="handlePass('e', this)" class="bg-blue-800/80 hover:bg-blue-900 text-white font-extrabold px-3 py-1 rounded-lg text-xs sm:text-sm shadow-md flex items-center gap-1 active:scale-95 transition-all border border-blue-300/40">
+                            <span>✋</span> PAS
+                        </button>
+                        <span id="ai-status-badge" class="hidden bg-slate-900/50 text-cyan-200 font-extrabold px-2.5 py-1 rounded-lg text-xs border border-cyan-300/30">
+                            🤖 Rakip Taranıyor...
+                        </span>
+                        <div class="bg-black/30 px-2.5 py-1 rounded-lg text-xs font-black shadow-inner border border-white/20 hidden sm:flex items-center gap-1">
+                            Bulunan: <span id="found-erkekler" class="text-emerald-300">0/10</span>
+                        </div>
+                        <div class="bg-black/35 px-3 py-1 rounded-lg text-xs sm:text-sm font-black shadow-inner flex items-center gap-1 border border-white/20">
+                            Puan: <span id="score-erkekler" class="font-mono text-amber-200 text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="body-bottom" class="p-1 bg-blue-50 flex-1 flex flex-col min-h-0">
+                    <div class="grid grid-cols-6 grid-rows-3 gap-1 w-full flex-1 min-h-0" id="grid-erkekler"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================
+           SES EFEKTLERİ (WEB AUDIO API)
+           ========================================== */
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playTone(freqs, type = 'triangle', step = 0.07, dur = 0.18) {
+            try {
+                let ctx = getAudioContext();
+                let now = ctx.currentTime;
+                freqs.forEach((f, i) => {
+                    let osc = ctx.createOscillator();
+                    let gain = ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(f, now + i * step);
+                    gain.gain.setValueAtTime(0.22, now + i * step);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * step + dur);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + i * step);
+                    osc.stop(now + i * step + dur + 0.02);
+                });
+            } catch(e) {}
+        }
+
+        function playCorrectSound() { playTone([523.25, 659.25, 783.99], 'triangle', 0.06, 0.18); }
+        function playCinkoSound() { playTone([523.25, 659.25, 783.99, 1046.50], 'triangle', 0.08, 0.28); }
+        function playWrongSound() { playTone([330, 261.63], 'triangle', 0.11, 0.18); }
+        function playFanfareSound(rank) {
+            let notes = (rank === 1) ? [523.25, 659.25, 783.99, 1046.50] :
+                        (rank === 2) ? [440.00, 554.37, 659.25, 880.00] :
+                                       [392.00, 493.88, 587.33, 783.99];
+            playTone(notes, 'triangle', 0.11, 0.35);
+        }
+
+        /* ==========================================
+           FİREBASE VE İLK 10 LİDER TABLOSU SİSTEMİ
+           ========================================== */
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+            authDomain: "zihindencarpma.firebaseapp.com",
+            databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+            projectId: "zihindencarpma",
+            storageBucket: "zihindencarpma.firebasestorage.app",
+            messagingSenderId: "111639321624",
+            appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+        };
+
+        let cloudDb = null;
+        const DB_NODE = 'scores_geombala';
+        const STUDENTS_NODE = 'students_grade_5';
+        let authorizedStudents = [];
+
+        if (typeof firebase !== 'undefined') {
+            try {
+                firebase.initializeApp(FIREBASE_CONFIG);
+                cloudDb = firebase.database();
+
+                cloudDb.ref(DB_NODE).on('value', snap => {
+                    let data = snap.val();
+                    let arr = [];
+                    if (data) Object.keys(data).forEach(k => arr.push(data[k]));
+                    updateLocalLeaderboard(arr);
+                });
+
+                cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+                    let data = snap.val();
+                    if (data) {
+                        authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                    } else {
+                        authorizedStudents = [];
+                    }
+                    let ts = document.getElementById('totalStudentsText');
+                    if (ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+
+                    let dl = document.getElementById('studentNamesList');
+                    if (dl) {
+                        dl.innerHTML = '';
+                        authorizedStudents.forEach(name => {
+                            let op = document.createElement('option');
+                            op.value = name;
+                            dl.appendChild(op);
+                        });
+                    }
+                });
+            } catch(e) {}
+        }
+
+        function saveStudentList() {
+            let text = document.getElementById('adminStudentList').value;
+            if (!text.trim()) { alert('Lütfen eklenecek isimleri yazın.'); return; }
+            let newNames = text.replace(/"/g, '').split(/[\n,;]+/).map(s => s.trim()).filter(s => s.length > 0);
+            let currentNamesLower = authorizedStudents.map(n => n.toLocaleLowerCase('tr-TR'));
+            let namesToAdd = [];
+            newNames.forEach(n => {
+                if (!currentNamesLower.includes(n.toLocaleLowerCase('tr-TR'))) {
+                    namesToAdd.push(n);
+                    currentNamesLower.push(n.toLocaleLowerCase('tr-TR'));
+                }
+            });
+            let updatedList = authorizedStudents.concat(namesToAdd);
+            if (cloudDb) {
+                cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+                    alert(namesToAdd.length + ' yeni öğrenci sisteme eklendi!');
+                    document.getElementById('adminStudentList').value = '';
+                });
+            }
+        }
+
+        function clearStudentList() {
+            if (confirm('Kayıtlı tüm öğrenci isimleri silinecek. Emin misiniz?')) {
+                if (cloudDb) cloudDb.ref(STUDENTS_NODE).remove();
+            }
+        }
+
+        function levenshtein(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            let matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
+                    else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function getFuzzyKey(str) {
+            let clean = (str || '').toLocaleLowerCase('tr-TR').replace(/[^a-zçğıöşü]/g, '');
+            return clean.replace(/[aeıioöuü]/g, '') || clean;
+        }
+
+        function capitalizeName(str) {
+            return (str || '').split(' ').map(w => w ? w.charAt(0).toLocaleUpperCase('tr-TR') + w.slice(1).toLocaleLowerCase('tr-TR') : '').join(' ');
+        }
+
+        function updateLocalLeaderboard(rawEntries) {
+            let groups = [];
+            rawEntries.forEach(entry => {
+                if (!entry) return;
+                let fullName = (entry.fullName || entry.name || '').trim().replace(/\s+/g, ' ');
+                if (!fullName) return;
+                let normLower = fullName.toLocaleLowerCase('tr-TR');
+                let fuzzyKey = getFuzzyKey(fullName);
+                let foundGroup = null;
+                for (let g of groups) {
+                    if (g.fuzzyKey === fuzzyKey || (levenshtein(g.canonicalNorm, normLower) <= 2 && Math.abs(g.canonicalNorm.length - normLower.length) <= 2)) {
+                        foundGroup = g; break;
+                    }
+                }
+                if (foundGroup) {
+                    foundGroup.items.push(entry);
+                    if (fullName.length > foundGroup.canonicalName.length) foundGroup.canonicalName = fullName;
+                } else {
+                    groups.push({ canonicalName: fullName, canonicalNorm: normLower, fuzzyKey: fuzzyKey, items: [entry] });
+                }
+            });
+            let bestList = [];
+            groups.forEach(g => {
+                g.items.sort((a, b) => b.score - a.score);
+                let best = g.items[0];
+                best.displayName = capitalizeName(g.canonicalName);
+                bestList.push(best);
+            });
+            bestList.sort((a, b) => b.score - a.score);
+            localStorage.setItem('meb_geombala_top10', JSON.stringify(bestList.slice(0, 10)));
+            renderLeaderboard();
+        }
+
+        function saveScoreToLeaderboardDirectly(finalScore) {
+            if (gameMode !== '1P' || !currentFullName) return;
+            let entry = {
+                name: currentFullName,
+                fullName: currentFullName,
+                score: finalScore,
+                timestamp: Date.now()
+            };
+            if (cloudDb) {
+                cloudDb.ref(DB_NODE).push(entry);
+            } else {
+                fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'POST', body: JSON.stringify(entry) });
+            }
+        }
+
+        function renderLeaderboard() {
+            let data = JSON.parse(localStorage.getItem('meb_geombala_top10') || '[]');
+            let tbody = document.getElementById('leaderboardBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                document.getElementById('emptyLeaderboard').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('emptyLeaderboard').classList.add('hidden');
+            let medals = ['🥇', '🥈', '🥉'];
+            data.forEach((e, idx) => {
+                let tr = document.createElement('tr');
+                tr.className = `lb-row rank-${idx + 1}`;
+                let rankStr = idx < 3 ? medals[idx] : `${idx + 1}.`;
+                let nameToShow = e.displayName || e.fullName || e.name || 'Öğrenci';
+                let safeName = nameToShow.replace(/'/g, "\\'");
+                tr.onclick = () => openCelebration({ name: nameToShow, score: e.score }, idx + 1);
+                tr.innerHTML = `
+                    <td><span class="text-lg">${rankStr}</span></td>
+                    <td class="text-left font-extrabold text-slate-800">${nameToShow}</td>
+                    <td class="text-indigo-600 font-black font-baloo text-xl">${e.score}</td>
+                    <td>
+                        <button class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-extrabold px-3 py-1 rounded-lg text-xs" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx + 1});">👏 Kutla</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openCelebration(entry, rank) {
+            shootConfetti(window.innerWidth / 2, window.innerHeight / 2, 1.5);
+            playFanfareSound(rank);
+            document.getElementById('celName').innerText = entry.name || 'Öğrenci';
+            document.getElementById('celScore').innerText = entry.score + " Puan";
+            let icon = document.getElementById('celIcon');
+            let title = document.getElementById('celTitle');
+            let msg = document.getElementById('celMessage');
+            if (rank === 1) {
+                icon.innerText = "🥇";
+                title.innerText = "👑 GEOMBALA ŞAMPİYONU!";
+                msg.innerText = "MUHTEŞEM BİR REKOR! Doğru, ışın, doğru parçası ve açıları ışık hızında eşleştirerek Robo-Geometri'yi geride bıraktın ve zirveye yerleşmeyi başardın!";
+            } else if (rank === 2) {
+                icon.innerText = "🥈";
+                title.innerText = "⚡ GEOMETRİ USTASI (GÜMÜŞ MADALYA)!";
+                msg.innerText = "HARİKA BİR HIZ VE SERİ! Sembolleri hatasız yakalayıp Çinko ve Tombala puanlarıyla 2. sıraya adını yazdırdın!";
+            } else if (rank === 3) {
+                icon.innerText = "🥉";
+                title.innerText = "🔥 KESKİN NİŞANCI (BRONZ MADALYA)!";
+                msg.innerText = "TEBRİKLER! Geometrik sembolleri çok hızlı analiz ederek podyuma çıkmayı başardın!";
+            } else {
+                icon.innerText = "🎖️";
+                title.innerText = `${rank}. SIRA BAŞARI ÖDÜLÜ`;
+                msg.innerText = `AFERİN! Geometri Tombalası'nda üstün bir gayret göstererek İlk 10 Lider Tablosuna adını gururla yazdırdın!`;
+            }
+            const modal = document.getElementById('celebrationModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCelebration() {
+            const modal = document.getElementById('celebrationModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (localStorage.getItem('isAdmin_geombala') === 'true') {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+            } else {
+                document.getElementById('authSection').classList.remove('hidden');
+                document.getElementById('adminSection').classList.add('hidden');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function checkAdminPassword() {
+            if (document.getElementById('adminPassword').value === '26575982824.bati') {
+                localStorage.setItem('isAdmin_geombala', 'true');
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+            } else {
+                alert('Hatalı şifre!');
+            }
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Tüm lider tablosu kalıcı olarak silinecek. Emin misiniz?')) {
+                if (cloudDb) cloudDb.ref(DB_NODE).remove();
+                localStorage.removeItem('meb_geombala_top10');
+                renderLeaderboard();
+                alert('Lider tablosu sıfırlandı.');
+                closeSettings();
+            }
+        }
+
+        function validateRealName(nameStr) {
+            let trimmed = nameStr.trim().replace(/\s+/g, ' ');
+            if (!trimmed) return { valid: false, error: "Lütfen adınızı ve soyadınızı girin." };
+            if (authorizedStudents.length === 0) {
+                return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce sağ üstteki (⚙️) Yönetici Ayarları'ndan sınıf listesini ekleyin." };
+            }
+            let lowerInput = trimmed.toLocaleLowerCase('tr-TR');
+            let matchedName = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === lowerInput);
+            if (matchedName) return { valid: true, name: matchedName };
+            return { valid: false, error: "İsminiz öğrenci listesinde bulunamadı! Lütfen kutucuğa tıklayıp açılan listeden kendi isminizi seçin." };
+        }
+
+        /* ==========================================
+           MENÜ VE MOD YÖNETİMİ
+           ========================================== */
+        let gameMode = '1P'; // '1P' veya 'CLASS'
+        let currentFullName = '';
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            document.getElementById('btn-mode-1p').className = mode === '1P' ? 'mode-btn active' : 'mode-btn';
+            document.getElementById('btn-mode-class').className = mode === 'CLASS' ? 'mode-btn active' : 'mode-btn';
+            if (mode === '1P') {
+                document.getElementById('form-1p').classList.remove('hidden');
+                document.getElementById('form-class').classList.add('hidden');
+            } else {
+                document.getElementById('form-1p').classList.add('hidden');
+                document.getElementById('form-class').classList.remove('hidden');
+            }
+        }
+
+        function showMenuScreen(scr) {
+            stopAllTimers();
+            const overlay = document.getElementById('app-overlay');
+            const startCard = document.getElementById('startScreen');
+            const lbCard = document.getElementById('leaderboardScreen');
+
+            document.querySelectorAll('.end-modal-overlay').forEach(el => el.remove());
+
+            if (scr === 'GAME') {
+                overlay.style.display = 'none';
+            } else {
+                overlay.style.display = 'flex';
+                if (scr === 'START') {
+                    startCard.style.display = 'block';
+                    lbCard.style.display = 'none';
+                } else if (scr === 'LEADERBOARD') {
+                    renderLeaderboard();
+                    startCard.style.display = 'none';
+                    lbCard.style.display = 'flex';
+                }
+            }
+        }
+
+        function startSelectedGame() {
+            if (gameMode === '1P') {
+                let rawName = document.getElementById('playerFullName').value;
+                let val = validateRealName(rawName);
+                if (!val.valid) {
+                    alert(val.error);
+                    return;
+                }
+                currentFullName = val.name;
+            }
+            showMenuScreen('GAME');
+            init();
+        }
+
+        /* ==========================================
+           OYUN MOTORU (SINIF MODU & BİREYSEL MOD)
+           ========================================== */
+        let gameOver = false;
+        let bag = [];
+        let currentCard = null;
+        let cardMatched = false;
+        let scores = { k: 0, e: 0 };
+        let foundCount = { k: 0, e: 0 };
+        let clickAttempts = { k: 0, e: 0 };
+
+        // Bireysel Mod Heyecan Değişkenleri (Hız Bonusu, Combo, Çinko, Robot AI)
+        let playerCombo = 0;
+        let cardDrawTimestamp = 0;
+        let speedBarTimer = null;
+        let aiMoveTimeout = null;
+        let currentSpeedBonus = 50;
+        let layouts = { k: [], e: [] };
+        let markedMatrix = { k: Array(18).fill(false), e: Array(18).fill(false) };
+        let cinkoCount = { k: 0, e: 0 };
+
+        function stopAllTimers() {
+            if (speedBarTimer) { clearInterval(speedBarTimer); speedBarTimer = null; }
+            if (aiMoveTimeout) { clearTimeout(aiMoveTimeout); aiMoveTimeout = null; }
+        }
+
+        function shootConfetti(x, y, multiplier = 1) {
+            const emojis = ['⭐', '🎉', '🎊', '✨', '🎈', '🌟'];
+            const count = Math.floor(20 * multiplier);
+            for (let i = 0; i < count; i++) {
+                const conf = document.createElement('div');
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.className = 'fixed pointer-events-none z-[100] text-xl lg:text-2xl select-none drop-shadow-md';
+                conf.style.left = x + 'px';
+                conf.style.top = y + 'px';
+                document.body.appendChild(conf);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = (8 + Math.random() * 15) * multiplier;
+                const vx = Math.cos(angle) * velocity;
+                const vy = Math.sin(angle) * velocity - (8 * multiplier);
+
+                let currX = x;
+                let currY = y;
+                let currVy = vy;
+                let rot = Math.random() * 360;
+
+                const animate = () => {
+                    currVy += 0.5;
+                    currX += vx;
+                    currY += currVy;
+                    rot += 12;
+                    conf.style.transform = `translate(${currX - x}px, ${currY - y}px) rotate(${rot}deg)`;
+                    if (currY < window.innerHeight + 100) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        conf.remove();
+                    }
+                };
+                requestAnimationFrame(animate);
+            }
+        }
+
+        const angleSVG = (text) => `
+        <div class="flex flex-col items-center justify-center -mt-0.5 w-full text-center">
+          <svg class="angle-svg text-current" viewBox="0 0 32 10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 9L16 2L28 9" />
+          </svg>
+          <span class="leading-none mt-0.5 font-extrabold text-[10px] sm:text-xs md:text-sm tracking-wide">${text}</span>
+        </div>
+        `;
+
+        const allItems = [
+            { match: 'AB doğru parçası', label: '[AB]' },
+            { match: 'MN doğrusu', label: 'MN' },
+            { match: 'AB doğru parçasının uzunluğu', label: '|AB|' },
+            { match: 'CD doğru parçası', label: '[CD]' },
+            { match: 'MN ışını', label: '[MN' },
+            { match: 'CD doğrusu', label: 'CD' },
+            { match: 'Z noktası', label: 'Z' },
+            { match: 'KL doğrusu', label: 'KL' },
+            { match: 'C noktası', label: 'C' },
+            { match: 'ABC açısı', label: angleSVG('ABC') },
+            { match: 'AB ışını', label: '[AB' },
+            { match: 'YZ doğrusu', label: 'YZ' },
+            { match: 'KL doğru parçası', label: '[KL]' },
+            { match: 'B noktası', label: 'B' },
+            { match: 'KLM açısı', label: angleSVG('KLM') },
+            { match: 'MN doğru parçası', label: '[MN]' },
+            { match: 'CD ışını', label: '[CD' },
+            { match: 'KL ışını', label: '[KL' },
+            { match: 'YZ doğru parçasının uzunluğu', label: '|YZ|' },
+            { match: 'AB doğrusu', label: 'AB' }
+        ];
+
+        function configureUIForMode() {
+            const pill = document.getElementById('mode-indicator-pill');
+            const comboBadge = document.getElementById('combo-badge');
+            const ruleBanner = document.getElementById('top-rule-banner');
+            const headerTop = document.getElementById('header-top');
+            const bodyTop = document.getElementById('body-top');
+            const panelTop = document.getElementById('panel-top');
+            const passBtnE = document.getElementById('pass-btn-e');
+            const aiBadge = document.getElementById('ai-status-badge');
+
+            if (gameMode === '1P') {
+                pill.innerText = "BİREYSEL MOD";
+                pill.className = "text-[10px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full";
+                comboBadge.classList.remove('hidden');
+                comboBadge.classList.add('flex');
+                ruleBanner.innerHTML = `Doğru: <span class="text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">+100 Puan</span> | ⚡ Hız: <span class="text-amber-700 font-bold bg-amber-100 px-1.5 py-0.5 rounded">+50'ye kadar</span> | 🔥 Seri: <span class="text-orange-700 font-bold bg-orange-100 px-1.5 py-0.5 rounded">+25x</span> | Doğru PAS: <span class="text-indigo-700 font-bold bg-indigo-100 px-1.5 py-0.5 rounded">+30 Puan</span>`;
+
+                headerTop.className = "bg-gradient-to-r from-indigo-600 to-purple-600 px-3.5 py-1.5 text-white flex items-center justify-between relative shadow-sm shrink-0 h-11 sm:h-12";
+                bodyTop.className = "p-1 bg-indigo-50/70 flex-1 flex flex-col min-h-0";
+                panelTop.className = "bg-white rounded-xl shadow-sm overflow-hidden border border-indigo-200 flex flex-col flex-1 min-h-0";
+                document.getElementById('icon-top').innerText = "🎓";
+                document.getElementById('title-top').innerText = currentFullName || "Öğrenci";
+                document.getElementById('pass-label-k').innerText = "KARTIMDA YOK (PAS)";
+
+                document.getElementById('icon-bottom').innerText = "🤖";
+                document.getElementById('title-bottom').innerText = "Robo-Geometri (Bilgisayar)";
+                passBtnE.classList.add('hidden');
+                aiBadge.classList.remove('hidden');
+            } else {
+                pill.innerText = "SINIF MODU";
+                pill.className = "text-[10px] font-black bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full";
+                comboBadge.classList.add('hidden');
+                comboBadge.classList.remove('flex');
+                ruleBanner.innerHTML = `Doğru yerleştirme: <span class="text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">+100 Puan</span> | Yanlış yerleştirme: <span class="text-red-700 font-bold bg-red-100 px-1.5 py-0.5 rounded">-50 Puan</span>`;
+
+                headerTop.className = "bg-gradient-to-r from-pink-500 to-rose-400 px-3.5 py-1.5 text-white flex items-center justify-between relative shadow-sm shrink-0 h-11 sm:h-12";
+                bodyTop.className = "p-1 bg-pink-50 flex-1 flex flex-col min-h-0";
+                panelTop.className = "bg-white rounded-xl shadow-sm overflow-hidden border border-pink-200 flex flex-col flex-1 min-h-0";
+                document.getElementById('icon-top').innerText = "🙋‍♀️";
+                document.getElementById('title-top').innerText = "Kızlar Takımı";
+                document.getElementById('pass-label-k').innerText = "PAS";
+
+                document.getElementById('icon-bottom').innerText = "🙋‍♂️";
+                document.getElementById('title-bottom').innerText = "Erkekler Takımı";
+                passBtnE.classList.remove('hidden');
+                aiBadge.classList.add('hidden');
+            }
+        }
+
+        function init() {
+            stopAllTimers();
+            configureUIForMode();
+
+            scores = { k: 0, e: 0 };
+            foundCount = { k: 0, e: 0 };
+            clickAttempts = { k: 0, e: 0 };
+            playerCombo = 0;
+            cinkoCount = { k: 0, e: 0 };
+            markedMatrix = { k: Array(18).fill(false), e: Array(18).fill(false) };
+            currentCard = null;
+            cardMatched = false;
+            gameOver = false;
+            updateScores();
+            updateComboUI();
+            updateDrawnCardUI();
+
+            let shuffledItems = [...allItems].sort(() => Math.random() - 0.5);
+            bag = [...shuffledItems].sort(() => Math.random() - 0.5);
+
+            const sharedItems = shuffledItems.slice(0, 3);
+            const kizlarUnique = shuffledItems.slice(3, 10);
+            const erkeklerUnique = shuffledItems.slice(10, 17);
+
+            const kizlarItems = [...sharedItems, ...kizlarUnique];
+            const erkeklerItems = [...sharedItems, ...erkeklerUnique];
+
+            // Her satırda (3 satır x 6 sütun) dengeli dağılım (satır başına 3 veya 4 dolu hücre)
+            const buildBalancedLayout = (teamItems) => {
+                let pool = [...teamItems].sort(() => Math.random() - 0.5);
+                let rowCounts = [3, 3, 4].sort(() => Math.random() - 0.5);
+                let fullLayout = [];
+                let idx = 0;
+                for (let r = 0; r < 3; r++) {
+                    let rowArr = [];
+                    for (let i = 0; i < rowCounts[r]; i++) rowArr.push(pool[idx++]);
+                    while (rowArr.length < 6) rowArr.push(null);
+                    rowArr.sort(() => Math.random() - 0.5);
+                    fullLayout.push(...rowArr);
+                }
+                return fullLayout;
+            };
+
+            layouts.k = buildBalancedLayout(kizlarItems);
+            layouts.e = buildBalancedLayout(erkeklerItems);
+
+            document.getElementById('grid-kizlar').innerHTML = generateGridHTML(layouts.k, 'k');
+            document.getElementById('grid-erkekler').innerHTML = generateGridHTML(layouts.e, 'e');
+            document.getElementById('cards-left').innerText = bag.length;
+        }
+
+        function generateGridHTML(layoutArray, team) {
+            let html = '';
+            const is1PTop = (gameMode === '1P' && team === 'k');
+            layoutArray.forEach((item, cellIndex) => {
+                if (item === null) {
+                    const bgColor = team === 'e' ? 'bg-blue-200' : (is1PTop ? 'bg-indigo-200' : 'bg-pink-200');
+                    const patternColor = team === 'e' ? 'rgba(59, 130, 246, 0.15)' : (is1PTop ? 'rgba(99, 102, 241, 0.15)' : 'rgba(236, 72, 153, 0.15)');
+                    html += `<div id="cell-${team}-${cellIndex}" data-match="EMPTY_SLOT" data-idx="${cellIndex}" class="game-cell w-full h-full ${bgColor} rounded-lg shadow-inner relative overflow-hidden opacity-60 border border-white/40 cursor-pointer"
+                                  onclick="handleCellClick('${team}', 'EMPTY_SLOT', this, ${cellIndex})">
+                                <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, ${patternColor} 8px, ${patternColor} 16px);"></div>
+                             </div>`;
+                } else {
+                    const baseColor = team === 'e' 
+                        ? 'bg-white hover:bg-blue-50 text-blue-900 border-blue-200' 
+                        : (is1PTop ? 'bg-white hover:bg-indigo-50 text-indigo-950 border-indigo-200' : 'bg-white hover:bg-pink-50 text-pink-900 border-pink-200');
+                    
+                    html += `
+                    <div id="cell-${team}-${cellIndex}" data-match="${item.match}" data-idx="${cellIndex}" class="game-cell w-full h-full ${baseColor} rounded-lg border flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-black cursor-pointer select-none relative z-10 break-all px-0.5 text-center"
+                         onclick="handleCellClick('${team}', '${item.match}', this, ${cellIndex})">
+                        <div class="content-wrapper transition-transform w-full flex justify-center items-center h-full">${item.label}</div>
+                    </div>`;
+                }
+            });
+            return html;
+        }
+
+        function updateComboUI() {
+            document.getElementById('combo-count').innerText = playerCombo;
+        }
+
+        function start1PCardTimers() {
+            stopAllTimers();
+            cardDrawTimestamp = Date.now();
+            currentSpeedBonus = 50;
+
+            const speedBarCont = document.getElementById('speed-bar-container');
+            const speedBarFill = document.getElementById('speed-bar-fill');
+            const speedBonusLbl = document.getElementById('speed-bonus-label');
+            const aiBadge = document.getElementById('ai-status-badge');
+
+            speedBarCont.classList.remove('hidden');
+            speedBonusLbl.classList.remove('hidden');
+            speedBarFill.style.width = '100%';
+            speedBarFill.style.backgroundColor = '#10b981';
+            speedBonusLbl.innerText = '⚡ Hız Bonusu: +50';
+            aiBadge.innerText = '🤖 Rakip Kartını İnceliyor...';
+
+            const totalWindowMs = 6000; // 6 saniyelik hız penceresi
+            speedBarTimer = setInterval(() => {
+                let elapsed = Date.now() - cardDrawTimestamp;
+                let ratio = Math.max(0, 1 - elapsed / totalWindowMs);
+                currentSpeedBonus = Math.round(50 * ratio);
+                speedBarFill.style.width = (ratio * 100) + '%';
+                speedBonusLbl.innerText = `⚡ Hız Bonusu: +${currentSpeedBonus}`;
+
+                if (ratio > 0.5) speedBarFill.style.backgroundColor = '#10b981';
+                else if (ratio > 0.25) speedBarFill.style.backgroundColor = '#f59e0b';
+                else speedBarFill.style.backgroundColor = '#ef4444';
+
+                if (ratio <= 0) {
+                    clearInterval(speedBarTimer);
+                    speedBarTimer = null;
+                }
+            }, 80);
+
+            // Robo-Geometri (Bilgisayar) Hamlesi:
+            // Öğrenciye adil ve heyecanlı bir süre (3.6 - 5.2 saniye arası) tanır.
+            let aiDelay = 3600 + Math.random() * 1600;
+            aiMoveTimeout = setTimeout(() => {
+                executeAIMove();
+            }, aiDelay);
+        }
+
+        function executeAIMove() {
+            if (gameOver || !currentCard || clickAttempts.e > 0) return;
+
+            const aiBadge = document.getElementById('ai-status-badge');
+            let targetIdx = layouts.e.findIndex((it, idx) => it && it.match === currentCard.match && !markedMatrix.e[idx]);
+
+            if (targetIdx !== -1) {
+                // Robotun kartında bu sembol var!
+                const cellEl = document.getElementById(`cell-e-${targetIdx}`);
+                if (cellEl) {
+                    aiBadge.innerText = '🤖 Robo-Geometri Buldu! (+100)';
+                    markCellAsCorrect('e', cellEl, targetIdx, 100);
+                    clickAttempts.e = 1;
+
+                    // Eğer bu ORTAK bir pulsa ve öğrenci henüz tıklamadıysa, öğrencinin de kartında olup olmadığını kontrol et:
+                    // Ortak pulda bile öğrenci kendi kartında işaretleyebilsin diye sıra hemen kapanmaz, öğrenci hamlesi beklenir.
+                    setTimeout(checkTurnEnd, 600);
+                }
+            } else {
+                // Robotun kartında yok, otomatik PAS geçer
+                clickAttempts.e = 1;
+                aiBadge.innerText = '🤖 Robo-Geometri: PAS';
+                setTimeout(checkTurnEnd, 400);
+            }
+        }
+
+        function drawCard() {
+            if (gameOver) return;
+
+            if (currentCard) {
+                const bagContainer = document.getElementById('bag-container');
+                showToast(bagContainer, 'Önce bu kart için hamle yapın (veya PAS geçin)!');
+                bagContainer.classList.add('shake');
+                setTimeout(() => bagContainer.classList.remove('shake'), 400);
+                return;
+            }
+
+            if (bag.length === 0) {
+                endGameEarly(true);
+                return;
+            }
+
+            cardMatched = false;
+            clickAttempts = { k: 0, e: 0 };
+
+            const bagIcon = document.getElementById('bag-icon');
+            bagIcon.classList.remove('animate-spin-fast');
+            void bagIcon.offsetWidth;
+            bagIcon.classList.add('animate-spin-fast');
+
+            setTimeout(() => {
+                currentCard = bag.pop();
+                updateDrawnCardUI();
+                if (gameMode === '1P') {
+                    start1PCardTimers();
+                }
+                const rect = bagIcon.getBoundingClientRect();
+                shootConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, 0.7);
+            }, 220);
+        }
+
+        function updateDrawnCardUI() {
+            const drawnText = document.getElementById('drawn-text');
+            const drawnCardEl = document.getElementById('drawn-card');
+            const emptyStateEl = document.getElementById('empty-state');
+            document.getElementById('cards-left').innerText = bag.length;
+
+            if (currentCard) {
+                drawnText.innerText = currentCard.match;
+                emptyStateEl.classList.add('hidden');
+                drawnCardEl.classList.remove('hidden');
+                
+                drawnCardEl.classList.remove('card-enter');
+                void drawnCardEl.offsetWidth;
+                drawnCardEl.classList.add('card-enter');
+            } else {
+                stopAllTimers();
+                drawnCardEl.classList.add('hidden');
+                emptyStateEl.classList.remove('hidden');
+            }
+        }
+
+        function showToast(targetEl, text, bgClass = 'bg-amber-100 border-amber-300 text-slate-800') {
+            const indicator = document.createElement('div');
+            indicator.innerText = text;
+            indicator.className = `fixed font-black text-xs sm:text-sm pointer-events-none drop-shadow-md pop z-50 px-3 py-1.5 rounded-full border ${bgClass}`;
+            const rect = targetEl.getBoundingClientRect();
+            indicator.style.left = Math.max(10, Math.min(window.innerWidth - 220, rect.left + rect.width / 2 - 70)) + 'px';
+            indicator.style.top = Math.max(10, rect.top - 14) + 'px';
+            document.body.appendChild(indicator);
+            setTimeout(() => indicator.remove(), 1100);
+        }
+
+        function checkRowCinko(team) {
+            // 3 satır (0..5, 6..11, 12..17). Bir satırdaki tüm dolu hücreler işaretlendiyse Çinko!
+            let completedRows = 0;
+            for (let r = 0; r < 3; r++) {
+                let start = r * 6;
+                let allRowMarked = true;
+                let hasAnyItem = false;
+                for (let c = 0; c < 6; c++) {
+                    let idx = start + c;
+                    if (layouts[team][idx] !== null) {
+                        hasAnyItem = true;
+                        if (!markedMatrix[team][idx]) {
+                            allRowMarked = false;
+                            break;
+                        }
+                    }
+                }
+                if (hasAnyItem && allRowMarked) completedRows++;
+            }
+
+            if (completedRows > cinkoCount[team] && completedRows < 3) {
+                cinkoCount[team] = completedRows;
+                if (gameMode === '1P' && team === 'k') {
+                    let cinkoBonus = completedRows === 1 ? 150 : 250;
+                    scores.k += cinkoBonus;
+                    updateScores();
+                    playCinkoSound();
+                    const panelTop = document.getElementById('panel-top');
+                    showToast(panelTop, `🎉 ${completedRows}. ÇİNKO! +${cinkoBonus} BONUS PUAN!`, 'bg-emerald-500 border-emerald-700 text-white');
+                    shootConfetti(window.innerWidth / 2, window.innerHeight / 3, 1.5);
+                } else if (gameMode === 'CLASS') {
+                    playCinkoSound();
+                    const panel = document.getElementById(team === 'k' ? 'panel-top' : 'panel-bottom');
+                    showToast(panel, `🎉 ${completedRows}. ÇİNKO TAMAMLANDI!`, 'bg-amber-400 border-amber-600 text-slate-900');
+                }
+            }
+        }
+
+        function checkTurnEnd() {
+            if (clickAttempts.k >= 1 && clickAttempts.e >= 1) {
+                currentCard = null;
+                updateDrawnCardUI();
+                
+                if (bag.length === 0 && !gameOver) {
+                    setTimeout(() => endGameEarly(true), 900);
+                } else if (gameMode === '1P' && !gameOver) {
+                    // Bireysel modda akıcı heyecan için bir sonraki kartı kısa süre sonra otomatik çekebilir veya öğrenci tıklayabilir
+                    setTimeout(() => {
+                        if (!currentCard && !gameOver && bag.length > 0) drawCard();
+                    }, 650);
+                }
+            }
+        }
+
+        function handlePass(team, buttonEl) {
+            if (!currentCard) {
+                showToast(buttonEl, 'Lütfen yeni kart çekiniz!');
+                return;
+            }
+            if (clickAttempts[team] > 0) {
+                showToast(buttonEl, 'Bu kart için hakkınızı kullandınız!');
+                return;
+            }
+
+            if (gameMode === '1P' && team === 'k') {
+                // Bireysel modda öğrenci "Kartımda Yok (PAS)" dediğinde gerçekten kartında yok mu kontrol edelim!
+                let existsOnPlayerBoard = layouts.k.some((it, idx) => it && it.match === currentCard.match && !markedMatrix.k[idx]);
+                clickAttempts.k++;
+
+                if (!existsOnPlayerBoard) {
+                    // Doğru tespit! Kartında gerçekten yok!
+                    playerCombo++;
+                    let passBonus = 30 + (playerCombo > 1 ? 10 : 0);
+                    scores.k += passBonus;
+                    playCorrectSound();
+                    updateScores();
+                    updateComboUI();
+                    showToast(buttonEl, `👏 Doğru Tespit! Kartında Yok (+${passBonus} Puan)`, 'bg-emerald-500 border-emerald-700 text-white');
+                } else {
+                    // Kartında vardı ama gözünden kaçırdı!
+                    playerCombo = 0;
+                    updateComboUI();
+                    playWrongSound();
+                    showToast(buttonEl, `⚠️ Dikkat! Bu sembol kartında vardı!`, 'bg-rose-500 border-rose-700 text-white');
+                }
+
+                // Eğer robot henüz oynamadıysa robot hemen hamlesini yapsın
+                if (clickAttempts.e === 0) {
+                    if (aiMoveTimeout) clearTimeout(aiMoveTimeout);
+                    setTimeout(executeAIMove, 350);
+                } else {
+                    setTimeout(checkTurnEnd, 650);
+                }
+                return;
+            }
+
+            clickAttempts[team]++;
+            showToast(buttonEl, '✋ PAS GEÇİLDİ');
+            setTimeout(checkTurnEnd, 700);
+        }
+
+        function markCellAsCorrect(team, element, cellIndex, earnedPoints) {
+            markedMatrix[team][cellIndex] = true;
+            scores[team] += earnedPoints;
+            foundCount[team]++;
+            updateScores();
+
+            element.className = `game-cell w-full h-full bg-emerald-500 border-emerald-600 text-white rounded-lg border-2 flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-black select-none marked pop relative overflow-hidden`;
+            element.innerHTML = `<span class="text-3xl opacity-30 absolute font-sans">✔️</span><span class="relative z-10 w-full h-full flex items-center justify-center px-0.5 text-center">${element.querySelector('.content-wrapper') ? element.querySelector('.content-wrapper').innerHTML : element.innerHTML}</span>`;
+
+            const rect = element.getBoundingClientRect();
+            shootConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, 1.0);
+
+            checkRowCinko(team);
+
+            if (foundCount[team] === 10) {
+                if (gameMode === '1P' && team === 'k') {
+                    // Bireysel Tombala Tamamlama Ödülü (+300 Puan)
+                    scores.k += 300;
+                    updateScores();
+                }
+                setTimeout(() => triggerWin(team), 700);
+            }
+        }
+
+        function handleCellClick(team, matchStr, element, cellIndex) {
+            // Bireysel modda öğrenci yanlışlıkla alt taraftaki Robotun kartına tıklarsa uyar
+            if (gameMode === '1P' && team === 'e') {
+                showToast(element, '🤖 Burası Robo-Geometri\'nin kartı! Üstteki kendi kartına tıkla.');
+                return;
+            }
+
+            if (!currentCard) {
+                showToast(element, 'Lütfen önce yeni kart çekiniz!');
+                return;
+            } 
+            if (clickAttempts[team] > 0) {
+                showToast(element, 'Bu kart için hakkınızı kullandınız!');
+                return;
+            }
+
+            if (element.classList.contains('marked')) return;
+
+            clickAttempts[team]++;
+
+            if (currentCard.match === matchStr) {
+                // DOĞRU CEVAP
+                cardMatched = true;
+                playCorrectSound();
+
+                let earned = 100;
+                if (gameMode === '1P' && team === 'k') {
+                    playerCombo++;
+                    let comboBonus = (playerCombo - 1) * 25;
+                    earned = 100 + currentSpeedBonus + comboBonus;
+                    updateComboUI();
+                    showToast(element, `+${earned} Puan! (⚡Hız +${currentSpeedBonus} | 🔥Seri ${playerCombo}x)`, 'bg-emerald-500 border-emerald-700 text-white');
+                }
+
+                markCellAsCorrect(team, element, cellIndex, earned);
+
+                if (gameMode === '1P' && clickAttempts.e === 0) {
+                    if (aiMoveTimeout) clearTimeout(aiMoveTimeout);
+                    setTimeout(executeAIMove, 350);
+                } else {
+                    setTimeout(checkTurnEnd, 700);
+                }
+            } else {
+                // YANLIŞ CEVAP! (-50 Puan)
+                playWrongSound();
+                scores[team] -= 50;
+                if (gameMode === '1P' && team === 'k') {
+                    playerCombo = 0;
+                    updateComboUI();
+                }
+                updateScores();
+                
+                const isBoys = team === 'e';
+                const is1PTop = (gameMode === '1P' && team === 'k');
+                const baseBgClass = 'bg-white';
+                const baseTextClass = isBoys ? 'text-blue-900' : (is1PTop ? 'text-indigo-950' : 'text-pink-900');
+                const baseBorderClass = isBoys ? 'border-blue-200' : (is1PTop ? 'border-indigo-200' : 'border-pink-200');
+
+                element.classList.remove('bg-white', 'hover:bg-blue-50', 'hover:bg-pink-50', 'hover:bg-indigo-50', 'text-blue-900', 'text-pink-900', 'text-indigo-950', 'border-blue-200', 'border-pink-200', 'border-indigo-200', 'bg-blue-200', 'bg-pink-200', 'bg-indigo-200');
+                element.classList.add('shake', 'bg-red-500', 'text-white', 'border-red-600');
+                
+                const indicator = document.createElement('div');
+                indicator.innerText = '-50';
+                indicator.className = 'fixed text-red-600 font-black text-3xl sm:text-4xl pointer-events-none drop-shadow-2xl pop z-50';
+                const rect = element.getBoundingClientRect();
+                indicator.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+                indicator.style.top = (rect.top - 15) + 'px';
+                document.body.appendChild(indicator);
+
+                setTimeout(() => {
+                    element.classList.remove('shake', 'bg-red-500', 'text-white', 'border-red-600');
+                    element.classList.add(baseBgClass, baseTextClass, baseBorderClass);
+                    indicator.remove();
+                    if (gameMode === '1P' && clickAttempts.e === 0) {
+                        if (aiMoveTimeout) clearTimeout(aiMoveTimeout);
+                        executeAIMove();
+                    } else {
+                        checkTurnEnd();
+                    }
+                }, 600);
+            }
+        }
+
+        function updateScores() {
+            document.getElementById('score-erkekler').innerText = scores.e;
+            document.getElementById('score-kizlar').innerText = scores.k;
+            document.getElementById('found-kizlar').innerText = `${foundCount.k}/10`;
+            document.getElementById('found-erkekler').innerText = `${foundCount.e}/10`;
+        }
+
+        function triggerWin(team) {
+            if (gameOver) return;
+            gameOver = true;
+            stopAllTimers();
+
+            if (gameMode === '1P') {
+                saveScoreToLeaderboardDirectly(scores.k);
+            }
+
+            const is1P = (gameMode === '1P');
+            const teamName = is1P
+                ? (team === 'k' ? `${currentFullName.toUpperCase()} TOMBALA YAPTI!` : `ROBO-GEOMETRİ TOMBALA YAPTI!`)
+                : (team === 'e' ? 'ERKEKLER TAKIMI KAZANDI!' : 'KIZLAR TAKIMI KAZANDI!');
+            const color = team === 'e' ? '#0ea5e9' : (is1P ? '#4f46e5' : '#f43f5e'); 
+            const bgClass = team === 'e' ? 'bg-sky-900/90' : (is1P ? 'bg-indigo-950/90' : 'bg-rose-900/90');
+            const emoji = is1P ? (team === 'k' ? '🏆' : '🤖') : (team === 'e' ? '🙋‍♂️' : '🙋‍♀️');
+            
+            playFanfareSound(1);
+
+            const modal = document.createElement('div');
+            modal.className = `end-modal-overlay fixed inset-0 ${bgClass} backdrop-blur-md flex items-center justify-center z-50 animate-fade-in p-4`;
+            modal.innerHTML = `
+                <div class="bg-white rounded-[2rem] p-6 sm:p-9 text-center transform scale-100 pop shadow-2xl border-4 flex flex-col items-center max-w-xl w-full relative overflow-hidden" style="border-color: ${color};">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-3 shadow-xl text-4xl sm:text-5xl text-white relative z-10" style="background-color: ${color}; animation: partyBounce 1.5s infinite;">
+                        ${emoji}
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-black mb-1 tracking-tighter drop-shadow-sm relative z-10" style="color: ${color}">TOMBALA!</h1>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 mb-4 relative z-10">${teamName}</h2>
+                    
+                    <div class="bg-slate-50 px-6 py-3 rounded-2xl border-2 border-slate-200 mb-5 relative z-10">
+                        <p class="text-base sm:text-xl text-slate-600 font-bold flex items-center gap-3">
+                            ${is1P ? 'Senin Toplam Puanın:' : 'Kazanan Puanı:'}
+                            <strong class="text-2xl sm:text-4xl" style="color: ${color}">${is1P ? scores.k : scores[team]}</strong>
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-3 relative z-10 w-full">
+                        ${is1P ? `<button onclick="showMenuScreen('LEADERBOARD')" class="flex-1 bg-amber-400 hover:bg-amber-500 text-slate-900 px-5 py-3 rounded-xl text-sm sm:text-base font-black shadow-md transition-all">🏆 İlk 10 Tablosunu Gör</button>` : ''}
+                        <button onclick="showMenuScreen('START')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl text-sm sm:text-base font-black shadow-md transition-all">🔄 Ana Menüye Dön</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            shootConfetti(window.innerWidth / 2, window.innerHeight / 2, 1.8);
+        }
+
+        function endGameEarly(isAutoEnd = false) {
+            if (gameOver) return;
+            gameOver = true;
+            stopAllTimers();
+
+            if (gameMode === '1P') {
+                saveScoreToLeaderboardDirectly(scores.k);
+            }
+
+            const is1P = (gameMode === '1P');
+            let winnerText = "";
+            let color = "#6366f1";
+            let emoji = "🏁";
+
+            if (scores.k > scores.e) {
+                winnerText = is1P ? `TEBRİKLER! ROBO-GEOMETRİ'Yİ YENDİN! 🎉` : "KIZLAR TAKIMI KAZANDI! 🙋‍♀️🎉";
+                color = is1P ? "#4f46e5" : "#f43f5e";
+                emoji = "🏆";
+            } else if (scores.e > scores.k) {
+                winnerText = is1P ? "ROBO-GEOMETRİ KAZANDI! 🤖" : "ERKEKLER TAKIMI KAZANDI! 🙋‍♂️🎉";
+                color = "#0ea5e9";
+                emoji = is1P ? "🤖" : "🏆";
+            } else {
+                winnerText = "BERABERE! DOSTLUK KAZANDI 🤝";
+                color = "#8b5cf6";
+                emoji = "⭐";
+            }
+
+            playFanfareSound(scores.k >= scores.e ? 1 : 3);
+
+            const modal = document.createElement('div');
+            modal.className = `end-modal-overlay fixed inset-0 bg-slate-900/85 backdrop-blur-md flex items-center justify-center z-50 animate-fade-in p-4`;
+            modal.innerHTML = `
+                <div class="bg-white rounded-[2rem] p-6 sm:p-8 text-center transform scale-100 pop shadow-2xl border-4 flex flex-col items-center max-w-xl w-full relative overflow-hidden" style="border-color: ${color};">
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center mb-3 shadow-xl text-4xl text-white relative z-10" style="background-color: ${color}; animation: partyBounce 1.5s infinite;">
+                        ${emoji}
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-black mb-1 tracking-tighter drop-shadow-sm relative z-10" style="color: ${color}">
+                        ${isAutoEnd ? 'TORBA BİTTİ!' : 'OYUN TAMAMLANDI!'}
+                    </h1>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-slate-800 mb-4 relative z-10">${winnerText}</h2>
+                    
+                    <div class="w-full bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-5 relative z-10 flex flex-col gap-2">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b pb-1">Son Puan Durumu</h3>
+                        <div class="flex justify-around items-center pt-1">
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs sm:text-sm font-bold text-indigo-600">${is1P ? '🎓 ' + (currentFullName || 'Öğrenci') : '🙋‍♀️ Kızlar Takımı'}</span>
+                                <span class="text-2xl sm:text-3xl font-black font-mono text-indigo-700">${scores.k} Puan</span>
+                            </div>
+                            <div class="text-xl font-black text-slate-300">VS</div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-xs sm:text-sm font-bold text-blue-600">${is1P ? '🤖 Robo-Geometri' : '🙋‍♂️ Erkekler Takımı'}</span>
+                                <span class="text-2xl sm:text-3xl font-black font-mono text-blue-700">${scores.e} Puan</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-3 relative z-10 w-full">
+                        ${is1P ? `<button onclick="showMenuScreen('LEADERBOARD')" class="flex-1 bg-amber-400 hover:bg-amber-500 text-slate-900 px-5 py-3 rounded-xl text-sm sm:text-base font-black shadow-md transition-all">🏆 İlk 10 Tablosunu Gör</button>` : ''}
+                        <button onclick="showMenuScreen('START')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl text-sm sm:text-base font-black shadow-md transition-all">🔄 Ana Menüye Dön</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            shootConfetti(window.innerWidth / 2, window.innerHeight / 2, 1.5);
+        }
+    </script>
+</body>
+</html>
