@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase Bağımlılıkları (Merkezi Öğrenci Listesi İçin) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -190,7 +193,8 @@
     <!-- Top Navbar -->
     <nav class="glass-nav w-full py-4 px-8 flex justify-between items-center z-10 sticky top-0">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
+            <!-- Sol üst logoya çift tıklayarak veya sağ üstteki çarktan yönetim paneline girilebilir -->
+            <div ondblclick="openPasswordModal()" title="Yönetim Paneli (Çift Tıkla)" class="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg cursor-pointer">
                 <i class="fas fa-square-root-alt"></i>
             </div>
             <h1 class="text-2xl md:text-3xl font-extrabold text-metallic tracking-tight uppercase">Matematik Etkinlik Portalı</h1>
@@ -219,9 +223,12 @@
             </button>
         </div>
         
-        <!-- Sağ tarafın dengeli durması için boş tutucu -->
-        <div class="w-12 h-12 hidden md:block"></div>
+        <!-- Sağ Üst: Yönetim Paneli (Öğrenci Listeleri & Materyal Yönetimi) -->
+        <button onclick="openPasswordModal()" title="Sistem ve Öğrenci Yönetimi" class="w-11 h-11 bg-slate-800/80 border border-slate-600/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
+            <i class="fas fa-cog text-lg transition-transform duration-500 group-hover:rotate-90"></i>
+        </button>
     </nav>
+
     <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto p-8 relative z-0">
         <div id="games-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
@@ -262,63 +269,109 @@
 
     <!-- Settings Modal (Admin Dashboard) -->
     <div id="settings-modal">
-        <div class="glass-panel p-8 rounded-3xl w-full max-w-5xl max-h-[90vh] flex flex-col relative animate-[fadeIn_0.3s_ease-out]">
+        <div class="glass-panel p-8 rounded-3xl w-full max-w-6xl max-h-[92vh] flex flex-col relative animate-[fadeIn_0.3s_ease-out]">
             <button onclick="closeSettingsModal()" class="absolute top-5 right-6 text-slate-400 hover:text-red-400 transition-colors text-3xl z-10">
                 <i class="fas fa-times"></i>
             </button>
             
-            <h2 class="text-3xl font-bold mb-8 text-white border-b border-slate-700 pb-4 flex items-center justify-between">
-                <div><i class="fas fa-sliders-h text-blue-400 mr-4"></i> Sistem Yönetimi</div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white border-b border-slate-700 pb-4 flex items-center justify-between pr-10">
+                <div><i class="fas fa-sliders-h text-blue-400 mr-3"></i> Sistem ve Merkezi Öğrenci Yönetimi</div>
                 <button onclick="logoutAdmin()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-4 py-2 rounded-lg border border-slate-600 transition-colors">
                     <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
                 </button>
             </h2>
             
-            <div class="flex-1 overflow-y-auto pr-4 grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div class="flex-1 overflow-y-auto pr-2 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <!-- Oyun Ekleme Formu -->
-                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
-                    <h3 class="text-xl font-bold mb-6 text-emerald-400 flex items-center"><i class="fas fa-plus-circle mr-2"></i>Yeni Materyal Ekle</h3>
-                    
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2">Etkinlik Başlığı</label>
-                        <input type="text" id="new-game-title" class="w-full p-3 rounded-xl dark-input outline-none" placeholder="Örn: Kesirler Macerası">
-                    </div>
-                    
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2">Sınıf Kademesi</label>
-                        <select id="new-game-grade" class="w-full p-3 rounded-xl dark-input outline-none appearance-none">
-                            <option value="5" class="bg-slate-800">5. Sınıf</option>
-                            <option value="6" class="bg-slate-800">6. Sınıf</option>
-                            <option value="7" class="bg-slate-800">7. Sınıf</option>
-                        </select>
-                    </div>
+                <!-- 1. SÜTUN: MERKEZİ SINIF ÖĞRENCİ LİSTESİ (5, 6, 7. SINIFLAR) -->
+                <div class="bg-slate-800/60 p-5 rounded-2xl border border-amber-500/40 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 text-amber-400 flex items-center">
+                            <i class="fas fa-users mr-2"></i>Merkezi Öğrenci Listeleri
+                        </h3>
+                        <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                            Sene başında 5, 6 ve 7. sınıf öğrencilerini buradan <b>bir kez</b> kaydedin. O sınıfa eklediğiniz tüm oyunlar bu listeyi otomatik kullanır!
+                        </p>
 
-                    <div class="mb-5">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2">Kapak Görseli Linki (Opsiyonel)</label>
-                        <input type="text" id="new-game-image" class="w-full p-3 rounded-xl dark-input outline-none" placeholder="https://...">
-                    </div>
-
-                    <div class="mb-6">
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="block text-sm font-semibold text-slate-300">HTML Kaynak Kodları</label>
-                            <label class="cursor-pointer bg-slate-700 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-600 transition-colors flex items-center gap-2">
-                                <i class="fas fa-file-upload"></i> Dosyadan Oku
-                                <input type="file" id="html-file-input" accept=".html" class="hidden" onchange="handleFileUpload(event)">
-                            </label>
+                        <!-- Sınıf Seçim Sekmeleri -->
+                        <div class="flex gap-2 mb-3">
+                            <button id="std-tab-5" onclick="selectStudentGradeTab('5')" class="flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-amber-600 text-white border-amber-400">
+                                5. Sınıflar (<span id="count-grade-5">0</span>)
+                            </button>
+                            <button id="std-tab-6" onclick="selectStudentGradeTab('6')" class="flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-slate-900 text-slate-400 border-slate-700">
+                                6. Sınıflar (<span id="count-grade-6">0</span>)
+                            </button>
+                            <button id="std-tab-7" onclick="selectStudentGradeTab('7')" class="flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-slate-900 text-slate-400 border-slate-700">
+                                7. Sınıflar (<span id="count-grade-7">0</span>)
+                            </button>
                         </div>
-                        <textarea id="new-game-code" rows="6" class="w-full p-3 rounded-xl dark-input outline-none font-mono text-xs resize-none" placeholder="<!-- Kodları yapıştırın veya üstteki butondan .html dosyası seçin -->"></textarea>
+
+                        <label id="std-grade-label" class="block text-xs font-bold text-amber-300 mb-1.5">
+                            5. Sınıf Öğrenci İsimlerini Ekle (Alt alta veya virgülle):
+                        </label>
+                        <textarea id="central-student-input" rows="5" class="w-full p-3 rounded-xl dark-input outline-none text-xs font-medium resize-none mb-2" placeholder="Örn:&#10;Ali Yılmaz&#10;Zeynep Demir"></textarea>
+
+                        <div class="flex justify-between items-center mb-3">
+                            <span id="central-student-status" class="text-xs font-bold text-emerald-400">5. Sınıflarda 0 öğrenci kayıtlı.</span>
+                            <button onclick="clearCentralStudentList()" class="text-xs text-rose-400 hover:text-rose-300 font-bold underline">Bu Sınıfı Sıfırla</button>
+                        </div>
+
+                        <!-- Mevcut Kayıtlı Öğrenciler Ön İzleme Kutusu -->
+                        <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 max-h-36 overflow-y-auto mb-4 text-xs text-slate-300 space-y-1" id="central-students-preview">
+                            Henüz öğrenci eklenmemiş.
+                        </div>
                     </div>
 
-                    <button onclick="addGame()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2 text-lg">
+                    <button onclick="saveCentralStudentList()" class="w-full bg-amber-600 text-white font-bold py-3.5 rounded-xl hover:bg-amber-500 transition-colors shadow-lg shadow-amber-900/40 flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-cloud-upload-alt"></i> SEÇİLİ SINIF LİSTESİNE EKLE & SENKRONİZE ET
+                    </button>
+                </div>
+
+                <!-- 2. SÜTUN: Yeni Oyun Ekleme Formu -->
+                <div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-4 text-emerald-400 flex items-center"><i class="fas fa-plus-circle mr-2"></i>Yeni Materyal Ekle</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Etkinlik Başlığı</label>
+                            <input type="text" id="new-game-title" class="w-full p-2.5 rounded-xl dark-input outline-none text-sm" placeholder="Örn: Geometri Tombalası">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Sınıf Kademesi</label>
+                            <select id="new-game-grade" class="w-full p-2.5 rounded-xl dark-input outline-none appearance-none text-sm">
+                                <option value="5" class="bg-slate-800">5. Sınıf</option>
+                                <option value="6" class="bg-slate-800">6. Sınıf</option>
+                                <option value="7" class="bg-slate-800">7. Sınıf</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kapak Görseli Linki (Opsiyonel)</label>
+                            <input type="text" id="new-game-image" class="w-full p-2.5 rounded-xl dark-input outline-none text-sm" placeholder="https://...">
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-xs font-semibold text-slate-300">HTML Kaynak Kodları</label>
+                                <label class="cursor-pointer bg-slate-700 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-slate-600 transition-colors flex items-center gap-1.5">
+                                    <i class="fas fa-file-upload"></i> Dosyadan Oku
+                                    <input type="file" id="html-file-input" accept=".html" class="hidden" onchange="handleFileUpload(event)">
+                                </label>
+                            </div>
+                            <textarea id="new-game-code" rows="5" class="w-full p-2.5 rounded-xl dark-input outline-none font-mono text-xs resize-none" placeholder="<!-- Kodları yapıştırın veya üstteki butondan .html dosyası seçin -->"></textarea>
+                        </div>
+                    </div>
+
+                    <button onclick="addGame()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/50 flex items-center justify-center gap-2 text-sm">
                         <i class="fas fa-satellite-dish"></i> SİSTEME YÜKLE
                     </button>
                 </div>
 
-                <!-- Oyun Yönetimi -->
-                <div class="flex flex-col h-full">
-                    <h3 class="text-xl font-bold mb-6 text-blue-400 flex items-center"><i class="fas fa-server mr-2"></i>Yüklü Materyaller</h3>
-                    <div class="bg-slate-800/50 border border-slate-700 rounded-2xl flex-1 overflow-y-auto p-3 space-y-3" id="admin-games-list">
+                <!-- 3. SÜTUN: Yüklü Materyaller -->
+                <div class="flex flex-col h-full bg-slate-800/50 p-5 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-4 text-blue-400 flex items-center"><i class="fas fa-server mr-2"></i>Yüklü Materyaller</h3>
+                    <div class="bg-slate-900/60 border border-slate-700 rounded-xl flex-1 overflow-y-auto p-3 space-y-2.5" id="admin-games-list">
                         <!-- Admin listesi buraya gelecek -->
                     </div>
                 </div>
@@ -339,6 +392,154 @@
 
     let currentGrade = '5';
     let games = []; // oyunlar.js'den dolacak
+
+    /* ==========================================================
+       MERKEZİ FIREBASE ÖĞRENCİ YÖNETİMİ (5, 6 ve 7. SINIFLAR)
+       Sene başında tek bir kez buradan eklenir; hem sınıf düğümüne
+       (students_grade_5, students_grade_6, students_grade_7) hem de
+       mevcut tüm oyunların öğrenci düğümlerine otomatik yazılır!
+       ========================================================== */
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+        authDomain: "zihindencarpma.firebaseapp.com",
+        databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+        projectId: "zihindencarpma",
+        storageBucket: "zihindencarpma.firebasestorage.app",
+        messagingSenderId: "111639321624",
+        appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+    };
+
+    // Hangi sınıftaki oyunların hangi Firebase düğümlerini kullandığı (Eski oyunlarla %100 uyum için!)
+    const GRADE_SYNC_NODES = {
+        '5': ['students_grade_5', 'students_cumhuriyetekspresi', 'students_geombala'],
+        '6': ['students_grade_6', 'students_olasilikfabrikasi', 'students_asalsayifirtina', 'students_kutuplardaasallik', 'students_carpanavcilari', 'students_bolunebilme'],
+        '7': ['students_grade_7', 'students_tamsayifirtina', 'students_rasyonel']
+    };
+
+    let portalDb = null;
+    let selectedAdminGradeTab = '5';
+    let centralStudentsByGrade = { '5': [], '6': [], '7': [] };
+
+    if (typeof firebase !== 'undefined') {
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(FIREBASE_CONFIG);
+            }
+            portalDb = firebase.database();
+
+            ['5', '6', '7'].forEach(g => {
+                portalDb.ref('students_grade_' + g).on('value', snap => {
+                    let raw = snap.val();
+                    if (raw) {
+                        centralStudentsByGrade[g] = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                    } else {
+                        centralStudentsByGrade[g] = [];
+                    }
+                    updateStudentAdminUI();
+                });
+            });
+        } catch (e) {
+            console.error("Firebase bağlantı hatası:", e);
+        }
+    }
+
+    function selectStudentGradeTab(grade) {
+        selectedAdminGradeTab = grade;
+        ['5', '6', '7'].forEach(g => {
+            const btn = document.getElementById('std-tab-' + g);
+            if (!btn) return;
+            if (g === grade) {
+                btn.className = "flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-amber-600 text-white border-amber-400 shadow";
+            } else {
+                btn.className = "flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-slate-900 text-slate-400 border-slate-700 hover:text-white";
+            }
+        });
+        document.getElementById('std-grade-label').innerText = `${grade}. Sınıf Öğrenci İsimlerini Ekle (Alt alta veya virgülle):`;
+        updateStudentAdminUI();
+    }
+
+    function updateStudentAdminUI() {
+        ['5', '6', '7'].forEach(g => {
+            const cntEl = document.getElementById('count-grade-' + g);
+            if (cntEl) cntEl.innerText = centralStudentsByGrade[g].length;
+        });
+
+        const currentList = centralStudentsByGrade[selectedAdminGradeTab] || [];
+        const statusEl = document.getElementById('central-student-status');
+        if (statusEl) {
+            statusEl.innerText = `${selectedAdminGradeTab}. Sınıflarda ${currentList.length} öğrenci kayıtlı.`;
+        }
+
+        const previewEl = document.getElementById('central-students-preview');
+        if (previewEl) {
+            if (currentList.length === 0) {
+                previewEl.innerHTML = `<div class="text-slate-500 italic">Bu sınıfta henüz kayıtlı öğrenci yok.</div>`;
+            } else {
+                previewEl.innerHTML = currentList.map((name, i) =>
+                    `<div class="flex justify-between items-center bg-slate-800/80 px-2.5 py-1 rounded border border-slate-700/60">
+                        <span><b>${i + 1}.</b> ${name}</span>
+                        <button onclick="removeSingleCentralStudent('${selectedAdminGradeTab}', ${i})" class="text-rose-400 hover:text-rose-300 text-xs font-bold" title="Sil">✕</button>
+                    </div>`
+                ).join('');
+            }
+        }
+    }
+
+    function syncGradeListToAllGameNodes(grade, studentArray) {
+        if (!portalDb) return Promise.reject("Veritabanı yok");
+        const joined = studentArray.join('\n');
+        const targetNodes = GRADE_SYNC_NODES[grade] || ['students_grade_' + grade];
+        const promises = targetNodes.map(nodeName => portalDb.ref(nodeName).set(joined));
+        return Promise.all(promises);
+    }
+
+    function saveCentralStudentList() {
+        const inputEl = document.getElementById('central-student-input');
+        const text = inputEl.value;
+        if (!text.trim()) {
+            alert('Lütfen eklenecek öğrenci isimlerini kutuya yazın veya yapıştırın.');
+            return;
+        }
+
+        const newNames = text.replace(/"/g, '')
+                             .split(/[\n,;]+/)
+                             .map(s => s.trim())
+                             .filter(s => s.length > 0);
+
+        const existingList = centralStudentsByGrade[selectedAdminGradeTab] || [];
+        const existingLower = existingList.map(n => n.toLocaleLowerCase('tr-TR'));
+        let addedCount = 0;
+        const updatedList = [...existingList];
+
+        newNames.forEach(n => {
+            const low = n.toLocaleLowerCase('tr-TR');
+            if (!existingLower.includes(low)) {
+                updatedList.push(n);
+                existingLower.push(low);
+                addedCount++;
+            }
+        });
+
+        syncGradeListToAllGameNodes(selectedAdminGradeTab, updatedList).then(() => {
+            alert(`${selectedAdminGradeTab}. Sınıflara ${addedCount} yeni öğrenci eklendi ve bu sınıftaki tüm oyunlarla senkronize edildi!`);
+            inputEl.value = '';
+        }).catch(() => {
+            alert('Kaydedilirken bir hata oluştu.');
+        });
+    }
+
+    function removeSingleCentralStudent(grade, index) {
+        const list = [...(centralStudentsByGrade[grade] || [])];
+        const removedName = list[index];
+        if (!confirm(`"${removedName}" isimli öğrenciyi ${grade}. sınıf listesinden silmek istediğinize emin misiniz?`)) return;
+        list.splice(index, 1);
+        syncGradeListToAllGameNodes(grade, list);
+    }
+
+    function clearCentralStudentList() {
+        if (!confirm(`${selectedAdminGradeTab}. Sınıflara ait tüm öğrenci listesi silinecek (oyun skorları silinmez). Emin misiniz?`)) return;
+        syncGradeListToAllGameNodes(selectedAdminGradeTab, []);
+    }
 
     window.onload = () => {
         loadGamesFromDB();
@@ -388,7 +589,6 @@
             bgElem.style.setProperty('--bg-filter', 'none');
         } else if (grade === '7') {
             btn7.classList.add('active-purple');
-            // 7. sınıf için 6. sınıfın resmini kullanıyor, ama hue-rotate ile renkleri mora çeviriyor!
             bgElem.style.setProperty('--bg-image', `url('${BG_6}')`);
             bgElem.style.setProperty('--bg-filter', 'hue-rotate(60deg)');
         }
@@ -441,6 +641,21 @@
         event.target.value = '';
     }
 
+    /*
+      AKILLI ÖĞRENCİ LİSTESİ ENJEKSİYONU:
+      Portaldan bir oyun açılırken (veya yeni oyun eklenirken), o oyunun içindeki
+      STUDENTS_NODE değişkenini otomatik olarak ilgili sınıfın merkezi listesine
+      ('students_grade_5', 'students_grade_6', 'students_grade_7') yönlendirir!
+      Böylece eski/yeni hangi oyunu yüklersen yükle, o sınıfın öğrencileri otomatik açılır!
+    */
+    function injectCentralStudentsIntoGameCode(rawCode, gameGrade) {
+        if (!rawCode) return rawCode;
+        const targetGrade = gameGrade || currentGrade || '5';
+        const centralNode = `students_grade_${targetGrade}`;
+        // const STUDENTS_NODE = '...'; satırını merkezi sınıf düğümüne çevir
+        return rawCode.replace(/const\s+STUDENTS_NODE\s*=\s*['"][^'"]+['"]\s*;/g, `const STUDENTS_NODE = '${centralNode}';`);
+    }
+
     function playGame(id) {
         const game = games.find(g => g.id === id);
         if (game) {
@@ -452,7 +667,7 @@
                 frame.src = game.url;
             } else {
                 frame.removeAttribute('src');
-                frame.srcdoc = game.code;
+                frame.srcdoc = injectCentralStudentsIntoGameCode(game.code, game.grade);
             }
             
             container.style.display = 'block';
@@ -467,7 +682,6 @@
     }
 
     function openPasswordModal() {
-        // Eğer daha önce giriş yapılmışsa şifre sorma
         if (localStorage.getItem('admin_auth') === 'true') {
             openSettingsModal();
             return;
@@ -485,7 +699,7 @@
     function checkPassword() {
         const pass = document.getElementById('admin-password').value;
         if (pass === PASSWORD) {
-            localStorage.setItem('admin_auth', 'true'); // Şifreyi bilgisayara kaydet
+            localStorage.setItem('admin_auth', 'true');
             closePasswordModal();
             openSettingsModal();
         } else {
@@ -493,7 +707,6 @@
         }
     }
 
-    // Ayarlardan çıkış yapmak için (opsiyonel)
     function logoutAdmin() {
         localStorage.removeItem('admin_auth');
         closeSettingsModal();
@@ -506,6 +719,7 @@
 
     function openSettingsModal() {
         document.getElementById('settings-modal').style.display = 'flex';
+        selectStudentGradeTab(currentGrade);
         renderAdminGamesList();
     }
 
@@ -520,12 +734,15 @@
         const title = document.getElementById('new-game-title').value.trim();
         const grade = document.getElementById('new-game-grade').value;
         const image = document.getElementById('new-game-image').value.trim();
-        const code = document.getElementById('new-game-code').value.trim();
+        let code = document.getElementById('new-game-code').value.trim();
 
         if (!title || !code) {
             alert('Lütfen Başlık ve Kaynak Kod alanlarını doldurunuz!');
             return;
         }
+
+        // Oyunu kaydederken de doğrudan o sınıfın merkezi öğrenci listesine bağla
+        code = injectCentralStudentsIntoGameCode(code, grade);
 
         const newGame = {
             id: Date.now().toString(),
@@ -539,7 +756,7 @@
         games.push(newGame);
         saveGamesToDB();
         
-        alert('Etkinlik sisteme başarıyla yüklendi!');
+        alert(`Etkinlik ${grade}. Sınıflara başarıyla yüklendi ve ${grade}. sınıf öğrenci listesine otomatik bağlandı!`);
         
         document.getElementById('new-game-title').value = '';
         document.getElementById('new-game-image').value = '';
