@@ -745,67 +745,6 @@
       color: #DC2626;
     }
 
-    /* Sıralamaya Kayıt Kutusu */
-    .save-rank-box {
-      background: #F0FDF4;
-      border: 2px solid #86EFAC;
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 24px;
-      text-align: left;
-    }
-
-    .save-rank-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: #166534;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .save-rank-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .input-save-name {
-      flex: 1;
-      padding: 14px 16px;
-      font-size: 17px;
-      font-weight: 700;
-      border: 2px solid #86EFAC;
-      border-radius: 14px;
-      outline: none;
-      background: white;
-    }
-
-    .input-save-name:focus {
-      border-color: #16A34A;
-      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
-    }
-
-    .btn-save-score {
-      padding: 14px 22px;
-      background: linear-gradient(135deg, #10B981, #059669);
-      border: none;
-      border-radius: 14px;
-      color: white;
-      font-family: 'Baloo 2', cursive;
-      font-size: 18px;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-      transition: all 0.2s ease;
-    }
-
-    .btn-save-score:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-    }
-
     .result-actions {
       display: flex;
       flex-direction: column;
@@ -1064,8 +1003,6 @@
       border-color: #EF4444;
       color: #DC2626;
     }
-
-
 
     /* Canvas Konfeti */
     #confetti-canvas {
@@ -1366,7 +1303,7 @@
     .settings-card {
       position: relative;
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       background: #FFFFFF;
       border-radius: 24px;
       padding: 32px 28px;
@@ -1499,7 +1436,6 @@
       .option-btn { font-size: 30px; padding: 16px; }
       .score-summary-grid { grid-template-columns: 1fr 1fr; }
       .rules-banner { flex-direction: column; align-items: center; }
-      .save-rank-row { flex-direction: column; }
     }
   </style>
 </head>
@@ -1555,8 +1491,9 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="playerName">Öğrenci Adı:</label>
-        <input type="text" id="playerName" class="input-player" placeholder="Öğrencinin adını yazın..." maxlength="20">
+        <label class="form-label" for="playerName">Adınız ve Soyadınız:</label>
+        <input type="text" id="playerName" list="studentNamesList" class="input-player" placeholder="Adınızı ve soyadınızı yazın veya seçin..." maxlength="50" autocomplete="off">
+        <datalist id="studentNamesList"></datalist>
       </div>
 
       <!-- Sadece BAŞLA Yazan Buton -->
@@ -1686,19 +1623,6 @@
         </div>
       </div>
 
-      <!-- Sıralamaya Kayıt Alanı -->
-      <div class="save-rank-box" id="saveRankBox">
-        <div class="save-rank-title">
-          <span>📝</span> <strong>Skorunu İlk 10 Sıralamasına Kaydet:</strong>
-        </div>
-        <div class="save-rank-row">
-          <input type="text" id="savePlayerName" class="input-save-name" placeholder="Öğrencinin Adı..." maxlength="20">
-          <button class="btn-save-score" id="btnSaveToLeaderboard">
-            <span>🏆 Sıralamaya Kaydet!</span>
-          </button>
-        </div>
-      </div>
-
       <div class="result-actions">
         <button class="btn-action btn-view-leaderboard" id="btnGoToLeaderboard">
           <span>🏆 İlk 10 Lider Tablosunu Gör</span>
@@ -1746,7 +1670,7 @@
 
       <div class="lb-footer-actions">
         <button class="btn-clear-lb" id="btnClearLeaderboard">
-          <span>🗑️ Sıralamayı Temizle</span>
+          <span>⚙️ Yönetici / Sıralama Ayarları</span>
         </button>
         <button class="btn-start" id="btnStartFromLeaderboard" style="padding: 14px 28px; font-size: 20px; width: auto;">
           <span>🚀 Yeni Yarışma Başlat!</span>
@@ -1813,20 +1737,43 @@
 
         <!-- 2. Adım: Ayarlar Paneli (Şifre doğru girilince açılır) -->
         <div id="settingsPanelStep" style="display: none;">
-          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 18px; margin-bottom: 20px; text-align: left;">
+          
+          <!-- ÖĞRENCİ LİSTESİ EKLEME ALANI -->
+          <div style="background: #F1F5F9; border: 2px solid #CBD5E1; border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: left;">
             <div style="font-weight: 800; color: #1E293B; font-size: 16px; margin-bottom: 6px;">
-              🗑️ Skorları Sıfırla
+              📋 5. Sınıf Öğrenci Listesini Ekle / Güncelle
             </div>
-            <p style="font-size: 13px; color: #64748B; font-weight: 600; line-height: 1.5; margin-bottom: 14px;">
-              Yeni bir sınıfa başlarken hem bu bilgisayardaki hem de buluttaki (tüm sınıflardaki) liderlik tablosunu tamamen sıfırlar.
+            <p style="font-size: 12.5px; color: #64748B; font-weight: 600; line-height: 1.45; margin-bottom: 10px;">
+              İsimleri alt alta, virgülle ayırarak veya tırnak içinde yapıştırabilirsiniz. Mevcut <strong>İlk 10 verileri silinmez</strong>; yalnızca listede kayıtlı olan öğrencilerin isimleri İlk 10'da kalır ve sadece bu öğrenciler oyuna girebilir.
             </p>
-            <button class="settings-btn-danger" id="btnAdminResetScores">
+            <textarea id="adminStudentList" style="width:100%; height:90px; padding:10px; border-radius:10px; border:1px solid #94A3B8; font-family:inherit; font-size:14px; font-weight:600;" placeholder="Öğrenci isimlerini buraya yapıştırın..."></textarea>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 6px; margin-bottom: 10px;">
+              <span id="totalStudentsText" style="font-size: 13px; color: #10B981; font-weight:800;">Sistemde 0 öğrenci kayıtlı.</span>
+              <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Öğrenci Listesini Sıfırla</button>
+            </div>
+            
+            <button class="settings-btn-primary" style="font-size: 16px; padding: 11px;" onclick="saveStudentList()">
+              💾 Öğrencileri Sisteme Ekle
+            </button>
+          </div>
+
+          <!-- SKORLARI SIFIRLAMA ALANI -->
+          <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: left;">
+            <div style="font-weight: 800; color: #991B1B; font-size: 15px; margin-bottom: 4px;">
+              🗑️ Skorları Sıfırla (İsteğe Bağlı)
+            </div>
+            <p style="font-size: 12.5px; color: #7F1D1D; font-weight: 600; line-height: 1.4; margin-bottom: 10px;">
+              Tüm sınıflardaki mevcut İlk 10 liderlik tablosunu tamamen sıfırlamak isterseniz kullanın.
+            </p>
+            <button class="settings-btn-danger" id="btnAdminResetScores" style="padding: 11px; font-size: 15px;">
               <span>🗑️ Tüm Skorları Sıfırla (Bulut + Yerel)</span>
             </button>
             <div class="settings-success" id="settingsSuccess">✅ Tüm skorlar başarıyla sıfırlandı!</div>
           </div>
+
           <button class="settings-btn-primary" id="btnDoneSettings" style="background: #E2E8F0; color: #334155;">
-            <span>Tamam</span>
+            <span>Kapat</span>
           </button>
         </div>
 
@@ -1834,8 +1781,6 @@
     </div>
 
   </div>
-
-
 
   <!-- FIREBASE SDK (Eş Zamanlı Bulut Sıralaması İçin) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -1846,7 +1791,6 @@
     /* ===================================================
        BULUT (ONLINE) VERİTABANI AYARLARI (Eş Zamanlı Sıralama)
        =================================================== */
-    // Kullanıcının Firebase Proje Yapılandırması (zihindencarpma)
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
       authDomain: "zihindencarpma.firebaseapp.com",
@@ -1859,50 +1803,135 @@
     };
 
     let cloudDb = null;
+    const STUDENTS_NODE = 'students_zihinden';
+    let authorizedStudents = [];
+    let latestRawScores = [];
 
     /* ===================================================
-       ÖĞRENCİ İSİMLERİNİ NORMALİZE ETME & TEKİLLEŞTİRME (Deduplication)
+       ÖĞRENCİ İSİMLERİNİ NORMALİZE ETME & KAYITLI ÖĞRENCİ EŞLEŞTİRME
        - Büyük / küçük harf duyarsız (İ/ı/i uyumu)
-       - Yanlışlıkla boşluk konulmamış veya fazla boşluklu ad-soyadları eşler (Ahmet Yılmaz == AhmetYılmaz)
-       - Türkçe karakterleri ve özel işaretleri tekilleştirir
-       - Aynı isim varsa YALNIZCA en yüksek puanlı olanı saklar, diğerlerini kaldırır
+       - Yanlışlıkla boşluk konulmamış veya fazla boşluklu ad-soyadları eşler
+       - Türkçe karakterleri ve ufak yazım hatalarını (Levenshtein <= 2) yakalar
+       - Öğrenci listesi yüklendiğinde mevcut İlk 10'u silmez; sadece listedeki öğrencileri filtreler!
        =================================================== */
     function normalizeName(name) {
       if (!name) return '';
       return String(name)
         .trim()
-        .replace(/[\s\-_.]+/g, '') // Boşlukları ve ayraçları kaldırır
-        .toLocaleLowerCase('tr-TR') // Türkçe küçük harf: İ -> i, I -> ı
+        .replace(/[\s\-_.]+/g, '')
+        .toLocaleLowerCase('tr-TR')
         .replace(/ı/g, 'i')
         .replace(/ç/g, 'c')
         .replace(/ğ/g, 'g')
         .replace(/ö/g, 'o')
         .replace(/ş/g, 's')
-        .replace(/ü/g, 'u');
+        .replace(/ü/g, 'u')
+        .replace(/[^a-z0-9]/g, '');
+    }
+
+    function levenshtein(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+      for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              matrix[i][j - 1] + 1,
+              matrix[i - 1][j] + 1
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    function matchAuthorizedStudent(rawName) {
+      if (!rawName || authorizedStudents.length === 0) return null;
+      const normInput = normalizeName(rawName);
+      if (!normInput) return null;
+
+      // 1. Tam normalize eşleşme (büyük/küçük harf, Türkçe karakter ve boşluk duyarsız)
+      for (const official of authorizedStudents) {
+        if (normalizeName(official) === normInput) {
+          return official;
+        }
+      }
+
+      // 2. Küçük harf/karakter kaymaları için yakın eşleşme (ör. 1-2 harf hatası)
+      for (const official of authorizedStudents) {
+        const normOff = normalizeName(official);
+        if (normOff.length >= 6 && normInput.length >= 6) {
+          const dist = levenshtein(normOff, normInput);
+          if (dist <= 2 && Math.abs(normOff.length - normInput.length) <= 2) {
+            return official;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function validateRealName(nameStr) {
+      let trimmed = (nameStr || '').trim().replace(/\s+/g, ' ');
+      if (!trimmed) {
+        return { valid: false, error: "Lütfen adınızı ve soyadınızı girin." };
+      }
+
+      if (authorizedStudents.length === 0) {
+        return { valid: false, error: "Sisteme henüz öğrenci listesi yüklenmemiş. Lütfen önce Sağ Üstteki (⚙️) Öğretmen Ayarları'ndan sınıf listesini ekleyin." };
+      }
+
+      let matched = matchAuthorizedStudent(trimmed);
+      if (matched) {
+        return { valid: true, name: matched };
+      } else {
+        return { valid: false, error: "İsminiz sistemdeki öğrenci listesinde bulunamadı! Lütfen listeye eklenen adınızı ve soyadınızı doğru yazdığınızdan emin olun (veya kutucuğa tıklayıp açılan listeden seçin)." };
+      }
     }
 
     function deduplicateLeaderboard(entries) {
       if (!Array.isArray(entries)) return [];
 
-      // 1. İsim bazında grupla
+      // 1. İsim bazında grupla (Eğer öğrenci listesi yüklüyse sadece listedeki öğrencileri kabul et!)
       const groups = new Map();
       for (const entry of entries) {
         if (!entry || !entry.name) continue;
-        const key = normalizeName(entry.name);
+
+        let displayCanonicalName = entry.name.trim();
+        let key = '';
+
+        if (authorizedStudents.length > 0) {
+          const matchedOfficial = matchAuthorizedStudent(entry.name);
+          if (!matchedOfficial) {
+            // Kayıtlı öğrenci listesinde yoksa İlk 10'da gösterme
+            continue;
+          }
+          displayCanonicalName = matchedOfficial;
+          key = normalizeName(matchedOfficial);
+        } else {
+          key = normalizeName(entry.name);
+        }
+
         if (!key) continue;
 
         if (!groups.has(key)) {
-          groups.set(key, []);
+          groups.set(key, { officialName: displayCanonicalName, list: [] });
         }
-        groups.get(key).push(entry);
+        groups.get(key).list.push({ ...entry, name: displayCanonicalName });
       }
 
       // 2. Her öğrencinin yalnızca EN YÜKSEK puanlı kaydını al
       const uniqueBestList = [];
 
-      for (const [key, groupEntries] of groups.entries()) {
-        // En iyi performansa göre sırala:
-        // Puan (Yüksek) > Doğru (Çok) > Yanlış (Az) > Zaman (Yeni)
+      for (const [key, groupObj] of groups.entries()) {
+        const groupEntries = groupObj.list;
         groupEntries.sort((a, b) => {
           const scoreDiff = (b.score || 0) - (a.score || 0);
           if (scoreDiff !== 0) return scoreDiff;
@@ -1916,14 +1945,7 @@
           return (b.timestamp || 0) - (a.timestamp || 0);
         });
 
-        const bestEntry = { ...groupEntries[0] };
-
-        // Eğer kayıtlardan birinde adı-soyadı düzgün boşluklu yazılmışsa o okunabilir ismi koru
-        const nicelyFormatted = groupEntries.find(e => e.name && e.name.trim().includes(' '));
-        if (nicelyFormatted && (!bestEntry.name || !bestEntry.name.trim().includes(' '))) {
-          bestEntry.name = nicelyFormatted.name.trim();
-        }
-
+        const bestEntry = { ...groupEntries[0], name: groupObj.officialName };
         uniqueBestList.push(bestEntry);
       }
 
@@ -1944,45 +1966,102 @@
       return uniqueBestList.slice(0, 10);
     }
 
-    function cleanupCloudDuplicates(entriesWithKeys) {
-      if (!cloudDb) return;
-      try {
-        const groups = new Map();
-        for (const item of entriesWithKeys) {
-          if (!item || !item.name || !item._firebaseKey) continue;
-          const key = normalizeName(item.name);
-          if (!key) continue;
+    function updateAuthorizedStudentsUI() {
+      const ts = document.getElementById('totalStudentsText');
+      if (ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
 
-          if (!groups.has(key)) {
-            groups.set(key, []);
-          }
-          groups.get(key).push(item);
+      const dl = document.getElementById('studentNamesList');
+      if (dl) {
+        dl.innerHTML = '';
+        authorizedStudents.forEach(name => {
+          const op = document.createElement('option');
+          op.value = name;
+          dl.appendChild(op);
+        });
+      }
+
+      // Öğrenci listesi güncellendiğinde mevcut skorları silmeden yeniden filtrele
+      if (latestRawScores.length > 0) {
+        const top10 = deduplicateLeaderboard(latestRawScores);
+        localStorage.setItem('meb_zihinden_top10', JSON.stringify(top10));
+      }
+      renderLeaderboard();
+    }
+
+    function saveStudentList() {
+      const textarea = document.getElementById('adminStudentList');
+      const text = textarea ? textarea.value : '';
+      if (!text.trim()) {
+        alert('Lütfen eklenecek öğrenci isimlerini yazın.');
+        return;
+      }
+
+      const newNames = text
+        .replace(/"/g, '')
+        .split(/[\n,;]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      const currentNorms = authorizedStudents.map(n => normalizeName(n));
+      const namesToAdd = [];
+
+      newNames.forEach(n => {
+        const norm = normalizeName(n);
+        if (norm && !currentNorms.includes(norm)) {
+          namesToAdd.push(n);
+          currentNorms.push(norm);
         }
+      });
 
-        const keysToRemove = [];
-        for (const [key, items] of groups.entries()) {
-          if (items.length <= 1) continue;
+      const updatedList = authorizedStudents.concat(namesToAdd);
+      authorizedStudents = updatedList;
+      localStorage.setItem('meb_zihinden_students', JSON.stringify(authorizedStudents));
+      updateAuthorizedStudentsUI();
 
-          items.sort((a, b) => {
-            const sDiff = (b.score || 0) - (a.score || 0);
-            if (sDiff !== 0) return sDiff;
-            return (b.timestamp || 0) - (a.timestamp || 0);
-          });
+      if (cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).set(updatedList.join('\n')).then(() => {
+          alert(namesToAdd.length + ' yeni öğrenci sisteme eklendi! İlk 10 tablosu kayıtlı öğrencilere göre güncellendi.');
+          textarea.value = '';
+        }).catch(() => {
+          alert('Yerel olarak kaydedildi ancak buluta gönderilirken hata oluştu.');
+        });
+      } else if (FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.databaseURL.startsWith('http')) {
+        const cleanUrl = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, '');
+        fetch(`${cleanUrl}/${STUDENTS_NODE}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedList.join('\n'))
+        }).then(() => {
+          alert(namesToAdd.length + ' yeni öğrenci sisteme eklendi!');
+          textarea.value = '';
+        }).catch(() => {});
+      }
+    }
 
-          for (let i = 1; i < items.length; i++) {
-            if (items[i]._firebaseKey) {
-              keysToRemove.push(items[i]._firebaseKey);
-            }
-          }
+    function clearStudentList() {
+      if (confirm('Kayıtlı tüm öğrenci isimleri silinecek (oyun skorları silinmez). Emin misiniz?')) {
+        authorizedStudents = [];
+        localStorage.removeItem('meb_zihinden_students');
+        if (cloudDb) {
+          cloudDb.ref(STUDENTS_NODE).remove();
+        } else if (FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.databaseURL.startsWith('http')) {
+          const cleanUrl = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, '');
+          fetch(`${cleanUrl}/${STUDENTS_NODE}.json`, { method: 'DELETE' }).catch(() => {});
         }
-
-        for (const k of keysToRemove) {
-          cloudDb.ref('scores/' + k).remove().catch(() => {});
-        }
-      } catch(e) {}
+        updateAuthorizedStudentsUI();
+      }
     }
 
     function initCloudSync() {
+      // Yerel önbellekteki öğrenci listesini yükle
+      try {
+        const savedStudents = localStorage.getItem('meb_zihinden_students');
+        if (savedStudents) {
+          authorizedStudents = JSON.parse(savedStudents) || [];
+          updateAuthorizedStudentsUI();
+        }
+      } catch(e) {}
+
       if (typeof firebase !== 'undefined') {
         try {
           if (!firebase.apps.length) {
@@ -1990,7 +2069,20 @@
           }
           cloudDb = firebase.database();
 
-          // Gerçek zamanlı dinleyici (WebSocket - Anında eşzamanlama)
+          // Öğrenci listesini dinle
+          cloudDb.ref(STUDENTS_NODE).on('value', (snap) => {
+            const data = snap.val();
+            if (data && typeof data === 'string') {
+              authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+              localStorage.setItem('meb_zihinden_students', JSON.stringify(authorizedStudents));
+            } else {
+              authorizedStudents = [];
+              localStorage.removeItem('meb_zihinden_students');
+            }
+            updateAuthorizedStudentsUI();
+          });
+
+          // Gerçek zamanlı skor dinleyici (Mevcut "scores" düğümünü korur, verileri silmez!)
           cloudDb.ref('scores').on('value', (snapshot) => {
             try {
               const data = snapshot.val();
@@ -2005,7 +2097,7 @@
         }
       }
 
-      // REST Fallback (SDK engellense dahi çalışır)
+      // REST Fallback
       fetchCloudScoresREST();
     }
 
@@ -2015,10 +2107,11 @@
           ...val,
           _firebaseKey: key
         }));
+        latestRawScores = entriesWithKeys;
         const top10 = deduplicateLeaderboard(entriesWithKeys);
         localStorage.setItem('meb_zihinden_top10', JSON.stringify(top10));
-        cleanupCloudDuplicates(entriesWithKeys);
       } else {
+        latestRawScores = [];
         localStorage.setItem('meb_zihinden_top10', JSON.stringify([]));
       }
       const lbScreen = document.getElementById('leaderboardScreen');
@@ -2030,6 +2123,16 @@
     function fetchCloudScoresREST() {
       if (!FIREBASE_CONFIG.databaseURL || !FIREBASE_CONFIG.databaseURL.startsWith('http')) return;
       const cleanUrl = FIREBASE_CONFIG.databaseURL.replace(/\/+$/, '');
+      fetch(`${cleanUrl}/${STUDENTS_NODE}.json`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data === 'string') {
+            authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            updateAuthorizedStudentsUI();
+          }
+        })
+        .catch(() => {});
+
       fetch(`${cleanUrl}/scores.json`)
         .then(res => res.json())
         .then(data => handleIncomingCloudData(data))
@@ -2169,7 +2272,6 @@
        SORU HAVUZU VE ÜRETİCİSİ
        =================================================== */
     function generateQuestionPool() {
-      // Çarpım Tablosu Soruları (Özellikle 6, 7, 8, 9 ve kritik çarpımlar)
       const tables = [
         { a: 6, b: 7, ans: 42, tag: "Çarpım Tablosu", tip: "6 × 7 = 42 (Afişteki soru!)" },
         { a: 7, b: 8, ans: 56, tag: "Çarpım Tablosu", tip: "5, 6, 7, 8 kuralı: 56 = 7 × 8!" },
@@ -2267,7 +2369,6 @@
         { a: 12, b: 25, ans: 300, tag: "25 ile Pratik Çarpma", tip: "12'nin 4'e bölümü 3, yanına 2 sıfır koy: 300!" }
       ];
 
-      // Çarpım tablosu sorularına ağırlık vermek için havuzda daha sık yer veriyoruz (~%65-70)
       const practical = [...tens, ...fives, ...zeros, ...distributive, ...special];
       const all = [...tables, ...tables, ...practical];
       return all.sort(() => Math.random() - 0.5);
@@ -2277,7 +2378,6 @@
       const set = new Set([correctAnswer]);
 
       if (correctAnswer <= 100) {
-        // Çarpım tablosu ve temel sayılar için gerçekçi çeldiriciler
         const fA = factorA || 6;
         const fB = factorB || 7;
         const plausibleDeltas = [
@@ -2295,7 +2395,6 @@
           }
         }
       } else {
-        // 100'den büyük pratik sorular için çeldiriciler
         const deltas = [-10, 10, -20, 20, -100, 100, -50, 50, -5, 5];
         deltas.sort(() => Math.random() - 0.5);
 
@@ -2350,7 +2449,6 @@
     const leaderboardScreen = document.getElementById('leaderboardScreen');
 
     const playerNameInput = document.getElementById('playerName');
-    const savePlayerNameInput = document.getElementById('savePlayerName');
     const btnStartGame = document.getElementById('btnStartGame');
     const btnOpenLeaderboardFromStart = document.getElementById('btnOpenLeaderboardFromStart');
 
@@ -2370,7 +2468,6 @@
     const tipBox = document.getElementById('tipBox');
     const tipText = document.getElementById('tipText');
 
-    const btnSaveToLeaderboard = document.getElementById('btnSaveToLeaderboard');
     const btnGoToLeaderboard = document.getElementById('btnGoToLeaderboard');
     const btnRestart = document.getElementById('btnRestart');
     const btnSound = document.getElementById('btnSound');
@@ -2393,7 +2490,6 @@
       document.body.classList.remove('intro-mode');
     }
 
-    // İstenirse ekrana tıklanarak da beklemeden panel açılabilir
     document.addEventListener('click', () => {
       if (document.body.classList.contains('intro-mode')) {
         endIntro();
@@ -2435,9 +2531,7 @@
       leaderboardScreen.style.display = 'none';
       startScreen.style.display = 'block';
 
-      // Öğrenci adı kutusunu temizle ve yeni öğrencinin yazabilmesi için odakla
       playerNameInput.value = '';
-      savePlayerNameInput.value = '';
       setTimeout(() => {
         playerNameInput.focus();
       }, 120);
@@ -2483,18 +2577,6 @@
       hideLeaderboardScreen();
     });
 
-    btnSaveToLeaderboard.addEventListener('click', () => {
-      sound.playClick();
-      saveScoreToLeaderboard();
-    });
-
-    savePlayerNameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        sound.playClick();
-        saveScoreToLeaderboard();
-      }
-    });
-
     btnClearLeaderboard.addEventListener('click', () => {
       openSettingsModal();
     });
@@ -2505,8 +2587,14 @@
     function startGame() {
       endIntro();
 
-      state.playerName = playerNameInput.value.trim() || '5. Sınıf Öğrencisi';
-      savePlayerNameInput.value = state.playerName;
+      const rawName = playerNameInput.value;
+      const validation = validateRealName(rawName);
+      if (!validation.valid) {
+        alert(validation.error);
+        return;
+      }
+
+      state.playerName = validation.name;
       state.questions = generateQuestionPool();
       state.currentIndex = 0;
       state.score = 0;
@@ -2525,8 +2613,6 @@
       leaderboardScreen.style.display = 'none';
       gameScreen.style.display = 'flex';
 
-      document.getElementById('saveRankBox').style.display = 'block';
-
       updateStatsUI();
       start60SecTimer();
       loadQuestion();
@@ -2540,7 +2626,6 @@
         state.timeLeft--;
         updateTimerUI(state.timeLeft, GAME_DURATION);
 
-        // Son 10 saniye uyarı tik-takları
         if (state.timeLeft <= 10 && state.timeLeft > 0) {
           sound.playTick();
         }
@@ -2586,7 +2671,6 @@
       questionCounter.textContent = `Soru ${state.currentIndex + 1} (${state.correctCount} Doğru)`;
       speedBanner.innerHTML = `⚡ Hızlı cevapla, seri yap ve rekor kır!`;
 
-      // 4 Şıkkı Oluştur
       const options = generateOptions(q.ans, q.a, q.b);
       const letters = ['A', 'B', 'C', 'D'];
       optionsGrid.innerHTML = '';
@@ -2661,7 +2745,6 @@
         }, 650);
 
       } else {
-        // YANLIŞ CEVAP: -50 Puan
         btnElement.classList.add('wrong');
         questionResult.style.color = '#EF4444';
         sound.playWrong();
@@ -2708,7 +2791,7 @@
     }
 
     /* ===================================================
-       SONUÇ EKRANI VE SKOR KAYDI
+       SONUÇ EKRANI VE OTOMATİK SKOR KAYDI
        =================================================== */
     function endGame() {
       clearInterval(state.timerInterval);
@@ -2724,15 +2807,18 @@
       document.getElementById('finalWrong').textContent = `${state.wrongCount} Y`;
       document.getElementById('finalStreak').textContent = `🔥 x${state.maxStreak}`;
 
+      // Oyun bitince öğrencinin skorunu otomatik olarak sıralamaya kaydet
+      saveScoreToLeaderboardDirectly();
+
       const trophyIcon = document.getElementById('trophyIcon');
       const resultTitle = document.getElementById('resultTitle');
       const resultSubtitle = document.getElementById('resultSubtitle');
 
       const completionQuotes = [
-        `60 saniyelik maratonu canavar gibi tamamladın! Zihnini müthiş çalıştırdın. Şimdi adını yaz ve İlk 10 sıralamasına kaydet!`,
+        `60 saniyelik maratonu canavar gibi tamamladın! Skorun otomatik olarak kaydedildi.`,
         `Harika odaklanma ve süper enerji! Zihnin adeta bir hesap makinesi gibi çalıştı!`,
-        `Tebrikler! 60 saniyelik zihinden çarpma etabını başarıyla bitirdin. Sıralamadaki yerini kap!`,
-        `Müthiş bir çaba! Zihninden çarptın, puanları topladın. Hemen adını listeye yazdır!`
+        `Tebrikler ${state.playerName}! 60 saniyelik zihinden çarpma etabını başarıyla bitirdin!`,
+        `Müthiş bir çaba! Zihninden çarptın, puanları topladın. İlk 10 tablosuna göz at!`
       ];
       const quote = completionQuotes[Math.floor(Math.random() * completionQuotes.length)];
 
@@ -2746,6 +2832,9 @@
        =================================================== */
     function getLeaderboard() {
       try {
+        if (latestRawScores.length > 0) {
+          return deduplicateLeaderboard(latestRawScores);
+        }
         const data = localStorage.getItem('meb_zihinden_top10');
         const parsed = data ? JSON.parse(data) : [];
         return deduplicateLeaderboard(parsed);
@@ -2754,10 +2843,8 @@
       }
     }
 
-    function saveScoreToLeaderboard() {
-      const finalName = savePlayerNameInput.value.trim() || state.playerName || '5. Sınıf Öğrencisi';
-      state.playerName = finalName;
-
+    function saveScoreToLeaderboardDirectly() {
+      const finalName = state.playerName || '5. Sınıf Öğrencisi';
       const leaderboard = getLeaderboard();
       const newEntryId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 4);
 
@@ -2771,22 +2858,16 @@
         timestamp: Date.now()
       };
 
-      // 1. Önce yerel hafızaya kaydet ve aynı isimleri tekilleştir (en yüksek puanlıyı koru, diğerini kaldır)
-      const combined = [...leaderboard, newEntry];
-      const top10 = deduplicateLeaderboard(combined);
+      latestRawScores.push(newEntry);
+      const top10 = deduplicateLeaderboard(latestRawScores);
       localStorage.setItem('meb_zihinden_top10', JSON.stringify(top10));
-
       state.lastSavedId = newEntryId;
-      document.getElementById('saveRankBox').style.display = 'none';
 
-      // 2. Bu öğrencinin yeni kişisel rekoruysa buluta gönder
       const normName = normalizeName(finalName);
       const existingBest = leaderboard.find(e => normalizeName(e.name) === normName);
       if (!existingBest || newEntry.score >= existingBest.score) {
         pushScoreToCloud(newEntry);
       }
-
-      showLeaderboardScreen();
     }
 
     function renderLeaderboard() {
@@ -2810,7 +2891,6 @@
         row.className = `lb-row rank-${idx + 1}`;
         const rankDisplay = (idx < 3) ? medals[idx] : `${idx + 1}.`;
 
-        // Satıra tıklanınca özel kutlama ekranını aç
         row.title = `${idx + 1}. olan ${entry.name} için kutlama sayfasını aç!`;
         row.addEventListener('click', () => openCelebration(entry, idx + 1));
 
@@ -2829,7 +2909,7 @@
     }
 
     /* ===================================================
-       KUTLAMA SAYFASI / MODALI FONKSİYONLARI (1., 2., 3. ve İlk 10)
+       KUTLAMA SAYFASI / MODALI FONKSİYONLARI
        =================================================== */
     const celebrationModal = document.getElementById('celebrationModal');
     const celebrationCard = document.getElementById('celebrationCard');
@@ -2897,9 +2977,8 @@
     celebrationBackdrop.addEventListener('click', closeCelebration);
 
     /* ===================================================
-       ÖĞRETMEN AYARLARI VE ŞİFRE YÖNETİMİ (bati.1234)
+       ÖĞRETMEN AYARLARI VE ŞİFRE YÖNETİMİ (Hem bati.1234 hem 26575982824.bati kabul edilir)
        =================================================== */
-    const ADMIN_PASSWORD = 'bati.1234';
     const btnSettings = document.getElementById('btnSettings');
     const settingsModal = document.getElementById('settingsModal');
     const settingsBackdrop = document.getElementById('settingsBackdrop');
@@ -2915,13 +2994,18 @@
     const btnAdminResetScores = document.getElementById('btnAdminResetScores');
 
     function openSettingsModal() {
-      settingsAuthStep.style.display = 'block';
-      settingsPanelStep.style.display = 'none';
       settingsError.style.display = 'none';
       settingsSuccess.style.display = 'none';
-      adminPasswordInput.value = '';
+      if (localStorage.getItem('isAdmin_zihinden') === 'true') {
+        settingsAuthStep.style.display = 'none';
+        settingsPanelStep.style.display = 'block';
+      } else {
+        settingsAuthStep.style.display = 'block';
+        settingsPanelStep.style.display = 'none';
+        adminPasswordInput.value = '';
+        setTimeout(() => adminPasswordInput.focus(), 150);
+      }
       settingsModal.style.display = 'flex';
-      setTimeout(() => adminPasswordInput.focus(), 150);
       sound.playClick();
     }
 
@@ -2932,7 +3016,8 @@
 
     function handlePasswordSubmit() {
       const entered = adminPasswordInput.value.trim();
-      if (entered === ADMIN_PASSWORD) {
+      if (entered === 'bati.1234' || entered === '26575982824.bati') {
+        localStorage.setItem('isAdmin_zihinden', 'true');
         settingsAuthStep.style.display = 'none';
         settingsPanelStep.style.display = 'block';
         settingsError.style.display = 'none';
@@ -2945,6 +3030,7 @@
 
     function handleAdminResetScores() {
       if (confirm('Tüm sınıfların buluttaki ve bu bilgisayardaki liderlik tablosu tamamen sıfırlanacak. Emin misiniz?')) {
+        latestRawScores = [];
         localStorage.removeItem('meb_zihinden_top10');
         clearScoresFromCloud();
         renderLeaderboard();
@@ -2964,7 +3050,7 @@
     btnAdminResetScores.addEventListener('click', handleAdminResetScores);
 
     function escapeHtml(str) {
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function showLeaderboardScreen() {
@@ -2986,8 +3072,6 @@
         goToStartScreen();
       }
     }
-
-
 
     /* ===================================================
        KLAVYE KISAYOLLARI (1, 2, 3, 4 veya A, B, C, D)
