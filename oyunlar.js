@@ -21,7 +21,7 @@ const SISTEM_OYUNLARI = [
         title: "Geombala",
         grade: "5",
         image: "./geotombala.jpg",
-        url: "./tombala.html"
+        url: "./geombala.html"
     },
     {
         id: "oyun-4",
