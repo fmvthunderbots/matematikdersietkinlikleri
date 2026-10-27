@@ -93,6 +93,13 @@ const SISTEM_OYUNLARI = [
         image: "./cumhuriyet_ekspresi_kapak.jpg",
         url: "./cumhuriyet_ekspresi.html"
     },
+    {
+        id: "oyun-14",
+        title: "Cumhuriyet Meşalesi",
+        grade: "6",
+        image: "./cumhuriyet_mesalesi.jpg",
+        url: "./cumhuriyet_mesalesi.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
