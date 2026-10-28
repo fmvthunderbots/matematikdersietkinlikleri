@@ -234,7 +234,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .q-category-badge {
       font-family: 'Baloo 2';
@@ -254,6 +256,24 @@
       border-radius: 10px;
       color: #FFF;
       box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Bireysel Mod Hız Bonusu Çubuğu */
+    .speed-bar-wrap {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.12);
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .speed-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #10B981, #F59E0B);
+      border-radius: 999px;
+      transition: width 0.08s linear;
     }
 
     .q-box {
@@ -461,7 +481,10 @@
       <div id="p1-box" class="team-box single-box">
         <div class="team-name" id="p1-name">Oyuncu</div>
         <div id="p1-lives" style="font-size:17px; letter-spacing: 2px; margin-top:2px;">❤️❤️❤️</div>
-        <div id="p1-streak" class="streak-badge">🔥 1923 Turu: 0</div>
+        <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
+          <div id="p1-streak" class="streak-badge">🔥 1923 Zirvesi: 0</div>
+          <div id="p1-combo" class="streak-badge" style="background:linear-gradient(135deg,#10B981,#059669); display:none;">⚡ Seri: 0x</div>
+        </div>
       </div>
       <div id="p1-score" class="score-display">0</div>
     </div>
@@ -478,7 +501,7 @@
       <div id="p2-box" class="team-box blue-box">
         <div class="team-name">Mavi Takım</div>
         <div id="p2-lives" style="font-size:17px; letter-spacing: 2px; margin-top:2px;">❤️❤️❤️</div>
-        <div id="p2-streak" class="streak-badge">🔥 1923 Turu: 0</div>
+        <div id="p2-streak" class="streak-badge">🔥 1923 Zirvesi: 0</div>
       </div>
     </div>
   </div>
@@ -495,7 +518,14 @@
       <div class="question-panel">
         <div class="q-top-bar">
           <span class="q-category-badge" id="cat-p1">🌟 Asal Çarpanlar</span>
-          <span class="q-points-badge" id="pts-p1" style="background:#10B981;">+25 P</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="q-points-badge" id="speed-badge-p1" style="background:#059669; display:none;">⚡ Hız: +25 P</span>
+            <span class="q-points-badge" id="pts-p1" style="background:#10B981;">+20 P</span>
+          </div>
+        </div>
+        <!-- Bireysel Mod Canlı Hız Çubuğu -->
+        <div class="speed-bar-wrap" id="speed-wrap-p1" style="display:none;">
+          <div class="speed-bar-fill" id="speed-fill-p1"></div>
         </div>
         <div class="q-box">
           <div class="q-main-text" id="qtext-p1">Soru yükleniyor...</div>
@@ -513,7 +543,7 @@
       <div class="question-panel">
         <div class="q-top-bar">
           <span class="q-category-badge" id="cat-p2">🌟 Asal Çarpanlar</span>
-          <span class="q-points-badge" id="pts-p2" style="background:#10B981;">+25 P</span>
+          <span class="q-points-badge" id="pts-p2" style="background:#10B981;">+20 P</span>
         </div>
         <div class="q-box">
           <div class="q-main-text" id="qtext-p2">Soru yükleniyor...</div>
@@ -542,9 +572,12 @@
       </div>
 
       <!-- AD SOYAD GİRİŞ ALANI (BİREYSEL İÇİN) -->
-      <div id="1p-form" style="display:flex; justify-content:center; margin-bottom: 18px;">
+      <div id="1p-form" style="display:flex; flex-direction:column; gap:10px; margin-bottom: 18px;">
         <input type="text" id="playerFullName" list="studentNamesList" class="input-player" placeholder="Adınız ve Soyadınız" maxlength="50" autocomplete="off">
         <datalist id="studentNamesList"></datalist>
+        <div style="background:#FFFBEB; border:2px dashed #F59E0B; border-radius:12px; padding:8px 12px; font-size:13px; font-weight:800; color:#92400E; text-align:left;">
+          ⚡ <b>Bireysel Hız & Seri Sistemi:</b> Soruyu ne kadar hızlı çözersen <b>+25 puana kadar Hız Bonusu</b> ve üst üste bildikçe <b>Seri Bonusu</b> kazanırsın!
+        </div>
       </div>
 
       <!-- SÜRE SEÇİM ALANI (DÜELLO İÇİN) -->
@@ -577,7 +610,7 @@
       </div>
 
       <button class="btn-action btn-view-leaderboard" onclick="showScreen('LEADERBOARD')">🏆 İlk 10 Tablosunu Gör</button>
-      <button class="btn-action btn-restart" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+      <button class="btn-action btn-restart" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
     </div>
 
     <!-- 2P SONUÇ EKRANI (DÜELLO) -->
@@ -600,13 +633,13 @@
         </div>
       </div>
 
-      <button class="btn-start" style="margin-top: 10px;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+      <button class="btn-start" style="margin-top: 10px;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
     </div>
 
     <!-- LİDER TABLOSU EKRANI -->
     <div class="card leaderboard-card" id="leaderboardScreen" style="display:none; padding: 20px 24px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
-        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Cumhuriyet Muhafızları</h2>
+        <h2 class="start-title" style="margin:0; font-size: 24px;">🏆 İlk 10 Sıralaması</h2>
         <button class="btn-subtle" onclick="showScreen('START')">✕ Kapat</button>
       </div>
       
@@ -617,7 +650,6 @@
               <th style="width: 40px;">Sıra</th>
               <th style="text-align: left;">Adı Soyadı</th>
               <th>Puan</th>
-              <th>Tarih</th>
               <th>Kutla</th>
             </tr>
           </thead>
@@ -626,7 +658,7 @@
         <div id="emptyLeaderboard" style="color:#64748B; font-weight:700; padding: 20px; display:none;">Henüz kayıt yok. Meşaleyi ilk taşıyan sen ol!</div>
       </div>
       
-      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Yeniden Oyna (Ana Menü)</button>
+      <button class="btn-start" style="margin-top: 10px; padding: 12px; font-size: 20px; flex-shrink: 0;" onclick="showScreen('START')">🔄 Ana Menüye Dön</button>
     </div>
   </div>
 
@@ -716,17 +748,19 @@
       try {
         let ctx = getAudioContext();
         let now = ctx.currentTime;
-        let osc = ctx.createOscillator();
-        let gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(160, now);
-        osc.frequency.exponentialRampToValueAtTime(45, now + 0.3);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.3);
+        let notes = [330, 261.63];
+        notes.forEach((freq, idx) => {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+          gain.gain.setValueAtTime(0.22, now + idx * 0.11);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.16);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.11);
+          osc.stop(now + idx * 0.11 + 0.18);
+        });
       } catch(e) {}
     }
 
@@ -791,7 +825,7 @@
 
     let cloudDb = null;
     const DB_NODE = 'scores_cumhuriyetmesalesi';
-    const STUDENTS_NODE = 'students_cumhuriyetmesalesi';
+    const STUDENTS_NODE = 'students_grade_6';
     let authorizedStudents = [];
 
     if (typeof firebase !== 'undefined') {
@@ -1004,7 +1038,6 @@
           <td><span style="font-size:20px;">${rankStr}</span></td>
           <td style="text-align:left; font-weight:800;">${nameToShow}</td>
           <td style="color:#DC2626; font-weight:900; font-family:'Baloo 2'; font-size:20px;">${e.score}</td>
-          <td style="color:#94A3B8; font-size:14px;">${e.date || '-'}</td>
           <td>
             <button class="btn-subtle" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); openCelebration({name: '${safeName}', score: ${e.score}}, ${idx+1});">👏 Kutla</button>
           </td>
@@ -1030,7 +1063,7 @@
       card.style.background = "#FFF";
       
       if (rank === 1) {
-        icon.innerText = "🇹🇷🥇";
+        icon.innerText = "🥇";
         title.innerText = "👑 CUMHURİYET MEŞALESİ ŞAMPİYONU!";
         title.style.color = "#DC2626";
         msg.innerText = "MUHTEŞEM BİR ZAFER! Çarpanlar ve asal sayılar bilginle Cumhuriyet Meşalesini en zirveye taşıdın!";
@@ -1052,7 +1085,7 @@
         card.style.background = "linear-gradient(180deg, #FFEDD5 0%, #FFFFFF 100%)";
       } else {
         icon.innerText = "🎖️";
-        title.innerText = `${rank}. SIRA CUMHURİYET MUHAFIZI`;
+        title.innerText = `${rank}. SIRA BAŞARI ÖDÜLÜ`;
         title.style.color = "#DC2626";
         msg.innerText = `TEBRİKLER! Harika bir odaklanmayla ${rank}. olarak İlk 10 Lider Tablosuna adını gururla yazdırdın!`;
         card.style.border = "4px solid #EF4444";
@@ -1068,9 +1101,10 @@
     }
 
 
-    /* ==============================
-       6. SINIF ÇARPANLAR, BÖLENLER VE ASAL ÇARPANLAR SORU MOTORU
-       ============================== */
+    /* ==============================================================
+       6. SINIF ZİHİNDEN (TAHTADA KAFADAN ÇÖZÜLEBİLEN) SORU MOTORU
+       Tüm sayılar küçük ve akıldan 2-3 saniyede işlem yapılabilir!
+       ============================================================== */
     const TOWER_LABELS = [
       "1. Adım",
       "2. Adım",
@@ -1087,12 +1121,13 @@
     let gameMode = '1P';
     let isGameRunning = false;
     let timerInterval;
+    let speedTimerP1 = null;
     let timeLeft = 75;
     let selectedDuelTime = 90;
     let currentFullName = '';
 
-    let p1 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
-    let p2 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
+    let p1 = { score: 0, lives: 3, step: 0, tours: 0, combo: 0, qStartMs: 0, speedBonus: 25, currentQ: null, locked: false };
+    let p2 = { score: 0, lives: 3, step: 0, tours: 0, combo: 0, qStartMs: 0, speedBonus: 0, currentQ: null, locked: false };
 
     function initSparks() {
       let sc = document.getElementById('spark-container');
@@ -1187,36 +1222,29 @@
       return shuffleArray(unique);
     }
 
-    /* 6. Sınıf Çarpanlar, Bölenler, Asal Sayılar ve Asal Çarpanlar Dinamik Soru Üretici */
+    /* ZİHİNDEN KOLAYCA ÇÖZÜLEBİLEN 6. SINIF SORU HAVUZU */
     function generateQuestion(prevQuestionText = '') {
       const presets = [
         {
           cat: "🇹🇷 29 Ekim Özel",
-          pts: 25,
+          pts: 20,
           q: "Cumhuriyet Bayramımızı kutladığımız <span class='q-highlight'>29</span> Ekim'deki <span class='q-highlight'>29</span> sayısı için hangisi doğrudur?",
           ans: "Asal sayıdır",
-          traps: ["Çift sayıdır", "3'e tam bölünür", "4 tane böleni vardır"]
+          traps: ["Çift sayıdır", "3'e tam bölünür", "5'e tam bölünür"]
         },
         {
-          cat: "🇹🇷 Cumhuriyet Özel",
-          pts: 35,
-          q: "Cumhuriyetimizin ilan edildiği <span class='q-highlight'>1923</span> sayısının en küçük asal çarpanı kaçtır?",
-          ans: "3",
-          traps: ["2", "5", "7"]
+          cat: "🇹🇷 19 Mayıs Özel",
+          pts: 25,
+          q: "<span class='q-highlight'>19</span> Mayıs'taki <span class='q-highlight'>19</span> asal sayısının doğal sayı çarpanları (bölenleri) hangileridir?",
+          ans: "1 ve 19",
+          traps: ["Sadece 19", "1, 3 ve 19", "1, 9 ve 19"]
         },
         {
-          cat: "🇹🇷 1919 Özel",
-          pts: 35,
-          q: "Milli Mücadele'nin başladığı <span class='q-highlight'>19</span> Mayıs'taki <span class='q-highlight'>19</span> sayısının doğal sayı bölenlerinin toplamı kaçtır?",
-          ans: "20",
-          traps: ["19", "21", "18"]
-        },
-        {
-          cat: "🇹🇷 1920 TBMM Özel",
-          pts: 35,
-          q: "TBMM'nin açıldığı <span class='q-highlight'>23</span> Nisan'daki <span class='q-highlight'>23</span> sayısı ile <span class='q-highlight'>29</span> Ekim'deki <span class='q-highlight'>29</span> sayısının ortak özelliği nedir?",
+          cat: "🇹🇷 23 Nisan & 29 Ekim",
+          pts: 25,
+          q: "<span class='q-highlight'>23</span> ve <span class='q-highlight'>29</span> sayılarının ortak özelliği nedir?",
           ans: "İkisi de asal sayıdır",
-          traps: ["İkisi de 3'e bölünür", "Asal çarpanları aynıdır", "Çift sayılardır"]
+          traps: ["İkisi de 3'e bölünür", "Çift sayılardır", "5'e tam bölünürler"]
         },
         {
           cat: "⭐ Asal Sayılar",
@@ -1227,38 +1255,45 @@
         },
         {
           cat: "⭐ Asal Sayılar",
-          pts: 25,
-          q: "İki basamaklı <span class='q-highlight'>en küçük</span> asal sayı ile bir basamaklı <span class='q-highlight'>en büyük</span> asal sayının toplamı kaçtır?",
-          ans: "18",
-          traps: ["16", "19", "20"]
+          pts: 20,
+          q: "En küçük asal sayı kaçtır?",
+          ans: "2",
+          traps: ["1", "0", "3"]
         },
         {
           cat: "⭐ Asal Sayılar",
-          pts: 25,
-          q: "İki basamaklı <span class='q-highlight'>en büyük</span> asal sayı kaçtır?",
-          ans: "97",
-          traps: ["99", "91", "93"]
+          pts: 20,
+          q: "İki basamaklı <span class='q-highlight'>en küçük</span> asal sayı kaçtır?",
+          ans: "11",
+          traps: ["10", "13", "12"]
+        },
+        {
+          cat: "⭐ Asal Sayılar",
+          pts: 20,
+          q: "Bir basamaklı <span class='q-highlight'>en büyük</span> asal sayı kaçtır?",
+          ans: "7",
+          traps: ["9", "8", "5"]
         },
         {
           cat: "🌳 Çarpan Ağacı",
-          pts: 35,
-          q: "Bir çarpan ağacının en üstünde <span class='q-highlight'>A</span> sayısı, ilk dallarında ise <span class='q-highlight'>3</span> ve <span class='q-highlight'>28</span> yazmaktadır. Buna göre <span class='q-highlight'>A</span> kaçtır?",
-          ans: "84",
-          traps: ["56", "72", "96"]
+          pts: 25,
+          q: "Bir çarpan ağacının en üstünde <span class='q-highlight'>A</span> sayısı, ilk iki dalında ise <span class='q-highlight'>3</span> ve <span class='q-highlight'>10</span> yazmaktadır. <span class='q-highlight'>A</span> kaçtır?",
+          ans: "30",
+          traps: ["13", "20", "40"]
+        },
+        {
+          cat: "🌳 Çarpan Ağacı",
+          pts: 25,
+          q: "Bir çarpan ağacının en üstünde <span class='q-highlight'>A</span> sayısı, ilk iki dalında ise <span class='q-highlight'>2</span> ve <span class='q-highlight'>12</span> yazmaktadır. <span class='q-highlight'>A</span> kaçtır?",
+          ans: "24",
+          traps: ["14", "20", "36"]
         },
         {
           cat: "📊 Bölen Listesi",
-          pts: 45,
-          q: "Asal çarpanlarının çarpımı <span class='q-highlight'>2³ · 3² · 5</span> olan doğal sayı kaçtır?",
-          ans: "360",
-          traps: ["180", "240", "720"]
-        },
-        {
-          cat: "📊 Bölen Listesi",
-          pts: 45,
-          q: "<span class='q-highlight'>180 = 2ᵃ · 3ᵇ · 5ᶜ</span> eşitliğinde <span class='q-highlight'>a + b + c</span> toplamı kaçtır?",
-          ans: "5",
-          traps: ["4", "6", "7"]
+          pts: 30,
+          q: "<span class='q-highlight'>12 = 2ᵃ · 3ᵇ</span> eşitliğinde üstlerin toplamı (<span class='q-highlight'>a + b</span>) kaçtır?",
+          ans: "3",
+          traps: ["2", "4", "5"]
         }
       ];
 
@@ -1278,11 +1313,11 @@
           let type = randInt(1, 9);
 
           if (type === 1) {
-            // 15 PUAN: Hangisi asal sayıdır? (91, 51, 57 gibi çeldiricilerle)
-            const primes = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
-            const trickyComposites = [1, 9, 15, 21, 27, 33, 39, 49, 51, 57, 63, 69, 77, 81, 87, 91, 93, 99];
+            // 15 PUAN: Küçük sayılarda hangisi asal sayıdır? (1-30 arası kafadan hemen bulunanlar)
+            const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
+            const composites = [1, 4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 27];
             let ans = primes[Math.floor(Math.random() * primes.length)];
-            let traps = shuffleArray(trickyComposites).slice(0, 3);
+            let traps = shuffleArray(composites).slice(0, 3);
             qObj = {
               cat: "⭐ Asal Sayılar",
               pts: 15,
@@ -1291,128 +1326,125 @@
               options: makeUniqueOptions(ans, traps)
             };
           } else if (type === 2) {
-            // 15 PUAN: Hangisi N sayısının bir çarpanı (böleni) değildir?
-            const nums = [24, 30, 36, 40, 42, 45, 48, 54, 60, 72, 80, 90];
+            // 15 PUAN: Küçük ve bilindik sayılarda (10, 12, 15, 18, 20, 24, 30) hangisi bölen değildir?
+            const nums = [10, 12, 15, 16, 18, 20, 24, 25, 30];
             let n = nums[Math.floor(Math.random() * nums.length)];
             let divs = getDivisors(n).filter(d => d > 1 && d < n);
             let traps = shuffleArray(divs).slice(0, 3);
-            let nonDivs = [];
-            for (let k = 2; k < n; k++) {
-              if (n % k !== 0) nonDivs.push(k);
-            }
-            let ans = nonDivs[Math.floor(Math.random() * Math.min(12, nonDivs.length))];
+            let nonDivs = [3, 4, 5, 6, 7, 8, 9].filter(k => n % k !== 0 && k < n);
+            let ans = nonDivs[Math.floor(Math.random() * nonDivs.length)];
             qObj = {
               cat: "🔢 Çarpanlar ve Bölenler",
               pts: 15,
-              q: "Aşağıdakilerden hangisi <span class='q-highlight'>" + n + "</span> sayısının doğal sayı bölenlerinden (çarpanlarından) biri <span class='q-highlight'>değildir</span>?",
+              q: "Aşağıdakilerden hangisi <span class='q-highlight'>" + n + "</span> sayısının bölenlerinden (çarpanlarından) biri <span class='q-highlight'>değildir</span>?",
               ans: String(ans),
               options: makeUniqueOptions(ans, traps)
             };
           } else if (type === 3) {
-            // 25 PUAN: N sayısının kaç tane asal çarpanı vardır? ve nelerdir?
+            // 20 PUAN: Küçük sayıların asal çarpanları nelerdir? (10, 12, 14, 15, 18, 20, 21, 30)
             const pool = [
+              { n: 6, text: "2 ve 3", traps: ["1, 2 ve 3", "2 ve 6", "3 ve 6"] },
+              { n: 10, text: "2 ve 5", traps: ["1, 2 ve 5", "2, 5 ve 10", "5 ve 10"] },
+              { n: 12, text: "2 ve 3", traps: ["2, 3 ve 4", "2, 3 ve 6", "3 ve 4"] },
+              { n: 14, text: "2 ve 7", traps: ["1, 2 ve 7", "2 ve 14", "7 ve 14"] },
+              { n: 15, text: "3 ve 5", traps: ["1, 3 ve 5", "3, 5 ve 15", "5 ve 15"] },
               { n: 18, text: "2 ve 3", traps: ["2, 3 ve 6", "3 ve 9", "2, 3 ve 9"] },
               { n: 20, text: "2 ve 5", traps: ["2, 4 ve 5", "4 ve 5", "2, 5 ve 10"] },
-              { n: 28, text: "2 ve 7", traps: ["2, 4 ve 7", "4 ve 7", "2, 7 ve 14"] },
-              { n: 30, text: "2, 3 ve 5", traps: ["2, 5 ve 6", "3, 5 ve 10", "2, 3, 5 ve 6"] },
-              { n: 42, text: "2, 3 ve 7", traps: ["2, 6 ve 7", "3, 6 ve 7", "2, 3 ve 14"] },
-              { n: 45, text: "3 ve 5", traps: ["3, 5 ve 9", "5 ve 9", "3, 5 ve 15"] },
-              { n: 60, text: "2, 3 ve 5", traps: ["2, 3, 4 ve 5", "2, 5 ve 6", "3, 4 ve 5"] },
-              { n: 70, text: "2, 5 ve 7", traps: ["2, 7 ve 10", "5, 7 ve 10", "2, 5 ve 14"] },
-              { n: 84, text: "2, 3 ve 7", traps: ["2, 4 ve 7", "2, 3, 4 ve 7", "3, 4 ve 7"] },
-              { n: 90, text: "2, 3 ve 5", traps: ["2, 3, 5 ve 9", "3, 5 ve 9", "2, 5 ve 9"] }
+              { n: 21, text: "3 ve 7", traps: ["1, 3 ve 7", "3 ve 21", "7 ve 21"] },
+              { n: 30, text: "2, 3 ve 5", traps: ["2, 5 ve 6", "3, 5 ve 10", "2, 3 ve 6"] }
             ];
             let item = pool[Math.floor(Math.random() * pool.length)];
             qObj = {
               cat: "🔥 Asal Çarpanlar",
-              pts: 25,
-              q: "<span class='q-highlight'>" + item.n + "</span> sayısının <span class='q-highlight'>asal çarpanları</span> aşağıdakilerden hangisinde tam ve doğru verilmiştir?",
+              pts: 20,
+              q: "<span class='q-highlight'>" + item.n + "</span> sayısının <span class='q-highlight'>asal çarpanları</span> aşağıdakilerden hangisidir?",
               ans: item.text,
               options: makeUniqueOptions(item.text, item.traps)
             };
           } else if (type === 4) {
-            // 25 PUAN: N sayısının en büyük asal çarpanı kaçtır?
-            const nums = [28, 35, 42, 44, 52, 55, 65, 66, 70, 75, 78, 84, 88, 90, 98, 105, 110];
+            // 20 PUAN: Küçük sayıların en büyük asal çarpanı kaçtır? (10, 12, 14, 15, 18, 20, 21, 25, 28, 30, 35)
+            const nums = [10, 12, 14, 15, 18, 20, 21, 22, 24, 25, 28, 30, 33, 35];
             let n = nums[Math.floor(Math.random() * nums.length)];
             let pfs = getPrimeFactors(n);
             let ans = pfs[pfs.length - 1];
-            let divs = getDivisors(n).filter(d => d !== ans && d > 1 && d < n);
-            let traps = shuffleArray(divs.concat([2, 3, 5, 7, 11, 13].filter(x => x !== ans)));
+            let divs = getDivisors(n).filter(d => d !== ans && d > 1);
+            let traps = shuffleArray(divs.concat([2, 3, 5, 7, 9].filter(x => x !== ans)));
             qObj = {
               cat: "🔥 Asal Çarpanlar",
-              pts: 25,
+              pts: 20,
               q: "<span class='q-highlight'>" + n + "</span> sayısının <span class='q-highlight'>en büyük asal çarpanı</span> kaçtır?",
               ans: String(ans),
               options: makeUniqueOptions(ans, traps)
             };
           } else if (type === 5) {
-            // 25 PUAN: N sayısının kaç tane doğal sayı böleni vardır?
-            const nums = [12, 16, 18, 20, 24, 28, 30, 32, 36, 40, 45, 48, 50];
+            // 20 PUAN: Çok küçük sayıların kaç tane doğal sayı böleni vardır? (6, 8, 9, 10, 12, 15, 16, 20)
+            const nums = [6, 8, 9, 10, 12, 14, 15, 16, 20, 25];
             let n = nums[Math.floor(Math.random() * nums.length)];
             let count = getDivisors(n).length;
-            let traps = [count - 2, count - 1, count + 1, count + 2].filter(x => x > 1);
+            let traps = [count - 1, count + 1, count + 2, count - 2].filter(x => x >= 2 && x !== count);
             qObj = {
               cat: "🔢 Doğal Sayı Bölenleri",
-              pts: 25,
+              pts: 20,
               q: "<span class='q-highlight'>" + n + "</span> sayısının toplam <span class='q-highlight'>kaç tane</span> doğal sayı çarpanı (böleni) vardır?",
               ans: String(count),
               options: makeUniqueOptions(count, traps)
             };
           } else if (type === 6) {
-            // 35 PUAN: Üslü asal çarpanlarına ayrılmış hali hangisidir?
-            const nums = [24, 36, 40, 45, 48, 50, 54, 60, 72, 75, 80, 90, 96, 100, 108, 120];
+            // 25 PUAN: Küçük sayıların üslü asal çarpanlarına ayrılmış hali (8, 12, 18, 20, 24, 28, 30, 36, 40, 45, 50)
+            const nums = [8, 12, 18, 20, 24, 28, 30, 36, 40, 45, 50];
             let n = nums[Math.floor(Math.random() * nums.length)];
             let ans = formatPrimeFactorization(n);
             let otherNums = shuffleArray(nums.filter(x => x !== n)).slice(0, 3);
             let traps = otherNums.map(x => formatPrimeFactorization(x));
             qObj = {
               cat: "📊 Üslü Asal Çarpanlar",
-              pts: 35,
-              q: "<span class='q-highlight'>" + n + "</span> sayısının asal çarpanlarının üslü ifadelerin çarpımı şeklinde yazılışı hangisidir?",
+              pts: 25,
+              q: "<span class='q-highlight'>" + n + "</span> sayısının asal çarpanlarının üslü çarpımı şeklinde yazılışı hangisidir?",
               ans: ans,
               options: makeUniqueOptions(ans, traps)
             };
           } else if (type === 7) {
-            // 35 PUAN: Üslü biçimde verilen sayının değeri kaçtır?
-            const nums = [24, 36, 40, 45, 48, 54, 60, 72, 75, 80, 90, 108, 120, 144, 150];
+            // 25 PUAN: Kafadan çarpılabilen üslü ifadelerin değeri (2²·3 = 12, 2·3² = 18, 2²·5 = 20, 2³·3 = 24, 2·3·5 = 30 vb.)
+            const nums = [12, 18, 20, 24, 28, 30, 36, 40, 45, 50];
             let n = nums[Math.floor(Math.random() * nums.length)];
             let expr = formatPrimeFactorization(n);
-            let traps = [n - 12, n + 12, n * 2, Math.floor(n / 2), n + 10].filter(x => x > 10 && x !== n);
+            let traps = [n - 6, n + 6, n + 10, n - 4, n * 2].filter(x => x > 6 && x !== n);
             qObj = {
               cat: "📊 Asal Çarpanlardan Sayıya",
-              pts: 35,
-              q: "Asal çarpanlarının çarpımı <span class='q-highlight'>" + expr + "</span> olan doğal sayı kaçtır?",
+              pts: 25,
+              q: "Asal çarpanlarının çarpımı <span class='q-highlight'>" + expr + "</span> olan sayı kaçtır?",
               ans: String(n),
               options: makeUniqueOptions(n, traps)
             };
           } else if (type === 8) {
-            // 45 PUAN: N sayısının asal çarpanlarının toplamı kaçtır?
-            const nums = [30, 42, 60, 66, 70, 78, 84, 90, 105, 110, 120, 126, 130, 140];
+            // 30 PUAN: Küçük sayıların asal çarpanlarının toplamı (10 -> 2+5=7, 12 -> 2+3=5, 15 -> 3+5=8, 20 -> 2+5=7, 30 -> 2+3+5=10)
+            const nums = [6, 10, 12, 14, 15, 18, 20, 21, 24, 28, 30];
             let n = nums[Math.floor(Math.random() * nums.length)];
             let pfs = getPrimeFactors(n);
             let sum = pfs.reduce((a, b) => a + b, 0);
-            let traps = [sum - 2, sum + 2, sum + 3, sum - 1, sum + 5].filter(x => x > 2 && x !== sum);
+            let traps = [sum - 2, sum + 2, sum + 3, sum - 1, sum + 4].filter(x => x >= 2 && x !== sum);
             qObj = {
               cat: "🔥 Asal Çarpanlar Toplamı",
-              pts: 45,
+              pts: 30,
               q: "<span class='q-highlight'>" + n + "</span> sayısının <span class='q-highlight'>asal çarpanlarının toplamı</span> kaçtır?",
               ans: String(sum),
               options: makeUniqueOptions(sum, traps)
             };
           } else {
-            // 45 PUAN: Gökkuşağı / Sıralı çarpan bulma: 1, 2, 3, A, 6, 9, B, 18 -> A + B kaçtır?
+            // 30 PUAN: Çok kolay Çarpan Gökkuşağı (Tek bir eksik çarpanı bulma: 1, 2, 3, A, 6, 12 -> A kaçtır?)
             const items = [
-              { seq: "1, 2, 3, <span class='q-highlight'>A</span>, 6, 8, <span class='q-highlight'>B</span>, 24", ans: 16, traps: [14, 18, 20] },
-              { seq: "1, 2, <span class='q-highlight'>A</span>, 4, 6, 9, <span class='q-highlight'>B</span>, 18, 36", ans: 15, traps: [12, 16, 18] },
-              { seq: "1, 2, 3, <span class='q-highlight'>A</span>, 6, 10, <span class='q-highlight'>B</span>, 30", ans: 20, traps: [18, 19, 22] },
-              { seq: "1, 2, 4, <span class='q-highlight'>A</span>, 8, 10, <span class='q-highlight'>B</span>, 40", ans: 25, traps: [20, 24, 26] },
-              { seq: "1, 3, <span class='q-highlight'>A</span>, 9, <span class='q-highlight'>B</span>, 45", ans: 20, traps: [18, 21, 24] }
+              { seq: "1, 2, 3, <span class='q-highlight'>A</span>, 6, 12", ans: 4, traps: [5, 8, 9] },
+              { seq: "1, 2, <span class='q-highlight'>A</span>, 6, 9, 18", ans: 3, traps: [4, 5, 8] },
+              { seq: "1, 2, <span class='q-highlight'>A</span>, 5, 10, 20", ans: 4, traps: [3, 6, 8] },
+              { seq: "1, <span class='q-highlight'>A</span>, 5, 15", ans: 3, traps: [2, 4, 6] },
+              { seq: "1, 2, 3, 4, <span class='q-highlight'>A</span>, 8, 12, 24", ans: 6, traps: [5, 7, 9] },
+              { seq: "1, 2, 4, <span class='q-highlight'>A</span>, 16", ans: 8, traps: [6, 10, 12] }
             ];
             let it = items[Math.floor(Math.random() * items.length)];
             qObj = {
               cat: "🌈 Çarpan Gökkuşağı",
-              pts: 45,
-              q: "Bir sayının tüm doğal sayı çarpanları küçükten büyüğe <span class='q-highlight'>" + it.seq + "</span> şeklinde sıralanmıştır. Buna göre <span class='q-highlight'>A + B</span> kaçtır?",
+              pts: 30,
+              q: "Bir sayının çarpanları küçükten büyüğe <span class='q-highlight'>" + it.seq + "</span> şeklinde sıralanmıştır. <span class='q-highlight'>A</span> yerine kaç gelmelidir?",
               ans: String(it.ans),
               options: makeUniqueOptions(it.ans, it.traps)
             };
@@ -1477,6 +1509,47 @@
       document.getElementById('p2-score').innerText = p2.score;
       document.getElementById('p1-streak').innerText = `🔥 1923 Zirvesi: ${p1.tours}`;
       document.getElementById('p2-streak').innerText = `🔥 1923 Zirvesi: ${p2.tours}`;
+      const comboEl = document.getElementById('p1-combo');
+      if (gameMode === '1P') {
+        comboEl.style.display = 'inline-block';
+        comboEl.innerText = `⚡ Seri: ${p1.combo}x`;
+      } else {
+        comboEl.style.display = 'none';
+      }
+    }
+
+    function startSpeedBonusTimerP1() {
+      if (speedTimerP1) { clearInterval(speedTimerP1); speedTimerP1 = null; }
+      const wrap = document.getElementById('speed-wrap-p1');
+      const fill = document.getElementById('speed-fill-p1');
+      const badge = document.getElementById('speed-badge-p1');
+
+      if (gameMode !== '1P') {
+        wrap.style.display = 'none';
+        badge.style.display = 'none';
+        return;
+      }
+
+      wrap.style.display = 'block';
+      badge.style.display = 'inline-block';
+      p1.qStartMs = Date.now();
+      p1.speedBonus = 25;
+      fill.style.width = '100%';
+      badge.innerText = '⚡ Hız: +25 P';
+
+      const maxWindow = 6000; // 6 saniye içinde ne kadar hızlı çözerse o kadar yüksek hız bonusu!
+      speedTimerP1 = setInterval(() => {
+        if (!isGameRunning || p1.locked) return;
+        let elapsed = Date.now() - p1.qStartMs;
+        let ratio = Math.max(0, 1 - elapsed / maxWindow);
+        p1.speedBonus = Math.round(25 * ratio);
+        fill.style.width = (ratio * 100) + '%';
+        badge.innerText = `⚡ Hız: +${p1.speedBonus} P`;
+        if (ratio <= 0) {
+          clearInterval(speedTimerP1);
+          speedTimerP1 = null;
+        }
+      }, 80);
     }
 
     function loadNextQuestion(playerNum) {
@@ -1491,7 +1564,7 @@
 
       let ptsEl = document.getElementById(`pts-${suffix}`);
       ptsEl.innerText = `+${qObj.pts} P`;
-      ptsEl.style.background = qObj.pts >= 45 ? '#EF4444' : (qObj.pts >= 35 ? '#F97316' : (qObj.pts >= 25 ? '#10B981' : '#3B82F6'));
+      ptsEl.style.background = qObj.pts >= 30 ? '#EF4444' : (qObj.pts >= 25 ? '#F97316' : (qObj.pts >= 20 ? '#10B981' : '#3B82F6'));
 
       document.getElementById(`qtext-${suffix}`).innerHTML = qObj.q;
 
@@ -1505,6 +1578,10 @@
         btn.onclick = (e) => handleOptionClick(playerNum, optVal, btn, e);
         optsContainer.appendChild(btn);
       });
+
+      if (playerNum === 1 && gameMode === '1P') {
+        startSpeedBonusTimerP1();
+      }
     }
 
     function showFloatingText(x, y, text, color) {
@@ -1514,7 +1591,7 @@
       ft.style.left = x + 'px';
       ft.style.top = y + 'px';
       ft.style.color = color;
-      ft.style.fontSize = '34px';
+      ft.style.fontSize = '30px';
       ft.style.fontWeight = '900';
       ft.style.fontFamily = "'Baloo 2', sans-serif";
       ft.style.textShadow = '2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000';
@@ -1524,7 +1601,7 @@
       document.body.appendChild(ft);
       
       ft.getBoundingClientRect();
-      ft.style.transform = 'translate(-50%, -85px) scale(1.35)';
+      ft.style.transform = 'translate(-50%, -85px) scale(1.3)';
       ft.style.opacity = '0';
       
       setTimeout(() => ft.remove(), 850);
@@ -1535,6 +1612,7 @@
       let player = (playerNum === 1) ? p1 : p2;
       if (player.locked || !player.currentQ) return;
       player.locked = true;
+      if (playerNum === 1 && speedTimerP1) { clearInterval(speedTimerP1); speedTimerP1 = null; }
 
       let rect = btnEl.getBoundingClientRect();
       let centerX = rect.left + rect.width / 2;
@@ -1542,7 +1620,12 @@
 
       if (String(selectedVal) === String(player.currentQ.ans)) {
         btnEl.classList.add('correct-anim');
-        let earned = player.currentQ.pts || 20;
+        player.combo++;
+        let basePts = player.currentQ.pts || 20;
+        let speedBonus = (gameMode === '1P' && playerNum === 1) ? (player.speedBonus || 0) : 0;
+        let comboBonus = (gameMode === '1P' && playerNum === 1 && player.combo > 1) ? Math.min(30, (player.combo - 1) * 5) : 0;
+        let earned = basePts + speedBonus + comboBonus;
+
         player.score += earned;
         player.step++;
 
@@ -1558,16 +1641,18 @@
           player.step = 0;
         } else {
           playCorrectSound(false);
-          showFloatingText(centerX, centerY, `+${earned}`, "#10B981");
+          let detail = speedBonus > 0 ? ` (+${speedBonus}⚡)` : '';
+          showFloatingText(centerX, centerY, `+${earned}${detail}`, "#10B981");
         }
 
         renderTower(playerNum);
         updateScores();
         setTimeout(() => {
           if (isGameRunning) loadNextQuestion(playerNum);
-        }, 380);
+        }, 350);
       } else {
         btnEl.classList.add('wrong-anim');
+        player.combo = 0;
         player.score = Math.max(0, player.score - 5);
         player.lives--;
         if (player.step > 0) player.step--; // Yanlışta meşale 1 basamak geriler
@@ -1582,10 +1667,9 @@
             endGame(player === p1 ? "P1_DEAD" : "P2_DEAD");
           }, 500);
         } else {
-          // Yanlış yapınca da soru değişsin!
           setTimeout(() => {
             if (isGameRunning) loadNextQuestion(playerNum);
-          }, 480);
+          }, 450);
         }
       }
     }
@@ -1623,6 +1707,7 @@
     }
 
     function showScreen(screenId) {
+      if (speedTimerP1) { clearInterval(speedTimerP1); speedTimerP1 = null; }
       document.getElementById('startScreen').style.display = 'none';
       document.getElementById('resultScreen1P').style.display = 'none';
       document.getElementById('resultScreen2P').style.display = 'none';
@@ -1669,13 +1754,16 @@
         document.getElementById('arena-p2').style.display = 'flex';
         document.getElementById('p1-box').className = 'team-box red-box';
         document.getElementById('p1-name').innerText = "Kırmızı Takım";
+        document.getElementById('speed-wrap-p1').style.display = 'none';
+        document.getElementById('speed-badge-p1').style.display = 'none';
       }
 
-      p1 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
-      p2 = { score: 0, lives: 3, step: 0, tours: 0, currentQ: null, locked: false };
+      p1 = { score: 0, lives: 3, step: 0, tours: 0, combo: 0, qStartMs: Date.now(), speedBonus: 25, currentQ: null, locked: false };
+      p2 = { score: 0, lives: 3, step: 0, tours: 0, combo: 0, qStartMs: Date.now(), speedBonus: 0, currentQ: null, locked: false };
       updateScores();
       updateLivesDisplay();
       renderTower(1);
+      isGameRunning = true;
       loadNextQuestion(1);
 
       if (gameMode === '2P') {
@@ -1683,7 +1771,6 @@
         loadNextQuestion(2);
       }
 
-      isGameRunning = true;
       timeLeft = gameMode === '1P' ? 75 : selectedDuelTime;
       document.getElementById('timer').innerText = timeLeft + 's';
       
@@ -1698,6 +1785,7 @@
     function endGame(reason = null) {
       isGameRunning = false;
       clearInterval(timerInterval);
+      if (speedTimerP1) { clearInterval(speedTimerP1); speedTimerP1 = null; }
       launchConfetti(120);
 
       document.getElementById('app-overlay').style.display = 'flex';
