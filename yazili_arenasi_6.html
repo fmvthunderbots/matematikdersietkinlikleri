@@ -170,99 +170,161 @@
       }
     }
 
+    
+    /* 5. Sınıfla Birebir Uyumlu Giriş Ekranı Stilleri */
     .hero-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid #fbbf24;
-      padding: 4px 12px;
-      border-radius: 20px;
+      gap: 8px;
+      background: rgba(180, 83, 9, 0.25);
+      border: 1px solid rgba(251, 191, 36, 0.5);
       color: #fbbf24;
-      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 13px;
       font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .hero-title {
       font-family: var(--font-fun);
-      font-size: 32px;
+      font-size: 38px;
       font-weight: 800;
-      color: #fff;
       line-height: 1.15;
-      margin-bottom: 6px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
-    }
-
-    .hero-title span {
-      color: #fbbf24;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #fff 40%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .hero-desc {
-      font-size: 13px;
       color: #cbd5e1;
-      line-height: 1.4;
-      margin-bottom: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 22px;
     }
 
-    /* Mod Seçim Kartları */
-    .mode-select-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .mode-select-box {
+      display: flex;
+      flex-direction: column;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 20px;
     }
 
     .mode-card {
-      background: rgba(30, 41, 59, 0.8);
+      background: rgba(30, 41, 59, 0.7);
       border: 2px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 12px;
+      border-radius: 20px;
+      padding: 16px 20px;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      text-align: center;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 16px;
+      transition: all 0.25s;
+      text-align: left;
     }
 
-    .mode-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(251, 191, 36, 0.6);
-      background: rgba(51, 65, 85, 0.9);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    .mode-card:hover, .mode-card.selected, .mode-card.active {
+      background: rgba(153, 27, 27, 0.3) !important;
+      border-color: #fbbf24 !important;
+      transform: translateX(4px);
     }
 
-    .mode-card.active {
-      border-color: #fbbf24;
-      background: linear-gradient(135deg, rgba(180, 83, 9, 0.4), rgba(30, 41, 59, 0.95));
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.35);
+    .mode-card.selected, .mode-card.active {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.25) !important;
     }
 
     .mode-icon {
-      font-size: 28px;
-      margin-bottom: 2px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      width: 50px;
+      height: 50px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      flex-shrink: 0;
     }
 
-    .mode-name {
+    .mode-info h4 {
       font-family: var(--font-fun);
-      font-size: 16px;
-      font-weight: 800;
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 3px;
       color: #fff;
     }
 
-    .mode-desc {
-      font-size: 11px;
+    .mode-info p {
+      font-size: 13px;
       color: #94a3b8;
-      font-weight: 600;
+      margin: 0;
     }
 
-    /* Giriş / Form Kutuları */
-    .form-group {
+    .student-select-box {
+      background: rgba(15, 23, 42, 0.7);
+      padding: 16px;
+      border-radius: 18px;
+      border: 1.5px solid rgba(251, 191, 36, 0.3);
+      margin-bottom: 18px;
+    }
+
+    .student-select-box label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+
+    .student-dropdown {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 2px solid #334155;
+      color: #fff;
+      font-family: var(--font-fun);
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .student-dropdown:focus {
+      border-color: #fbbf24;
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+    }
+
+    .btn-start {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #b45309, #dc2626);
+      border: 2px solid #fbbf24;
+      border-radius: 18px;
+      font-family: var(--font-fun);
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(251, 191, 36, 0.5);
+      filter: brightness(1.1);
+    }
+.form-group {
       margin-bottom: 12px;
     }
 
@@ -2011,8 +2073,8 @@
     <div class="brand" onclick="goHome()">
       <div class="brand-icon">🏛️</div>
       <div>
-        <div class="brand-title">YAZILI ARENASI 6</div>
-        <div class="brand-sub">6. Sınıf Matematik 1. Dönem 1. Yazılıya Hazırlık</div>
+        <div class="brand-title">YAZILI ARENASI</div>
+        <div class="brand-sub">6. Sınıf Matematik Yazılıya Hazırlık</div>
       </div>
     </div>
     
@@ -2032,67 +2094,63 @@
     <div id="screenHome" class="glass-card">
       <div class="welcome-grid">
         
-        <!-- Sol Panel: Bilgiler ve Başlatma -->
+        <!-- Sol Panel: Bilgiler ve Başlatma (5. Sınıf Düzeniyle Birebir Eşit) -->
         <div>
-          <div class="hero-badge">🏛️ MEB TÜRKİYE YÜZYILI MAARİF MODELİ</div>
-          <h1 class="hero-title">6. SINIF YAZILI <span>ARENASI</span></h1>
+          <div class="hero-badge">🏛️ Antik Roma Arenası · Soru Gladyatörünü Yen!</div>
+          <h1 class="hero-title">Yazılı Arenasına Hoş Geldin!</h1>
           <p class="hero-desc">
-            Çarpanlar, katlar, asal sayılar, bölünebilme kriterleri, EBOB & EKOK problemleri, deneysel olasılık ve ondalık gösterimler! Soru Gladyatörünü alt et, 100 tam puanın Altın Defne Tacını kazan!
+            Çarpanlar ve katlar, asal sayılar, bölünebilme kuralları ve kümeler! Soruları zihinden jet hızıyla çöz, Soru Gladyatörünün kalkanını parçala ve 100 tam puanın <b>Altın Defne Tacını</b> kap!
           </p>
 
-          <!-- Oyun Modu Seçimi -->
-          <div class="mode-select-grid">
-            <div class="mode-card active" id="cardModeSolo" onclick="selectGameMode('solo')">
-              <div class="mode-icon">⚔️</div>
-              <div class="mode-name">Bireysel Mod</div>
-              <div class="mode-desc">Gladyatör Kalkanı & Jokerler</div>
+          <div class="mode-select-box">
+            <!-- Bireysel Mod -->
+            <div class="mode-card selected active" id="cardModeSolo" onclick="selectGameMode('solo')">
+              <div class="mode-icon">🛡️</div>
+              <div class="mode-info">
+                <h4>Bireysel Mod</h4>
+                <p>Süre kısıtı yok! Hızlı çözdükçe ekstra puan kap, 3 soruda bir gladyatör jokeri kazan!</p>
+              </div>
             </div>
+
+            <!-- Düello Modu -->
             <div class="mode-card" id="cardModeDuel" onclick="selectGameMode('duel')">
-              <div class="mode-icon">⚡</div>
-              <div class="mode-name">Düello Modu</div>
-              <div class="mode-desc">Akıllı Tahta İki Kişilik Yarış</div>
-            </div>
-          </div>
-
-          <!-- Bireysel Mod İçin Öğrenci Seçimi -->
-          <div id="soloStudentBox">
-            <div class="form-group">
-              <label for="playerFullName">🛡️ Gladyatör Adı ve Soyadı:</label>
-              <input type="text" id="playerFullName" list="studentNamesList" class="input-field" placeholder="Listeden adını seç veya yaz..." autocomplete="off">
-              <datalist id="studentNamesList">
-                <!-- Merkezi 6. Sınıf Öğrenci Listesi Dinamik Olarak Buraya Gelir -->
-              </datalist>
-            </div>
-          </div>
-
-          <!-- Düello Modu İçin Ayarlar -->
-          <div id="duelSettingsBox" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-              <div>
-                <label style="font-size: 11px; font-weight: 700; color: #60a5fa;">🔵 1. Gladyatör:</label>
-                <input type="text" id="duelP1NameInput" class="input-field" value="Mavi Gladyatör" placeholder="Mavi Gladyatör">
-              </div>
-              <div>
-                <label style="font-size: 11px; font-weight: 700; color: #f87171;">🔴 2. Gladyatör:</label>
-                <input type="text" id="duelP2NameInput" class="input-field" value="Kırmızı Gladyatör" placeholder="Kırmızı Gladyatör">
+              <div class="mode-icon">⚔️</div>
+              <div class="mode-info">
+                <h4>Düello Modu</h4>
+                <p>Arkadaşınla karşı karşıya geç! İlk doğru cevaba basan arenanın şampiyonu olur!</p>
               </div>
             </div>
-            
-            <label style="font-size: 12px; font-weight: 700; color: #cbd5e1;">⏱️ Düello Süresi:</label>
-            <div style="display: flex; gap: 8px; margin-top: 4px;">
-              <button onclick="setDuelTime(30)" id="duelTimeBtn30" class="btn-secondary" style="flex: 1; padding: 8px;">30 Sn</button>
-              <button onclick="setDuelTime(60)" id="duelTimeBtn60" class="btn-secondary" style="flex: 1; padding: 8px; background: #991b1b; border-color: #fbbf24;">60 Sn</button>
-              <button onclick="setDuelTime(90)" id="duelTimeBtn90" class="btn-secondary" style="flex: 1; padding: 8px;">90 Sn</button>
+          </div>
+
+          <!-- Bireysel Mod Öğrenci Seçimi -->
+          <div class="student-select-box" id="soloStudentBox">
+            <label>
+              <span>👤 Ad Soyad:</span>
+              <span id="studentCountLabel" style="font-size: 11px; color: #94a3b8;">Yükleniyor...</span>
+            </label>
+            <input type="text" id="playerFullName" list="studentNamesList" class="student-dropdown" placeholder="Adınızı ve soyadınızı yazın..." maxlength="50" autocomplete="off">
+            <datalist id="studentNamesList"></datalist>
+            <div style="font-size: 11px; color: #fbbf24; margin-top: 6px; font-weight: 700;">
+              * Adınızı yazmaya başlayınca listeden otomatik öneri çıkacaktır.
             </div>
           </div>
 
-          <button class="btn-start" onclick="startGame()" style="margin-top: 10px;">
+          <!-- Düello Modu Süre Seçimi -->
+          <div class="student-select-box" id="duelSettingsBox" style="display: none;">
+            <label>⏱️ Düello Süresi Seçiniz:</label>
+            <div style="display: flex; gap: 10px; margin-top: 6px;">
+              <button onclick="setDuelTime(30)" id="duelTimeBtn30" class="btn-secondary" style="flex: 1; padding: 10px;">30 Saniye</button>
+              <button onclick="setDuelTime(60)" id="duelTimeBtn60" class="btn-secondary" style="flex: 1; padding: 10px; background: #991b1b; border-color: #fbbf24;">60 Saniye</button>
+              <button onclick="setDuelTime(90)" id="duelTimeBtn90" class="btn-secondary" style="flex: 1; padding: 10px;">90 Saniye</button>
+            </div>
+          </div>
+
+          <button class="btn-start" onclick="startGame()">
             <span>ARENAYA GİR VE BAŞLA!</span>
             <span>⚔️</span>
           </button>
         </div>
 
-        <!-- Sağ Panel: Liderlik Tablosu -->
         <div class="leaderboard-panel">
           <div class="leaderboard-header">
             <div class="leaderboard-title">🏆 İLK 10 GLADYATÖR</div>
@@ -2270,22 +2328,27 @@
               <!-- SOL KOL: 6. SINIF ASAL SAYI & ÇARPAN AĞACI İŞLEMELİ SCUTUM KALKANI -->
               <g transform="translate(8, 48)">
                 <path d="M 22,0 Q 44,-6 52,14 L 44,66 Q 22,78 4,60 L 4,17 Q 12,0 22,0 Z" fill="url(#bronzeGrad6)" stroke="url(#goldRim6)" stroke-width="2.5"/>
-                <!-- Kalkan Ortasında Altın Çarpan Ağacı & Asal Sayı Arması -->
-                <circle cx="27" cy="24" r="5" fill="#fef08a" stroke="#78350f" stroke-width="1"/>
-                <text x="27" y="27.5" fill="#78350f" font-size="7" font-weight="bold" text-anchor="middle">2</text>
                 
-                <line x1="27" y1="29" x2="16" y2="42" stroke="#fde047" stroke-width="1.5"/>
-                <line x1="27" y1="29" x2="38" y2="42" stroke="#fde047" stroke-width="1.5"/>
+                <!-- Kalkan Arması: 6'nın Asal Çarpan Ağacı (6 -> 2 ve 3) -->
+                <!-- Tepe Düğümü: 6 -->
+                <circle cx="27" cy="22" r="6" fill="#fef08a" stroke="#78350f" stroke-width="1.3"/>
+                <text x="27" y="26" fill="#78350f" font-size="8.5" font-weight="900" text-anchor="middle">6</text>
                 
-                <circle cx="16" cy="42" r="4.5" fill="#fde047" stroke="#78350f" stroke-width="1"/>
-                <text x="16" y="45" fill="#78350f" font-size="6.5" font-weight="bold" text-anchor="middle">3</text>
+                <!-- Çarpan Dalları -->
+                <line x1="23" y1="27" x2="16" y2="38" stroke="#fde047" stroke-width="1.8"/>
+                <line x1="31" y1="27" x2="38" y2="38" stroke="#fde047" stroke-width="1.8"/>
                 
-                <circle cx="38" cy="42" r="4.5" fill="#fde047" stroke="#78350f" stroke-width="1"/>
-                <text x="38" y="45" fill="#78350f" font-size="6.5" font-weight="bold" text-anchor="middle">5</text>
+                <!-- Sol Asal Çarpan Düğümü: 2 -->
+                <circle cx="16" cy="40" r="5" fill="#fde047" stroke="#78350f" stroke-width="1.2"/>
+                <text x="16" y="44" fill="#78350f" font-size="7.5" font-weight="bold" text-anchor="middle">2</text>
                 
-                <circle cx="27" cy="56" r="4.5" fill="#fef08a" stroke="#78350f" stroke-width="1"/>
-                <text x="27" y="59" fill="#78350f" font-size="6.5" font-weight="bold" text-anchor="middle">7</text>
-                <line x1="27" y1="42" x2="27" y2="52" stroke="#fde047" stroke-width="1.5" stroke-dasharray="2,2"/>
+                <!-- Sağ Asal Çarpan Düğümü: 3 -->
+                <circle cx="38" cy="40" r="5" fill="#fde047" stroke="#78350f" stroke-width="1.2"/>
+                <text x="38" y="44" fill="#78350f" font-size="7.5" font-weight="bold" text-anchor="middle">3</text>
+                
+                <!-- Asal Çarpan Eşitliği Şeridi: 2 · 3 = 6 -->
+                <rect x="10" y="52" width="34" height="12" rx="4" fill="rgba(15, 23, 42, 0.88)" stroke="#fbbf24" stroke-width="1"/>
+                <text x="27" y="61" fill="#fbbf24" font-size="6.8" font-weight="bold" text-anchor="middle">2 · 3 = 6</text>
               </g>
 
               <!-- SAĞ KOL: ÇARPAN GLADIUS KILICI -->
@@ -2555,6 +2618,13 @@
           dlist.appendChild(opt);
         }
       });
+
+      const countLbl = document.getElementById('studentCountLabel');
+      if (countLbl) {
+        countLbl.innerText = authorizedStudents.length > 0 
+          ? `${authorizedStudents.length} kayıtlı öğrenci` 
+          : 'Öğrenci bulunamadı';
+      }
     }
 
     function loadMockStudents() {
@@ -2571,6 +2641,11 @@
         opt.value = m;
         dlist.appendChild(opt);
       });
+
+      const countLbl = document.getElementById('studentCountLabel');
+      if (countLbl) {
+        countLbl.innerText = `${authorizedStudents.length} kayıtlı öğrenci`;
+      }
     }
 
     // Liderlik Tablosunu Yükle
