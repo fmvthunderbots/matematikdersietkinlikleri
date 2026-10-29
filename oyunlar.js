@@ -110,7 +110,7 @@ const SISTEM_OYUNLARI = [
     {
         id: "oyun-16",
         title: "Yazılı Arenası",
-        grade: "5",
+        grade: "6",
         image: "./yazili_arenasi_6_kapak.jpg",
         url: ".//yazili_arenasi_6.html"
     },
