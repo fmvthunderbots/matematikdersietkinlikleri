@@ -3181,11 +3181,25 @@
 
       const hudJoker = document.getElementById('hudJokerCount');
       if (hudJoker) {
-        hudJoker.innerText = inventoryJokers.length;
-        if (inventoryJokers.length > 0) {
+        const nextChestIn = 3 - (currentQIndex % 3);
+        if (activeJokerEffect === '5050') {
+          hudJoker.innerText = '✂️ 50:50';
+          hudJoker.style.color = '#34d399';
+          hudJoker.style.textShadow = '0 0 10px rgba(52, 211, 153, 0.8)';
+        } else if (activeJokerEffect === 'double') {
+          hudJoker.innerText = '⚡ 2X';
           hudJoker.style.color = '#fbbf24';
           hudJoker.style.textShadow = '0 0 10px rgba(251, 191, 36, 0.8)';
+        } else if (activeJokerEffect === 'triple') {
+          hudJoker.innerText = '💥 3X';
+          hudJoker.style.color = '#f87171';
+          hudJoker.style.textShadow = '0 0 10px rgba(248, 113, 113, 0.8)';
+        } else if (activeJokerEffect === 'shield') {
+          hudJoker.innerText = '🛡️ Kalkan';
+          hudJoker.style.color = '#60a5fa';
+          hudJoker.style.textShadow = '0 0 10px rgba(96, 165, 250, 0.8)';
         } else {
+          hudJoker.innerText = `${nextChestIn} Soru`;
           hudJoker.style.color = '#94a3b8';
           hudJoker.style.textShadow = 'none';
         }
@@ -3262,6 +3276,11 @@
       const allBtns = document.querySelectorAll('.option-btn');
       allBtns.forEach(b => b.disabled = true);
 
+      // KESİN KURAL: Kazanılan joker sadece BU TEK SORUDA geçerlidir!
+      // Soru doğru veya yanlış nasıl sonuçlanırsa sonuçlansın, joker etkisi bu soruda tüketilir ve sıfırlanır.
+      const currentPower = activeJokerEffect;
+      activeJokerEffect = null;
+
       if (isCorrect) {
         clickedBtn.classList.add('correct');
         soundCorrect();
@@ -3282,16 +3301,14 @@
         let questionPoints = Math.round(baseQuestionPoints * multiplier);
         let damageToBoss = Math.round(70 * multiplier);
 
-        if (activeJokerEffect === 'double') {
+        if (currentPower === 'double') {
           questionPoints *= 2;
           damageToBoss *= 2;
           triggerFloatingText('⚡ 2X ÇİFTE DARBE!');
-          activeJokerEffect = null;
-        } else if (activeJokerEffect === 'triple') {
+        } else if (currentPower === 'triple') {
           questionPoints *= 3;
           damageToBoss *= 3;
           triggerFloatingText('💥 3X SÜPER DARBE!');
-          activeJokerEffect = null;
         }
 
         score += questionPoints;
@@ -3310,15 +3327,17 @@
           }
         });
 
-        if (activeJokerEffect === 'shield') {
-          triggerFloatingText('🛡️ Roma Kalkanı Korudu!');
-          activeJokerEffect = null;
+        if (currentPower === 'shield') {
+          triggerFloatingText('🛡️ Gladyatör Kalkanı Serini Korudu!');
+          // Kalkan seriyi korur, sıfırlanmaz!
         } else {
           streak = 0;
         }
       }
 
-      if (activeJokerEffect === '5050') activeJokerEffect = null;
+      // Aktif joker bittiği için bildirim şeridini kapat ve HUD'ı hemen güncelle
+      const bannerEl = document.getElementById('jokerActiveBanner');
+      if (bannerEl) bannerEl.style.display = 'none';
       updateSoloHUD();
 
       setTimeout(() => {
@@ -3390,7 +3409,7 @@
           bannerEl.style.display = 'flex';
           bannerEl.innerHTML = '✂️ <b>50:50 Eleme Devrede!</b> İki yanlış seçenek kılıçla anında elendi!';
         }
-        if (titleEl) titleEl.innerHTML = '✂️ 50:50 ELEME AKTİF';
+        if (titleEl) titleEl.innerHTML = '✂️ 50:50 ELEME AKTİF (1 SORULUK)';
         if (statusEl) statusEl.innerHTML = '⚡ Bu soruda iki yanlış şık silindi!';
         triggerFloatingText('✂️ 50:50 Devrede!');
         soundHit();
@@ -3399,21 +3418,21 @@
           bannerEl.style.display = 'flex';
           bannerEl.innerHTML = '⚡ <b>2X Çifte Darbe Devrede!</b> Doğru yanıtlarsan x2 boss hasarı ve x2 puan!';
         }
-        if (titleEl) titleEl.innerHTML = '⚡ 2X ÇİFTE DARBE AKTİF';
+        if (titleEl) titleEl.innerHTML = '⚡ 2X ÇİFTE DARBE AKTİF (1 SORULUK)';
         if (statusEl) statusEl.innerHTML = '🔥 Bu soruda 2 kat puan ve 2 kat hasar!';
       } else if (activeJokerEffect === 'triple') {
         if (bannerEl) {
           bannerEl.style.display = 'flex';
           bannerEl.innerHTML = '💥 <b>3X Süper Darbe Devrede!</b> Doğru yanıtlarsan x3 boss hasarı ve x3 puan!';
         }
-        if (titleEl) titleEl.innerHTML = '💥 3X SÜPER DARBE AKTİF';
+        if (titleEl) titleEl.innerHTML = '💥 3X SÜPER DARBE AKTİF (1 SORULUK)';
         if (statusEl) statusEl.innerHTML = '🔥 Bu soruda 3 kat puan ve 3 kat hasar!';
       } else if (activeJokerEffect === 'shield') {
         if (bannerEl) {
           bannerEl.style.display = 'flex';
           bannerEl.innerHTML = '🛡️ <b>Gladyatör Kalkanı Devrede!</b> Yanlış yanıt versen bile serin bozulmayacak!';
         }
-        if (titleEl) titleEl.innerHTML = '🛡️ GLADYATÖR KALKANI AKTİF';
+        if (titleEl) titleEl.innerHTML = '🛡️ GLADYATÖR KALKANI AKTİF (1 SORULUK)';
         if (statusEl) statusEl.innerHTML = '🛡️ Bu soruda serin güvende!';
       } else {
         if (bannerEl) {
@@ -3992,7 +4011,7 @@
 
       if (selected.type === 'joker') {
         activeJokerEffect = selected.id;
-        triggerFloatingText(selected.icon + ' ' + selected.title + ' Çantana Eklendi!');
+        triggerFloatingText(selected.icon + ' ' + selected.title + ' Sıradaki Soruda Devrede!');
         const bar = document.getElementById('jokerActionBar');
         if (bar) {
           bar.classList.add('new-joker-flash');
