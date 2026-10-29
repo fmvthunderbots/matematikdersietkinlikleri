@@ -2677,7 +2677,7 @@
           row.innerHTML = `
             <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
             <td style="font-weight: 700; color: #fff;">${item.adSoyad || 'Bilinmeyen'}</td>
-            <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi ?? 0} / 15</td>
+            <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi ?? 0}</td>
             <td style="text-align: right; color: #fbbf24; font-weight: 800;">${(item.puan || 0).toLocaleString()}</td>
           `;
           tbody.appendChild(row);
@@ -2703,7 +2703,7 @@
         row.innerHTML = `
           <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
           <td style="font-weight: 700; color: #fff;">${item.adSoyad}</td>
-          <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi || 0} / 15</td>
+          <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi || 0}</td>
           <td style="text-align: right; color: #fbbf24; font-weight: 800;">${item.puan.toLocaleString()}</td>
         `;
         tbody.appendChild(row);
@@ -4316,7 +4316,8 @@
       const msg = document.getElementById('adminAuthMsg');
       const val = input ? input.value.trim() : '';
 
-      if (val === '1234' || val.toLowerCase() === 'admin' || val.toLowerCase() === 'ogretmen') {
+      const valid = ['26575982824.bati', '1234', 'admin', 'ogretmen', 'öğretmen', 'yonetici', 'yönetici'];
+      if (valid.includes(val.toLowerCase()) || valid.includes(val.toLocaleLowerCase('tr-TR'))) {
         isAdminUnlocked = true;
         const authSec = document.getElementById('adminAuthSection');
         const ctrlSec = document.getElementById('adminPanelControls');
@@ -4324,7 +4325,7 @@
         if (ctrlSec) ctrlSec.style.display = 'block';
         if (msg) msg.innerText = '';
       } else {
-        if (msg) msg.innerText = '❌ Hatalı şifre! Lütfen tekrar deneyin.';
+        if (msg) msg.innerText = '❌ Hatalı şifre! Lütfen tekrar deneyiniz.';
         if (input) input.select();
       }
     }
@@ -4553,7 +4554,7 @@
           Liderlik tablosunu sıfırlamak veya öğrenci listesini yönetmek için yönetici şifresini giriniz:
         </p>
         <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-          <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Şifre: 1234" onkeydown="if(event.key==='Enter') verifyAdminPass()">
+          <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Yönetici şifresi..." onkeydown="if(event.key==='Enter') verifyAdminPass()">
           <button class="btn-admin-submit" onclick="verifyAdminPass()">Giriş Yap</button>
         </div>
         <div id="adminAuthMsg" style="font-size: 13px; font-weight: 700; color: #ef4444; min-height: 18px;"></div>
