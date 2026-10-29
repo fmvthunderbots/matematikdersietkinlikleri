@@ -100,6 +100,13 @@ const SISTEM_OYUNLARI = [
         image: "./cumhuriyet_mesalesi.jpg",
         url: "./cumhuriyet_mesalesi.html"
     },
+      {
+        id: "oyun-15",
+        title: "Yazılı Arenası",
+        grade: "5",
+        image: "./yazili_arenasi_kapak.jpg",
+        url: ".//yazili_arenasi.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
