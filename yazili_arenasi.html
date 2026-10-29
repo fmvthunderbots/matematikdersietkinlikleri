@@ -2595,6 +2595,22 @@
       }
     }
 
+        function initStudents() {
+      if (cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).once('value', snap => {
+          let data = snap.val();
+          if (data) {
+            authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+            authorizedStudents = [];
+          }
+          populateStudentDropdown();
+          const countEl = document.getElementById('adminStudentCount');
+          if (countEl) countEl.innerText = authorizedStudents.length;
+        });
+      }
+    }
+
     function populateStudentDropdown() {
       const dl = document.getElementById('studentNamesList');
       const countLbl = document.getElementById('studentCountLabel');
@@ -2615,10 +2631,10 @@
     }
 
     function updateLeaderboard(scores) {
-      if (!scores || !scores.length) {
-        scores = JSON.parse(localStorage.getItem('meb_yaziliarenasi_top10') || '[]');
-      } else {
+      if (Array.isArray(scores)) {
         localStorage.setItem('meb_yaziliarenasi_top10', JSON.stringify(scores));
+      } else {
+        scores = JSON.parse(localStorage.getItem('meb_yaziliarenasi_top10') || '[]');
       }
 
       // En yüksek puan ve doğruya göre sırala (TARİH YOK!)
@@ -3852,26 +3868,46 @@
         return;
       }
 
-      if (typeof db !== 'undefined' && db && typeof SCORES_NODE !== 'undefined') {
-        db.ref(SCORES_NODE).remove().then(() => {
+      // 1. Önce yerel önbellekleri temizle ve ekranı sıfırla
+      localStorage.removeItem('meb_yaziliarenasi_top10');
+      updateLeaderboard([]);
+
+      // 2. Firebase bağlantısını kontrol et ve temizle (cloudDb / DB_NODE)
+      if (cloudDb) {
+        cloudDb.ref(DB_NODE).remove().then(() => {
+          localStorage.removeItem('meb_yaziliarenasi_top10');
+          updateLeaderboard([]);
           alert('🏆 İlk 10 Gladyatör Liderlik Tablosu başarıyla sıfırlandı!');
-          if (typeof loadLeaderboard === 'function') loadLeaderboard();
           closeAdminModal();
         }).catch(err => {
-          alert('Sıfırlama hatası: ' + err.message);
+          alert('Yerel tablo temizlendi, ancak Firebase sıfırlama hatası verdi: ' + err.message);
+          closeAdminModal();
         });
       } else {
-        alert('Veritabanı bağlantısı bulunamadı.');
+        alert('🏆 İlk 10 Gladyatör Liderlik Tablosu yerel olarak başarıyla sıfırlandı!');
+        closeAdminModal();
       }
     }
 
     function refreshStudentRoster() {
-      if (typeof initStudents === 'function') initStudents();
-      setTimeout(() => {
-        const countEl = document.getElementById('adminStudentCount');
-        if (countEl && typeof authorizedStudents !== 'undefined') countEl.innerText = authorizedStudents.length;
-        alert('Öğrenci listesi senkronize edildi: ' + (typeof authorizedStudents !== 'undefined' ? authorizedStudents.length : 0) + ' yetkili öğrenci mevcut.');
-      }, 1200);
+      if (cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).once('value', snap => {
+          let data = snap.val();
+          if (data) {
+            authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+            authorizedStudents = [];
+          }
+          populateStudentDropdown();
+          const countEl = document.getElementById('adminStudentCount');
+          if (countEl) countEl.innerText = authorizedStudents.length;
+          alert('✅ Öğrenci listesi Firebase ile senkronize edildi: ' + authorizedStudents.length + ' yetkili öğrenci mevcut.');
+        }).catch(err => {
+          alert('Senkronizasyon hatası: ' + err.message);
+        });
+      } else {
+        alert('Sistemde yetkili öğrenci sayısı: ' + authorizedStudents.length);
+      }
     }
 
     function updateBossDialogue(isHit) {
