@@ -224,13 +224,13 @@
       text-align: left;
     }
 
-    .mode-card:hover, .mode-card.selected, .mode-card.active {
+    .mode-card:hover, .mode-card.active {
       background: rgba(153, 27, 27, 0.3) !important;
       border-color: #fbbf24 !important;
       transform: translateX(4px);
     }
 
-    .mode-card.selected, .mode-card.active {
+    .mode-card.active {
       box-shadow: 0 0 20px rgba(251, 191, 36, 0.25) !important;
     }
 
@@ -2104,7 +2104,7 @@
 
           <div class="mode-select-box">
             <!-- Bireysel Mod -->
-            <div class="mode-card selected active" id="cardModeSolo" onclick="selectGameMode('solo')">
+            <div class="mode-card active" id="cardModeSolo" onclick="selectGameMode('solo')">
               <div class="mode-icon">🛡️</div>
               <div class="mode-info">
                 <h4>Bireysel Mod</h4>
@@ -2137,6 +2137,15 @@
 
           <!-- Düello Modu Süre Seçimi -->
           <div class="student-select-box" id="duelSettingsBox" style="display: none;">
+            <div style="display: flex; justify-content: space-around; align-items: center; background: rgba(30, 41, 59, 0.6); padding: 10px 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(251, 191, 36, 0.25);">
+              <div style="display: flex; align-items: center; gap: 8px; color: #60a5fa; font-family: var(--font-fun); font-size: 16px; font-weight: 800;">
+                <span style="font-size: 24px;">🛡️</span> Mavi Takım
+              </div>
+              <div style="color: #fbbf24; font-weight: 900; font-size: 18px; letter-spacing: 1px;">VS</div>
+              <div style="display: flex; align-items: center; gap: 8px; color: #f87171; font-family: var(--font-fun); font-size: 16px; font-weight: 800;">
+                <span style="font-size: 24px;">⚔️</span> Kırmızı Takım
+              </div>
+            </div>
             <label>⏱️ Düello Süresi Seçiniz:</label>
             <div style="display: flex; gap: 10px; margin-top: 6px;">
               <button onclick="setDuelTime(30)" id="duelTimeBtn30" class="btn-secondary" style="flex: 1; padding: 10px;">30 Saniye</button>
@@ -2425,7 +2434,7 @@
         <div class="duel-player-panel player-blue">
           <div class="duel-player-header">
             <div style="font-size: 28px;">🛡️</div>
-            <div class="duel-player-name" id="duelP1Name">Mavi Gladyatör</div>
+            <div class="duel-player-name" id="duelP1Name">Mavi Takım</div>
             <div class="duel-score-badge" id="duelP1Score">0</div>
             <div style="font-size: 11px; color: #60a5fa; font-weight: 800;" id="duelP1Streak">0 Seri</div>
           </div>
@@ -2450,8 +2459,8 @@
             <!-- Dinamik Çizim -->
           </div>
 
-          <div style="font-size: 12px; color: #fbbf24; font-weight: 800; margin-top: 8px;">
-            İlk doğru basan +100 puan kazanır!
+          <div id="duelTurnInfo" style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 8px; min-height: 22px; text-align: center;">
+            ⚔️ Doğru: +100 Puan | Yanlış: -50 Puan (Her soruya 1 hak)
           </div>
         </div>
 
@@ -2459,7 +2468,7 @@
         <div class="duel-player-panel player-red">
           <div class="duel-player-header">
             <div style="font-size: 28px;">⚔️</div>
-            <div class="duel-player-name" id="duelP2Name">Kırmızı Gladyatör</div>
+            <div class="duel-player-name" id="duelP2Name">Kırmızı Takım</div>
             <div class="duel-score-badge" id="duelP2Score">0</div>
             <div style="font-size: 11px; color: #f87171; font-weight: 800;" id="duelP2Streak">0 Seri</div>
           </div>
@@ -3570,7 +3579,9 @@
     let duelP2Streak = 0;
     let duelQuestions = [];
     let duelQIndex = 0;
-    let duelQuestionAnswered = false;
+    let duelP1Answered = false;  // Soru için P1 hakkını kullandı mı?
+    let duelP2Answered = false;  // Soru için P2 hakkını kullandı mı?
+    let duelQuestionLocked = false; // Soru geçiş animasyonunda mı?
 
     /* ==========================================================
        MOD VE NAVİGASYON
@@ -3582,16 +3593,18 @@
       const soloBox = document.getElementById('soloStudentBox');
       const duelBox = document.getElementById('duelSettingsBox');
 
+      // Her iki karttan da tum secili siniflarini tamamen kaldir
+      if (soloCard) soloCard.classList.remove('active', 'selected');
+      if (duelCard) duelCard.classList.remove('active', 'selected');
+
       if (mode === 'solo') {
-        soloCard.classList.add('active');
-        duelCard.classList.remove('active');
-        soloBox.style.display = 'block';
-        duelBox.style.display = 'none';
+        if (soloCard) soloCard.classList.add('active');
+        if (soloBox) soloBox.style.display = 'block';
+        if (duelBox) duelBox.style.display = 'none';
       } else {
-        duelCard.classList.add('active');
-        soloCard.classList.remove('active');
-        soloBox.style.display = 'none';
-        duelBox.style.display = 'block';
+        if (duelCard) duelCard.classList.add('active');
+        if (soloBox) soloBox.style.display = 'none';
+        if (duelBox) duelBox.style.display = 'block';
       }
       playTone(400, 'sine', 0.08, 0.1);
     }
@@ -3659,7 +3672,7 @@
       const match = authorizedStudents.find(s => s.toLowerCase().replace(/\s+/g, ' ') === normalizedTyped);
 
       if (!match && authorizedStudents.length > 0) {
-        alert("Bu isim 6. sınıf öğrenci listesinde bulunamadı! Lütfen tam adınızı listeden seçiniz.");
+        alert("Bu isim 7. sınıf öğrenci listesinde bulunamadı! Lütfen tam adınızı listeden seçiniz.");
         nameInput.focus();
         return;
       }
@@ -4208,11 +4221,8 @@
        DÜELLO MODU (2 KİŞİLİK YARIŞ)
        ========================================================== */
     function startDuelGame() {
-      const p1 = document.getElementById('duelP1NameInput').value.trim() || 'Mavi Gladyatör';
-      const p2 = document.getElementById('duelP2NameInput').value.trim() || 'Kırmızı Gladyatör';
-
-      document.getElementById('duelP1Name').innerText = p1;
-      document.getElementById('duelP2Name').innerText = p2;
+      document.getElementById('duelP1Name').innerText = 'Mavi Takım';
+      document.getElementById('duelP2Name').innerText = 'Kırmızı Takım';
 
       duelP1Score = 0;
       duelP2Score = 0;
@@ -4220,9 +4230,10 @@
       duelP2Streak = 0;
       duelTimeRemaining = duelTimeLimit;
       duelQIndex = 0;
+      
+      // Düello için bol soru havuzu
       duelQuestions = getShuffled15Questions();
-      // Düello için 30 soruya kadar genişlet
-      duelQuestions = duelQuestions.concat(getShuffled15Questions());
+      duelQuestions = duelQuestions.concat(getShuffled15Questions()).concat(getShuffled15Questions());
 
       document.getElementById('duelP1Score').innerText = '0';
       document.getElementById('duelP2Score').innerText = '0';
@@ -4248,11 +4259,22 @@
       if (duelQIndex >= duelQuestions.length) {
         duelQuestions = duelQuestions.concat(getShuffled15Questions());
       }
-      duelQuestionAnswered = false;
+
+      // Her yeni soruda cevap hakları sıfırlanır
+      duelP1Answered = false;
+      duelP2Answered = false;
+      duelQuestionLocked = false;
+
       const q = duelQuestions[duelQIndex];
 
       document.getElementById('duelCategoryBadge').innerText = q.badge;
       document.getElementById('duelQuestionText').innerHTML = q.text;
+
+      const infoEl = document.getElementById('duelTurnInfo');
+      if (infoEl) {
+        infoEl.innerHTML = '⚔️ Doğru: <b style="color:#10b981">+100 Puan</b> | Yanlış: <b style="color:#ef4444">-50 Puan</b> (Her soruya 1 hak)';
+        infoEl.style.color = '#fbbf24';
+      }
 
       const vBox = document.getElementById('duelVisualBox');
       if (q.visual) {
@@ -4281,26 +4303,50 @@
       choices.forEach((c, idx) => {
         p1Btns[idx].querySelector('.opt-val').innerText = c;
         p2Btns[idx].querySelector('.opt-val').innerText = c;
+        p1Btns[idx].dataset.choice = c;
+        p2Btns[idx].dataset.choice = c;
         p1Btns[idx].disabled = false;
         p2Btns[idx].disabled = false;
+        p1Btns[idx].className = 'duel-opt-btn';
+        p2Btns[idx].className = 'duel-opt-btn';
         p1Btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
         p2Btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
       });
     }
 
     function handleDuelAnswer(playerNum, btnIndex) {
-      if (duelQuestionAnswered) return;
+      if (duelQuestionLocked) return; // Geçiş anında basılmasın
+
+      // Her takımın soru başına yalnızca 1 CEVAP HAKKI vardır
+      if (playerNum === 1 && duelP1Answered) return;
+      if (playerNum === 2 && duelP2Answered) return;
+
       const q = duelQuestions[duelQIndex];
       const p1Btns = document.querySelectorAll('#duelP1Options .duel-opt-btn');
       const p2Btns = document.querySelectorAll('#duelP2Options .duel-opt-btn');
+      const p1Name = document.getElementById('duelP1Name').innerText;
+      const p2Name = document.getElementById('duelP2Name').innerText;
+      const infoEl = document.getElementById('duelTurnInfo');
 
-      const clickedBtns = (playerNum === 1) ? p1Btns : p2Btns;
-      const selectedVal = clickedBtns[btnIndex].querySelector('.opt-val').innerText;
+      const currentBtns = (playerNum === 1) ? p1Btns : p2Btns;
+      const opponentBtns = (playerNum === 1) ? p2Btns : p1Btns;
+      const currentPlayerName = (playerNum === 1) ? p1Name : p2Name;
+      const opponentPlayerName = (playerNum === 1) ? p2Name : p1Name;
 
-      if (selectedVal === q.correct) {
-        duelQuestionAnswered = true;
+      const selectedVal = currentBtns[btnIndex].querySelector('.opt-val').innerText.trim();
+      const isCorrect = (selectedVal === q.correct);
+
+      // Bu takımın hakkı bitti, tüm butonları kilitlenir
+      if (playerNum === 1) duelP1Answered = true;
+      if (playerNum === 2) duelP2Answered = true;
+
+      currentBtns.forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        // --- 1. DURUM: DOĞRU CEVAP ---
         soundCorrect();
-        clickedBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
+        currentBtns[btnIndex].classList.add('duel-correct');
+        currentBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
 
         if (playerNum === 1) {
           duelP1Score += 100;
@@ -4317,14 +4363,77 @@
         document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
         document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
 
+        if (infoEl) {
+          infoEl.innerHTML = `⚔️ <b>${currentPlayerName}</b> doğru bildi! (+100 Puan)`;
+          infoEl.style.color = '#34d399';
+        }
+
+        // Biri doğru bildiğinde soru biter, rakip butonları da kilitlenir
+        duelQuestionLocked = true;
+        opponentBtns.forEach(b => b.disabled = true);
+
         setTimeout(() => {
           duelQIndex++;
           loadDuelQuestion();
-        }, 800);
+        }, 1000);
+
       } else {
+        // --- 2. DURUM: YANLIŞ CEVAP ---
         soundWrong();
-        clickedBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
-        clickedBtns[btnIndex].disabled = true;
+        currentBtns[btnIndex].classList.add('duel-wrong');
+        currentBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
+
+        // Yanlış yapan takım PUAN KAYBEDER (-50 puan) ve serisi sıfırlanır
+        if (playerNum === 1) {
+          duelP1Score -= 50;
+          duelP1Streak = 0;
+        } else {
+          duelP2Score -= 50;
+          duelP2Streak = 0;
+        }
+
+        document.getElementById('duelP1Score').innerText = duelP1Score;
+        document.getElementById('duelP2Score').innerText = duelP2Score;
+        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
+        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+
+        // Rakip takım henüz cevap verdi mi?
+        const opponentAlreadyAnswered = (playerNum === 1) ? duelP2Answered : duelP1Answered;
+
+        if (!opponentAlreadyAnswered) {
+          // Rakip takım henüz cevap vermedi! Sıra onda!
+          if (infoEl) {
+            infoEl.innerHTML = `⚠️ <b>${currentPlayerName}</b> yanlış yaptı (-50)! Sıra <b>${opponentPlayerName}</b>'de!`;
+            infoEl.style.color = '#f87171';
+          }
+        } else {
+          // İki takım da cevap verdi ve ikisi de bilemedi! Soru biter.
+          duelQuestionLocked = true;
+
+          // Her iki tarafta doğru cevabı yeşil olarak göster
+          p1Btns.forEach(b => {
+            if (b.dataset.choice === q.correct) {
+              b.classList.add('duel-correct');
+              b.style.background = 'rgba(16, 185, 129, 0.85)';
+            }
+          });
+          p2Btns.forEach(b => {
+            if (b.dataset.choice === q.correct) {
+              b.classList.add('duel-correct');
+              b.style.background = 'rgba(16, 185, 129, 0.85)';
+            }
+          });
+
+          if (infoEl) {
+            infoEl.innerHTML = `⚠️ İki takım da bilemedi! Doğru cevap: <b style="color:#10b981">${q.correct}</b>`;
+            infoEl.style.color = '#f87171';
+          }
+
+          setTimeout(() => {
+            duelQIndex++;
+            loadDuelQuestion();
+          }, 1400);
+        }
       }
     }
 
@@ -4335,14 +4444,14 @@
 
       let winMsg = "";
       if (duelP1Score > duelP2Score) {
-        winMsg = `🏆 KAZANAN: ${p1Name} (${duelP1Score} Puan)!`;
+        winMsg = `👑 KAZANAN: ${p1Name} (${duelP1Score} Puan)!`;
       } else if (duelP2Score > duelP1Score) {
-        winMsg = `🏆 KAZANAN: ${p2Name} (${duelP2Score} Puan)!`;
+        winMsg = `👑 KAZANAN: ${p2Name} (${duelP2Score} Puan)!`;
       } else {
         winMsg = `🤝 DOSTLUK KAZANDI! BERABERE (${duelP1Score} - ${duelP2Score})!`;
       }
 
-      document.getElementById('resTrophy').innerText = '⚔️';
+      document.getElementById('resTrophy').innerText = '🏆';
       document.getElementById('resTitle').innerText = 'Düello Sona Erdi!';
       document.getElementById('resSubtitle').innerHTML = `<b style="font-size: 18px; color: #fbbf24;">${winMsg}</b>`;
       document.getElementById('resCorrectCount').innerText = `${p1Name}: ${duelP1Score}`;
@@ -4352,10 +4461,6 @@
       showScreen('screenResult');
     }
 
-    /* ==========================================================
-       BAŞLANGIÇ ÇALIŞTIRMASI
-       ========================================================== */
-    
     /* ==========================================================
        YÖNETİCİ PANELİ & GELİŞMİŞ GLADYATÖR DİYALOGLARI (6. Sınıf)
        ========================================================== */
