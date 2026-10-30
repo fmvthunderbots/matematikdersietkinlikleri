@@ -2368,8 +2368,8 @@
             <!-- Dinamik Çizim -->
           </div>
 
-          <div style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 10px;">
-            İlk doğru basan +100 puan kazanır!
+          <div id="duelHint" style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 10px;">
+            Her oyuncunun 1 cevap hakkı var! Doğru +100, yanlış -50 puan.
           </div>
         </div>
 
@@ -3078,6 +3078,11 @@
     let duelQuestions = [];
     let duelQIndex = 0;
     let duelQuestionAnswered = false;
+    let duelP1Done = false;   // Mavi bu soruya cevap verdi mi (her soruya 1 hak)
+    let duelP2Done = false;   // Kırmızı bu soruya cevap verdi mi
+    let duelP1Correct = 0;
+    let duelP2Correct = 0;
+    const DUEL_WRONG_PENALTY = 50;  // yanlış cevapta kaybedilen puan
 
     /* ==========================================================
        MOD VE NAVİGASYON
@@ -3667,6 +3672,8 @@
       duelP2Score = 0;
       duelP1Streak = 0;
       duelP2Streak = 0;
+      duelP1Correct = 0;
+      duelP2Correct = 0;
       duelQuestions = generateQuestionPool();
       for (let i = duelQuestions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -3697,6 +3704,9 @@
     function loadDuelQuestion() {
       if (duelQIndex >= duelQuestions.length) duelQIndex = 0;
       duelQuestionAnswered = false;
+      duelP1Done = false;
+      duelP2Done = false;
+      setDuelHint('Her oyuncunun 1 cevap hakkı var! Doğru +100, yanlış -' + DUEL_WRONG_PENALTY + ' puan.');
 
       const q = duelQuestions[duelQIndex];
       document.getElementById('duelCategoryBadge').innerText = q.badge;
@@ -3736,50 +3746,80 @@
       });
     }
 
+    function setDuelHint(msg) {
+      const el = document.getElementById('duelHint');
+      if (el) el.innerText = msg;
+    }
+
+    function updateDuelScoreboard() {
+      document.getElementById('duelP1Score').innerText = duelP1Score;
+      document.getElementById('duelP2Score').innerText = duelP2Score;
+      document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
+      document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+    }
+
     function handleDuelAnswer(playerNum, btnIndex) {
-      if (duelQuestionAnswered) return;
+      if (duelQuestionAnswered) return;                       // soru kapandı
+      if (playerNum === 1 && duelP1Done) return;              // Mavi hakkını kullandı
+      if (playerNum === 2 && duelP2Done) return;              // Kırmızı hakkını kullandı
+
       const q = duelQuestions[duelQIndex];
       const p1Btns = document.querySelectorAll('#duelP1Options .duel-opt-btn');
       const p2Btns = document.querySelectorAll('#duelP2Options .duel-opt-btn');
-
       const clickedBtns = (playerNum === 1) ? p1Btns : p2Btns;
-      const otherBtns = (playerNum === 1) ? p2Btns : p1Btns;
       const selectedVal = clickedBtns[btnIndex].querySelector('.opt-val').innerText;
 
+      // Bu oyuncunun hakkı bitti: tüm butonları kilitle
+      if (playerNum === 1) duelP1Done = true; else duelP2Done = true;
+      clickedBtns.forEach(b => { b.disabled = true; });
+
       if (selectedVal === q.correct) {
+        // DOĞRU: puan al, soru biter, sıradaki soruya geç
         duelQuestionAnswered = true;
         soundCorrect();
         clickedBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
 
         if (playerNum === 1) {
-          duelP1Score += 100;
-          duelP1Streak++;
-          duelP2Streak = 0;
+          duelP1Score += 100; duelP1Streak++; duelP1Correct++; duelP2Streak = 0;
         } else {
-          duelP2Score += 100;
-          duelP2Streak++;
-          duelP1Streak = 0;
+          duelP2Score += 100; duelP2Streak++; duelP2Correct++; duelP1Streak = 0;
         }
-
-        document.getElementById('duelP1Score').innerText = duelP1Score;
-        document.getElementById('duelP2Score').innerText = duelP2Score;
-        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
-        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+        updateDuelScoreboard();
+        setDuelHint((playerNum === 1 ? 'Mavi' : 'Kırmızı') + ' Gladyatör doğru bildi! +100');
 
         setTimeout(() => {
           duelQIndex++;
           loadDuelQuestion();
         }, 900);
       } else {
+        // YANLIŞ: puan kaybet, hak bitti
         soundWrong();
         clickedBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
-        clickedBtns[btnIndex].disabled = true;
 
-        if (playerNum === 1) duelP1Streak = 0;
-        else duelP2Streak = 0;
+        if (playerNum === 1) { duelP1Score -= DUEL_WRONG_PENALTY; duelP1Streak = 0; }
+        else                 { duelP2Score -= DUEL_WRONG_PENALTY; duelP2Streak = 0; }
+        updateDuelScoreboard();
 
-        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
-        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+        if (duelP1Done && duelP2Done) {
+          // İkisi de yanlış yaptı: doğru cevabı göster, sonraki soruya geç
+          duelQuestionAnswered = true;
+          [p1Btns, p2Btns].forEach(btns => {
+            btns.forEach(b => {
+              if (b.querySelector('.opt-val').innerText === q.correct) {
+                b.style.background = 'rgba(16, 185, 129, 0.85)';
+              }
+            });
+          });
+          setDuelHint('İkisi de bilemedi! Doğru cevap yeşil.');
+          setTimeout(() => {
+            duelQIndex++;
+            loadDuelQuestion();
+          }, 1800);
+        } else {
+          // Diğer oyuncunun cevap verme sırası
+          const otherName = (playerNum === 1) ? 'Kırmızı' : 'Mavi';
+          setDuelHint('Yanlış! -' + DUEL_WRONG_PENALTY + ' puan. Şimdi ' + otherName + ' Gladyatör\'in cevap hakkı!');
+        }
       }
     }
 
@@ -3799,7 +3839,7 @@
       document.getElementById('resTrophy').innerText = trophy;
       document.getElementById('resTitle').innerText = winnerText;
       document.getElementById('resSubtitle').innerText = `Mavi: ${duelP1Score} Puan  |  Kırmızı: ${duelP2Score} Puan`;
-      document.getElementById('resCorrectCount').innerText = `${duelP1Score / 100 + duelP2Score / 100} Soru`;
+      document.getElementById('resCorrectCount').innerText = `${duelP1Correct + duelP2Correct} Soru`;
       document.getElementById('resTotalScore').innerText = Math.max(duelP1Score, duelP2Score).toLocaleString();
       document.getElementById('resMaxStreak').innerText = "Arena Düellosu";
       document.getElementById('resLeaderboardStatus').innerText = "Düello tamamlandı!";
