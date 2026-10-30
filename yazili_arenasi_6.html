@@ -170,6 +170,8 @@
       }
     }
 
+    
+    /* 5. Sınıfla Birebir Uyumlu Giriş Ekranı Stilleri */
     .hero-badge {
       display: inline-flex;
       align-items: center;
@@ -222,17 +224,14 @@
       text-align: left;
     }
 
-    .mode-card:hover {
-      background: rgba(153, 27, 27, 0.2);
-      border-color: rgba(251, 191, 36, 0.6);
+    .mode-card:hover, .mode-card.selected, .mode-card.active {
+      background: rgba(153, 27, 27, 0.3) !important;
+      border-color: #fbbf24 !important;
       transform: translateX(4px);
     }
 
-    .mode-card.active, .mode-card.selected {
-      background: rgba(153, 27, 27, 0.45) !important;
-      border-color: #fbbf24 !important;
-      transform: translateX(4px);
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.35) !important;
+    .mode-card.selected, .mode-card.active {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.25) !important;
     }
 
     .mode-icon {
@@ -325,6 +324,63 @@
       box-shadow: 0 15px 35px rgba(251, 191, 36, 0.5);
       filter: brightness(1.1);
     }
+.form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(251, 191, 36, 0.3);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: #fbbf24;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .btn-start {
+      width: 100%;
+      background: linear-gradient(135deg, #b45309, #d97706);
+      border: 2px solid #fbbf24;
+      border-radius: 14px;
+      padding: 12px 20px;
+      color: #fff;
+      font-family: var(--font-fun);
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-start:hover {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5);
+    }
 
     /* Sağ Panel: Liderlik Tablosu */
     .leaderboard-panel {
@@ -400,8 +456,151 @@
     .rank-other { background: rgba(51, 65, 85, 0.6); color: #cbd5e1; }
 
     /* ==========================================================
-       BİREYSEL OYUN EKRANI (15 SORU)
+       BİREYSEL OYUN EKRANI (15 SORU) - KOMPAKT & TEK EKRAN
        ========================================================== */
+    .game-hud {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 16px;
+      padding: 6px 14px;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      margin-bottom: 6px;
+    }
+
+    .hud-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-stat-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(30, 41, 59, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hud-stat-text .lbl {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 700;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .hud-stat-text .val {
+      font-family: var(--font-fun);
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    /* Gladyatör ve HP Barı Entegre Kutu */
+    .gladiator-hud-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      position: relative;
+    }
+
+    .gladiator-avatar-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      transition: transform 0.2s;
+    }
+
+    .gladiator-avatar-wrapper.hit {
+      animation: gladiatorHurt 0.4s ease;
+    }
+
+    @keyframes gladiatorHurt {
+      0%, 100% { transform: scale(1) translateX(0); }
+      20% { transform: scale(0.9) translateX(-10px) rotate(-8deg); }
+      40% { transform: scale(1.05) translateX(10px) rotate(8deg); }
+      60% { transform: scale(0.95) translateX(-5px); }
+      80% { transform: scale(1.02) translateX(5px); }
+    }
+
+    .gladiator-sprite {
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+    }
+
+    .combat-text {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-fun);
+      font-size: 16px;
+      font-weight: 800;
+      color: #ef4444;
+      text-shadow: 0 0 8px rgba(0,0,0,0.9), 1px 1px 0 #fff;
+      pointer-events: none;
+      opacity: 0;
+      white-space: nowrap;
+      z-index: 25;
+      animation: floatDamage 1s forwards ease-out;
+    }
+
+    @keyframes floatDamage {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+      30% { opacity: 1; transform: translate(-50%, -15px) scale(1.15); }
+      100% { opacity: 0; transform: translate(-50%, -32px) scale(1); }
+    }
+
+    .gladiator-bar-container {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1.5px solid rgba(251, 191, 36, 0.35);
+      border-radius: 12px;
+      padding: 4px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .gladiator-bar-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .gladiator-hp-track {
+      height: 10px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gladiator-hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      border-radius: 5px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    }
+
+    /* Hız Bonusu Barı (Soru İçi) */
     .speed-bar-container {
       height: 4px;
       background: rgba(30, 41, 59, 0.6);
@@ -415,6 +614,116 @@
       width: 100%;
       background: linear-gradient(90deg, #f59e0b, #38bdf8);
       transition: width 0.1s linear;
+    }
+
+    /* Soru Kartı */
+    .question-card {
+      background: rgba(30, 41, 59, 0.75);
+      border: 1.5px solid rgba(251, 191, 36, 0.25);
+      border-radius: 18px;
+      padding: 10px 16px;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .question-badge {
+      background: rgba(180, 83, 9, 0.35);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      padding: 3px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .question-text {
+      font-family: var(--font-fun);
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #f8fafc;
+      margin-bottom: 6px;
+      max-width: 820px;
+    }
+
+    .question-visual-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 12px;
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+      max-width: 100%;
+      max-height: 75px;
+    }
+
+    .question-visual-box svg {
+      max-width: 100%;
+      max-height: 68px;
+      height: auto;
+      width: auto;
+    }
+
+    /* Şık Butonları */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-btn {
+      background: rgba(30, 41, 59, 0.88);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 8px 14px;
+      color: #fff;
+      font-family: var(--font-fun);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(180, 83, 9, 0.35);
+      border-color: #fbbf24;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    }
+
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: #fbbf24;
+      flex-shrink: 0;
     }
 
     .option-btn.correct {
@@ -441,7 +750,9 @@
       40%, 80% { transform: translateX(8px); }
     }
 
-    /* Joker Çubuğu */
+    /* ==========================================================
+       DİKKAT ÇEKİCİ GLADYATÖR JOKER KEMERİ & BUTONLARI (ŞIKLARIN ÜSTÜNDE)
+       ========================================================== */
     .joker-action-bar {
       width: 100%;
       margin: 4px 0 8px 0;
@@ -452,12 +763,14 @@
       box-sizing: border-box;
     }
 
+    /* Boş Durum: Sakin ve Teşvik Edici İlerleme Sayacı */
     .joker-action-bar.joker-bar-empty {
       background: rgba(15, 23, 42, 0.6);
       border: 1px dashed rgba(251, 191, 36, 0.3);
       padding: 4px 10px;
     }
 
+    /* Joker Olduğunda: Parıldayan, Büyüleyici Altın Gladyatör Kemeri */
     .joker-action-bar.joker-bar-has-items {
       background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(88, 28, 135, 0.35), rgba(120, 53, 15, 0.45));
       border: 1.5px solid #fbbf24;
@@ -523,6 +836,7 @@
       width: 100%;
     }
 
+    /* Büyük, Canlı ve Çekici Joker Butonları */
     .joker-btn {
       flex: 1 1 150px;
       max-width: 240px;
@@ -550,22 +864,45 @@
       border-color: #fff;
     }
 
+    .joker-btn:active:not(:disabled) {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* 50:50 Eleme Butonu */
     .joker-btn-5050 {
       background: linear-gradient(135deg, #059669, #047857);
       border-color: #34d399;
       box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+      animation: pulseGreen 2.2s infinite;
     }
 
+    /* 2x Çifte Darbe Butonu */
     .joker-btn-double {
       background: linear-gradient(135deg, #d97706, #b45309);
       border-color: #fde047;
       box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+      animation: pulseAmber 2.2s infinite;
     }
 
+    /* Roma Kalkanı Butonu */
     .joker-btn-shield {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       border-color: #60a5fa;
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      animation: pulseBlue 2.2s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { box-shadow: 0 3px 12px rgba(5, 150, 105, 0.4); }
+      50% { box-shadow: 0 5px 20px rgba(52, 211, 153, 0.7); }
+    }
+    @keyframes pulseAmber {
+      0%, 100% { box-shadow: 0 3px 12px rgba(217, 119, 6, 0.4); }
+      50% { box-shadow: 0 5px 20px rgba(253, 224, 71, 0.7); }
+    }
+    @keyframes pulseBlue {
+      0%, 100% { box-shadow: 0 3px 12px rgba(37, 99, 235, 0.4); }
+      50% { box-shadow: 0 5px 20px rgba(96, 165, 250, 0.7); }
     }
 
     .joker-btn-icon {
@@ -590,8 +927,10 @@
       font-size: 10px;
       color: rgba(255, 255, 255, 0.85);
       font-weight: 600;
+      font-family: var(--font-base);
     }
 
+    /* Aktif Efekt Bildirim Şeridi */
     .joker-active-banner {
       margin-top: 4px;
       padding: 4px 10px;
@@ -606,6 +945,12 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      animation: pulseActiveBanner 1.5s infinite alternate;
+    }
+
+    @keyframes pulseActiveBanner {
+      0% { opacity: 0.85; transform: scale(0.99); }
+      100% { opacity: 1; transform: scale(1.01); }
     }
 
     /* Modal: Joker Sandığı */
@@ -640,20 +985,14 @@
 
     .joker-cards-container {
       display: grid;
-      grid-template-columns: repeat(4, 1fr) !important;
-      gap: 14px !important;
-      margin: 20px 0 10px !important;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 18px 0 8px;
     }
 
-    @media (max-width: 820px) {
+    @media (max-width: 600px) {
       .joker-cards-container {
-        grid-template-columns: repeat(2, 1fr) !important;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .joker-cards-container {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
       }
     }
 
@@ -778,26 +1117,6 @@
       transform: scale(1.02);
     }
 
-    .duel-opt-btn:disabled {
-      opacity: 0.42;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    .duel-opt-btn.duel-correct {
-      background: rgba(16, 185, 129, 0.85) !important;
-      border-color: #10b981 !important;
-      color: #fff !important;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6) !important;
-    }
-
-    .duel-opt-btn.duel-wrong {
-      background: rgba(239, 68, 68, 0.85) !important;
-      border-color: #ef4444 !important;
-      color: #fff !important;
-      box-shadow: 0 0 15px rgba(239, 68, 68, 0.6) !important;
-    }
-
     .duel-center-panel {
       display: flex;
       flex-direction: column;
@@ -908,7 +1227,432 @@
       transform: translateY(-2px);
     }
   
-    /* Boss ve Arena Görselleri */
+    /* === BÜYÜTÜLMÜŞ HEYBETLİ GLADYATÖR BOSS & GENİŞLETİLMİŞ SORU ALANI === */
+    .hud-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 14px;
+      padding: 6px 16px;
+      margin-bottom: 8px;
+    }
+
+    .hud-stat-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .gladiator-boss-card {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1.5px solid rgba(251, 191, 36, 0.4);
+      border-radius: 18px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(251, 191, 36, 0.05);
+      position: relative;
+    }
+
+    .gladiator-avatar-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(180, 83, 9, 0.35) 0%, rgba(15, 23, 42, 0.85) 70%);
+      border: 2px solid rgba(251, 191, 36, 0.55);
+      border-radius: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: gladiatorIdle 3s ease-in-out infinite;
+    }
+
+    @keyframes gladiatorIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .gladiator-avatar-wrapper.hit {
+      animation: gladiatorHurt 0.4s ease;
+    }
+
+    .gladiator-sprite {
+      width: 82px;
+      height: 82px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
+    }
+
+    .boss-info-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .boss-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .boss-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .boss-badge {
+      background: rgba(180, 83, 9, 0.3);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .boss-name {
+      font-family: var(--font-fun);
+      font-size: 18px;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .boss-hp-tag {
+      font-family: var(--font-fun);
+      font-size: 15px;
+      font-weight: 800;
+      color: #fbbf24;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      padding: 3px 10px;
+      border-radius: 8px;
+    }
+
+    .gladiator-hp-track {
+      height: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .gladiator-hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+      border-radius: 6px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+    }
+
+    .boss-subtitle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .boss-subtext {
+      color: #cbd5e1;
+      font-style: italic;
+      font-size: 12px;
+    }
+
+    .boss-level-pill {
+      color: #fbbf24;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    /* Büyütülmüş Soru Kartı & Şıklar */
+    .question-card {
+      background: rgba(30, 41, 59, 0.85) !important;
+      border: 1.5px solid rgba(251, 191, 36, 0.3) !important;
+      border-radius: 20px !important;
+      padding: 16px 24px !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .question-badge {
+      background: rgba(180, 83, 9, 0.35) !important;
+      border: 1px solid rgba(251, 191, 36, 0.45) !important;
+      color: #fbbf24 !important;
+      padding: 4px 14px !important;
+      border-radius: 14px !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      margin-bottom: 8px !important;
+      letter-spacing: 0.5px;
+    }
+
+    .question-text {
+      font-family: var(--font-fun) !important;
+      font-size: 21px !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+      color: #f8fafc !important;
+      margin-bottom: 10px !important;
+      max-width: 860px !important;
+    }
+
+    .question-visual-box {
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+      border-radius: 14px !important;
+      padding: 8px 16px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px !important;
+      max-width: 100% !important;
+      min-height: 105px !important;
+      max-height: 140px !important;
+    }
+
+    .question-visual-box svg {
+      max-width: 100% !important;
+      max-height: 130px !important;
+      height: auto !important;
+      width: auto !important;
+    }
+
+    .options-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px !important;
+      width: 100% !important;
+    }
+
+    .option-btn {
+      background: rgba(30, 41, 59, 0.9) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 14px !important;
+      padding: 10px 18px !important;
+      color: #fff !important;
+      font-family: var(--font-fun) !important;
+      font-size: 17px !important;
+      font-weight: 600 !important;
+      cursor: pointer;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      min-height: 52px !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+    }
+
+    .option-letter {
+      width: 34px !important;
+      height: 34px !important;
+      border-radius: 9px !important;
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(251, 191, 36, 0.35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      font-weight: 800 !important;
+      color: #fbbf24 !important;
+      flex-shrink: 0 !important;
+    }
+
+    #screenSolo.glass-card {
+      max-width: 960px !important;
+      padding: 16px 24px !important;
+    }
+
+    /* Yönetici Paneli Modalı */
+    .admin-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .admin-modal-card {
+      background: #111827;
+      border: 2px solid #fbbf24;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+      width: 92%;
+      max-width: 480px;
+      padding: 24px;
+      color: #f8fafc;
+    }
+
+    .admin-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid rgba(251, 191, 36, 0.3);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .admin-modal-title {
+      font-family: var(--font-fun);
+      font-size: 20px;
+      font-weight: 800;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .admin-modal-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 18px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .admin-modal-close:hover {
+      color: #fff;
+      background: rgba(239, 68, 68, 0.5);
+      border-color: #ef4444;
+    }
+
+    .admin-input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1.5px solid rgba(251, 191, 36, 0.4);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .admin-input:focus {
+      border-color: #fbbf24;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-admin-submit {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-weight: 800;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .btn-admin-submit:hover {
+      transform: scale(1.03);
+    }
+
+    .admin-badge-success {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .admin-section-box {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .admin-section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-danger-reset {
+      width: 100%;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-danger-reset:hover {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary-admin {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid rgba(251, 191, 36, 0.35);
+      border-radius: 10px;
+      color: #fbbf24;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary-admin:hover {
+      background: rgba(251, 191, 36, 0.15);
+      border-color: #fbbf24;
+    }
+    
+  
+    /* === İKİ KOLONLU ARENA SAVAŞ SAHNESİ: DEV GLADYATÖR BOSS KULESİ & GENİŞLETİLMİŞ SORU ALANI === */
     .arena-battle-stage {
       display: grid;
       grid-template-columns: 1fr 310px;
@@ -1130,6 +1874,7 @@
       border-bottom: 7px solid #fbbf24;
     }
 
+    /* Sol Panel Soru Kartı & Şıklar */
     .hud-top-bar {
       display: flex;
       justify-content: space-between;
@@ -1139,40 +1884,6 @@
       border-radius: 14px;
       padding: 6px 14px;
       margin-bottom: 6px;
-    }
-
-    .hud-stat {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hud-stat-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: rgba(30, 41, 59, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .hud-stat-text .lbl {
-      font-size: 10px;
-      color: #94a3b8;
-      font-weight: 700;
-      text-transform: uppercase;
-      line-height: 1;
-    }
-
-    .hud-stat-text .val {
-      font-family: var(--font-fun);
-      font-size: 16px;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.2;
     }
 
     .hud-stat-group {
@@ -1277,155 +1988,45 @@
       color: #fbbf24 !important;
       flex-shrink: 0 !important;
     }
-
-    /* Admin Modal */
-    .admin-modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      animation: fadeIn 0.2s ease-out;
+    
+  
+    /* 4. Seçenek: Kader Çarkı / Şans Sandığı */
+    .joker-cards-container {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 14px !important;
+      margin: 20px 0 10px !important;
     }
 
-    .admin-modal-card {
-      background: #111827;
-      border: 2px solid #fbbf24;
-      border-radius: 20px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
-      width: 92%;
-      max-width: 480px;
-      padding: 24px;
-      color: #f8fafc;
+    @media (max-width: 820px) {
+      .joker-cards-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
     }
 
-    .admin-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1.5px solid rgba(251, 191, 36, 0.3);
-      padding-bottom: 12px;
-      margin-bottom: 16px;
+    @media (max-width: 500px) {
+      .joker-cards-container {
+        grid-template-columns: 1fr !important;
+      }
     }
 
-    .admin-modal-title {
-      font-family: var(--font-fun);
-      font-size: 20px;
-      font-weight: 800;
-      color: #fbbf24;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .joker-modal-content {
+      max-width: 840px !important;
     }
 
-    .admin-modal-close {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #cbd5e1;
-      font-size: 18px;
-      cursor: pointer;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .admin-input {
-      flex: 1;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1.5px solid rgba(251, 191, 36, 0.4);
-      border-radius: 10px;
-      padding: 10px 14px;
-      color: #fff;
-      font-family: var(--font-body);
-      font-size: 14px;
-      outline: none;
-    }
-
-    .btn-admin-submit {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      border: none;
-      border-radius: 10px;
-      color: #000;
-      font-weight: 800;
-      padding: 10px 18px;
-      cursor: pointer;
-      transition: transform 0.15s;
-    }
-
-    .admin-badge-success {
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid #10b981;
-      color: #34d399;
-      font-weight: 800;
-      font-size: 13px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .admin-section-box {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(251, 191, 36, 0.2);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-
-    .admin-section-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: #fbbf24;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-danger-reset {
-      width: 100%;
-      background: linear-gradient(135deg, #ef4444, #b91c1c);
-      border: 1px solid #fca5a5;
-      border-radius: 10px;
-      color: #fff;
-      font-weight: 800;
-      font-size: 14px;
-      padding: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
-    }
-
-    .btn-secondary-admin {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1.5px solid rgba(251, 191, 36, 0.35);
-      border-radius: 10px;
-      color: #fbbf24;
-      font-weight: 800;
-      font-size: 13px;
-      padding: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    /* Kader Küresi */
     .mystery-card {
       background: linear-gradient(135deg, rgba(88, 28, 135, 0.45), rgba(30, 41, 59, 0.9)) !important;
       border: 2px solid #c084fc !important;
       position: relative;
       overflow: hidden;
       cursor: pointer;
+    }
+
+    .mystery-card:hover {
+      background: linear-gradient(135deg, rgba(126, 34, 206, 0.65), rgba(30, 41, 59, 0.95)) !important;
+      border-color: #f43f5e !important;
+      box-shadow: 0 0 25px rgba(192, 132, 252, 0.6) !important;
+      transform: translateY(-8px) scale(1.04);
     }
 
     .mystery-card-spinning {
@@ -1452,11 +2053,65 @@
       50% { transform: scale(1.15); }
       100% { transform: scale(1.05); }
     }
-
+    
+  
     .joker-btn-triple {
       border-color: #f43f5e !important;
       background: rgba(225, 29, 72, 0.25) !important;
     }
+    .joker-btn-triple:hover {
+      background: rgba(225, 29, 72, 0.45) !important;
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.6) !important;
+    }
+    
+  </style>
+  <style>
+    /* 5. sınıfla birebir aynı ana ekran görünümü (İlk 10 Gladyatör tablosu) */
+    #screenHome .welcome-grid { gap: 30px; }
+    #screenHome .btn-start {
+      padding: 18px;
+      background: linear-gradient(135deg, #b45309, #dc2626);
+      border: 2px solid #fbbf24;
+      border-radius: 18px;
+      font-size: 22px;
+      letter-spacing: 1px;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+      transition: all 0.25s;
+    }
+    #screenHome .btn-start:hover {
+      background: linear-gradient(135deg, #b45309, #dc2626);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(251, 191, 36, 0.5);
+      filter: brightness(1.1);
+    }
+    .leaderboard-panel {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 24px;
+      padding: 20px;
+      height: auto;
+      min-height: 0;
+      max-height: 480px;
+    }
+    .leaderboard-header {
+      border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .leaderboard-title { font-size: 20px; gap: 8px; }
+    .leaderboard-table { font-size: 14px; text-align: left; }
+    .leaderboard-table th {
+      padding: 8px 10px;
+      font-size: 14px;
+      text-transform: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .leaderboard-table td { padding: 10px; }
+    .leaderboard-table tr:hover td { background: transparent; }
+    .rank-badge { width: 28px; height: 28px; border-radius: 50%; font-size: 13px; }
+    .rank-1 { border: 1px solid #f59e0b; }
+    .rank-3 { background: #d97706; }
   </style>
 </head>
 <body>
@@ -1487,7 +2142,7 @@
     <div id="screenHome" class="glass-card">
       <div class="welcome-grid">
         
-        <!-- Sol Panel: Bilgiler ve Başlatma -->
+        <!-- Sol Panel: Bilgiler ve Başlatma (5. Sınıf Düzeniyle Birebir Eşit) -->
         <div>
           <div class="hero-badge">🏛️ Antik Roma Arenası · Soru Gladyatörünü Yen!</div>
           <h1 class="hero-title">Yazılı Arenasına Hoş Geldin!</h1>
@@ -1497,7 +2152,7 @@
 
           <div class="mode-select-box">
             <!-- Bireysel Mod -->
-            <div class="mode-card active" id="cardModeSolo" onclick="selectGameMode('solo')">
+            <div class="mode-card selected active" id="cardModeSolo" onclick="selectGameMode('solo')">
               <div class="mode-icon">🛡️</div>
               <div class="mode-info">
                 <h4>Bireysel Mod</h4>
@@ -1510,7 +2165,7 @@
               <div class="mode-icon">⚔️</div>
               <div class="mode-info">
                 <h4>Düello Modu</h4>
-                <p>Arkadaşınla karşı karşıya geç! Her soruya 1 hakkınız var; yanlış yapan puan kaybeder, sıra diğerine geçer!</p>
+                <p>Mavi ve Kırmızı Takım karşı karşıya! Her soruya tek hak: doğru +100, yanlış -50 puan!</p>
               </div>
             </div>
           </div>
@@ -1528,19 +2183,8 @@
             </div>
           </div>
 
-          <!-- Düello Modu Öğrenci & Süre Seçimi -->
+          <!-- Düello Modu Süre Seçimi -->
           <div class="student-select-box" id="duelSettingsBox" style="display: none;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-              <div>
-                <label style="color: #60a5fa; font-size: 12px; font-weight: 800;">🛡️ 1. Öğrenci (Mavi):</label>
-                <input type="text" id="duelP1NameInput" class="student-dropdown" placeholder="Mavi Gladyatör..." style="padding: 10px 12px; font-size: 14px;" list="studentNamesList" autocomplete="off">
-              </div>
-              <div>
-                <label style="color: #f87171; font-size: 12px; font-weight: 800;">⚔️ 2. Öğrenci (Kırmızı):</label>
-                <input type="text" id="duelP2NameInput" class="student-dropdown" placeholder="Kırmızı Gladyatör..." style="padding: 10px 12px; font-size: 14px;" list="studentNamesList" autocomplete="off">
-              </div>
-            </div>
-
             <label>⏱️ Düello Süresi Seçiniz:</label>
             <div style="display: flex; gap: 10px; margin-top: 6px;">
               <button onclick="setDuelTime(30)" id="duelTimeBtn30" class="btn-secondary" style="flex: 1; padding: 10px;">30 Saniye</button>
@@ -1639,7 +2283,7 @@
               <!-- Dinamik SVG Çizimi -->
             </div>
 
-            <!-- GLADYATÖR JOKER KEMERİ / ACTION BAR -->
+            <!-- DİKKAT ÇEKİCİ GLADYATÖR JOKER KEMERİ / ACTION BAR -->
             <div class="joker-action-bar joker-bar-empty" id="jokerActionBar">
               <div class="joker-bar-header">
                 <div class="joker-bar-title" id="jokerBarTitle">
@@ -1650,15 +2294,21 @@
                   🎁 Her 3 soruda bir sandık açılır!
                 </div>
               </div>
-              <div class="active-jokers-list" id="activeJokersList"></div>
-              <div class="joker-active-banner" id="jokerActiveBanner" style="display: none;"></div>
+              <div class="active-jokers-list" id="activeJokersList">
+                <!-- Dinamik Joker Butonları -->
+              </div>
+              <div class="joker-active-banner" id="jokerActiveBanner" style="display: none;">
+                <!-- Aktif efekt göstergesi (2X veya Kalkan) -->
+              </div>
             </div>
 
-            <div class="options-grid" id="optionsGrid"></div>
+            <div class="options-grid" id="optionsGrid">
+              <!-- A, B, C, D Butonları -->
+            </div>
           </div>
         </div>
 
-        <!-- SAĞ PANEL: HEYBETLİ ARENA GLADYATÖRÜ BOSS KULESİ -->
+        <!-- SAĞ PANEL: HEYBETLİ 220PX ARENA GLADYATÖRÜ BOSS KULESİ -->
         <div class="boss-tower-col glass-card">
           <div class="boss-tower-header">
             <span class="boss-badge">🔥 ARENANIN YENİLMEZ EFENDİSİ</span>
@@ -1669,97 +2319,127 @@
           <div class="boss-figure-stage">
             <div class="gladiator-avatar-wrapper" id="gladiatorAvatar">
               <svg class="gladiator-sprite" viewBox="0 0 130 144" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="bronzeGrad6" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#f59e0b" />
-                    <stop offset="50%" stop-color="#b45309" />
-                    <stop offset="100%" stop-color="#78350f" />
-                  </linearGradient>
-                  <linearGradient id="bladeGrad6" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#f1f5f9" />
-                    <stop offset="50%" stop-color="#cbd5e1" />
-                    <stop offset="100%" stop-color="#94a3b8" />
-                  </linearGradient>
-                  <linearGradient id="goldRim6" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#fef08a" />
-                    <stop offset="100%" stop-color="#d97706" />
-                  </linearGradient>
-                  <linearGradient id="capeGrad6" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#b91c1c" />
-                    <stop offset="100%" stop-color="#7f1d1d" />
-                  </linearGradient>
-                </defs>
+              <defs>
+                <linearGradient id="bronzeGrad6" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f59e0b" />
+                  <stop offset="50%" stop-color="#b45309" />
+                  <stop offset="100%" stop-color="#78350f" />
+                </linearGradient>
+                <linearGradient id="bladeGrad6" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#f1f5f9" />
+                  <stop offset="50%" stop-color="#cbd5e1" />
+                  <stop offset="100%" stop-color="#94a3b8" />
+                </linearGradient>
+                <linearGradient id="goldRim6" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fef08a" />
+                  <stop offset="100%" stop-color="#d97706" />
+                </linearGradient>
+                <linearGradient id="capeGrad6" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#b91c1c" />
+                  <stop offset="100%" stop-color="#7f1d1d" />
+                </linearGradient>
+              </defs>
 
-                <!-- Kırmızı Roma Pelerini -->
-                <path d="M 32,56 Q 14,92 24,115 Q 65,124 104,115 Q 116,92 98,56 Z" fill="url(#capeGrad6)" stroke="#450a0a" stroke-width="2"/>
+              <!-- Kırmızı Roma Pelerini -->
+              <path d="M 32,56 Q 14,92 24,115 Q 65,124 104,115 Q 116,92 98,56 Z" fill="url(#capeGrad6)" stroke="#450a0a" stroke-width="2"/>
 
-                <!-- Deri ve Bronz Roma Zırhı -->
-                <path d="M 44,54 Q 65,50 86,54 L 82,92 Q 65,97 48,92 Z" fill="url(#bronzeGrad6)" stroke="#451a03" stroke-width="2"/>
-                <path d="M 50,62 Q 65,68 80,62" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
-                <path d="M 52,74 Q 65,80 78,74" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
-                
-                <!-- Etekler -->
-                <rect x="50" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
-                <rect x="58" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
-                <rect x="66" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
-                <rect x="74" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
-
-                <!-- Boyun ve Kafa -->
-                <rect x="58" y="42" width="14" height="14" fill="#fed7aa"/>
-                <circle cx="65" cy="38" r="20" fill="#fed7aa" />
-
-                <!-- Gözler ve İfade -->
-                <circle cx="58" cy="37" r="3.2" fill="#1e293b" />
-                <circle cx="72" cy="37" r="3.2" fill="#1e293b" />
-                <circle cx="59" cy="36" r="1" fill="#fff" />
-                <circle cx="73" cy="36" r="1" fill="#fff" />
-                <path d="M 60,44 Q 65,49 70,44" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none" />
-
-                <!-- Roma Miğferi (Altın) -->
-                <path d="M 44,34 Q 65,14 86,34 Q 84,44 65,44 Q 46,44 44,34 Z" fill="url(#goldRim6)" stroke="#78350f" stroke-width="2"/>
-                <path d="M 46,34 L 50,47 L 54,39 Z" fill="url(#bronzeGrad6)"/>
-                <path d="M 84,34 L 80,47 L 76,39 Z" fill="url(#bronzeGrad6)"/>
-                <path d="M 59,16 Q 65,-2 71,16 L 69,21 Q 65,15 61,21 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-                <path d="M 54,19 Q 65,3 76,19" stroke="#ef4444" stroke-width="2" fill="none"/>
-
-                <!-- SOL KOL: Antik Roma Scutum Kalkanı -->
-                <g transform="translate(10, 50)">
-                  <path d="M 22,0 Q 42,-5 50,14 L 42,62 Q 22,74 5,58 L 5,17 Q 12,0 22,0 Z" fill="url(#bronzeGrad6)" stroke="url(#goldRim6)" stroke-width="2.5"/>
-                  <path d="M 22,4 Q 38,0 45,15 L 38,56 Q 22,66 9,53 L 9,18 Q 15,4 22,4 Z" fill="none" stroke="rgba(254, 240, 138, 0.4)" stroke-width="1.2"/>
-                  <circle cx="12" cy="12" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
-                  <circle cx="42" cy="12" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
-                  <circle cx="36" cy="56" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
-                  <circle cx="10" cy="51" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
-                  <path d="M 26,10 L 29,19 L 26,17 L 23,19 Z" fill="#fef08a" stroke="#78350f" stroke-width="0.6"/>
-                  <line x1="26" y1="17" x2="26" y2="25" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M 26,58 L 29,49 L 26,51 L 23,49 Z" fill="#fef08a" stroke="#78350f" stroke-width="0.6"/>
-                  <line x1="26" y1="51" x2="26" y2="43" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M 18,34 Q 10,31 8,24" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M 18,35 Q 10,37 8,44" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M 34,34 Q 42,31 44,24" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M 34,35 Q 42,37 44,44" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
-                  <circle cx="26" cy="34" r="10.5" fill="url(#goldRim6)" stroke="#78350f" stroke-width="1.5"/>
-                  <circle cx="26" cy="34" r="8" fill="#451a03" stroke="#fef08a" stroke-width="1"/>
-                  <text x="26" y="37.5" fill="#fbbf24" font-size="8.5" font-weight="900" font-family="'Nunito', sans-serif" text-anchor="middle" letter-spacing="0.5">VI</text>
-                </g>
-
-                <!-- SAĞ KOL: ÇARPAN GLADIUS KILICI -->
-                <g transform="translate(86, 38) rotate(14)">
-                  <path d="M 6,0 L 11,46 L 6,55 L 1,46 L 6,0 Z" fill="url(#bladeGrad6)" stroke="#64748b" stroke-width="1"/>
-                  <line x1="6" y1="4" x2="6" y2="44" stroke="#94a3b8" stroke-width="1"/>
-                  <ellipse cx="6" cy="46" rx="8" ry="3" fill="url(#goldRim6)" stroke="#78350f" stroke-width="1"/>
-                  <rect x="4" y="49" width="4" height="11" rx="1" fill="#78350f"/>
-                  <circle cx="6" cy="62" r="4" fill="url(#goldRim6)" stroke="#78350f" stroke-width="1"/>
-                  <circle cx="6" cy="54" r="4.5" fill="#fed7aa" stroke="#d97706" stroke-width="1"/>
-                </g>
+              <!-- Deri ve Bronz Roma Zırhı (Lorica) -->
+              <path d="M 44,54 Q 65,50 86,54 L 82,92 Q 65,97 48,92 Z" fill="url(#bronzeGrad6)" stroke="#451a03" stroke-width="2"/>
+              <path d="M 50,62 Q 65,68 80,62" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
+              <path d="M 52,74 Q 65,80 78,74" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
               
-                <!-- Bacaklar ve Zırhlı Dizlikler -->
-                <rect x="52" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
-                <rect x="68" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
-                <path d="M 48,127 L 63,127 L 64,134 L 47,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
-                <path d="M 67,127 L 82,127 L 83,134 L 66,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
-                <ellipse cx="65" cy="136" rx="48" ry="7" fill="rgba(0,0,0,0.42)"/>
-              </svg>
+              <!-- Etekler -->
+              <rect x="50" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
+              <rect x="58" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
+              <rect x="66" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
+              <rect x="74" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
+
+              <!-- Boyun ve Kafa -->
+              <rect x="58" y="42" width="14" height="14" fill="#fed7aa"/>
+              <circle cx="65" cy="38" r="20" fill="#fed7aa" />
+
+              <!-- Gözler ve İfade -->
+              <circle cx="58" cy="37" r="3.2" fill="#1e293b" />
+              <circle cx="72" cy="37" r="3.2" fill="#1e293b" />
+              <circle cx="59" cy="36" r="1" fill="#fff" />
+              <circle cx="73" cy="36" r="1" fill="#fff" />
+              <path d="M 60,44 Q 65,49 70,44" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none" />
+
+              <!-- Roma Miğferi (Altın) -->
+              <path d="M 44,34 Q 65,14 86,34 Q 84,44 65,44 Q 46,44 44,34 Z" fill="url(#goldRim6)" stroke="#78350f" stroke-width="2"/>
+              <path d="M 46,34 L 50,47 L 54,39 Z" fill="url(#bronzeGrad6)"/>
+              <path d="M 84,34 L 80,47 L 76,39 Z" fill="url(#bronzeGrad6)"/>
+              <!-- Kırmızı Miğfer Tüyleri -->
+              <path d="M 59,16 Q 65,-2 71,16 L 69,21 Q 65,15 61,21 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
+              <path d="M 54,19 Q 65,3 76,19" stroke="#ef4444" stroke-width="2" fill="none"/>
+
+              <!-- SOL KOL: Antik Roma Lejyoner & Gladyatör Scutum Kalkanı -->
+              <g transform="translate(10, 50)">
+                <!-- Kalkan Plakası (Kavisli Ağır Roma Scutum) -->
+                <path d="M 22,0 Q 42,-5 50,14 L 42,62 Q 22,74 5,58 L 5,17 Q 12,0 22,0 Z" fill="url(#bronzeGrad6)" stroke="url(#goldRim6)" stroke-width="2.5"/>
+                <!-- İç Altın Bordür Hattı -->
+                <path d="M 22,4 Q 38,0 45,15 L 38,56 Q 22,66 9,53 L 9,18 Q 15,4 22,4 Z" fill="none" stroke="rgba(254, 240, 138, 0.4)" stroke-width="1.2"/>
+                
+                <!-- Dört Köşe Altın Perçinleri -->
+                <circle cx="12" cy="12" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
+                <circle cx="42" cy="12" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
+                <circle cx="36" cy="56" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
+                <circle cx="10" cy="51" r="1.8" fill="#fef08a" stroke="#78350f" stroke-width="0.8"/>
+                
+                <!-- Roma Şimşek Kanatları (Jupiter'in Fulmen Motifleri - Orijinal Roma Deseni) -->
+                <!-- Üst ve Alt Şimşek Uçları -->
+                <path d="M 26,10 L 29,19 L 26,17 L 23,19 Z" fill="#fef08a" stroke="#78350f" stroke-width="0.6"/>
+                <line x1="26" y1="17" x2="26" y2="25" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+                
+                <path d="M 26,58 L 29,49 L 26,51 L 23,49 Z" fill="#fef08a" stroke="#78350f" stroke-width="0.6"/>
+                <line x1="26" y1="51" x2="26" y2="43" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+                
+                <!-- Yan Şimşek Kanatları -->
+                <path d="M 18,34 Q 10,31 8,24" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M 18,35 Q 10,37 8,44" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M 34,34 Q 42,31 44,24" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M 34,35 Q 42,37 44,44" fill="none" stroke="#fde047" stroke-width="1.8" stroke-linecap="round"/>
+
+                <!-- Altın Defne Çelengi Çerçevesi -->
+                <path d="M 15,26 Q 11,34 16,42 Q 26,48 36,42 Q 41,34 37,26" fill="none" stroke="#fef08a" stroke-width="1.8" stroke-dasharray="2,3"/>
+
+                <!-- Kalkanın Merkezindeki Zırhlı Altın Kubbe (Umbo Göbeği) -->
+                <circle cx="26" cy="34" r="10.5" fill="url(#goldRim6)" stroke="#78350f" stroke-width="1.5"/>
+                <circle cx="26" cy="34" r="8" fill="#451a03" stroke="#fef08a" stroke-width="1"/>
+                
+                <!-- Roma VI Arması (6. Sınıf Onuru) -->
+                <text x="26" y="37.5" fill="#fbbf24" font-size="8.5" font-weight="900" font-family="'Nunito', sans-serif" text-anchor="middle" letter-spacing="0.5">VI</text>
+              </g>
+
+              <!-- SAĞ KOL: ÇARPAN GLADIUS KILICI -->
+              <g transform="translate(86, 38) rotate(14)">
+                <!-- Kılıç Namlusu -->
+                <path d="M 6,0 L 11,46 L 6,55 L 1,46 L 6,0 Z" fill="url(#bladeGrad6)" stroke="#64748b" stroke-width="1"/>
+                <line x1="6" y1="4" x2="6" y2="44" stroke="#94a3b8" stroke-width="1"/>
+                <!-- Namludaki Çarpan Çentikleri -->
+                <line x1="6" y1="12" x2="9" y2="12" stroke="#78350f" stroke-width="1"/>
+                <line x1="6" y1="22" x2="9" y2="22" stroke="#78350f" stroke-width="1"/>
+                <line x1="6" y1="32" x2="9" y2="32" stroke="#78350f" stroke-width="1"/>
+                <!-- Balçak, Kabza, Topuz -->
+                <ellipse cx="6" cy="46" rx="8" ry="3" fill="url(#goldRim6)" stroke="#78350f" stroke-width="1"/>
+                <rect x="4" y="49" width="4" height="11" rx="1" fill="#78350f"/>
+                <circle cx="6" cy="62" r="4" fill="url(#goldRim6)" stroke="#78350f" stroke-width="1"/>
+                <circle cx="6" cy="54" r="4.5" fill="#fed7aa" stroke="#d97706" stroke-width="1"/>
+              </g>
+            
+            <!-- Bacaklar ve Zırhlı Dizlikler (Greaves) -->
+            <rect x="52" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
+            <rect x="68" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
+            <line x1="52" y1="112" x2="62" y2="112" stroke="#fef08a" stroke-width="1.5"/>
+            <line x1="68" y1="112" x2="78" y2="112" stroke="#fef08a" stroke-width="1.5"/>
+            <!-- Deri Roma Sandaletleri (Caligae) -->
+            <path d="M 48,127 L 63,127 L 64,134 L 47,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
+            <path d="M 67,127 L 82,127 L 83,134 L 66,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
+            <line x1="50" y1="130" x2="62" y2="130" stroke="#fef08a" stroke-width="1"/>
+            <line x1="69" y1="130" x2="81" y2="130" stroke="#fef08a" stroke-width="1"/>
+            <!-- Arena Kumu Zemin Gölgesi -->
+            <ellipse cx="65" cy="136" rx="48" ry="7" fill="rgba(0,0,0,0.42)"/>
+    </svg>
               <div class="combat-text" id="combatText">-100 HP!</div>
             </div>
           </div>
@@ -1783,6 +2463,8 @@
       </div>
     </div>
 
+    </div>
+
     <!-- EKRAN 3: DÜELLO MODU (2 KİŞİLİK AKILLI TAHTA) -->
     <div id="screenDuel" class="glass-card" style="display: none; max-width: 1100px;">
       <div class="duel-stage">
@@ -1791,7 +2473,7 @@
         <div class="duel-player-panel player-blue">
           <div class="duel-player-header">
             <div style="font-size: 28px;">🛡️</div>
-            <div class="duel-player-name" id="duelP1Name">Mavi Gladyatör</div>
+            <div class="duel-player-name" id="duelP1Name">Mavi Takım</div>
             <div class="duel-score-badge" id="duelP1Score">0</div>
             <div style="font-size: 11px; color: #60a5fa; font-weight: 800;" id="duelP1Streak">0 Seri</div>
           </div>
@@ -1812,10 +2494,12 @@
             Soru metni...
           </div>
           
-          <div class="question-visual-box" id="duelVisualBox" style="width: 100%; min-height: 80px;"></div>
+          <div class="question-visual-box" id="duelVisualBox" style="width: 100%; min-height: 80px;">
+            <!-- Dinamik Çizim -->
+          </div>
 
-          <div id="duelTurnInfo" style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 8px; min-height: 22px; text-align: center;">
-            ⚔️ Doğru: +100 Puan | Yanlış: -50 Puan (Her soruya 1 hak)
+          <div id="duelHint" style="font-size: 12px; color: #fbbf24; font-weight: 800; margin-top: 8px;">
+            Her oyuncunun 1 cevap hakkı var! Doğru +100, yanlış -50 puan.
           </div>
         </div>
 
@@ -1823,7 +2507,7 @@
         <div class="duel-player-panel player-red">
           <div class="duel-player-header">
             <div style="font-size: 28px;">⚔️</div>
-            <div class="duel-player-name" id="duelP2Name">Kırmızı Gladyatör</div>
+            <div class="duel-player-name" id="duelP2Name">Kırmızı Takım</div>
             <div class="duel-score-badge" id="duelP2Score">0</div>
             <div style="font-size: 11px; color: #f87171; font-weight: 800;" id="duelP2Streak">0 Seri</div>
           </div>
@@ -1916,6 +2600,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 
   <script>
@@ -2023,65 +2708,110 @@
       }
     }
 
-    // Liderlik Tablosunu Yükle
-    function loadLeaderboard() {
-      const tbody = document.getElementById('leaderboardTbody');
-      if (!db) {
-        renderLocalLeaderboard(tbody);
-        return;
-      }
+    /* ==========================================================
+       LİDERLİK TABLOSU: Kişi başına TEK kayıt (en yüksek puan)
+       ========================================================== */
+    const LB_LOCAL_KEY = 'yazili_arenasi_6_scores';
+    const LB_RESET_KEY = 'yazili_arenasi_6_reset_done';
 
-      db.ref(SCORES_NODE).orderByChild('puan').limitToLast(10).on('value', snap => {
-        tbody.innerHTML = '';
-        const raw = snap.val();
-        if (!raw) {
-          renderLocalLeaderboard(tbody);
-          return;
-        }
+    // Daha önce oynayan öğrencilerin en yüksek skorları (kayıt kaybolmasın diye dosyada saklı)
+    const LB_SEED_SCORES = [
+      { adSoyad: 'Yusuf Yankı EKİZ',          dogruSayisi: 14, puan: 26642 },
+      { adSoyad: 'Selis TAHA',                dogruSayisi: 7,  puan: 12882 },
+      { adSoyad: 'Ömer BARAN AYTEMÜR',        dogruSayisi: 8,  puan: 12010 },
+      { adSoyad: 'Batıkan ÖZTUNALI',          dogruSayisi: 7,  puan: 8418 },
+      { adSoyad: 'Defne ÇİM',                 dogruSayisi: 6,  puan: 6814 },
+      { adSoyad: 'Kürşat Gökdeniz BEKTAŞ',    dogruSayisi: 4,  puan: 6287 }
+    ];
 
-        const list = Object.values(raw);
-        list.sort((a, b) => (b.puan || 0) - (a.puan || 0));
+    let lbCloudScores = [];      // Firebase'den gelen kayıtlar
+    let lbResetDone = false;     // Yönetici tabloyu sıfırladıysa eski kayıtlar da gösterilmez
+    let lbListenerAttached = false;
 
-        list.slice(0, 10).forEach((item, idx) => {
-          const row = document.createElement('tr');
-          let rankClass = 'rank-other';
-          if (idx === 0) rankClass = 'rank-1';
-          else if (idx === 1) rankClass = 'rank-2';
-          else if (idx === 2) rankClass = 'rank-3';
-
-          row.innerHTML = `
-            <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
-            <td style="font-weight: 700; color: #fff;">${item.adSoyad || 'Bilinmeyen'}</td>
-            <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi ?? 0}</td>
-            <td style="text-align: right; color: #fbbf24; font-weight: 800;">${(item.puan || 0).toLocaleString()}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      });
+    function lbNameKey(name) {
+      return String(name || '').trim()
+        .toLocaleLowerCase('tr')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/ı/g, 'i')
+        .replace(/\s+/g, ' ');
     }
 
-    function renderLocalLeaderboard(tbody) {
-      let localScores = JSON.parse(localStorage.getItem('yazili_arenasi_6_scores') || '[]');
-      tbody.innerHTML = '';
-      if (localScores.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Henüz gladyatör skoru yok. İlk sen ol!</td></tr>';
+    function readLocalScores() {
+      try { return JSON.parse(localStorage.getItem(LB_LOCAL_KEY) || '[]'); } catch (e) { return []; }
+    }
+
+    // Her öğrenciden yalnızca en yüksek puanlı kaydı tutar
+    function bestPerPlayer(rawList) {
+      const best = new Map();
+      rawList.forEach(item => {
+        if (!item || !item.adSoyad) return;
+        const entry = {
+          adSoyad: String(item.adSoyad).trim(),
+          dogruSayisi: Number(item.dogruSayisi) || 0,
+          puan: Number(item.puan)
+        };
+        const key = lbNameKey(entry.adSoyad);
+        if (!key || isNaN(entry.puan)) return;
+        const cur = best.get(key);
+        if (!cur || entry.puan > cur.puan || (entry.puan === cur.puan && entry.dogruSayisi > cur.dogruSayisi)) {
+          best.set(key, entry);
+        }
+      });
+      return Array.from(best.values())
+        .sort((a, b) => (b.puan - a.puan) || (b.dogruSayisi - a.dogruSayisi));
+    }
+
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboardTbody');
+      if (!tbody) return;
+
+      const resetDone = lbResetDone || localStorage.getItem(LB_RESET_KEY) === '1';
+
+      let all;
+      if (db && (lbCloudScores.length > 0 || resetDone)) {
+        all = lbCloudScores.slice();
+      } else {
+        all = readLocalScores();   // bulut boşsa veya bağlantı yoksa yerel yedek
+      }
+      if (!resetDone) all = LB_SEED_SCORES.concat(all);
+
+      const top10 = bestPerPlayer(all).slice(0, 10);
+
+      if (top10.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Henüz arenada skor kaydedilmedi. İlk sen ol!</td></tr>';
         return;
       }
-      localScores.sort((a, b) => b.puan - a.puan);
-      localScores.slice(0, 10).forEach((item, idx) => {
-        const row = document.createElement('tr');
+
+      tbody.innerHTML = top10.map((item, idx) => {
         let rankClass = 'rank-other';
         if (idx === 0) rankClass = 'rank-1';
         else if (idx === 1) rankClass = 'rank-2';
         else if (idx === 2) rankClass = 'rank-3';
-
-        row.innerHTML = `
-          <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
-          <td style="font-weight: 700; color: #fff;">${item.adSoyad}</td>
-          <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi || 0}</td>
-          <td style="text-align: right; color: #fbbf24; font-weight: 800;">${item.puan.toLocaleString()}</td>
+        return `
+          <tr>
+            <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
+            <td style="color: #fff; font-weight: 700;">${item.adSoyad}</td>
+            <td style="text-align: center; color: #10b981; font-weight: 800;">${item.dogruSayisi}</td>
+            <td style="text-align: right; color: #fbbf24; font-weight: 800;">${item.puan.toLocaleString()}</td>
+          </tr>
         `;
-        tbody.appendChild(row);
+      }).join('');
+    }
+
+    // Liderlik Tablosunu Yükle
+    function loadLeaderboard() {
+      renderLeaderboard();
+      if (!db || lbListenerAttached) return;
+      lbListenerAttached = true;
+
+      db.ref(SCORES_NODE).on('value', snap => {
+        const raw = snap.val() || {};
+        lbResetDone = !!(raw._meta && raw._meta.resetDone);
+        lbCloudScores = Object.keys(raw).filter(k => k !== '_meta').map(k => raw[k]);
+        renderLeaderboard();
+      }, err => {
+        console.warn('Liderlik tablosu okunamadı:', err);
+        renderLeaderboard();
       });
     }
 
@@ -2097,9 +2827,10 @@
         db.ref(SCORES_NODE).push(data);
       }
 
-      let localScores = JSON.parse(localStorage.getItem('yazili_arenasi_6_scores') || '[]');
-      localScores.push(data);
-      localStorage.setItem('yazili_arenasi_6_scores', JSON.stringify(localScores));
+      // Yerel yedek: her öğrenciden yalnızca en yüksek skor saklanır
+      const local = bestPerPlayer(readLocalScores().concat([data]));
+      localStorage.setItem(LB_LOCAL_KEY, JSON.stringify(local));
+      renderLeaderboard();
     }
 
     /* ==========================================================
@@ -2173,6 +2904,7 @@
 
     /* ==========================================================
        GENİŞ VE DİNAMİK SORU HAVUZU (6. SINIF MEB VE TYMM FORMATI)
+       %100 TEK VE BENZERSİZ DOĞRU CEVAP GARANTİSİ
        ========================================================== */
     function makeQuestion(badge, text, visual, correct, rawDistractors) {
       const cleanDistractors = [];
@@ -2214,10 +2946,12 @@
       };
     }
 
-    function generateQuestionPool() {
+        function generateQuestionPool() {
       const pool = [];
 
-      /* 1. KAZANIM: MAT.6.1.1 (Çarpanlar ve Katlar / Dikdörtgen Modeli) */
+      /* ------------------------------------------------------------
+         1. KAZANIM: MAT.6.1.1 (Çarpanlar ve Katlar / Dikdörtgen Modeli)
+         ------------------------------------------------------------ */
       const rectAreas = [
         { area: 24, minP: "20 cm", maxP: "50 cm", factors: "8", allF: "1, 2, 3, 4, 6, 8, 12, 24" },
         { area: 36, minP: "24 cm", maxP: "74 cm", factors: "9", allF: "1, 2, 3, 4, 6, 9, 12, 18, 36" },
@@ -2229,6 +2963,7 @@
       ];
 
       rectAreas.forEach(item => {
+        // En kısa çevre (kenarlar birbirine en yakın)
         pool.push(makeQuestion(
           "MAT.6.1.1 · Çarpanlar & Dikdörtgen Modeli",
           `Alanı ${item.area} cm² ve kenar uzunlukları tam sayı olan bir dikdörtgenin ÇEVRESİ EN AZ kaç cm olabilir?`,
@@ -2240,6 +2975,7 @@
           [item.maxP, "36 cm", "44 cm"]
         ));
 
+        // En büyük çevre (kenarlar 1 ve kendisi)
         pool.push(makeQuestion(
           "MAT.6.1.1 · Çarpanlar & Dikdörtgen Modeli",
           `Alanı ${item.area} cm² ve kenar uzunlukları tam sayı olan bir dikdörtgenin ÇEVRESİ EN FAZLA kaç cm olabilir?`,
@@ -2251,6 +2987,7 @@
           [item.minP, "60 cm", "82 cm"]
         ));
 
+        // Toplam çarpan sayısı
         pool.push(makeQuestion(
           "MAT.6.1.1 · Çarpan Sayısı",
           `${item.area} doğal sayısının toplam kaç tane pozitif çarpanı vardır?`,
@@ -2260,6 +2997,7 @@
         ));
       });
 
+      // Tam kare sayıların tek sayıda çarpanı olması kuralı
       const squareNums = [
         { num: 9, fCount: 3, sq: "3x3" },
         { num: 16, fCount: 5, sq: "4x4" },
@@ -2281,6 +3019,7 @@
         ));
       });
 
+      // Melodili Yol / Kat Problemleri (PDF 3 Soru 3)
       const roadIntervals = [
         { interval: 6, minR: 75, maxR: 80, ans: "78 km" },
         { interval: 8, minR: 60, maxR: 70, ans: "64 km" },
@@ -2304,6 +3043,7 @@
         ));
       });
 
+      // Kumbaraya Para Atma (Katlar - PDF 3 Soru 4)
       const piggyBanks = [
         { daily: 15, target: 200, days: "14 gün" },
         { daily: 20, target: 250, days: "13 gün" },
@@ -2321,6 +3061,7 @@
         ));
       });
 
+      // 48 Lokum Dikdörtgen Kutu Çevre Optimizasyonu (PDF 2 Sayfa 10)
       pool.push(makeQuestion(
         "MAT.6.1.1 · Çarpan Çiftleri & Çevre",
         "48 adet küp lokum tek kat hâlinde dikdörtgen biçimli kutuya dizilecektir. Kutunun çevresinin EN KISA olması için taban boyutları kaç lokum x kaç lokum seçilmelidir?",
@@ -2337,7 +3078,9 @@
         ["6 x 6", "4 x 9", "2 x 18"]
       ));
 
-      /* 2. KAZANIM: MAT.6.1.2 (Bölünebilme Kriterleri: 2, 3, 4, 5, 6, 9, 10) */
+      /* ------------------------------------------------------------
+         2. KAZANIM: MAT.6.1.2 (Bölünebilme Kriterleri: 2, 3, 4, 5, 6, 9, 10)
+         ------------------------------------------------------------ */
       pool.push(makeQuestion(
         "MAT.6.1.2 · 3 ile Bölünebilme",
         "Dört basamaklı 12A8 sayısının üzerine mürekkep damlamıştır. Sayı 3 ile KALANSIZ bölünebildiğine göre A yerine hangi rakamlar gelebilir?",
@@ -2437,7 +3180,9 @@
         ["3 ile bölünen her sayı 9 ile de bölünür", "4 ile bölünen her sayı 8 ile de bölünür", "2 ile bölünen her sayı 4 ile de bölünür"]
       ));
 
-      /* 3. KAZANIM: MAT.6.1.3 (Asal Sayılar ve Asal Çarpanlar) */
+      /* ------------------------------------------------------------
+         3. KAZANIM: MAT.6.1.3 (Asal Sayılar ve Asal Çarpanlar)
+         ------------------------------------------------------------ */
       pool.push(makeQuestion(
         "MAT.6.1.3 · Asal Sayı Tanımı",
         "Asal sayılar hakkında verilen aşağıdaki ifadelerden hangisi DOĞRUDUR?",
@@ -2470,6 +3215,7 @@
         ["18", "16", "15"]
       ));
 
+      // Asal Çarpanlara Ayırma (Çarpan Ağacı / Algoritma - 60, 84, 90, 72, 100, 36)
       const primeFactorsList = [
         {
           num: 60,
@@ -2495,10 +3241,30 @@
             <circle cx="125" cy="48" r="8" fill="#ec4899"/><text x="125" y="52" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">21</text>
           </svg>`
         },
-        { num: 90, factors: "2, 3 ve 5", exp: "2 · 3² · 5", svg: null },
-        { num: 72, factors: "2 ve 3", exp: "2³ · 3²", svg: null },
-        { num: 100, factors: "2 ve 5", exp: "2² · 5²", svg: null },
-        { num: 36, factors: "2 ve 3", exp: "2² · 3²", svg: null }
+        {
+          num: 90,
+          factors: "2, 3 ve 5",
+          exp: "2 · 3² · 5",
+          svg: null
+        },
+        {
+          num: 72,
+          factors: "2 ve 3",
+          exp: "2³ · 3²",
+          svg: null
+        },
+        {
+          num: 100,
+          factors: "2 ve 5",
+          exp: "2² · 5²",
+          svg: null
+        },
+        {
+          num: 36,
+          factors: "2 ve 3",
+          exp: "2² · 3²",
+          svg: null
+        }
       ];
 
       primeFactorsList.forEach(pf => {
@@ -2546,7 +3312,9 @@
         ["Yalnızca 2", "Yalnızca 3", "2, 3 ve 5"]
       ));
 
-      /* 4. KAZANIM: MAT.6.1.4 (Ortak Bölen ve Ortak Kat / EBOB & EKOK) */
+      /* ------------------------------------------------------------
+         4. KAZANIM: MAT.6.1.4 (Ortak Bölen ve Ortak Kat / EBOB & EKOK)
+         ------------------------------------------------------------ */
       pool.push(makeQuestion(
         "MAT.6.1.4 · En Büyük Ortak Bölen (Kumaş)",
         "Bir terzinin 48 m mavi ve 60 m beyaz kumaşı vardır. Kumaşlar hiç artmayacak şekilde EŞİT ve EN UZUN parçalara kesilecektir. Bir parçanın uzunluğu kaç metre olur?",
@@ -2651,7 +3419,9 @@
         ["150 sayfa", "240 sayfa", "360 sayfa"]
       ));
 
-      /* 5. KAZANIM: MAT.6.6.1 (Deneysel Olasılık / Göreli Sıklık) */
+      /* ------------------------------------------------------------
+         5. KAZANIM: MAT.6.6.1 (Deneysel Olasılık / Göreli Sıklık)
+         ------------------------------------------------------------ */
       pool.push(makeQuestion(
         "MAT.6.6.1 · Deneysel Olasılık Hesabı",
         "Bir çark 90 kez çevrilmiş ve bu çevirmelerden 50 tanesinde mavi renk gelmiştir. Bu deneye göre çarkın mavi gelmesinin DENEYSEL OLASILIĞI kaçtır?",
@@ -2703,14 +3473,34 @@
         ["Her zaman 1'e eşit olur", "Sıfıra yaklaşır", "Değeri sürekli rastgele değişir"]
       ));
 
-      /* 6. KAZANIM: MAT.6.1.5 (Ondalık Gösterimleri Çözümleme) */
+      /* ------------------------------------------------------------
+         6. KAZANIM: MAT.6.1.5 (Ondalık Gösterimleri Çözümleme)
+         ------------------------------------------------------------ */
       const decimalNumbers = [
-        { num: "45,283", expanded: "4·10 + 5·1 + 2·(1/10) + 8·(1/100) + 3·(1/1000)" },
-        { num: "308,045", expanded: "3·100 + 8·1 + 4·(1/100) + 5·(1/1000)" },
-        { num: "72,609", expanded: "7·10 + 2·1 + 6·(1/10) + 9·(1/1000)" },
-        { num: "15,48", expanded: "1·10 + 5·1 + 4·(1/10) + 8·(1/100)" },
-        { num: "8,305", expanded: "8·1 + 3·(1/10) + 5·(1/1000)" },
-        { num: "204,07", expanded: "2·100 + 4·1 + 7·(1/100)" }
+        {
+          num: "45,283",
+          expanded: "4·10 + 5·1 + 2·(1/10) + 8·(1/100) + 3·(1/1000)"
+        },
+        {
+          num: "308,045",
+          expanded: "3·100 + 8·1 + 4·(1/100) + 5·(1/1000)"
+        },
+        {
+          num: "72,609",
+          expanded: "7·10 + 2·1 + 6·(1/10) + 9·(1/1000)"
+        },
+        {
+          num: "15,48",
+          expanded: "1·10 + 5·1 + 4·(1/10) + 8·(1/100)"
+        },
+        {
+          num: "8,305",
+          expanded: "8·1 + 3·(1/10) + 5·(1/1000)"
+        },
+        {
+          num: "204,07",
+          expanded: "2·100 + 4·1 + 7·(1/100)"
+        }
       ];
 
       decimalNumbers.forEach(d => {
@@ -2796,7 +3586,7 @@
     let inventoryJokers = [];
     let activeJokerEffect = null;
 
-    // Düello Modu Değişkenleri
+    // Düello Modu
     let duelTimeLimit = 60;
     let duelTimeRemaining = 60;
     let duelTimerInterval = null;
@@ -2806,9 +3596,10 @@
     let duelP2Streak = 0;
     let duelQuestions = [];
     let duelQIndex = 0;
-    let duelP1Answered = false;  // Soru için P1 hakkını kullandı mı?
-    let duelP2Answered = false;  // Soru için P2 hakkını kullandı mı?
-    let duelQuestionLocked = false; // Soru geçiş animasyonunda mı?
+    let duelQuestionAnswered = false;
+    let duelP1Done = false;   // 1. oyuncu bu soruya cevap verdi mi (her soruya 1 hak)
+    let duelP2Done = false;   // 2. oyuncu bu soruya cevap verdi mi
+    const DUEL_WRONG_PENALTY = 50;  // yanlış cevapta kaybedilen puan
 
     /* ==========================================================
        MOD VE NAVİGASYON
@@ -2820,18 +3611,16 @@
       const soloBox = document.getElementById('soloStudentBox');
       const duelBox = document.getElementById('duelSettingsBox');
 
-      // Her iki karttan da tüm seçili sınıflarını tamamen kaldır
-      if (soloCard) soloCard.classList.remove('active', 'selected');
-      if (duelCard) duelCard.classList.remove('active', 'selected');
-
       if (mode === 'solo') {
-        if (soloCard) soloCard.classList.add('active');
-        if (soloBox) soloBox.style.display = 'block';
-        if (duelBox) duelBox.style.display = 'none';
+        soloCard.classList.add('active', 'selected');
+        duelCard.classList.remove('active', 'selected');
+        soloBox.style.display = 'block';
+        duelBox.style.display = 'none';
       } else {
-        if (duelCard) duelCard.classList.add('active');
-        if (soloBox) soloBox.style.display = 'none';
-        if (duelBox) duelBox.style.display = 'block';
+        duelCard.classList.add('active', 'selected');
+        soloCard.classList.remove('active', 'selected');
+        soloBox.style.display = 'none';
+        duelBox.style.display = 'block';
       }
       playTone(400, 'sine', 0.08, 0.1);
     }
@@ -2894,6 +3683,7 @@
         return;
       }
 
+      // Güvenlik ve Doğrulama
       const normalizedTyped = typedName.toLowerCase().replace(/\s+/g, ' ');
       const match = authorizedStudents.find(s => s.toLowerCase().replace(/\s+/g, ' ') === normalizedTyped);
 
@@ -2906,6 +3696,7 @@
       const verifiedName = match || typedName;
       sessionStorage.setItem('current_gladiator_name', verifiedName);
 
+      // Durumları Sıfırla
       currentQuestions = getShuffled15Questions();
       currentQIndex = 0;
       score = 0;
@@ -2942,18 +3733,23 @@
         if (activeJokerEffect === '5050') {
           hudJoker.innerText = '✂️ 50:50';
           hudJoker.style.color = '#34d399';
+          hudJoker.style.textShadow = '0 0 10px rgba(52, 211, 153, 0.8)';
         } else if (activeJokerEffect === 'double') {
           hudJoker.innerText = '⚡ 2X';
           hudJoker.style.color = '#fbbf24';
+          hudJoker.style.textShadow = '0 0 10px rgba(251, 191, 36, 0.8)';
         } else if (activeJokerEffect === 'triple') {
           hudJoker.innerText = '💥 3X';
           hudJoker.style.color = '#f87171';
+          hudJoker.style.textShadow = '0 0 10px rgba(248, 113, 113, 0.8)';
         } else if (activeJokerEffect === 'shield') {
           hudJoker.innerText = '🛡️ Kalkan';
           hudJoker.style.color = '#60a5fa';
+          hudJoker.style.textShadow = '0 0 10px rgba(96, 165, 250, 0.8)';
         } else {
           hudJoker.innerText = `${nextChestIn} Soru`;
           hudJoker.style.color = '#94a3b8';
+          hudJoker.style.textShadow = 'none';
         }
       }
     }
@@ -2972,6 +3768,7 @@
       document.getElementById('questionCategoryBadge').innerText = q.badge;
       document.getElementById('questionText').innerText = q.text;
 
+      // Dinamik Çizim
       const visBox = document.getElementById('questionVisualBox');
       if (q.visual) {
         visBox.innerHTML = q.visual;
@@ -2981,6 +3778,7 @@
         visBox.style.display = 'none';
       }
 
+      // Kesinlikle Benzersiz 4 Şık (1 Doğru, 3 Çeldirici)
       const allChoices = [q.correct];
       (q.distractors || []).forEach(d => {
         const val = String(d).trim();
@@ -3006,6 +3804,7 @@
         grid.appendChild(btn);
       });
 
+      // Hız Bonusu Barı
       qStartTime = Date.now();
       clearInterval(speedBarInterval);
       const fillEl = document.getElementById('speedBarFill');
@@ -3017,6 +3816,7 @@
         fillEl.style.width = (remainingRatio * 100) + '%';
       }, 100);
 
+      // KAZANILAN GLADYATÖR GÜCÜ ANINDA DEVREYE GİRER (BEKLETMEDEN SIRADAKİ SORUDA OTOMATİK KULLANILIR)
       applyActiveJokerPower(q);
     }
 
@@ -3027,6 +3827,8 @@
       const allBtns = document.querySelectorAll('.option-btn');
       allBtns.forEach(b => b.disabled = true);
 
+      // KESİN KURAL: Kazanılan joker sadece BU TEK SORUDA geçerlidir!
+      // Soru doğru veya yanlış nasıl sonuçlanırsa sonuçlansın, joker etkisi bu soruda tüketilir ve sıfırlanır.
       const currentPower = activeJokerEffect;
       activeJokerEffect = null;
 
@@ -3037,6 +3839,7 @@
         streak++;
         if (streak > maxStreak) maxStreak = streak;
 
+        // Hız Puanı: 500 taban + 500'e varan hız bonusu
         const elapsedSec = (Date.now() - qStartTime) / 1000;
         let speedBonus = Math.max(100, Math.round(500 - (elapsedSec * 35)));
         let baseQuestionPoints = 500 + speedBonus;
@@ -3068,6 +3871,7 @@
         soundWrong();
         updateBossDialogue(false);
 
+        // Yalnızca ve yalnızca birebir eşleşen tek bir doğru cevap yeşil yanar!
         allBtns.forEach(b => {
           if (b.dataset.choice === correctChoice) {
             b.classList.add('correct');
@@ -3076,17 +3880,21 @@
 
         if (currentPower === 'shield') {
           triggerFloatingText('🛡️ Gladyatör Kalkanı Serini Korudu!');
+          // Kalkan seriyi korur, sıfırlanmaz!
         } else {
           streak = 0;
         }
       }
 
+      // Aktif joker bittiği için bildirim şeridini kapat ve HUD'ı hemen güncelle
       const bannerEl = document.getElementById('jokerActiveBanner');
       if (bannerEl) bannerEl.style.display = 'none';
       updateSoloHUD();
 
       setTimeout(() => {
         currentQIndex++;
+
+        // Her 3 Soruda Bir Joker (3, 6, 9, 12 tamamlandığında)
         if (currentQIndex % 3 === 0 && currentQIndex < TOTAL_QUESTIONS) {
           openJokerModal();
         } else {
@@ -3105,7 +3913,7 @@
       const combatText = document.getElementById('combatText');
       combatText.innerText = `-${dmg} HP!`;
       combatText.style.animation = 'none';
-      combatText.offsetHeight;
+      combatText.offsetHeight; // Reflow
       combatText.style.animation = 'floatDamage 1s forwards ease-out';
     }
 
@@ -3146,6 +3954,10 @@
       document.getElementById('jokerModal').style.display = 'flex';
     }
 
+    
+    /* ==========================================================
+       OTOMATİK GLADYATÖR GÜCÜ YÖNETİMİ (SIRADAKİ SORUDA ANINDA KULLANIM)
+       ========================================================== */
     function applyActiveJokerPower(q) {
       const bannerEl = document.getElementById('jokerActiveBanner');
       const titleEl = document.getElementById('jokerTitleText');
@@ -3156,6 +3968,7 @@
       const nextChestIn = 3 - (currentQIndex % 3);
 
       if (activeJokerEffect === '5050') {
+        // İki yanlış seçeneği kılıçla anında eler!
         const allBtns = Array.from(document.querySelectorAll('.option-btn'));
         const wrongBtns = allBtns.filter(b => b.dataset.choice !== q.correct);
         if (wrongBtns.length >= 2) {
@@ -3198,12 +4011,15 @@
         }
         if (titleEl) titleEl.innerHTML = '⚔️ GLADYATÖR GÜCÜ';
         if (statusEl) {
-          statusEl.innerHTML = (nextChestIn === 3) 
-            ? '🎁 3 soru sonra yeni Gladyatör Gücü Sandığı açılacak!' 
-            : `🎁 <b>${nextChestIn} soru sonra</b> yeni Gladyatör Gücü Sandığı açılacak!`;
+          if (nextChestIn === 3) {
+            statusEl.innerHTML = '🎁 3 soru sonra yeni Gladyatör Gücü Sandığı açılacak!';
+          } else {
+            statusEl.innerHTML = `🎁 <b>${nextChestIn} soru sonra</b> yeni Gladyatör Gücü Sandığı açılacak!`;
+          }
         }
       }
 
+      // HUD üzerindeki joker durumunu güncelle
       const hudJoker = document.getElementById('hudJokerCount');
       if (hudJoker) {
         if (activeJokerEffect === '5050') hudJoker.innerText = '✂️ 50:50';
@@ -3214,9 +4030,11 @@
       }
     }
 
-    function claimJoker(type) {
+        function claimJoker(type) {
       document.getElementById('jokerModal').style.display = 'none';
       soundCorrect();
+
+      // Kazanılan güç beklemeden sıradaki soruda HEMEN devreye girer!
       activeJokerEffect = type;
 
       let jName = 'Yeni Güç';
@@ -3238,9 +4056,14 @@
       if (!bar || !container) return;
 
       container.innerHTML = '';
-      const hudJoker = document.getElementById('hudJokerCount');
-      if (hudJoker) hudJoker.innerText = inventoryJokers.length;
 
+      // HUD Joker sayısını güncelle
+      const hudJoker = document.getElementById('hudJokerCount');
+      if (hudJoker) {
+        hudJoker.innerText = inventoryJokers.length;
+      }
+
+      // Aktif efekt bildirimini göster
       if (activeJokerEffect === 'double') {
         bannerEl.style.display = 'flex';
         bannerEl.innerHTML = '⚡ <b>2X Çifte Darbe Devrede!</b> Bu soruda doğru yanıtlarsan x2 puan alacaksın!';
@@ -3259,14 +4082,112 @@
         bar.className = 'joker-action-bar joker-bar-empty';
         if (titleEl) titleEl.innerText = 'GLADYATÖR ÇANTASI';
 
+        // Sonraki sandığa kalan soru sayısı (3, 6, 9, 12)
         const nextChestAt = Math.min(TOTAL_QUESTIONS, Math.ceil((currentQIndex + 1) / 3) * 3);
         const rem = nextChestAt - (currentQIndex + 1);
         if (statusEl) {
-          statusEl.innerHTML = (rem === 0) 
-            ? '🎁 Bu sorudan sonra <b>Altın Sandık</b> açılıyor!' 
-            : `🎁 <b>${nextChestAt}. soruda</b> Altın Sandık açılacak (${rem} soru kaldı)`;
+          if (rem === 0) {
+            statusEl.innerHTML = '🎁 Bu sorudan sonra <b>Altın Sandık</b> açılıyor!';
+          } else {
+            statusEl.innerHTML = `🎁 <b>${nextChestAt}. soruda</b> Altın Sandık açılacak (${rem} soru kaldı)`;
+          }
         }
+        return;
       }
+
+      // Joker varsa: Parlayan Gladyatör Kemeri
+      bar.className = 'joker-action-bar joker-bar-has-items';
+      if (titleEl) titleEl.innerHTML = '🔥 KULLANILABİLİR JOKERLERİN <span style="font-size: 11px; color: #fef08a; font-weight: normal;">(Zorlandığında dokun!)</span>';
+      if (statusEl) statusEl.innerHTML = `🎒 Toplam: <b>${inventoryJokers.length} Joker</b>`;
+
+      inventoryJokers.forEach((jType, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+
+        if (jType === '5050') {
+          btn.className = 'joker-btn joker-btn-5050';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">✂️</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">50:50 Eleme</span>
+              <span class="joker-btn-sub">2 Yanlış Şıkkı Yok Et</span>
+            </div>
+          `;
+          btn.onclick = () => useJoker5050(idx);
+        } else if (jType === 'double') {
+          btn.className = 'joker-btn joker-btn-double';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">⚡</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">2x Çifte Darbe</span>
+              <span class="joker-btn-sub">x2 Puan ve Hasar</span>
+            </div>
+          `;
+          btn.onclick = () => useJokerDouble(idx);
+        } else if (jType === 'triple') {
+          btn.className = 'joker-btn joker-btn-triple';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">💥</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">3x Süper Darbe</span>
+              <span class="joker-btn-sub">x3 Puan ve Hasar</span>
+            </div>
+          `;
+          btn.onclick = () => useJokerTriple(idx);
+        } else if (jType === 'shield') {
+          btn.className = 'joker-btn joker-btn-shield';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">🛡️</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">Roma Kalkanı</span>
+              <span class="joker-btn-sub">Serini Yanmaktan Koru</span>
+            </div>
+          `;
+          btn.onclick = () => useJokerShield(idx);
+        }
+
+        container.appendChild(btn);
+      });
+    }
+
+    function useJoker5050(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+
+      const q = currentQuestions[currentQIndex];
+      const allBtns = Array.from(document.querySelectorAll('.option-btn'));
+      const wrongBtns = allBtns.filter(b => b.dataset.choice !== q.correct);
+
+      if (wrongBtns.length >= 2) {
+        wrongBtns[0].classList.add('eliminated');
+        wrongBtns[1].classList.add('eliminated');
+      }
+    }
+
+    function useJokerDouble(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+      activeJokerEffect = 'double';
+      triggerFloatingText('⚡ 2X Aktif!');
+    }
+
+    
+    function useJokerTriple(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+      activeJokerEffect = 'triple';
+      triggerFloatingText('💥 3X Süper Darbe Aktif!');
+    }
+
+    function useJokerShield(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+      activeJokerEffect = 'shield';
+      triggerFloatingText('🛡️ Kalkan Hazır!');
     }
 
     /* ==========================================================
@@ -3313,17 +4234,11 @@
     }
 
     /* ==========================================================
-       DÜELLO MODU (2 KİŞİLİK ARENA DÜELLOSU - YENİLENEN KURALLAR)
-       * Her soruya 1 kez cevap verme hakkı.
-       * Yanlış yapan öğrenci puan kaybeder (-50 puan) ve o soruluk kilitlenir.
-       * Yanlış yaparsa diğer öğrenciye cevap hakkı geçer.
-       * Diğer öğrenci de cevap verince (veya biri doğru bilince) diğer soruya geçilir.
+       DÜELLO MODU (2 KİŞİLİK YARIŞ)
        ========================================================== */
     function startDuelGame() {
-      const p1Input = document.getElementById('duelP1NameInput');
-      const p2Input = document.getElementById('duelP2NameInput');
-      const p1 = (p1Input && p1Input.value.trim()) ? p1Input.value.trim() : 'Mavi Gladyatör';
-      const p2 = (p2Input && p2Input.value.trim()) ? p2Input.value.trim() : 'Kırmızı Gladyatör';
+      const p1 = 'Mavi Takım';
+      const p2 = 'Kırmızı Takım';
 
       document.getElementById('duelP1Name').innerText = p1;
       document.getElementById('duelP2Name').innerText = p2;
@@ -3334,10 +4249,9 @@
       duelP2Streak = 0;
       duelTimeRemaining = duelTimeLimit;
       duelQIndex = 0;
-      
-      // Düello için bol soru havuzu
       duelQuestions = getShuffled15Questions();
-      duelQuestions = duelQuestions.concat(getShuffled15Questions()).concat(getShuffled15Questions());
+      // Düello için 30 soruya kadar genişlet
+      duelQuestions = duelQuestions.concat(getShuffled15Questions());
 
       document.getElementById('duelP1Score').innerText = '0';
       document.getElementById('duelP2Score').innerText = '0';
@@ -3363,22 +4277,14 @@
       if (duelQIndex >= duelQuestions.length) {
         duelQuestions = duelQuestions.concat(getShuffled15Questions());
       }
-
-      // Her yeni soruda cevap hakları sıfırlanır
-      duelP1Answered = false;
-      duelP2Answered = false;
-      duelQuestionLocked = false;
-
+      duelQuestionAnswered = false;
+      duelP1Done = false;
+      duelP2Done = false;
+      setDuelHint('Her oyuncunun 1 cevap hakkı var! Doğru +100, yanlış -' + DUEL_WRONG_PENALTY + ' puan.');
       const q = duelQuestions[duelQIndex];
 
       document.getElementById('duelCategoryBadge').innerText = q.badge;
       document.getElementById('duelQuestionText').innerText = q.text;
-
-      const infoEl = document.getElementById('duelTurnInfo');
-      if (infoEl) {
-        infoEl.innerHTML = '⚔️ Doğru: <b style="color:#10b981">+100 Puan</b> | Yanlış: <b style="color:#ef4444">-50 Puan</b> (Her soruya 1 hak)';
-        infoEl.style.color = '#fbbf24';
-      }
 
       const vBox = document.getElementById('duelVisualBox');
       if (q.visual) {
@@ -3407,136 +4313,85 @@
       choices.forEach((c, idx) => {
         p1Btns[idx].querySelector('.opt-val').innerText = c;
         p2Btns[idx].querySelector('.opt-val').innerText = c;
-        p1Btns[idx].dataset.choice = c;
-        p2Btns[idx].dataset.choice = c;
         p1Btns[idx].disabled = false;
         p2Btns[idx].disabled = false;
-        p1Btns[idx].className = 'duel-opt-btn';
-        p2Btns[idx].className = 'duel-opt-btn';
         p1Btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
         p2Btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
       });
     }
 
-    function handleDuelAnswer(playerNum, btnIndex) {
-      if (duelQuestionLocked) return; // Geçiş anında basılmasın
+    function setDuelHint(msg) {
+      const el = document.getElementById('duelHint');
+      if (el) el.innerText = msg;
+    }
 
-      // Her öğrencinin soru başına yalnızca 1 CEVAP HAKKI vardır
-      if (playerNum === 1 && duelP1Answered) return;
-      if (playerNum === 2 && duelP2Answered) return;
+    function updateDuelScoreboard() {
+      document.getElementById('duelP1Score').innerText = duelP1Score;
+      document.getElementById('duelP2Score').innerText = duelP2Score;
+      document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
+      document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+    }
+
+    function handleDuelAnswer(playerNum, btnIndex) {
+      if (duelQuestionAnswered) return;                       // soru kapandı
+      if (playerNum === 1 && duelP1Done) return;              // 1. oyuncu hakkını kullandı
+      if (playerNum === 2 && duelP2Done) return;              // 2. oyuncu hakkını kullandı
 
       const q = duelQuestions[duelQIndex];
       const p1Btns = document.querySelectorAll('#duelP1Options .duel-opt-btn');
       const p2Btns = document.querySelectorAll('#duelP2Options .duel-opt-btn');
-      const p1Name = document.getElementById('duelP1Name').innerText;
-      const p2Name = document.getElementById('duelP2Name').innerText;
-      const infoEl = document.getElementById('duelTurnInfo');
+      const clickedBtns = (playerNum === 1) ? p1Btns : p2Btns;
+      const selectedVal = clickedBtns[btnIndex].querySelector('.opt-val').innerText;
 
-      const currentBtns = (playerNum === 1) ? p1Btns : p2Btns;
-      const opponentBtns = (playerNum === 1) ? p2Btns : p1Btns;
-      const currentPlayerName = (playerNum === 1) ? p1Name : p2Name;
-      const opponentPlayerName = (playerNum === 1) ? p2Name : p1Name;
+      const myName = document.getElementById(playerNum === 1 ? 'duelP1Name' : 'duelP2Name').innerText;
+      const otherName = document.getElementById(playerNum === 1 ? 'duelP2Name' : 'duelP1Name').innerText;
 
-      const selectedVal = currentBtns[btnIndex].querySelector('.opt-val').innerText.trim();
-      const isCorrect = (selectedVal === q.correct);
+      // Bu oyuncunun hakkı bitti: tüm butonlarını kilitle
+      if (playerNum === 1) duelP1Done = true; else duelP2Done = true;
+      clickedBtns.forEach(b => { b.disabled = true; });
 
-      // Bu oyuncunun hakkı bitti, tüm butonları kilitlenir
-      if (playerNum === 1) duelP1Answered = true;
-      if (playerNum === 2) duelP2Answered = true;
-
-      currentBtns.forEach(b => b.disabled = true);
-
-      if (isCorrect) {
-        // --- 1. DURUM: DOĞRU CEVAP ---
+      if (selectedVal === q.correct) {
+        // DOĞRU: puan al, soru biter, sıradaki soruya geç
+        duelQuestionAnswered = true;
         soundCorrect();
-        currentBtns[btnIndex].classList.add('duel-correct');
-        currentBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
+        clickedBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
 
-        if (playerNum === 1) {
-          duelP1Score += 100;
-          duelP1Streak++;
-          duelP2Streak = 0;
-        } else {
-          duelP2Score += 100;
-          duelP2Streak++;
-          duelP1Streak = 0;
-        }
-
-        document.getElementById('duelP1Score').innerText = duelP1Score;
-        document.getElementById('duelP2Score').innerText = duelP2Score;
-        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
-        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
-
-        if (infoEl) {
-          infoEl.innerHTML = `🎉 <b>${currentPlayerName}</b> doğru bildi! (+100 Puan)`;
-          infoEl.style.color = '#34d399';
-        }
-
-        // Biri doğru bildiğinde soru biter, rakip butonları da kilitlenir
-        duelQuestionLocked = true;
-        opponentBtns.forEach(b => b.disabled = true);
+        if (playerNum === 1) { duelP1Score += 100; duelP1Streak++; duelP2Streak = 0; }
+        else                 { duelP2Score += 100; duelP2Streak++; duelP1Streak = 0; }
+        updateDuelScoreboard();
+        setDuelHint(myName + ' doğru bildi! +100');
 
         setTimeout(() => {
           duelQIndex++;
           loadDuelQuestion();
-        }, 1000);
-
+        }, 900);
       } else {
-        // --- 2. DURUM: YANLIŞ CEVAP ---
+        // YANLIŞ: puan kaybet, hak bitti
         soundWrong();
-        currentBtns[btnIndex].classList.add('duel-wrong');
-        currentBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
+        clickedBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
 
-        // Yanlış yapan öğrenci PUAN KAYBEDER (-50 puan) ve serisi sıfırlanır
-        if (playerNum === 1) {
-          duelP1Score -= 50;
-          duelP1Streak = 0;
-        } else {
-          duelP2Score -= 50;
-          duelP2Streak = 0;
-        }
+        if (playerNum === 1) { duelP1Score -= DUEL_WRONG_PENALTY; duelP1Streak = 0; }
+        else                 { duelP2Score -= DUEL_WRONG_PENALTY; duelP2Streak = 0; }
+        updateDuelScoreboard();
 
-        document.getElementById('duelP1Score').innerText = duelP1Score;
-        document.getElementById('duelP2Score').innerText = duelP2Score;
-        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
-        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
-
-        // Rakip öğrenci henüz cevap verdi mi?
-        const opponentAlreadyAnswered = (playerNum === 1) ? duelP2Answered : duelP1Answered;
-
-        if (!opponentAlreadyAnswered) {
-          // Rakip öğrenci henüz cevap vermedi! Sıra onda!
-          if (infoEl) {
-            infoEl.innerHTML = `⚠️ <b>${currentPlayerName}</b> yanlış yaptı (-50)! Sıra <b>${opponentPlayerName}</b>'de!`;
-            infoEl.style.color = '#f87171';
-          }
-        } else {
-          // İki öğrenci de cevap verdi ve ikisi de bilemedi! Soru biter.
-          duelQuestionLocked = true;
-
-          // Her iki tarafta doğru cevabı yeşil olarak göster
-          p1Btns.forEach(b => {
-            if (b.dataset.choice === q.correct) {
-              b.classList.add('duel-correct');
-              b.style.background = 'rgba(16, 185, 129, 0.85)';
-            }
+        if (duelP1Done && duelP2Done) {
+          // İkisi de yanlış yaptı: doğru cevabı göster, sonraki soruya geç
+          duelQuestionAnswered = true;
+          [p1Btns, p2Btns].forEach(btns => {
+            btns.forEach(b => {
+              if (b.querySelector('.opt-val').innerText === q.correct) {
+                b.style.background = 'rgba(16, 185, 129, 0.85)';
+              }
+            });
           });
-          p2Btns.forEach(b => {
-            if (b.dataset.choice === q.correct) {
-              b.classList.add('duel-correct');
-              b.style.background = 'rgba(16, 185, 129, 0.85)';
-            }
-          });
-
-          if (infoEl) {
-            infoEl.innerHTML = `❌ İki gladyatör de bilemedi! Doğru cevap: <b style="color:#10b981">${q.correct}</b>`;
-            infoEl.style.color = '#f87171';
-          }
-
+          setDuelHint('İkisi de bilemedi! Doğru cevap yeşil.');
           setTimeout(() => {
             duelQIndex++;
             loadDuelQuestion();
-          }, 1400);
+          }, 1800);
+        } else {
+          // Diğer oyuncunun cevap verme sırası
+          setDuelHint('Yanlış! -' + DUEL_WRONG_PENALTY + ' puan. Şimdi ' + otherName + ' cevap versin!');
         }
       }
     }
@@ -3566,7 +4421,11 @@
     }
 
     /* ==========================================================
-       YÖNETİCİ PANELİ & GLADYATÖR DİYALOGLARI
+       BAŞLANGIÇ ÇALIŞTIRMASI
+       ========================================================== */
+    
+    /* ==========================================================
+       YÖNETİCİ PANELİ & GELİŞMİŞ GLADYATÖR DİYALOGLARI (6. Sınıf)
        ========================================================== */
     let isAdminUnlocked = false;
 
@@ -3624,14 +4483,19 @@
         return;
       }
 
+      // 1. Yerel önbelleği temizle ve tabloyu boşalt
       localStorage.removeItem('yazili_arenasi_6_scores');
+      localStorage.setItem(LB_RESET_KEY, '1');
+      lbResetDone = true;
+      lbCloudScores = [];
       const tbody = document.getElementById('leaderboardTbody');
       if (tbody) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Henüz arenada skor kaydedilmedi. İlk sen ol!</td></tr>';
       }
 
+      // 2. Firebase bağlantısını kontrol et ve temizle (db / SCORES_NODE)
       if (db) {
-        db.ref(SCORES_NODE).remove().then(() => {
+        db.ref(SCORES_NODE).remove().then(() => db.ref(SCORES_NODE + '/_meta').set({ resetDone: true })).then(() => {
           localStorage.removeItem('yazili_arenasi_6_scores');
           if (tbody) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Henüz arenada skor kaydedilmedi. İlk sen ol!</td></tr>';
@@ -3683,8 +4547,10 @@
       }
     }
 
+
+    
     /* ==========================================================
-       KADER KÜRESİ
+       4. SEÇENEK: KADER KÜRESİ (DÖNSÜN DÖNSÜN DÖNSÜN! - V2)
        ========================================================== */
     let isSpinningMystery = false;
 
@@ -3704,16 +4570,20 @@
       const subEl = document.getElementById('mysteryCardSub');
       const otherCards = document.querySelectorAll('.joker-card-select:not(#mysteryCard)');
 
+      // Diğer kartları hafif soluklaştır ve tıklamayı engelle
       otherCards.forEach(c => {
         c.style.opacity = '0.3';
         c.style.pointerEvents = 'none';
       });
 
-      if (card) card.classList.add('mystery-card-spinning');
+      if (card) {
+        card.classList.add('mystery-card-spinning');
+      }
 
+      // Zar yok! Dönsün dönsün dönsün animasyonu (Slot / Çark efekti)
       const rollIcons = ['🔮', '✂️', '💎', '💥', '🌪️', '🛡️', '👑', '⚠️', '✨', '💨', '🔥', '🗡️'];
       let spinCount = 0;
-      const totalSpins = 26;
+      const totalSpins = 26; // ~1.9 saniye
       let currentDelay = 45;
 
       function runSpin() {
@@ -3725,7 +4595,7 @@
         soundTick();
 
         if (spinCount < totalSpins) {
-          if (spinCount > 18) currentDelay += 25;
+          if (spinCount > 18) currentDelay += 25; // Sona yaklaşınca heyecanla yavaşla
           setTimeout(runSpin, currentDelay);
         } else {
           finalizeMysteryOutcome();
@@ -3746,17 +4616,19 @@
         card.classList.add('mystery-card-result');
       }
 
+      // Olası Sonuçlar Havuzu (3X Darbe, 50:50, Kalkan, +Puanlar, 0 Puan Boş, -Puan Riskleri)
       const outcomes = [
         { type: 'joker', id: 'triple', icon: '💥', title: '3X Süper Darbe!', sub: '💥 Efsanevi 3 kat hasar ve puan!', sound: 'correct' },
         { type: 'joker', id: '5050', icon: '✂️', title: '50:50 Eleme!', sub: '🎉 Joker çantana eklendi!', sound: 'correct' },
         { type: 'joker', id: 'shield', icon: '🛡️', title: 'Gladyatör Kalkanı!', sub: '🛡️ Joker çantana eklendi!', sound: 'correct' },
         { type: 'points_add', amount: 600, icon: '💎', title: '+600 Puan!', sub: '💰 Büyük hazineyi buldun!', sound: 'correct' },
         { type: 'points_add', amount: 1000, icon: '👑', title: '+1000 Puan!', sub: '🔥 Efsanevi İmparator Ödülü!', sound: 'correct' },
-        { type: 'empty', amount: 0, icon: '💨', title: 'Boş Çıktı (0 Puan)!', sub: 'Talih bu sefer pas geçti!', sound: 'neutral' },
+        { type: 'empty', amount: 0, icon: '💨', title: 'Boş Çıktı (0 Puan)!', sub: 'Talih bu sefer pas geçti: Ne kazanç ne kayıp!', sound: 'neutral' },
         { type: 'points_sub', amount: 250, icon: '🌪️', title: '-250 Puan!', sub: '⚠️ Arena kum fırtınası tuzağı!', sound: 'wrong' },
         { type: 'points_sub', amount: 150, icon: '⚠️', title: '-150 Puan!', sub: '⚔️ Gladyatör karşı hamlesi!', sound: 'wrong' }
       ];
 
+      // Ağırlıklar: 3X (%18), 50:50 (%18), Kalkan (%14), +600 (%15), +1000 (%10), Boş 0 Puan (%12), -250 (%8), -150 (%5)
       const weights = [18, 18, 14, 15, 10, 12, 8, 5];
       const randNum = Math.random() * 100;
       let accumulated = 0;
@@ -3770,6 +4642,7 @@
         }
       }
 
+      // Sonucu ekrana bas
       if (iconEl) iconEl.innerText = selected.icon;
       if (titleEl) titleEl.innerText = selected.title;
       if (subEl) subEl.innerText = selected.sub;
@@ -3780,12 +4653,18 @@
       } else if (selected.sound === 'wrong') {
         soundWrong();
       } else {
+        // Nötr / Boş durum (0 Puan)
         soundJoker();
       }
 
       if (selected.type === 'joker') {
         activeJokerEffect = selected.id;
         triggerFloatingText(selected.icon + ' ' + selected.title + ' Sıradaki Soruda Devrede!');
+        const bar = document.getElementById('jokerActionBar');
+        if (bar) {
+          bar.classList.add('new-joker-flash');
+          setTimeout(() => bar.classList.remove('new-joker-flash'), 1200);
+        }
       } else if (selected.type === 'points_add') {
         score += selected.amount;
         triggerFloatingText('💰 +' + selected.amount + ' Puan Kazandın!');
@@ -3799,11 +4678,14 @@
       updateSoloHUD();
       renderActiveJokers();
 
+      // 1.8 saniye sonra modalı kapat ve sıradaki soruya devam et
       setTimeout(() => {
         document.getElementById('jokerModal').style.display = 'none';
         isSpinningMystery = false;
 
-        if (card) card.classList.remove('mystery-card-result');
+        if (card) {
+          card.classList.remove('mystery-card-result');
+        }
         const otherCards = document.querySelectorAll('.joker-card-select');
         otherCards.forEach(c => {
           c.style.opacity = '1';
