@@ -327,7 +327,7 @@
       background: rgba(15, 23, 42, 0.78);
       border: 1.5px solid rgba(251, 191, 36, 0.28);
       border-radius: 22px;
-      padding: 16px 18px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -339,8 +339,8 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 2px solid rgba(251, 191, 36, 0.3);
-      padding-bottom: 10px;
-      margin-bottom: 8px;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
       flex-shrink: 0;
     }
 
@@ -363,28 +363,28 @@
 
     .leaderboard-table th {
       color: #94a3b8;
-      padding: 6px 8px;
+      padding: 4px 6px;
       font-weight: 700;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 12px;
+      font-size: 11.5px;
     }
 
     .leaderboard-table td {
-      padding: 6.5px 8px;
+      padding: 4px 6px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     .rank-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       font-weight: 800;
-      font-size: 12px;
+      font-size: 11.5px;
     }
 
     .rank-1 { background: #fbbf24; color: #78350f; border: 1px solid #f59e0b; }
@@ -2051,7 +2051,7 @@
               <div class="mode-icon">⚔️</div>
               <div class="mode-info">
                 <h4>Düello Modu</h4>
-                <p>Arkadaşınla karşı karşıya geç! İlk doğru cevaba basan arenanın şampiyonu olur!</p>
+                <p>Mavi ve Kırmızı Takım karşı karşıya! Her soruya tek hak: doğru +100, yanlış -50 puan!</p>
               </div>
             </div>
           </div>
@@ -2091,7 +2091,7 @@
             <div class="leaderboard-title">🏆 İLK 10 GLADYATÖR</div>
             <span style="font-size: 12px; color: #fbbf24; font-weight: 700;">5. Sınıflar</span>
           </div>
-          <div style="flex: 1; overflow-y: auto;">
+          <div style="flex: 1; overflow: hidden;">
             <table class="leaderboard-table">
               <thead>
                 <tr>
@@ -2336,9 +2336,6 @@
 
       </div>
     </div>
-
-    </div>
-
     <!-- EKRAN 3: DÜELLO MODU (2 KİŞİLİK AKILLI TAHTA) -->
     <div id="screenDuel" class="glass-card" style="display: none; max-width: 1100px;">
       <div class="duel-stage">
@@ -2347,7 +2344,7 @@
         <div class="duel-player-panel player-blue">
           <div class="duel-player-header">
             <div style="font-size: 32px;">🛡️</div>
-            <div class="duel-player-name" id="duelP1Name">Mavi Gladyatör</div>
+            <div class="duel-player-name" id="duelP1Name">Mavi Takım</div>
             <div class="duel-score-badge" id="duelP1Score">0</div>
             <div style="font-size: 12px; color: #60a5fa; font-weight: 800;" id="duelP1Streak">0 Seri</div>
           </div>
@@ -2372,8 +2369,8 @@
             <!-- Dinamik Çizim -->
           </div>
 
-          <div style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 10px;">
-            İlk doğru basan +100 puan kazanır!
+          <div id="duelHint" style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 10px;">
+            Her takımın 1 cevap hakkı var! Doğru +100, yanlış -50 puan.
           </div>
         </div>
 
@@ -2381,7 +2378,7 @@
         <div class="duel-player-panel player-red">
           <div class="duel-player-header">
             <div style="font-size: 32px;">⚔️</div>
-            <div class="duel-player-name" id="duelP2Name">Kırmızı Gladyatör</div>
+            <div class="duel-player-name" id="duelP2Name">Kırmızı Takım</div>
             <div class="duel-score-badge" id="duelP2Score">0</div>
             <div style="font-size: 12px; color: #f87171; font-weight: 800;" id="duelP2Streak">0 Seri</div>
           </div>
@@ -2479,9 +2476,6 @@
       </div>
     </div>
   </div>
-  </div>
-  </div>
-
   <script>
     /* ==========================================================
        SES MOTORU (Web Audio API)
@@ -3111,6 +3105,11 @@
     let duelQuestions = [];
     let duelQIndex = 0;
     let duelQuestionAnswered = false;
+    let duelP1Done = false;   // Mavi Takım bu soruya cevap verdi mi (her soruya 1 hak)
+    let duelP2Done = false;   // Kırmızı Takım bu soruya cevap verdi mi
+    let duelP1Correct = 0;
+    let duelP2Correct = 0;
+    const DUEL_WRONG_PENALTY = 50;  // yanlış cevapta kaybedilen puan
 
     /* ==========================================================
        MOD VE NAVİGASYON
@@ -3700,6 +3699,8 @@
       duelP2Score = 0;
       duelP1Streak = 0;
       duelP2Streak = 0;
+      duelP1Correct = 0;
+      duelP2Correct = 0;
       duelQuestions = generateQuestionPool();
       for (let i = duelQuestions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -3730,6 +3731,9 @@
     function loadDuelQuestion() {
       if (duelQIndex >= duelQuestions.length) duelQIndex = 0;
       duelQuestionAnswered = false;
+      duelP1Done = false;
+      duelP2Done = false;
+      setDuelHint('Her takımın 1 cevap hakkı var! Doğru +100, yanlış -' + DUEL_WRONG_PENALTY + ' puan.');
 
       const q = duelQuestions[duelQIndex];
       document.getElementById('duelCategoryBadge').innerText = q.badge;
@@ -3769,50 +3773,77 @@
       });
     }
 
+    function setDuelHint(msg) {
+      const el = document.getElementById('duelHint');
+      if (el) el.innerText = msg;
+    }
+
+    function updateDuelScoreboard() {
+      document.getElementById('duelP1Score').innerText = duelP1Score;
+      document.getElementById('duelP2Score').innerText = duelP2Score;
+      document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
+      document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+    }
+
     function handleDuelAnswer(playerNum, btnIndex) {
-      if (duelQuestionAnswered) return;
+      if (duelQuestionAnswered) return;                       // soru kapandı
+      if (playerNum === 1 && duelP1Done) return;              // Mavi hakkını kullandı
+      if (playerNum === 2 && duelP2Done) return;              // Kırmızı hakkını kullandı
+
       const q = duelQuestions[duelQIndex];
       const p1Btns = document.querySelectorAll('#duelP1Options .duel-opt-btn');
       const p2Btns = document.querySelectorAll('#duelP2Options .duel-opt-btn');
-
       const clickedBtns = (playerNum === 1) ? p1Btns : p2Btns;
-      const otherBtns = (playerNum === 1) ? p2Btns : p1Btns;
       const selectedVal = clickedBtns[btnIndex].querySelector('.opt-val').innerText;
 
+      // Bu takımın hakkı bitti: tüm butonlarını kilitle
+      if (playerNum === 1) duelP1Done = true; else duelP2Done = true;
+      clickedBtns.forEach(b => { b.disabled = true; });
+
       if (selectedVal === q.correct) {
+        // DOĞRU: puan al, soru biter, sıradaki soruya geç
         duelQuestionAnswered = true;
         soundCorrect();
         clickedBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
 
-        if (playerNum === 1) {
-          duelP1Score += 100;
-          duelP1Streak++;
-          duelP2Streak = 0;
-        } else {
-          duelP2Score += 100;
-          duelP2Streak++;
-          duelP1Streak = 0;
-        }
-
-        document.getElementById('duelP1Score').innerText = duelP1Score;
-        document.getElementById('duelP2Score').innerText = duelP2Score;
-        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
-        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+        if (playerNum === 1) { duelP1Score += 100; duelP1Streak++; duelP1Correct++; duelP2Streak = 0; }
+        else                 { duelP2Score += 100; duelP2Streak++; duelP2Correct++; duelP1Streak = 0; }
+        updateDuelScoreboard();
+        setDuelHint((playerNum === 1 ? 'Mavi' : 'Kırmızı') + ' Takım doğru bildi! +100');
 
         setTimeout(() => {
           duelQIndex++;
           loadDuelQuestion();
         }, 900);
       } else {
+        // YANLIŞ: puan kaybet, hak bitti
         soundWrong();
         clickedBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
-        clickedBtns[btnIndex].disabled = true;
 
-        if (playerNum === 1) duelP1Streak = 0;
-        else duelP2Streak = 0;
+        if (playerNum === 1) { duelP1Score -= DUEL_WRONG_PENALTY; duelP1Streak = 0; }
+        else                 { duelP2Score -= DUEL_WRONG_PENALTY; duelP2Streak = 0; }
+        updateDuelScoreboard();
 
-        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
-        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+        if (duelP1Done && duelP2Done) {
+          // İkisi de yanlış yaptı: doğru cevabı göster, sonraki soruya geç
+          duelQuestionAnswered = true;
+          [p1Btns, p2Btns].forEach(btns => {
+            btns.forEach(b => {
+              if (b.querySelector('.opt-val').innerText === q.correct) {
+                b.style.background = 'rgba(16, 185, 129, 0.85)';
+              }
+            });
+          });
+          setDuelHint('İkisi de bilemedi! Doğru cevap yeşil.');
+          setTimeout(() => {
+            duelQIndex++;
+            loadDuelQuestion();
+          }, 1800);
+        } else {
+          // Diğer takımın cevap verme sırası
+          const otherName = (playerNum === 1) ? 'Kırmızı' : 'Mavi';
+          setDuelHint('Yanlış! -' + DUEL_WRONG_PENALTY + ' puan. Şimdi ' + otherName + ' Takım cevap versin!');
+        }
       }
     }
 
@@ -3822,17 +3853,17 @@
       let trophy = "🤝";
 
       if (duelP1Score > duelP2Score) {
-        winnerText = "Mavi Gladyatör Kazandı!";
+        winnerText = "Mavi Takım Kazandı!";
         trophy = "🛡️👑";
       } else if (duelP2Score > duelP1Score) {
-        winnerText = "Kırmızı Gladyatör Kazandı!";
+        winnerText = "Kırmızı Takım Kazandı!";
         trophy = "⚔️👑";
       }
 
       document.getElementById('resTrophy').innerText = trophy;
       document.getElementById('resTitle').innerText = winnerText;
       document.getElementById('resSubtitle').innerText = `Mavi: ${duelP1Score} Puan  |  Kırmızı: ${duelP2Score} Puan`;
-      document.getElementById('resCorrectCount').innerText = `${duelP1Score / 100 + duelP2Score / 100} Soru`;
+      document.getElementById('resCorrectCount').innerText = `${duelP1Correct + duelP2Correct} Soru`;
       document.getElementById('resTotalScore').innerText = Math.max(duelP1Score, duelP2Score).toLocaleString();
       document.getElementById('resMaxStreak').innerText = "Arena Düellosu";
       document.getElementById('resLeaderboardStatus').innerText = "Düello tamamlandı!";
