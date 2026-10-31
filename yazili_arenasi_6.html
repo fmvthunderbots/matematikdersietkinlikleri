@@ -2089,10 +2089,11 @@
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(251, 191, 36, 0.25);
       border-radius: 24px;
-      padding: 20px;
+      padding: 18px 18px 14px;
       height: auto;
       min-height: 0;
-      max-height: 480px;
+      max-height: none;
+      overflow: visible;
     }
     .leaderboard-header {
       border-bottom: 2px solid rgba(251, 191, 36, 0.3);
@@ -2102,14 +2103,16 @@
     .leaderboard-title { font-size: 20px; gap: 8px; }
     .leaderboard-table { font-size: 14px; text-align: left; }
     .leaderboard-table th {
-      padding: 8px 10px;
-      font-size: 14px;
+      padding: 6px 8px;
+      font-size: 13px;
       text-transform: none;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .leaderboard-table td { padding: 10px; }
+    .leaderboard-table td { padding: 6px 8px; line-height: 1.2; }
+    .leaderboard-table th:nth-child(3), .leaderboard-table td:nth-child(3) { width: 56px; }
+    .leaderboard-table th:nth-child(4), .leaderboard-table td:nth-child(4) { width: 72px; }
     .leaderboard-table tr:hover td { background: transparent; }
-    .rank-badge { width: 28px; height: 28px; border-radius: 50%; font-size: 13px; }
+    .rank-badge { width: 26px; height: 26px; border-radius: 50%; font-size: 12px; }
     .rank-1 { border: 1px solid #f59e0b; }
     .rank-3 { background: #d97706; }
   </style>
@@ -2204,7 +2207,7 @@
             <div class="leaderboard-title">🏆 İLK 10 GLADYATÖR</div>
             <span style="font-size: 12px; color: #fbbf24; font-weight: 700;">6. Sınıflar</span>
           </div>
-          <div style="flex: 1; overflow-y: auto;">
+          <div style="flex: none; overflow: visible;">
             <table class="leaderboard-table">
               <thead>
                 <tr>
