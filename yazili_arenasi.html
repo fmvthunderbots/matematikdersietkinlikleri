@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Yazılı Arenası - 5. Sınıf Matematik Yazılıya Hazırlık</title>
   
+  <!-- %100 Türkçe Karakter Destekli Google Fontları -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   
+    <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     :root {
-      --primary: #991b1b;
+      --primary: #991b1b; /* Roma Kırmızısı */
       --primary-light: #dc2626;
-      --secondary: #d97706;
+      --secondary: #d97706; /* Antik Altın Sarısı */
       --gold: #fbbf24;
       --sand: #fef3c7;
       --danger: #ef4444;
@@ -49,6 +51,7 @@
       flex-direction: column;
     }
 
+    /* Üst Roma Navigasyon Barı */
     .game-navbar {
       background: rgba(17, 24, 39, 0.92);
       backdrop-filter: blur(14px);
@@ -127,6 +130,7 @@
       transform: translateY(-2px);
     }
 
+    /* Ana Sahne */
     .main-stage {
       flex: 1;
       display: flex;
@@ -144,7 +148,7 @@
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
       width: 100%;
       max-width: 900px;
-      padding: 24px 28px;
+      padding: 12px 18px;
       position: relative;
       animation: fadeIn 0.3s ease-out;
     }
@@ -154,6 +158,7 @@
       to { opacity: 1; transform: scale(1); }
     }
 
+    /* Giriş Ekranı */
     .welcome-grid {
       display: grid;
       grid-template-columns: 1.22fr 0.78fr;
@@ -196,6 +201,7 @@
       color: #cbd5e1;
       font-size: 15px;
       line-height: 1.6;
+      margin-bottom: 22px;
     }
 
     .mode-select-box {
@@ -209,7 +215,7 @@
       background: rgba(30, 41, 59, 0.7);
       border: 2px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px;
-      padding: 12px 20px;
+      padding: 16px 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -252,6 +258,7 @@
       color: #94a3b8;
     }
 
+    /* Öğrenci Seçici (ZORUNLU - Manuel Giriş Yok) */
     .student-select-box {
       background: rgba(15, 23, 42, 0.7);
       padding: 16px;
@@ -315,6 +322,7 @@
       filter: brightness(1.1);
     }
 
+        /* Sağ Taraf: Liderlik Tablosu */
     .leaderboard-panel {
       background: rgba(15, 23, 42, 0.85);
       border: 1.5px solid rgba(251, 191, 36, 0.28);
@@ -323,6 +331,7 @@
       display: flex;
       flex-direction: column;
       height: fit-content;
+      align-self: center;
     }
 
     .leaderboard-header {
@@ -386,6 +395,9 @@
     .rank-3 { background: #b45309; color: #fff; }
     .rank-other { background: rgba(51, 65, 85, 0.6); color: #cbd5e1; }
 
+    /* ==========================================================
+       BİREYSEL OYUN EKRANI (15 SORU)
+       ========================================================== */
     .game-hud {
       display: grid;
       grid-template-columns: auto 1fr auto;
@@ -432,12 +444,42 @@
       line-height: 1.2;
     }
 
+    /* Gladyatör ve HP Barı Entegre Kutu */
     .gladiator-hud-box {
       display: flex;
       align-items: center;
       gap: 10px;
       width: 100%;
       position: relative;
+    }
+
+    .gladiator-avatar-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      transition: transform 0.2s;
+    }
+
+    .gladiator-avatar-wrapper.hit {
+      animation: gladiatorHurt 0.4s ease;
+    }
+
+    @keyframes gladiatorHurt {
+      0%, 100% { transform: scale(1) translateX(0); }
+      20% { transform: scale(0.9) translateX(-10px) rotate(-8deg); }
+      40% { transform: scale(1.05) translateX(10px) rotate(8deg); }
+      60% { transform: scale(0.95) translateX(-5px); }
+      80% { transform: scale(1.02) translateX(5px); }
+    }
+
+    .gladiator-sprite {
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
     }
 
     .combat-text {
@@ -463,6 +505,42 @@
       100% { opacity: 0; transform: translate(-50%, -32px) scale(1); }
     }
 
+    .gladiator-bar-container {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1.5px solid rgba(251, 191, 36, 0.35);
+      border-radius: 12px;
+      padding: 4px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .gladiator-bar-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .gladiator-hp-track {
+      height: 10px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gladiator-hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      border-radius: 5px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    }
+
+    /* Hız Bonusu Barı (Soru İçi) */
     .speed-bar-container {
       height: 4px;
       background: rgba(30, 41, 59, 0.6);
@@ -477,7 +555,7 @@
       background: linear-gradient(90deg, #f59e0b, #38bdf8);
       transition: width 0.1s linear;
     }
-
+    /* Soru Kartı */
     .question-card {
       background: rgba(30, 41, 59, 0.75);
       border: 1.5px solid rgba(251, 191, 36, 0.25);
@@ -533,6 +611,7 @@
       width: auto;
     }
 
+    /* Şık Butonları */
     .options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -609,7 +688,9 @@
       20%, 60% { transform: translateX(-8px); }
       40%, 80% { transform: translateX(8px); }
     }
-
+    /* ==========================================================
+       DİKKAT ÇEKİCİ GLADYATÖR JOKER KEMERİ & BUTONLARI (ŞIKLARIN ÜSTÜNDE)
+       ========================================================== */
     .joker-action-bar {
       width: 100%;
       margin: 4px 0 8px 0;
@@ -620,12 +701,14 @@
       box-sizing: border-box;
     }
 
+    /* Boş Durum: Sakin ve Teşvik Edici İlerleme Sayacı */
     .joker-action-bar.joker-bar-empty {
       background: rgba(15, 23, 42, 0.65);
       border: 1.5px dashed rgba(251, 191, 36, 0.35);
       padding: 8px 14px;
     }
 
+    /* Joker Olduğunda: Parıldayan, Büyüleyici Altın Gladyatör Kemeri */
     .joker-action-bar.joker-bar-has-items {
       background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(88, 28, 135, 0.4), rgba(120, 53, 15, 0.5));
       border: 2px solid #fbbf24;
@@ -690,6 +773,7 @@
       width: 100%;
     }
 
+    /* Büyük, Canlı ve Çekici Joker Butonları */
     .joker-btn {
       flex: 1 1 150px;
       max-width: 240px;
@@ -717,6 +801,11 @@
       border-color: #fff;
     }
 
+    .joker-btn:active:not(:disabled) {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* 50:50 Eleme Butonu */
     .joker-btn-5050 {
       background: linear-gradient(135deg, #059669, #047857);
       border-color: #34d399;
@@ -724,6 +813,7 @@
       animation: pulseGreen 2.2s infinite;
     }
 
+    /* 2x Çifte Darbe Butonu */
     .joker-btn-double {
       background: linear-gradient(135deg, #d97706, #b45309);
       border-color: #fde047;
@@ -731,6 +821,7 @@
       animation: pulseAmber 2.2s infinite;
     }
 
+    /* Roma Kalkanı Butonu */
     .joker-btn-shield {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       border-color: #60a5fa;
@@ -776,6 +867,7 @@
       font-family: var(--font-base);
     }
 
+    /* Aktif Efekt Bildirim Şeridi */
     .joker-active-banner {
       margin-top: 10px;
       padding: 8px 14px;
@@ -798,6 +890,7 @@
       100% { opacity: 1; transform: scale(1.01); }
     }
 
+    /* Modal: Joker Sandığı */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -873,6 +966,9 @@
       line-height: 1.3;
     }
 
+    /* ==========================================================
+       DÜELLO MODU (2 KİŞİLİK ARENA DÜELLOSU)
+       ========================================================== */
     .duel-stage {
       display: grid;
       grid-template-columns: 1fr 1.35fr 1fr;
@@ -987,6 +1083,9 @@
       box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
     }
 
+    /* ==========================================================
+       SONUÇ / ZAFER EKRANI
+       ========================================================== */
     .result-box {
       text-align: center;
       padding: 30px 10px;
@@ -1064,7 +1163,8 @@
       background: rgba(71, 85, 105, 1);
       transform: translateY(-2px);
     }
-
+  
+    /* === BÜYÜTÜLMÜŞ HEYBETLİ GLADYATÖR BOSS & GENİŞLETİLMİŞ SORU ALANI === */
     .hud-top-bar {
       display: flex;
       justify-content: space-between;
@@ -1082,6 +1182,414 @@
       gap: 14px;
     }
 
+    .gladiator-boss-card {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1.5px solid rgba(251, 191, 36, 0.4);
+      border-radius: 18px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(251, 191, 36, 0.05);
+      position: relative;
+    }
+
+    .gladiator-avatar-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(180, 83, 9, 0.35) 0%, rgba(15, 23, 42, 0.85) 70%);
+      border: 2px solid rgba(251, 191, 36, 0.55);
+      border-radius: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: gladiatorIdle 3s ease-in-out infinite;
+    }
+
+    @keyframes gladiatorIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .gladiator-avatar-wrapper.hit {
+      animation: gladiatorHurt 0.4s ease;
+    }
+
+    .gladiator-sprite {
+      width: 82px;
+      height: 82px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
+    }
+
+    .boss-info-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .boss-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .boss-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .boss-badge {
+      background: rgba(180, 83, 9, 0.3);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .boss-name {
+      font-family: var(--font-fun);
+      font-size: 18px;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .boss-hp-tag {
+      font-family: var(--font-fun);
+      font-size: 15px;
+      font-weight: 800;
+      color: #fbbf24;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      padding: 3px 10px;
+      border-radius: 8px;
+    }
+
+    .gladiator-hp-track {
+      height: 14px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .gladiator-hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+      border-radius: 6px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+    }
+
+    .boss-subtitle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .boss-subtext {
+      color: #cbd5e1;
+      font-style: italic;
+      font-size: 12px;
+    }
+
+    .boss-level-pill {
+      color: #fbbf24;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    /* Büyütülmüş Soru Kartı & Şıklar */
+    .question-card {
+      background: rgba(30, 41, 59, 0.85) !important;
+      border: 1.5px solid rgba(251, 191, 36, 0.3) !important;
+      border-radius: 20px !important;
+      padding: 16px 24px !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .question-badge {
+      background: rgba(180, 83, 9, 0.35) !important;
+      border: 1px solid rgba(251, 191, 36, 0.45) !important;
+      color: #fbbf24 !important;
+      padding: 4px 14px !important;
+      border-radius: 14px !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      margin-bottom: 8px !important;
+      letter-spacing: 0.5px;
+    }
+
+    .question-text {
+      font-family: var(--font-fun) !important;
+      font-size: 21px !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+      color: #f8fafc !important;
+      margin-bottom: 10px !important;
+      max-width: 860px !important;
+    }
+
+    .question-visual-box {
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+      border-radius: 14px !important;
+      padding: 8px 16px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px !important;
+      max-width: 100% !important;
+      min-height: 105px !important;
+      max-height: 140px !important;
+    }
+
+    .question-visual-box svg {
+      max-width: 100% !important;
+      max-height: 130px !important;
+      height: auto !important;
+      width: auto !important;
+    }
+
+    .options-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 12px !important;
+      width: 100% !important;
+    }
+
+    .option-btn {
+      background: rgba(30, 41, 59, 0.9) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 14px !important;
+      padding: 10px 18px !important;
+      color: #fff !important;
+      font-family: var(--font-fun) !important;
+      font-size: 17px !important;
+      font-weight: 600 !important;
+      cursor: pointer;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      min-height: 52px !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+    }
+
+    .option-letter {
+      width: 34px !important;
+      height: 34px !important;
+      border-radius: 9px !important;
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(251, 191, 36, 0.35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 15px !important;
+      font-weight: 800 !important;
+      color: #fbbf24 !important;
+      flex-shrink: 0 !important;
+    }
+
+    #screenSolo.glass-card {
+      max-width: 960px !important;
+      padding: 16px 24px !important;
+    }
+
+    /* Yönetici Paneli Modalı */
+    .admin-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .admin-modal-card {
+      background: #111827;
+      border: 2px solid #fbbf24;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+      width: 92%;
+      max-width: 480px;
+      padding: 24px;
+      color: #f8fafc;
+    }
+
+    .admin-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid rgba(251, 191, 36, 0.3);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .admin-modal-title {
+      font-family: var(--font-fun);
+      font-size: 20px;
+      font-weight: 800;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .admin-modal-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 18px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .admin-modal-close:hover {
+      color: #fff;
+      background: rgba(239, 68, 68, 0.5);
+      border-color: #ef4444;
+    }
+
+    .admin-input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1.5px solid rgba(251, 191, 36, 0.4);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .admin-input:focus {
+      border-color: #fbbf24;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-admin-submit {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-weight: 800;
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .btn-admin-submit:hover {
+      transform: scale(1.03);
+    }
+
+    .admin-badge-success {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .admin-section-box {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .admin-section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fbbf24;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-danger-reset {
+      width: 100%;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-danger-reset:hover {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary-admin {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid rgba(251, 191, 36, 0.35);
+      border-radius: 10px;
+      color: #fbbf24;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary-admin:hover {
+      background: rgba(251, 191, 36, 0.15);
+      border-color: #fbbf24;
+    }
+    
+  
+    /* === İKİ KOLONLU ARENA SAVAŞ SAHNESİ: DEV GLADYATÖR BOSS KULESİ & GENİŞLETİLMİŞ SORU ALANI === */
     .arena-battle-stage {
       display: grid;
       grid-template-columns: 1fr 310px;
@@ -1205,6 +1713,29 @@
       max-height: 225px !important;
     }
 
+    .combat-text {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-fun);
+      font-size: 24px;
+      font-weight: 900;
+      color: #ef4444;
+      text-shadow: 0 0 12px rgba(0,0,0,0.9), 2px 2px 0 #fff;
+      pointer-events: none;
+      opacity: 0;
+      white-space: nowrap;
+      z-index: 30;
+      animation: floatDamage 1s forwards ease-out;
+    }
+
+    @keyframes floatDamage {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+      30% { opacity: 1; transform: translate(-50%, -25px) scale(1.3); }
+      100% { opacity: 0; transform: translate(-50%, -55px) scale(1); }
+    }
+
     .boss-stats-panel {
       width: 100%;
       background: rgba(15, 23, 42, 0.85);
@@ -1280,6 +1811,146 @@
       border-bottom: 7px solid #fbbf24;
     }
 
+    /* Sol Panel Soru Kartı & Şıklar */
+    .hud-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: 14px;
+      padding: 6px 14px;
+      margin-bottom: 6px;
+    }
+
+    .hud-stat-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .question-card {
+      background: rgba(30, 41, 59, 0.8) !important;
+      border: 1.5px solid rgba(251, 191, 36, 0.3) !important;
+      border-radius: 18px !important;
+      padding: 12px 18px !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      flex: 1;
+    }
+
+    .question-badge {
+      background: rgba(180, 83, 9, 0.35) !important;
+      border: 1px solid rgba(251, 191, 36, 0.45) !important;
+      color: #fbbf24 !important;
+      padding: 3px 12px !important;
+      border-radius: 12px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      margin-bottom: 6px !important;
+      letter-spacing: 0.5px;
+    }
+
+    .question-text {
+      font-family: var(--font-fun) !important;
+      font-size: 19px !important;
+      font-weight: 700 !important;
+      line-height: 1.35 !important;
+      color: #f8fafc !important;
+      margin-bottom: 8px !important;
+      max-width: 720px !important;
+    }
+
+    .question-visual-box {
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+      border-radius: 14px !important;
+      padding: 6px 14px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px !important;
+      max-width: 100% !important;
+      min-height: 95px !important;
+      max-height: 130px !important;
+    }
+
+    .question-visual-box svg {
+      max-width: 100% !important;
+      max-height: 120px !important;
+      height: auto !important;
+      width: auto !important;
+    }
+
+    .options-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
+      width: 100% !important;
+    }
+
+    .option-btn {
+      background: rgba(30, 41, 59, 0.9) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 14px !important;
+      padding: 9px 16px !important;
+      color: #fff !important;
+      font-family: var(--font-fun) !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      cursor: pointer;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      min-height: 50px !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+    }
+
+    .option-letter {
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 8px !important;
+      background: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(251, 191, 36, 0.35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 14px !important;
+      font-weight: 800 !important;
+      color: #fbbf24 !important;
+      flex-shrink: 0 !important;
+    }
+    
+  
+    /* 4. Seçenek: Kader Çarkı / Şans Sandığı */
+    .joker-cards-container {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 14px !important;
+      margin: 20px 0 10px !important;
+    }
+
+    @media (max-width: 820px) {
+      .joker-cards-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .joker-cards-container {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    .joker-modal-content {
+      max-width: 840px !important;
+    }
+
     .mystery-card {
       background: linear-gradient(135deg, rgba(88, 28, 135, 0.45), rgba(30, 41, 59, 0.9)) !important;
       border: 2px solid #c084fc !important;
@@ -1320,6 +1991,7 @@
       100% { transform: scale(1.05); }
     }
     
+  
     .joker-btn-triple {
       border-color: #f43f5e !important;
       background: rgba(225, 29, 72, 0.25) !important;
@@ -1328,13 +2000,16 @@
       background: rgba(225, 29, 72, 0.45) !important;
       box-shadow: 0 0 15px rgba(244, 63, 94, 0.6) !important;
     }
-
-    /* Grup Modu Özel Stilleri */
+    
+      /* ==========================================================
+       GRUP MODU ÖZEL STİLLERİ
+       ========================================================== */
     .group-teams-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
       margin-bottom: 20px;
+      width: 100%;
     }
 
     @media (max-width: 768px) {
@@ -1498,10 +2173,12 @@
       color: #fff;
       border: 2px solid #fbbf24;
     }
+
   </style>
 </head>
 <body>
 
+  <!-- Üst Roma Navigasyon Barı -->
   <header class="game-navbar">
     <div class="brand" onclick="goHome()">
       <div class="brand-icon">🏛️</div>
@@ -1514,14 +2191,20 @@
     <div class="nav-actions">
       <button class="btn-icon" onclick="toggleSound()" id="soundBtn" title="Sesi Aç/Kapat">🔊</button>
       <button class="btn-icon" onclick="toggleFullscreen()" title="Tam Ekran">⛶</button>
+      <button class="btn-icon" onclick="openAdminModal()" title="Yönetici Paneli (Ayarlar)">⚙️</button>
       <button class="btn-icon" onclick="goHome()" title="Ana Menü">🏠</button>
+      <a href="./index.html" class="btn-icon" title="Oyun Portalına Dön" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;color:#f8fafc;">🚪</a>
     </div>
   </header>
 
+  <!-- Ana Sahne -->
   <main class="main-stage">
     
+    <!-- EKRAN 1: GİRİŞ / MOD SEÇİMİ -->
     <div id="screenHome" class="glass-card" style="display: flex; flex-direction: column;">
-      <div style="margin-bottom: 24px;">
+      
+      <!-- Üst Başlık ve Tanıtım (Sağa Doğru Genişleyen Düzen) -->
+      <div style="margin-bottom: 20px;">
         <div class="hero-badge">🏛️ Antik Roma Arenası · Soru Gladyatörünü Yen!</div>
         <h1 class="hero-title">Yazılı Arenasına Hoş Geldin!</h1>
         <p class="hero-desc" style="margin-bottom: 0; max-width: 100%;">
@@ -1530,8 +2213,11 @@
       </div>
 
       <div class="welcome-grid">
+        
+        <!-- Sol Panel: Modlar ve Başlatma -->
         <div>
           <div class="mode-select-box">
+            <!-- Bireysel Mod -->
             <div class="mode-card selected" id="cardModeSolo" onclick="selectGameMode('solo')">
               <div class="mode-icon">🛡️</div>
               <div class="mode-info">
@@ -1540,6 +2226,7 @@
               </div>
             </div>
 
+            <!-- Düello Modu -->
             <div class="mode-card" id="cardModeDuel" onclick="selectGameMode('duel')">
               <div class="mode-icon">⚔️</div>
               <div class="mode-info">
@@ -1548,6 +2235,7 @@
               </div>
             </div>
 
+            <!-- Grup Modu -->
             <div class="mode-card" id="cardModeGroup" onclick="selectGameMode('group')">
               <div class="mode-icon">👥</div>
               <div class="mode-info">
@@ -1557,14 +2245,20 @@
             </div>
           </div>
 
+          <!-- Bireysel Mod Öğrenci Seçimi (Eski Usül: Ad Soyad Yazmalı Datalist) -->
           <div class="student-select-box" id="soloStudentBox">
             <label>
               <span>👤 Ad Soyad:</span>
-              <span id="studentCountLabel" style="font-size: 11px; color: #94a3b8;">Öğrenci Listesi</span>
+              <span id="studentCountLabel" style="font-size: 11px; color: #94a3b8;">Yükleniyor...</span>
             </label>
-            <input type="text" id="playerFullName" class="student-dropdown" placeholder="Adınızı ve soyadınızı yazın..." maxlength="50" autocomplete="off">
+            <input type="text" id="playerFullName" list="studentNamesList" class="student-dropdown" placeholder="Adınızı ve soyadınızı yazın..." maxlength="50" autocomplete="off">
+            <datalist id="studentNamesList"></datalist>
+            <div style="font-size: 11px; color: #fbbf24; margin-top: 6px; font-weight: 700;">
+              * Adınızı yazmaya başlayınca listeden otomatik öneri çıkacaktır.
+            </div>
           </div>
 
+          <!-- Düello Modu Süre Seçimi -->
           <div class="student-select-box" id="duelSettingsBox" style="display: none;">
             <label>⏱️ Düello Süresi Seçiniz:</label>
             <div style="display: flex; gap: 10px; margin-top: 6px;">
@@ -1574,8 +2268,10 @@
             </div>
           </div>
 
-          <div class="student-select-box" id="groupSettingsBox" style="display: none; background: rgba(15, 23, 42, 0.7); border: 1.5px solid rgba(251, 191, 36, 0.3); padding: 16px; border-radius: 18px;">
-            <p style="font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 8px;">🏛️ LEJYONERLER, GLADYATÖRLER ve SPARTAKÜSLER olarak 3 takım yarışacak!</p>
+          <!-- Grup Modu Açıklaması -->
+          <div class="student-select-box" id="groupSettingsBox" style="display: none; background: rgba(15, 23, 42, 0.7); border: 1.5px solid rgba(251, 191, 36, 0.3); padding: 14px 16px; border-radius: 16px;">
+            <p style="font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 4px;">🏛️ LEJYONERLER, GLADYATÖRLER ve SPARTAKÜSLER olarak 3 takım yarışacak!</p>
+            <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Her tur sırası gelen takım bir Roma kalkanı seçer; soruları doğru çözen puanı kapar, şans kartlarına dikkat edin!</p>
           </div>
 
           <button class="btn-start" onclick="startGame()">
@@ -1584,6 +2280,7 @@
           </button>
         </div>
 
+        <!-- Sağ Panel: Liderlik Tablosu (Ortalanmış) -->
         <div class="leaderboard-panel" style="align-self: center; margin: auto 0;">
           <div class="leaderboard-header">
             <div class="leaderboard-title">🏆 İLK 10 GLADYATÖR</div>
@@ -1609,12 +2306,15 @@
         </div>
 
       </div>
-    </div>
+    </div>iv>
 
-    <!-- BİREYSEL MOD (SOLO) -->
+    <!-- EKRAN 2: BİREYSEL MOD (ARENA İKİ KOLONLU SAVAŞ DÜZENİ) -->
     <div id="screenSolo" style="display: none; width: 100%;">
       <div class="arena-battle-stage">
+        
+        <!-- SOL PANEL: SORU KARTI VE KONTROLLER -->
         <div class="battle-main-col glass-card">
+          <!-- Üst Bilgi Barı: Soru Sayacı & İstatistikler -->
           <div class="hud-top-bar">
             <div class="hud-stat">
               <div class="hud-stat-icon">📄</div>
@@ -1632,6 +2332,7 @@
                   <div class="val" id="hudJokerCount" style="color: #fbbf24;">0</div>
                 </div>
               </div>
+
               <div class="hud-stat">
                 <div class="hud-stat-icon" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">🔥</div>
                 <div class="hud-stat-text">
@@ -1639,6 +2340,7 @@
                   <div class="val" id="hudStreak">x1.0</div>
                 </div>
               </div>
+
               <div class="hud-stat">
                 <div class="hud-stat-icon" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">💎</div>
                 <div class="hud-stat-text">
@@ -1649,107 +2351,168 @@
             </div>
           </div>
 
+          <!-- Hız Bonusu İlerleme Çubuğu -->
           <div class="speed-bar-container" title="Hızlı çözdükçe daha çok puan kazanırsın!">
             <div class="speed-bar-fill" id="speedBarFill"></div>
           </div>
 
+          <!-- Soru Kartı -->
           <div class="question-card">
             <div class="question-badge" id="questionCategoryBadge">...</div>
             <div class="question-text" id="questionText">Sorunun metni buraya gelecek...</div>
-            <div class="question-visual-box" id="questionVisualBox"></div>
             
+            <div class="question-visual-box" id="questionVisualBox">
+              <!-- Dinamik SVG Çizimi -->
+            </div>
+
+            <!-- DİKKAT ÇEKİCİ GLADYATÖR JOKER KEMERİ / ACTION BAR -->
             <div class="joker-action-bar joker-bar-empty" id="jokerActionBar">
               <div class="joker-bar-header">
                 <div class="joker-bar-title" id="jokerBarTitle">
                   <span class="joker-sparkle">🎒</span>
                   <span id="jokerTitleText">GLADYATÖR ÇANTASI</span>
                 </div>
-                <div class="joker-bar-status" id="jokerBarStatus">🎁 Her 3 soruda bir sandık açılır!</div>
+                <div class="joker-bar-status" id="jokerBarStatus">
+                  🎁 Her 3 soruda bir sandık açılır!
+                </div>
               </div>
-              <div class="active-jokers-list" id="activeJokersList"></div>
-              <div class="joker-active-banner" id="jokerActiveBanner" style="display: none;"></div>
+              <div class="active-jokers-list" id="activeJokersList">
+                <!-- Dinamik Joker Butonları -->
+              </div>
+              <div class="joker-active-banner" id="jokerActiveBanner" style="display: none;">
+                <!-- Aktif efekt göstergesi (2X veya Kalkan) -->
+              </div>
             </div>
 
-            <div class="options-grid" id="optionsGrid"></div>
+            <div class="options-grid" id="optionsGrid">
+              <!-- A, B, C, D Butonları -->
+            </div>
           </div>
         </div>
 
+        <!-- SAĞ PANEL: HEYBETLİ 220PX ARENA GLADYATÖRÜ BOSS KULESİ -->
         <div class="boss-tower-col glass-card">
           <div class="boss-tower-header">
             <span class="boss-badge">🔥 ARENANIN YENİLMEZ EFENDİSİ</span>
             <div class="boss-name" id="bossNameTitle">⚔️ SORU GLADYATÖRÜ</div>
             <span class="boss-level-pill" id="bossLevelPill">5. Sınıf Maarif Şampiyonu</span>
           </div>
+
           <div class="boss-figure-stage">
             <div class="gladiator-avatar-wrapper" id="gladiatorAvatar">
               <svg class="gladiator-sprite" viewBox="0 0 130 144" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="bronzeGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b" /><stop offset="50%" stop-color="#b45309" /><stop offset="100%" stop-color="#78350f" /></linearGradient>
-                  <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f1f5f9" /><stop offset="50%" stop-color="#cbd5e1" /><stop offset="100%" stop-color="#94a3b8" /></linearGradient>
-                  <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fef08a" /><stop offset="100%" stop-color="#d97706" /></linearGradient>
-                  <linearGradient id="capeGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#b91c1c" /><stop offset="100%" stop-color="#7f1d1d" /></linearGradient>
-                </defs>
-                <path d="M 32,56 Q 14,92 24,115 Q 65,124 104,115 Q 116,92 98,56 Z" fill="url(#capeGrad)" stroke="#450a0a" stroke-width="2"/>
-                <path d="M 44,54 Q 65,50 86,54 L 82,92 Q 65,97 48,92 Z" fill="url(#bronzeGrad)" stroke="#451a03" stroke-width="2"/>
-                <path d="M 50,62 Q 65,68 80,62" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
-                <path d="M 52,74 Q 65,80 78,74" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
-                <rect x="50" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
-                <rect x="58" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
-                <rect x="66" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
-                <rect x="74" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
-                <rect x="58" y="42" width="14" height="14" fill="#fed7aa"/>
-                <circle cx="65" cy="38" r="20" fill="#fed7aa" />
-                <circle cx="58" cy="37" r="3.2" fill="#1e293b" id="gEyeL" />
-                <circle cx="72" cy="37" r="3.2" fill="#1e293b" id="gEyeR" />
-                <circle cx="59" cy="36" r="1" fill="#fff" />
-                <circle cx="73" cy="36" r="1" fill="#fff" />
-                <path d="M 60,44 Q 65,49 70,44" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none" id="gMouth" />
-                <path d="M 44,34 Q 65,14 86,34 Q 84,44 65,44 Q 46,44 44,34 Z" fill="url(#goldRim)" stroke="#78350f" stroke-width="2"/>
-                <path d="M 46,34 L 50,47 L 54,39 Z" fill="url(#bronzeGrad)"/>
-                <path d="M 84,34 L 80,47 L 76,39 Z" fill="url(#bronzeGrad)"/>
-                <path d="M 59,16 Q 65,-2 71,16 L 69,21 Q 65,15 61,21 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-                <path d="M 54,19 Q 65,3 76,19" stroke="#ef4444" stroke-width="2" fill="none"/>
-                <g transform="translate(10, 50)">
-                  <path d="M 22,0 Q 42,-5 50,14 L 42,62 Q 22,74 5,58 L 5,17 Q 12,0 22,0 Z" fill="url(#bronzeGrad)" stroke="url(#goldRim)" stroke-width="2.5"/>
-                  <path d="M 14,36 A 16,16 0 0,1 38,36" fill="none" stroke="#fef08a" stroke-width="2" stroke-linecap="round"/>
-                  <circle cx="26" cy="36" r="2.5" fill="#fef08a"/>
-                  <line x1="26" y1="36" x2="16" y2="26" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
-                  <line x1="26" y1="36" x2="26" y2="20" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="26" y1="36" x2="36" y2="26" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
-                  <circle cx="16" cy="26" r="1.2" fill="#fff"/>
-                  <circle cx="26" cy="20" r="1.5" fill="#fff"/>
-                  <circle cx="36" cy="26" r="1.2" fill="#fff"/>
-                  <circle cx="12" cy="14" r="1.5" fill="#fde047"/>
-                  <circle cx="42" cy="12" r="1.5" fill="#fde047"/>
-                  <circle cx="36" cy="58" r="1.5" fill="#fde047"/>
-                  <circle cx="8" cy="52" r="1.5" fill="#fde047"/>
-                </g>
-                <g transform="translate(86, 38) rotate(14)">
-                  <path d="M 6,0 L 11,46 L 6,55 L 1,46 L 6,0 Z" fill="url(#bladeGrad)" stroke="#64748b" stroke-width="1"/>
-                  <line x1="6" y1="4" x2="6" y2="44" stroke="#94a3b8" stroke-width="1"/>
-                  <line x1="6" y1="10" x2="9.5" y2="10" stroke="#78350f" stroke-width="1"/>
-                  <line x1="6" y1="18" x2="9.5" y2="18" stroke="#78350f" stroke-width="1"/>
-                  <line x1="6" y1="26" x2="9.5" y2="26" stroke="#78350f" stroke-width="1"/>
-                  <line x1="6" y1="34" x2="9.5" y2="34" stroke="#78350f" stroke-width="1"/>
-                  <line x1="6" y1="42" x2="9.5" y2="42" stroke="#78350f" stroke-width="1"/>
-                  <ellipse cx="6" cy="46" rx="8" ry="3" fill="url(#goldRim)" stroke="#78350f" stroke-width="1"/>
-                  <rect x="4" y="49" width="4" height="11" rx="1" fill="#78350f"/>
-                  <circle cx="6" cy="62" r="4" fill="url(#goldRim)" stroke="#78350f" stroke-width="1"/>
-                  <circle cx="6" cy="54" r="4.5" fill="#fed7aa" stroke="#d97706" stroke-width="1"/>
-                </g>
-                <rect x="52" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
-                <rect x="68" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
-                <line x1="52" y1="112" x2="62" y2="112" stroke="#fef08a" stroke-width="1.5"/>
-                <line x1="68" y1="112" x2="78" y2="112" stroke="#fef08a" stroke-width="1.5"/>
-                <path d="M 48,127 L 63,127 L 64,134 L 47,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
-                <path d="M 67,127 L 82,127 L 83,134 L 66,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
-                <line x1="50" y1="130" x2="62" y2="130" stroke="#fef08a" stroke-width="1"/>
-                <line x1="69" y1="130" x2="81" y2="130" stroke="#fef08a" stroke-width="1"/>
-                <ellipse cx="65" cy="136" rx="48" ry="7" fill="rgba(0,0,0,0.42)"/>
-              </svg>
+            <defs>
+              <linearGradient id="bronzeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f59e0b" />
+                <stop offset="50%" stop-color="#b45309" />
+                <stop offset="100%" stop-color="#78350f" />
+              </linearGradient>
+              <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f1f5f9" />
+                <stop offset="50%" stop-color="#cbd5e1" />
+                <stop offset="100%" stop-color="#94a3b8" />
+              </linearGradient>
+              <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fef08a" />
+                <stop offset="100%" stop-color="#d97706" />
+              </linearGradient>
+              <linearGradient id="capeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#b91c1c" />
+                <stop offset="100%" stop-color="#7f1d1d" />
+              </linearGradient>
+            </defs>
+
+            <!-- Kırmızı Roma Pelerini -->
+            <path d="M 32,56 Q 14,92 24,115 Q 65,124 104,115 Q 116,92 98,56 Z" fill="url(#capeGrad)" stroke="#450a0a" stroke-width="2"/>
+
+            <!-- Deri ve Bronz Roma Zırhı (Lorica) -->
+            <path d="M 44,54 Q 65,50 86,54 L 82,92 Q 65,97 48,92 Z" fill="url(#bronzeGrad)" stroke="#451a03" stroke-width="2"/>
+            <path d="M 50,62 Q 65,68 80,62" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
+            <path d="M 52,74 Q 65,80 78,74" stroke="#fef08a" stroke-width="1.5" fill="none" opacity="0.6"/>
+            <!-- Deri Zırh Etekleri (Pteruges) -->
+            <rect x="50" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
+            <rect x="58" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
+            <rect x="66" y="93" width="6" height="13" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1"/>
+            <rect x="74" y="92" width="6" height="12" rx="2" fill="#78350f" stroke="#451a03" stroke-width="1"/>
+
+            <!-- Boyun ve Kafa -->
+            <rect x="58" y="42" width="14" height="14" fill="#fed7aa"/>
+            <circle cx="65" cy="38" r="20" fill="#fed7aa" />
+
+            <!-- Gözler ve İfade -->
+            <circle cx="58" cy="37" r="3.2" fill="#1e293b" id="gEyeL" />
+            <circle cx="72" cy="37" r="3.2" fill="#1e293b" id="gEyeR" />
+            <circle cx="59" cy="36" r="1" fill="#fff" />
+            <circle cx="73" cy="36" r="1" fill="#fff" />
+            <path d="M 60,44 Q 65,49 70,44" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none" id="gMouth" />
+
+            <!-- Roma Miğferi (Altın) -->
+            <path d="M 44,34 Q 65,14 86,34 Q 84,44 65,44 Q 46,44 44,34 Z" fill="url(#goldRim)" stroke="#78350f" stroke-width="2"/>
+            <path d="M 46,34 L 50,47 L 54,39 Z" fill="url(#bronzeGrad)"/>
+            <path d="M 84,34 L 80,47 L 76,39 Z" fill="url(#bronzeGrad)"/>
+            <!-- Kırmızı Miğfer Tüyleri -->
+            <path d="M 59,16 Q 65,-2 71,16 L 69,21 Q 65,15 61,21 Z" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
+            <path d="M 54,19 Q 65,3 76,19" stroke="#ef4444" stroke-width="2" fill="none"/>
+
+            <!-- SOL KOL: Açıölçer Kavisli Gladyatör Kalkanı (Zırhın Parçası Gibi Doğal İşleme) -->
+            <g transform="translate(10, 50)">
+              <!-- Kalkan Plakası -->
+              <path d="M 22,0 Q 42,-5 50,14 L 42,62 Q 22,74 5,58 L 5,17 Q 12,0 22,0 Z" fill="url(#bronzeGrad)" stroke="url(#goldRim)" stroke-width="2.5"/>
+              <!-- Kalkan Yüzeyine İşlenmiş Altın Açıölçer Yayı -->
+              <path d="M 14,36 A 16,16 0 0,1 38,36" fill="none" stroke="#fef08a" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="26" cy="36" r="2.5" fill="#fef08a"/>
+              <!-- Açı Çizgileri -->
+              <line x1="26" y1="36" x2="16" y2="26" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="26" y1="36" x2="26" y2="20" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+              <line x1="26" y1="36" x2="36" y2="26" stroke="#fde047" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="16" cy="26" r="1.2" fill="#fff"/>
+              <circle cx="26" cy="20" r="1.5" fill="#fff"/>
+              <circle cx="36" cy="26" r="1.2" fill="#fff"/>
+              <!-- Köşe Perçinleri -->
+              <circle cx="12" cy="14" r="1.5" fill="#fde047"/>
+              <circle cx="42" cy="12" r="1.5" fill="#fde047"/>
+              <circle cx="36" cy="58" r="1.5" fill="#fde047"/>
+              <circle cx="8" cy="52" r="1.5" fill="#fde047"/>
+            </g>
+
+            <!-- SAĞ KOL: Cetvel Gladius Kılıcı (Namlusu Ölçülü Gerçek Roma Kılıcı) -->
+            <g transform="translate(86, 38) rotate(14)">
+              <!-- Kılıç Namlusu -->
+              <path d="M 6,0 L 11,46 L 6,55 L 1,46 L 6,0 Z" fill="url(#bladeGrad)" stroke="#64748b" stroke-width="1"/>
+              <line x1="6" y1="4" x2="6" y2="44" stroke="#94a3b8" stroke-width="1"/>
+              <!-- Namlu Üzerine Gravürlü Cetvel Çentikleri -->
+              <line x1="6" y1="10" x2="9.5" y2="10" stroke="#78350f" stroke-width="1"/>
+              <line x1="6" y1="18" x2="9.5" y2="18" stroke="#78350f" stroke-width="1"/>
+              <line x1="6" y1="26" x2="9.5" y2="26" stroke="#78350f" stroke-width="1"/>
+              <line x1="6" y1="34" x2="9.5" y2="34" stroke="#78350f" stroke-width="1"/>
+              <line x1="6" y1="42" x2="9.5" y2="42" stroke="#78350f" stroke-width="1"/>
+              <!-- Balçak -->
+              <ellipse cx="6" cy="46" rx="8" ry="3" fill="url(#goldRim)" stroke="#78350f" stroke-width="1"/>
+              <!-- Kabza -->
+              <rect x="4" y="49" width="4" height="11" rx="1" fill="#78350f"/>
+              <!-- Topuz -->
+              <circle cx="6" cy="62" r="4" fill="url(#goldRim)" stroke="#78350f" stroke-width="1"/>
+              <!-- Gladyatör Eli -->
+              <circle cx="6" cy="54" r="4.5" fill="#fed7aa" stroke="#d97706" stroke-width="1"/>
+            </g>
+          
+            <!-- Bacaklar ve Zırhlı Dizlikler (Greaves) -->
+            <rect x="52" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
+            <rect x="68" y="103" width="10" height="25" rx="3" fill="#b45309" stroke="#451a03" stroke-width="1.5"/>
+            <line x1="52" y1="112" x2="62" y2="112" stroke="#fef08a" stroke-width="1.5"/>
+            <line x1="68" y1="112" x2="78" y2="112" stroke="#fef08a" stroke-width="1.5"/>
+            <!-- Deri Roma Sandaletleri (Caligae) -->
+            <path d="M 48,127 L 63,127 L 64,134 L 47,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
+            <path d="M 67,127 L 82,127 L 83,134 L 66,134 Z" fill="#78350f" stroke="#451a03" stroke-width="1.2"/>
+            <line x1="50" y1="130" x2="62" y2="130" stroke="#fef08a" stroke-width="1"/>
+            <line x1="69" y1="130" x2="81" y2="130" stroke="#fef08a" stroke-width="1"/>
+            <!-- Arena Kumu Zemin Gölgesi -->
+            <ellipse cx="65" cy="136" rx="48" ry="7" fill="rgba(0,0,0,0.42)"/>
+    </svg>
               <div class="combat-text" id="combatText">-100 HP!</div>
             </div>
           </div>
+
           <div class="boss-stats-panel">
             <div class="boss-hp-row">
               <span style="font-weight: 800; font-size: 13px; color: #fbbf24;">CAN:</span>
@@ -1759,17 +2522,20 @@
               <div class="gladiator-hp-fill" id="gladiatorHpFill" style="width: 100%;"></div>
             </div>
           </div>
+
           <div class="boss-speech-bubble">
             <div class="bubble-arrow"></div>
             <span id="bossDialogue">🛡️ "Kalkanımı kırmak için soruları doğru cevapla gladyatör!"</span>
           </div>
         </div>
+
       </div>
     </div>
-
-    <!-- DÜELLO MODU (DUEL) -->
+    <!-- EKRAN 3: DÜELLO MODU (2 KİŞİLİK AKILLI TAHTA) -->
     <div id="screenDuel" class="glass-card" style="display: none; max-width: 1100px;">
       <div class="duel-stage">
+        
+        <!-- Mavi Gladyatör (Sol) -->
         <div class="duel-player-panel player-blue">
           <div class="duel-player-header">
             <div style="font-size: 32px;">🛡️</div>
@@ -1785,14 +2551,25 @@
           </div>
         </div>
 
+        <!-- Orta Sayaç ve Soru -->
         <div class="duel-center-panel">
           <div class="duel-timer-badge" id="duelTimerDisplay">60</div>
+          
           <div class="question-badge" id="duelCategoryBadge" style="margin-bottom: 8px;">Kazanım</div>
-          <div style="font-family: var(--font-fun); font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px;" id="duelQuestionText">Soru metni...</div>
-          <div class="question-visual-box" id="duelVisualBox" style="width: 100%; min-height: 140px;"></div>
-          <div style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 10px;">İlk doğru basan +100 puan kazanır!</div>
+          <div style="font-family: var(--font-fun); font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px;" id="duelQuestionText">
+            Soru metni...
+          </div>
+          
+          <div class="question-visual-box" id="duelVisualBox" style="width: 100%; min-height: 140px;">
+            <!-- Dinamik Çizim -->
+          </div>
+
+          <div style="font-size: 13px; color: #fbbf24; font-weight: 800; margin-top: 10px;">
+            İlk doğru basan +100 puan kazanır!
+          </div>
         </div>
 
+        <!-- Kırmızı Gladyatör (Sağ) -->
         <div class="duel-player-panel player-red">
           <div class="duel-player-header">
             <div style="font-size: 32px;">⚔️</div>
@@ -1807,35 +2584,37 @@
             <button class="duel-opt-btn" onclick="handleDuelAnswer(2, 3)"><span class="option-letter">D</span> <span class="opt-val">...</span></button>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- GRUP MODU (GROUP) -->
-    <div id="screenGroup" style="display: none; width: 100%; max-width: 1000px; flex-direction: column;">
-      
+        <!-- EKRAN 3B: GRUP MODU (GROUP) -->
+    <div id="screenGroup" style="display: none; width: 100%; max-width: 1000px; flex-direction: column; align-items: center;">
       <div class="group-teams-row" id="groupTeamsRow">
         <!-- JS ile 3 takım yüklenecek -->
       </div>
 
-      <div class="glass-card" style="max-width: 1000px; padding: 20px;">
+      <div class="glass-card" style="width: 100%; max-width: 1000px; padding: 20px;">
         <div class="group-card-grid" id="groupGrid">
-          <!-- 30 Kutu Yüklenecek -->
+          <!-- 30 Kalkan Yüklenecek -->
         </div>
       </div>
 
       <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
         <button class="btn-secondary" onclick="goHome()">🏠 Ana Menü</button>
       </div>
-
     </div>
 
-    <!-- SONUÇ EKRANI -->
+    <!-- EKRAN 4: SONUÇ / ZAFER EKRANI -->
     <div id="screenResult" class="glass-card" style="display: none; max-width: 680px;">
       <div class="result-box">
         <div class="result-trophy" id="resTrophy">👑</div>
         <h2 class="result-title" id="resTitle">Arenanın Fatihi Oldun!</h2>
-        <p style="color: #cbd5e1; font-size: 16px;" id="resSubtitle">Soru Gladyatörünü dize getirdin!</p>
-        <div class="result-stats-grid" id="resStatsGrid">
+        <p style="color: #cbd5e1; font-size: 16px;" id="resSubtitle">
+          Soru Gladyatörünü dize getirdin ve 100 tam puanın <b>Altın Defne Tacını</b> kazandın!
+        </p>
+
+        <div class="result-stats-grid">
           <div class="res-stat-card">
             <div class="lbl">DOĞRU SAYISI</div>
             <div class="val" id="resCorrectCount" style="color: #10b981;">15 / 15</div>
@@ -1849,70 +2628,80 @@
             <div class="val" id="resMaxStreak" style="color: #38bdf8;">🔥 x2.0</div>
           </div>
         </div>
-        <div id="resLeaderboardStatus" style="font-size: 14px; color: #fbbf24; font-weight: 700; margin-bottom: 20px;">Liderlik tablosuna kaydedildi!</div>
+
+        <div id="resLeaderboardStatus" style="font-size: 14px; color: #fbbf24; font-weight: 700; margin-bottom: 20px;">
+          Liderlik tablosuna kaydedildi!
+        </div>
+
         <div class="action-btn-group">
-          <button class="btn-start" onclick="startGame()" style="margin: 0; padding: 14px 28px; width: auto;"><span>Yeniden Meydan Oku</span> 🔄</button>
-          <button class="btn-secondary" onclick="goHome()">Ana Menü 🏠</button>
+          <button class="btn-start" onclick="startGame()" style="margin: 0; padding: 14px 28px; width: auto;">
+            <span>Yeniden Meydan Oku</span> 🔄
+          </button>
+          <button class="btn-secondary" onclick="goHome()">
+            Ana Menü 🏠
+          </button>
         </div>
       </div>
     </div>
 
   </main>
 
-  <!-- MODALLAR -->
+  <!-- MODAL: 3 SORUDA BİR JOKER KART SEÇİMİ -->
   <div class="modal-overlay" id="jokerModal">
     <div class="joker-modal-content">
       <div style="font-size: 42px; margin-bottom: 6px;">🏛️</div>
-      <h3 style="font-family: var(--font-fun); font-size: 26px; font-weight: 800; color: #fbbf24;">3 Soru Başarıyla Tamamlandı!</h3>
-      <p style="color: #cbd5e1; font-size: 14px;">Soru Gladyatörü sarsıldı! Kendine bir <b style="color: #fbbf24;">Gladyatör Gücü</b> seç ve arenada öne geç:</p>
+      <h3 style="font-family: var(--font-fun); font-size: 26px; font-weight: 800; color: #fbbf24;">
+        3 Soru Başarıyla Tamamlandı!
+      </h3>
+      <p style="color: #cbd5e1; font-size: 14px;">
+        Soru Gladyatörü sarsıldı! Kendine bir <b style="color: #fbbf24;">Gladyatör Gücü</b> seç ve arenada öne geç:
+      </p>
+
       <div class="joker-cards-container">
+        <!-- Kart 1: 50:50 -->
         <div class="joker-card-select" onclick="claimJoker('5050')">
-          <div style="font-size: 38px;">✂️</div><h5>50:50 Eleme</h5><p>Yanlış iki şıkkı kılıcınla parçala!</p>
+          <div style="font-size: 38px;">✂️</div>
+          <h5>50:50 Eleme</h5>
+          <p>Yanlış iki şıkkı kılıcınla parçala!</p>
         </div>
+
+        <!-- Kart 2: 2x Çifte Darbe -->
         <div class="joker-card-select" onclick="claimJoker('double')">
-          <div style="font-size: 38px;">⚡</div><h5>Çifte Darbe</h5><p>Sıradaki soruda Gladyatöre 2 kat hasar ve 2 kat puan!</p>
+          <div style="font-size: 38px;">⚡</div>
+          <h5>Çifte Darbe</h5>
+          <p>Sıradaki soruda Gladyatöre 2 kat hasar ve 2 kat puan!</p>
         </div>
+
+        <!-- Kart 3: Gladyatör Kalkanı -->
         <div class="joker-card-select" onclick="claimJoker('shield')">
-          <div style="font-size: 38px;">🛡️</div><h5>Gladyatör Kalkanı</h5><p>Sıradaki soruda yanlış yapsan bile serin sıfırlanmaz!</p>
+          <div style="font-size: 38px;">🛡️</div>
+          <h5>Gladyatör Kalkanı</h5>
+          <p>Sıradaki soruda yanlış yapsan bile serin sıfırlanmaz!</p>
         </div>
+
+        <!-- Kart 4: Kader Çarkı (Gizemli Şans) -->
         <div class="joker-card-select mystery-card" id="mysteryCard" onclick="claimMysteryWheel()" title="Kader Çarkını Çevir!">
           <div id="mysteryCardIcon" style="font-size: 38px;">🔮</div>
-          <h5 id="mysteryCardTitle" style="color: #f0abfc;">Kader Küresi</h5><p id="mysteryCardSub">Büyük risk, büyük ödül! Şansını dene!</p>
+          <h5 id="mysteryCardTitle" style="color: #f0abfc;">Kader Küresi</h5>
+          <p id="mysteryCardSub">Büyük risk, büyük ödül! Şansını dene!</p>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- GRUP MODU SORU MODALI -->
-  <div class="modal-overlay" id="groupQModal" style="z-index: 200;">
-    <div class="joker-modal-content" style="max-width: 800px; padding: 24px;">
-      <div class="question-badge" id="gqBadge" style="display:inline-block; margin-bottom:12px;">Kazanım</div>
-      <div class="question-text" id="gqText" style="font-size: 20px !important;">Soru Metni</div>
-      <div class="question-visual-box" id="gqVisualBox" style="width: 100%; min-height: 120px; background: rgba(15, 23, 42, 0.9) !important;"></div>
-      <div class="options-grid" id="gqOptionsGrid" style="margin-top: 16px;"></div>
-    </div>
-  </div>
-
-  <!-- GRUP MODU JOKER MODALI -->
-  <div class="modal-overlay" id="groupJModal" style="z-index: 200;">
-    <div class="joker-modal-content" style="max-width: 500px; padding: 40px 30px;">
-      <div id="gjIcon" style="font-size: 64px; margin-bottom: 12px; animation: bounce 1s infinite alternate;">🎁</div>
-      <h2 id="gjTitle" style="font-family: var(--font-fun); font-size: 28px; color: #fbbf24; font-weight: 800; margin-bottom: 16px;">ŞANS KARTI</h2>
-      <p id="gjDesc" style="color: #cbd5e1; font-size: 16px; margin-bottom: 24px; line-height: 1.5;"></p>
-      <button class="btn-start" onclick="applyGroupJoker()" style="font-size: 18px; padding: 12px;">DEVAM ET ⚔️</button>
-    </div>
-  </div>
-
   <script>
     /* ==========================================================
-       SES MOTORU
+       SES MOTORU (Web Audio API)
        ========================================================== */
     let audioCtx = null;
     let isSoundOn = true;
 
     function initAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
     }
 
     function playTone(freq, type = 'triangle', duration = 0.15, gainVal = 0.1) {
@@ -1944,21 +2733,23 @@
       setTimeout(() => playTone(247, 'sine', 0.25, 0.12), 120);
     }
 
-    function soundFanfare() {
+        function soundFanfare() {
       const notes = [523, 659, 783, 1046];
       notes.forEach((f, idx) => {
         setTimeout(() => playTone(f, 'triangle', 0.25, 0.25), idx * 140);
       });
     }
 
-    function soundJoker() {
+function soundJoker() {
       playTone(440, 'triangle', 0.1, 0.15);
       setTimeout(() => playTone(554.37, 'triangle', 0.1, 0.15), 90);
       setTimeout(() => playTone(659.25, 'triangle', 0.1, 0.15), 180);
       setTimeout(() => playTone(880, 'triangle', 0.25, 0.2), 270);
     }
 
-    function soundHit() { playTone(180, 'triangle', 0.15, 0.2); }
+    function soundHit() {
+      playTone(180, 'triangle', 0.15, 0.2);
+    }
 
     function toggleSound() {
       isSoundOn = !isSoundOn;
@@ -1966,12 +2757,182 @@
     }
 
     function toggleFullscreen() {
-      if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); } 
-      else { document.exitFullscreen().catch(() => {}); }
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
     }
 
     /* ==========================================================
-       SORU HAVUZU ÜRETİCİ
+       FIREBASE VE ÖĞRENCİ YÖNETİMİ
+       ========================================================== */
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
+      authDomain: "zihindencarpma.firebaseapp.com",
+      databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.firebasestorage.app",
+      messagingSenderId: "111639321624",
+      appId: "1:111639321624:web:b6d14149d55b3982d6376d"
+    };
+
+    let cloudDb = null;
+    const DB_NODE = 'scores_yaziliarenasi';
+    const STUDENTS_NODE = 'students_grade_5';
+    let authorizedStudents = [];
+
+    if (typeof firebase !== 'undefined') {
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        cloudDb = firebase.database();
+
+        // Skorları Dinle
+        cloudDb.ref(DB_NODE).on('value', snap => {
+          let data = snap.val();
+          let arr = [];
+          if (data) Object.keys(data).forEach(k => arr.push(data[k]));
+          updateLeaderboard(arr);
+        });
+
+        // Merkezi 5. Sınıf Öğrenci Listesini Dinle
+        cloudDb.ref(STUDENTS_NODE).on('value', snap => {
+          let data = snap.val();
+          if (data) {
+            authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+            authorizedStudents = [];
+          }
+          populateStudentDropdown();
+        });
+      } catch (e) {
+        console.error("Firebase bağlantı hatası:", e);
+      }
+    }
+
+        function initStudents() {
+      if (cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).once('value', snap => {
+          let data = snap.val();
+          if (data) {
+            authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+            authorizedStudents = [];
+          }
+          populateStudentDropdown();
+          const countEl = document.getElementById('adminStudentCount');
+          if (countEl) countEl.innerText = authorizedStudents.length;
+        });
+      }
+    }
+
+    function populateStudentDropdown() {
+      const dl = document.getElementById('studentNamesList');
+      const countLbl = document.getElementById('studentCountLabel');
+      if (dl) {
+        dl.innerHTML = '';
+        authorizedStudents.sort((a,b) => a.localeCompare(b, 'tr')).forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          dl.appendChild(opt);
+        });
+      }
+
+      if (countLbl) {
+        countLbl.innerText = authorizedStudents.length > 0 
+          ? `${authorizedStudents.length} kayıtlı öğrenci` 
+          : 'Öğrenci bulunamadı';
+      }
+    }
+
+    function updateLeaderboard(scores) {
+      if (Array.isArray(scores)) {
+        localStorage.setItem('meb_yaziliarenasi_top10', JSON.stringify(scores));
+      } else {
+        scores = JSON.parse(localStorage.getItem('meb_yaziliarenasi_top10') || '[]');
+      }
+
+      // Her öğrencinin yalnızca EN İYİ skorunu sakla (Benzersiz Öğrenci)
+      const bestScoresMap = {};
+      scores.forEach(item => {
+        const rawName = (item.name || item.adSoyad || '').trim();
+        if (!rawName) return;
+        const normKey = rawName.toLocaleLowerCase('tr-TR');
+        const s = Number(item.score ?? item.puan) || 0;
+        const c = Number(item.correct ?? item.dogruSayisi) || 0;
+
+        if (!bestScoresMap[normKey]) {
+          bestScoresMap[normKey] = {
+            ...item,
+            name: rawName,
+            score: s,
+            correct: c
+          };
+        } else {
+          const ex = bestScoresMap[normKey];
+          if (s > ex.score || (s === ex.score && c > ex.correct)) {
+            bestScoresMap[normKey] = {
+              ...item,
+              name: rawName,
+              score: s,
+              correct: c
+            };
+          }
+        }
+      });
+
+      const uniqueScores = Object.values(bestScoresMap);
+      uniqueScores.sort((a, b) => (b.score || 0) - (a.score || 0) || (b.correct || 0) - (a.correct || 0));
+      const top10 = uniqueScores.slice(0, 10);
+
+      const tbody = document.getElementById('leaderboardTbody');
+      if (!tbody) return;
+
+      if (top10.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Henüz arenada skor kaydedilmedi. İlk sen ol!</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = top10.map((item, idx) => {
+        let badgeClass = 'rank-other';
+        if (idx === 0) badgeClass = 'rank-1';
+        else if (idx === 1) badgeClass = 'rank-2';
+        else if (idx === 2) badgeClass = 'rank-3';
+
+        return `
+          <tr>
+            <td><span class="rank-badge ${badgeClass}">${idx + 1}</span></td>
+            <td style="font-weight: 700; color: #fff;">${item.name || item.adSoyad || 'Gladyatör'}</td>
+            <td style="text-align: center; color: #10b981; font-weight: 800;">${item.correct !== undefined ? item.correct : (item.dogruSayisi || 0)}</td>
+            <td style="text-align: right; color: #fbbf24; font-weight: 800;">${(item.score ?? item.puan ?? 0).toLocaleString()}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function saveScoreToFirebase(name, score, correctCount) {
+      const entry = {
+        name: name,
+        score: score,
+        correct: correctCount,
+        timestamp: Date.now()
+      };
+
+      if (cloudDb) {
+        cloudDb.ref(DB_NODE).push(entry);
+      } else {
+        let local = JSON.parse(localStorage.getItem('meb_yaziliarenasi_top10') || '[]');
+        local.push(entry);
+        localStorage.setItem('meb_yaziliarenasi_top10', JSON.stringify(local));
+        updateLeaderboard(local);
+      }
+    }
+
+        /* ==========================================================
+       GENİŞ VE DİNAMİK SORU HAVUZU (MEB SENARYO 5 - 80+ VARYASYON)
+       %100 TEK VE BENZERSİZ DOĞRU CEVAP GARANTİSİ
        ========================================================== */
     function makeQuestion(badge, text, visual, correct, rawDistractors) {
       const cleanDistractors = [];
@@ -1979,96 +2940,427 @@
 
       for (let d of rawDistractors) {
         const val = String(d).trim();
-        if (val !== corrStr && !cleanDistractors.includes(val)) cleanDistractors.push(val);
+        if (val !== corrStr && !cleanDistractors.includes(val)) {
+          cleanDistractors.push(val);
+        }
       }
 
       let offset = 1;
       while (cleanDistractors.length < 3) {
         let alt = "";
-        if (corrStr.endsWith(" cm")) alt = `${parseInt(corrStr) + offset * 3} cm`;
-        else if (corrStr.endsWith("°")) alt = `${(parseInt(corrStr) + offset * 25) % 170 + 10}°`;
-        else alt = `Seçenek ${offset}`;
-        if (alt !== corrStr && !cleanDistractors.includes(alt)) cleanDistractors.push(alt);
+        if (corrStr.endsWith(" cm")) {
+          let num = parseInt(corrStr) + offset * 3;
+          alt = `${num} cm`;
+        } else if (corrStr.endsWith("°")) {
+          let num = (parseInt(corrStr) + offset * 25) % 170 + 10;
+          alt = `${num}°`;
+        } else {
+          alt = `Seçenek ${offset}`;
+        }
+        if (alt !== corrStr && !cleanDistractors.includes(alt)) {
+          cleanDistractors.push(alt);
+        }
         offset++;
       }
 
-      return { badge, text, visual, correct: corrStr, distractors: cleanDistractors.slice(0, 3) };
+      return {
+        badge,
+        text,
+        visual,
+        correct: corrStr,
+        distractors: cleanDistractors.slice(0, 3)
+      };
     }
 
     function generateQuestionPool() {
       const pool = [];
-      
+
+      // 1. KAZANIM: MAT.5.3.1 (Çember, Yarıçap, Çap, Pergel, Cetvel)
       const radiuses = [3, 4, 5, 6, 7, 8, 9, 10, 12, 15];
       radiuses.forEach(r => {
         const diam = r * 2;
+        // Yarıçaptan Çap Bulma
         pool.push(makeQuestion(
           "MAT.5.3.1 · Çember ve Çap",
           `Pergel cetvel üzerinde ${r} cm açılarak bir çember çiziliyor. Bu çemberin ÇAPI kaç cm'dir?`,
-          `<svg width="220" height="120" viewBox="0 0 220 120"><circle cx="110" cy="60" r="46" fill="none" stroke="#38bdf8" stroke-width="3"/><circle cx="110" cy="60" r="4" fill="#fbbf24"/><text x="110" y="52" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">M</text><line x1="110" y1="60" x2="156" y2="60" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="3,3"/><text x="133" y="54" fill="#f59e0b" font-size="12" font-weight="bold">${r} cm</text></svg>`,
-          `${diam} cm`, [`${r} cm`, `${diam + 4} cm`, `${diam > 4 ? diam - 4 : diam + 8} cm`]
+          `<svg width="220" height="120" viewBox="0 0 220 120">
+            <circle cx="110" cy="60" r="46" fill="none" stroke="#38bdf8" stroke-width="3"/>
+            <circle cx="110" cy="60" r="4" fill="#fbbf24"/>
+            <text x="110" y="52" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">M</text>
+            <line x1="110" y1="60" x2="156" y2="60" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="3,3"/>
+            <text x="133" y="54" fill="#f59e0b" font-size="12" font-weight="bold">${r} cm</text>
+          </svg>`,
+          `${diam} cm`,
+          [`${r} cm`, `${diam + 4} cm`, `${diam > 4 ? diam - 4 : diam + 8} cm`]
         ));
+
+        // Çaptan Yarıçap (Pergel Açıklığı) Bulma
         pool.push(makeQuestion(
           "MAT.5.3.1 · Çember ve Yarıçap",
           `Çapı ${diam} cm olan bir çember çizmek isteyen bir öğrenci, pergelin kollarını kaç cm açmalıdır?`,
-          `<svg width="220" height="120" viewBox="0 0 220 120"><circle cx="110" cy="60" r="48" fill="none" stroke="#a855f7" stroke-width="3"/><line x1="62" y1="60" x2="158" y2="60" stroke="#ec4899" stroke-width="2.5"/><circle cx="110" cy="60" r="3.5" fill="#fff"/><text x="110" y="50" fill="#ec4899" font-size="12" font-weight="bold" text-anchor="middle">Çap = ${diam} cm</text></svg>`,
-          `${r} cm`, [`${diam} cm`, `${r + 5} cm`, `${r > 2 ? r - 2 : r + 4} cm`]
+          `<svg width="220" height="120" viewBox="0 0 220 120">
+            <circle cx="110" cy="60" r="48" fill="none" stroke="#a855f7" stroke-width="3"/>
+            <line x1="62" y1="60" x2="158" y2="60" stroke="#ec4899" stroke-width="2.5"/>
+            <circle cx="110" cy="60" r="3.5" fill="#fff"/>
+            <text x="110" y="50" fill="#ec4899" font-size="12" font-weight="bold" text-anchor="middle">Çap = ${diam} cm</text>
+          </svg>`,
+          `${r} cm`,
+          [`${diam} cm`, `${r + 5} cm`, `${r > 2 ? r - 2 : r + 4} cm`]
         ));
       });
 
-      pool.push(makeQuestion("MAT.5.3.1 · Çember Çizimi", "Çember çizmek için kullanılan araç hangisidir?", null, "Pergel", ["Gönye", "İletki", "Metre"]));
-      pool.push(makeQuestion("MAT.5.3.1 · Elemanlar", "Merkezi çembere birleştiren parça nedir?", null, "Yarıçap", ["Çap", "Kiriş", "Köşegen"]));
-      pool.push(makeQuestion("MAT.5.3.2 · Doğrular", "Aralarında uzaklık eşit olup kesişmeyen doğrulara ne denir?", null, "Paralel", ["Kesişen", "Dik", "Çakışık"]));
-      pool.push(makeQuestion("MAT.5.3.2 · Sembol", "Paralel sembolü hangisidir?", null, "//", ["⊥", "=", "∩"]));
-      pool.push(makeQuestion("MAT.5.3.2 · Dik Çizim", "Dik açı oluşturmak için en uygun araç hangisidir?", null, "Gönye", ["Pergel", "Metre", "Açıölçer"]));
+      pool.push(makeQuestion(
+        "MAT.5.3.1 · Çember Çizim Aracı",
+        "Kusursuz ve düzgün bir çember çizmek için kullanılan sivri uçlu matematiksel araç hangisidir?",
+        `<svg width="180" height="90" viewBox="0 0 180 90">
+          <path d="M 60,75 L 90,20 L 120,75" stroke="#fbbf24" stroke-width="4" fill="none"/>
+          <circle cx="90" cy="20" r="6" fill="#f59e0b"/>
+          <circle cx="60" cy="75" r="3" fill="#94a3b8"/>
+          <line x1="118" y1="70" x2="122" y2="80" stroke="#38bdf8" stroke-width="3"/>
+        </svg>`,
+        "Pergel",
+        ["Gönye", "İletki", "Şerit Metre"]
+      ));
 
+      pool.push(makeQuestion(
+        "MAT.5.3.1 · Çemberin Elemanları",
+        "Çemberin merkezi ile çember üzerindeki herhangi bir noktayı birleştiren doğru parçasına ne ad verilir?",
+        null,
+        "Yarıçap",
+        ["Çap", "Kiriş", "Köşegen"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.1 · Pergelin Sivri Ucu",
+        "Pergel yardımıyla çember çizerken, pergelin sivri ucunun batırıldığı sabit nokta neyi temsil eder?",
+        null,
+        "Çemberin Merkezini",
+        ["Çemberin Yarıçapını", "Çemberin Çapını", "Çemberin Yayını"]
+      ));
+
+      // 2. KAZANIM: MAT.5.3.2 (Paralel Doğrular ve Çizimler)
+      pool.push(makeQuestion(
+        "MAT.5.3.2 · Paralel Doğrular",
+        "Aynı düzlemde bulunan, aralarındaki uzaklık hep eşit olan ve sonsuza kadar uzatılsalar bile asla kesişmeyen doğrulara ne denir?",
+        `<svg width="240" height="80" viewBox="0 0 240 80">
+          <line x1="20" y1="25" x2="220" y2="25" stroke="#38bdf8" stroke-width="3"/>
+          <line x1="20" y1="55" x2="220" y2="55" stroke="#38bdf8" stroke-width="3"/>
+          <text x="228" y="30" fill="#38bdf8" font-size="14" font-weight="bold">d</text>
+          <text x="228" y="60" fill="#38bdf8" font-size="14" font-weight="bold">e</text>
+        </svg>`,
+        "Paralel Doğrular",
+        ["Kesişen Doğrular", "Dik Doğrular", "Çakışık Doğrular"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.2 · Sembolik Gösterim",
+        "d doğrusu ile e doğrusunun birbirine PARALEL olduğunu gösteren sembol hangisidir?",
+        null,
+        "d // e",
+        ["d ⊥ e", "d = e", "d ∩ e"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.2 · Günlük Hayat Modeli",
+        "Aşağıdakilerden hangisi paralel doğrulara günlük yaşamdan en uygun modeldir?",
+        null,
+        "Tren rayları",
+        ["Açılmış makasın kolları", "Duvar saatinin akrep ve yelkovanı", "Dörtyol kavşağı"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.2 · Geometrik Dik Çizim",
+        "Bir doğruya dik bir doğru parçası çizmek veya 90 derecelik dik açı oluşturmak için en uygun araç hangisidir?",
+        `<svg width="180" height="90" viewBox="0 0 180 90">
+          <polygon points="40,75 140,75 40,20" fill="rgba(245, 158, 11, 0.2)" stroke="#f59e0b" stroke-width="3"/>
+          <rect x="40" y="63" width="12" height="12" fill="none" stroke="#f59e0b" stroke-width="2"/>
+        </svg>`,
+        "Gönye",
+        ["Pergel", "Yay cetveli", "Mezura"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.2 · Paralel Doğrularda Mesafe",
+        "Birbirine paralel iki doğru arasındaki dik uzaklık için aşağıdakilerden hangisi doğrudur?",
+        null,
+        "Her noktada birbirine eşittir",
+        ["Uzatıldıkça azalır", "Uzatıldıkça artar", "Noktadan noktaya değişir"]
+      ));
+
+      // 3. KAZANIM: MAT.5.3.3 (Açı Ölçme ve Çeşitleri)
       const acuteAngles = [25, 35, 45, 50, 60, 65, 70, 75, 80, 85];
       acuteAngles.forEach(ang => {
-        pool.push(makeQuestion("MAT.5.3.3 · Açılar", `Ölçüsü ${ang}° olan açı çeşidi hangisidir?`, null, "Dar Açı", ["Geniş Açı", "Dik Açı", "Doğru Açı"]));
+        pool.push(makeQuestion(
+          "MAT.5.3.3 · Açı Çeşitleri",
+          `Ölçüsü ${ang}° olan bir açı, çeşitlerine göre hangi sınıfa girer?`,
+          `<svg width="180" height="90" viewBox="0 0 180 90">
+            <line x1="30" y1="70" x2="150" y2="70" stroke="#fff" stroke-width="3"/>
+            <line x1="30" y1="70" x2="110" y2="25" stroke="#fff" stroke-width="3"/>
+            <path d="M 60,70 A 30,30 0 0,0 52,58" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <text x="65" y="60" fill="#38bdf8" font-size="12" font-weight="bold">${ang}°</text>
+          </svg>`,
+          "Dar Açı",
+          ["Geniş Açı", "Dik Açı", "Doğru Açı"]
+        ));
       });
 
       const obtuseAngles = [95, 105, 115, 120, 125, 130, 135, 140, 150];
       obtuseAngles.forEach(ang => {
-        pool.push(makeQuestion("MAT.5.3.3 · Açılar", `Ölçüsü ${ang}° olan açı çeşidi hangisidir?`, null, "Geniş Açı", ["Dar Açı", "Dik Açı", "Doğru Açı"]));
+        pool.push(makeQuestion(
+          "MAT.5.3.3 · Açı Çeşitleri",
+          `Ölçüsü ${ang}° olan bir açı, çeşitlerine göre hangi gruptadır?`,
+          `<svg width="180" height="90" viewBox="0 0 180 90">
+            <line x1="30" y1="70" x2="150" y2="70" stroke="#fff" stroke-width="3"/>
+            <line x1="90" y1="70" x2="35" y2="30" stroke="#fff" stroke-width="3"/>
+            <path d="M 65,52 A 30,30 0 0,1 115,70" fill="none" stroke="#ec4899" stroke-width="2"/>
+            <text x="75" y="45" fill="#ec4899" font-size="12" font-weight="bold">${ang}°</text>
+          </svg>`,
+          "Geniş Açı",
+          ["Dar Açı", "Dik Açı", "Tam Açı"]
+        ));
       });
 
-      pool.push(makeQuestion("MAT.5.3.3 · Dik", "Ölçüsü 90° olan açı?", null, "Dik Açı", ["Dar", "Geniş", "Doğru"]));
-      pool.push(makeQuestion("MAT.5.3.3 · Doğru", "Ölçüsü 180° olan açı?", null, "Doğru Açı", ["Dik", "Geniş", "Dar"]));
-      
+      pool.push(makeQuestion(
+        "MAT.5.3.3 · Dik Açı",
+        "Ölçüsü tam 90° olan ve iki dik doğrunun oluşturduğu açı çeşidi hangisidir?",
+        `<svg width="160" height="90" viewBox="0 0 160 90">
+          <line x1="30" y1="75" x2="140" y2="75" stroke="#fff" stroke-width="3"/>
+          <line x1="30" y1="75" x2="30" y2="15" stroke="#fff" stroke-width="3"/>
+          <rect x="30" y="60" width="15" height="15" fill="none" stroke="#fbbf24" stroke-width="2"/>
+          <circle cx="37" cy="67" r="2" fill="#fbbf24"/>
+        </svg>`,
+        "Dik Açı",
+        ["Dar Açı", "Geniş Açı", "Doğru Açı"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.3 · Doğru Açı",
+        "Ölçüsü tam 180° olan ve bir doğru boyunca uzanan açı çeşidi hangisidir?",
+        `<svg width="220" height="60" viewBox="0 0 220 60">
+          <line x1="20" y1="40" x2="200" y2="40" stroke="#10b981" stroke-width="3"/>
+          <circle cx="110" cy="40" r="4" fill="#fbbf24"/>
+          <path d="M 80,40 A 30,30 0 0,1 140,40" fill="none" stroke="#fbbf24" stroke-width="2"/>
+          <text x="110" y="25" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">180°</text>
+        </svg>`,
+        "Doğru Açı",
+        ["Dik Açı", "Geniş Açı", "Dar Açı"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.3 · Açı Ölçme Aleti",
+        "Açıların ölçüsünü derece cinsinden ölçmek için kullanılan yarım daire şeklindeki aletin adı nedir?",
+        null,
+        "İletki",
+        ["Pergel", "Cetvel", "Kumpas"]
+      ));
+
+      // 4. KAZANIM: MAT.5.3.4 (Kesişen & Paralel Doğrularda Açılar)
       const compAngles = [30, 40, 50, 55, 60, 65, 70, 75, 80];
       compAngles.forEach(a1 => {
         const a2 = 180 - a1;
-        pool.push(makeQuestion("MAT.5.3.4 · Bütünler", `Bir açı ${a1}° ise komşu bütünleri kaç derecedir?`, null, `${a2}°`, [`${a1}°`, `${a1+10}°`, `90°`]));
+        // Ters Açı
+        pool.push(makeQuestion(
+          "MAT.5.3.4 · Ters Açılar",
+          `Birbirini kesen iki doğrudan birinin oluşturduğu açı ${a1}° ise, onun TERS AÇISININ ölçüsü kaç derecedir?`,
+          `<svg width="200" height="110" viewBox="0 0 200 110">
+            <line x1="20" y1="20" x2="180" y2="90" stroke="#94a3b8" stroke-width="3"/>
+            <line x1="20" y1="90" x2="180" y2="20" stroke="#94a3b8" stroke-width="3"/>
+            <circle cx="100" cy="55" r="3" fill="#fff"/>
+            <text x="145" y="58" fill="#38bdf8" font-size="13" font-weight="bold">${a1}°</text>
+            <text x="55" y="58" fill="#fbbf24" font-size="14" font-weight="bold">?</text>
+          </svg>`,
+          `${a1}°`,
+          [`${a2}°`, `${a1 > 45 ? a1 - 20 : a1 + 25}°`, `${a1 > 35 ? a1 - 15 : a1 + 35}°`]
+        ));
+
+        // Komşu Bütünler Açı
+        pool.push(makeQuestion(
+          "MAT.5.3.4 · Komşu Bütünler Açılar",
+          `Bir doğru üzerinde yan yana duran iki açıdan biri ${a1}° ise diğeri kaç derecedir?`,
+          `<svg width="220" height="90" viewBox="0 0 220 90">
+            <line x1="20" y1="70" x2="200" y2="70" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="110" y1="70" x2="150" y2="20" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="145" y="60" fill="#38bdf8" font-size="13" font-weight="bold">${a1}°</text>
+            <text x="80" y="60" fill="#fbbf24" font-size="14" font-weight="bold">?</text>
+          </svg>`,
+          `${a2}°`,
+          [`${a1}°`, `${a2 + 15 > 180 ? a2 - 25 : a2 + 15}°`, `${a1 > 40 ? a1 - 15 : a1 + 20}°`]
+        ));
       });
 
-      pool.push(makeQuestion("MAT.5.3.5 · Çokgen", "Çokgen oluşturmak için en az kaç doğru parçası gerekir?", null, "3", ["2", "4", "5"]));
-      pool.push(makeQuestion("MAT.5.3.5 · Elemanlar", "Komşu olmayan köşeleri birleştiren doğru parçası?", null, "Köşegen", ["Kenar", "Yarıçap", "Çap"]));
+      // PDF 1. Alıştırma 8 Birebir Soru
+      pool.push(makeQuestion(
+        "MAT.5.3.4 · Paralel Doğruları Kesen Doğru",
+        "Paralel iki doğruyu kesen bir doğruda oluşan açılardan m(KRB) = 125° ise, bu açının komşu bütünleri kaç derecedir?",
+        `<svg width="220" height="110" viewBox="0 0 220 110">
+          <line x1="20" y1="35" x2="200" y2="35" stroke="#38bdf8" stroke-width="3"/>
+          <line x1="20" y1="80" x2="200" y2="80" stroke="#38bdf8" stroke-width="3"/>
+          <line x1="130" y1="10" x2="90" y2="100" stroke="#fbbf24" stroke-width="3"/>
+          <text x="125" y="30" fill="#f87171" font-size="12" font-weight="bold">125°</text>
+        </svg>`,
+        "55°",
+        ["125°", "65°", "90°"]
+      ));
+
+      // 5. KAZANIM: MAT.5.3.5 (Çokgenler ve Temel Elemanları - 2 Nolu PDF Formatı)
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Çokgen Oluşturma Şartı",
+        "Düzlemde bir çokgen oluşturabilmek için ardışık olarak kesişen EN AZ kaç doğru parçası gereklidir?",
+        `<svg width="180" height="80" viewBox="0 0 180 80">
+          <polygon points="90,15 40,65 140,65" fill="none" stroke="#fbbf24" stroke-width="3"/>
+          <circle cx="90" cy="15" r="4" fill="#fff"/>
+          <circle cx="40" cy="65" r="4" fill="#fff"/>
+          <circle cx="140" cy="65" r="4" fill="#fff"/>
+        </svg>`,
+        "3 doğru parçası",
+        ["2 doğru", "4 doğru", "5 doğru"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Dört Doğrunun Kesişimi",
+        "Düzlemde ardışık olarak kesişen 4 doğrunun oluşturduğu kapalı geometrik şekle ne ad verilir?",
+        `<svg width="190" height="90" viewBox="0 0 190 90">
+          <polygon points="40,25 150,25 130,70 30,70" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="3"/>
+          <text x="32" y="20" fill="#fff" font-size="12" font-weight="bold">A</text>
+          <text x="155" y="20" fill="#fff" font-size="12" font-weight="bold">B</text>
+          <text x="135" y="85" fill="#fff" font-size="12" font-weight="bold">C</text>
+          <text x="22" y="85" fill="#fff" font-size="12" font-weight="bold">D</text>
+        </svg>`,
+        "Dörtgen",
+        ["Üçgen", "Beşgen", "Doğru Parçası"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Beş Doğrunun Kesişimi",
+        "Düzlemde ardışık olarak kesişen 5 doğrunun oluşturduğu kapalı şekle ne ad verilir?",
+        `<svg width="180" height="100" viewBox="0 0 180 100">
+          <polygon points="90,15 150,45 130,85 50,85 30,45" fill="rgba(168, 85, 247, 0.2)" stroke="#a855f7" stroke-width="3"/>
+        </svg>`,
+        "Beşgen",
+        ["Dörtgen", "Altıgen", "Çember"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Çokgenin Temel Elemanları",
+        "ABCD dörtgeninde komşu olmayan iki köşeyi birleştiren doğru parçasına ne ad verilir?",
+        `<svg width="190" height="95" viewBox="0 0 190 95">
+          <polygon points="35,25 150,25 140,75 35,75" fill="none" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="35" y1="25" x2="140" y2="75" stroke="#ef4444" stroke-width="3" stroke-dasharray="4,4"/>
+          <text x="25" y="22" fill="#fff" font-size="12" font-weight="bold">A</text>
+          <text x="155" y="22" fill="#fff" font-size="12" font-weight="bold">B</text>
+          <text x="145" y="88" fill="#fff" font-size="12" font-weight="bold">C</text>
+          <text x="25" y="88" fill="#fff" font-size="12" font-weight="bold">D</text>
+        </svg>`,
+        "Köşegen",
+        ["Kenar", "İç Açı", "Yarıçap"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Temel Eleman Olmayan",
+        "Aşağıdakilerden hangisi bir çokgenin temel elemanlarından biri DEĞİLDİR?",
+        null,
+        "Çap veya Yarıçap",
+        ["Kenarları", "Köşeleri", "İç Açıları"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Kenar ve Köşe İlişkisi",
+        "Bir beşgenin kaç kenarı, kaç köşesi ve kaç iç açısı vardır?",
+        null,
+        "5 kenar, 5 köşe, 5 iç açı",
+        ["5 kenar, 3 köşe, 5 iç açı", "4 kenar, 5 köşe, 4 iç açı", "5 kenar, 10 köşe, 5 iç açı"]
+      ));
+
+      pool.push(makeQuestion(
+        "MAT.5.3.5 · Dörtgenin Kenarları",
+        "Köşeleri A, B, C, D olarak adlandırılan bir dörtgende [AB] doğru parçası neyi ifade eder?",
+        null,
+        "Dörtgenin bir kenarını",
+        ["Dörtgenin bir köşegenini", "Dörtgenin bir iç açısını", "Dörtgenin merkezini"]
+      ));
 
       return pool;
     }
 
-    function getShuffledQuestions(count) {
+    // Rastgele 15 soru seç
+    function getShuffled15Questions() {
       const fullPool = generateQuestionPool();
       for (let i = fullPool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
       }
-      return fullPool.slice(0, count);
+      return fullPool.slice(0, 15);
     }
 
     /* ==========================================================
-       OYUN DURUMU & MODLAR
+       OYUN DURUM DEĞİŞKENLERİ
        ========================================================== */
     let currentMode = 'solo';
+    let currentQuestions = [];
+    let currentQIndex = 0;
+    let score = 0;
+    let correctCount = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let gladiatorHp = 1000;
+    let gladiatorMaxHp = 1000;
+    let gladiatorTier = 1;
+    let defeatedGladiatorsCount = 0;
+    const TOTAL_QUESTIONS = 15;
 
+    // Hız Bonusu
+    let qStartTime = 0;
+    let speedBarInterval = null;
+
+    // Gladyatör Jokerleri
+    let inventoryJokers = [];
+    let activeJokerEffect = null;
+
+    // Düello Modu
+    let duelTimeLimit = 60;
+    let duelTimeRemaining = 60;
+    let duelTimerInterval = null;
+    let duelP1Score = 0;
+    let duelP2Score = 0;
+    let duelP1Streak = 0;
+    let duelP2Streak = 0;
+    let duelQuestions = [];
+    let duelQIndex = 0;
+    let duelQuestionAnswered = false;
+
+    /* ==========================================================
+       MOD VE NAVİGASYON
+       ========================================================== */
     function selectGameMode(mode) {
       currentMode = mode;
-      document.getElementById('cardModeSolo').classList.toggle('selected', mode === 'solo');
-      document.getElementById('cardModeDuel').classList.toggle('selected', mode === 'duel');
-      document.getElementById('cardModeGroup').classList.toggle('selected', mode === 'group');
-      
-      document.getElementById('soloStudentBox').style.display = (mode === 'solo') ? 'block' : 'none';
-      document.getElementById('duelSettingsBox').style.display = (mode === 'duel') ? 'block' : 'none';
-      document.getElementById('groupSettingsBox').style.display = (mode === 'group') ? 'block' : 'none';
+      const soloCard = document.getElementById('cardModeSolo');
+      const duelCard = document.getElementById('cardModeDuel');
+      const groupCard = document.getElementById('cardModeGroup');
+      const soloBox = document.getElementById('soloStudentBox');
+      const duelBox = document.getElementById('duelSettingsBox');
+      const groupBox = document.getElementById('groupSettingsBox');
+
+      if (soloCard) soloCard.classList.toggle('selected', mode === 'solo');
+      if (duelCard) duelCard.classList.toggle('selected', mode === 'duel');
+      if (groupCard) groupCard.classList.toggle('selected', mode === 'group');
+
+      if (soloBox) soloBox.style.display = (mode === 'solo') ? 'block' : 'none';
+      if (duelBox) duelBox.style.display = (mode === 'duel') ? 'block' : 'none';
+      if (groupBox) groupBox.style.display = (mode === 'group') ? 'block' : 'none';
+    }
+
+    function setDuelTime(sec) {
+      duelTimeLimit = sec;
+      [30, 60, 90].forEach(t => {
+        const btn = document.getElementById('duelTimeBtn' + t);
+        if (t === sec) {
+          btn.style.background = '#991b1b';
+          btn.style.borderColor = '#fbbf24';
+        } else {
+          btn.style.background = 'rgba(51, 65, 85, 0.85)';
+          btn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        }
+      });
     }
 
     function showScreen(screenId) {
@@ -2081,217 +3373,1039 @@
     function goHome() {
       clearInterval(speedBarInterval);
       clearInterval(duelTimerInterval);
+      const statsGrid = document.querySelector('.result-stats-grid');
+      if (statsGrid) statsGrid.style.display = 'grid';
       showScreen('screenHome');
-      updateLeaderboard([]); 
     }
+
+    /* ==========================================================
+       OYUNA BAŞLAMA (ESKİ USÜL AD SOYAD ARAMA & KONTROLÜ)
+       ========================================================== */
+    let currentStudentName = '';
 
     function startGame() {
       initAudio();
+
       if (currentMode === 'solo') {
         const inp = document.getElementById('playerFullName');
-        if (!inp.value.trim()) { alert('Lütfen Adınızı yazın!'); inp.focus(); return; }
+        const rawName = inp ? inp.value.trim() : '';
+
+        if (!rawName) {
+          alert('⚠️ Lütfen oyuna başlamak için Adınızı ve Soyadınızı yazınız!');
+          if (inp) inp.focus();
+          return;
+        }
+
+        // Listeden tam veya normalize (Türkçe harf duyarlı) eşleşme ara
+        const norm = (s) => s.toLocaleLowerCase('tr-TR').replace(/\s+/g, ' ').trim();
+        const found = authorizedStudents.find(s => norm(s) === norm(rawName));
+
+        if (!found) {
+          alert(`⚠️ "${rawName}" ismi 5. sınıf kayıtlı öğrenci listesinde bulunamadı!\n\nLütfen isminizi kutuya yazarken çıkan listeden seçin veya öğretmeninize bildiriniz.`);
+          if (inp) inp.focus();
+          return;
+        }
+
+        currentStudentName = found;
         startSoloGame();
       } else if (currentMode === 'duel') {
         startDuelGame();
-      } else {
+      } else if (currentMode === 'group') {
         startGroupGame();
       }
     }
 
-    /* ==========================================================
-       LİDERLİK TABLOSU
-       ========================================================== */
-    function updateLeaderboard(scores) {
-      let data = scores;
-      if (!data || data.length === 0) {
-        data = JSON.parse(localStorage.getItem('meb_yaziliarenasi_top10') || '[]');
-      }
-      
-      const bestScores = {};
-      data.forEach(item => {
-        const name = (item.name || item.adSoyad || '').trim();
-        if(!name) return;
-        const s = Number(item.score ?? item.puan) || 0;
-        const c = Number(item.correct ?? item.dogruSayisi) || 0;
-        
-        if (!bestScores[name] || s > bestScores[name].score || (s === bestScores[name].score && c > bestScores[name].correct)) {
-          bestScores[name] = { name, score: s, correct: c };
-        }
-      });
-
-      const top10 = Object.values(bestScores).sort((a, b) => b.score - a.score || b.correct - a.correct).slice(0, 10);
-      const tbody = document.getElementById('leaderboardTbody');
-      
-      if (top10.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">Henüz arenada skor kaydedilmedi.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = top10.map((item, idx) => {
-        let bClass = idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : 'rank-other'));
-        return `<tr>
-          <td><span class="rank-badge ${bClass}">${idx + 1}</span></td>
-          <td style="font-weight: 700; color: #fff;">${item.name}</td>
-          <td style="text-align: center; color: #10b981; font-weight: 800;">${item.correct}</td>
-          <td style="text-align: right; color: #fbbf24; font-weight: 800;">${item.score.toLocaleString()}</td>
-        </tr>`;
-      }).join('');
-    }
-
-    window.addEventListener('DOMContentLoaded', () => updateLeaderboard([]));
-
-    /* ==========================================================
-       BİREYSEL MOD KODLARI (SOLO)
-       ========================================================== */
-    let soloState = { qIndex: 0, score: 0, correct: 0, streak: 0, maxStreak: 0, questions: [], activeEffect: null };
-    let gladiatorHp = 1000, gladiatorMaxHp = 1000, gladiatorTier = 1, speedBarInterval, qStartTime;
-
     function startSoloGame() {
-      soloState = { qIndex: 0, score: 0, correct: 0, streak: 0, maxStreak: 0, questions: getShuffledQuestions(15), activeEffect: null };
-      gladiatorHp = 1000; gladiatorMaxHp = 1000; gladiatorTier = 1;
+      currentQuestions = getShuffled15Questions();
+      currentQIndex = 0;
+      score = 0;
+      correctCount = 0;
+      streak = 0;
+      maxStreak = 0;
+      gladiatorHp = 1000;
+      gladiatorMaxHp = 1000;
+      gladiatorTier = 1;
+      defeatedGladiatorsCount = 0;
+      inventoryJokers = [];
+      activeJokerEffect = null;
+
+      const bossTitleEl = document.getElementById('bossNameTitle');
+      const bossLevelEl = document.getElementById('bossLevelPill');
+      const bossDialogueEl = document.getElementById('bossDialogue');
+      if (bossTitleEl) bossTitleEl.innerText = '🛡️ 1. GLADYATÖR: ACEMİ MUAFIZ';
+      if (bossLevelEl) bossLevelEl.innerText = '1. Seviye Maarif Savaşçısı';
+      if (bossDialogueEl) bossDialogueEl.innerText = '🛡️ "Kalkanımı kırmak için soruları doğru cevapla gladyatör!"';
+
       updateSoloHUD();
+      renderActiveJokers();
       showScreen('screenSolo');
       loadSoloQuestion();
     }
 
     function updateSoloHUD() {
-      document.getElementById('hudQuestionProgress').innerText = `${soloState.qIndex + 1} / 15`;
-      document.getElementById('hudScore').innerText = soloState.score.toLocaleString();
-      document.getElementById('hudStreak').innerText = soloState.streak >= 4 ? '🔥 x2.0' : (soloState.streak >= 2 ? '⚡ x1.5' : (soloState.streak >= 1 ? 'x1.2' : 'x1.0'));
-      document.getElementById('gladiatorHpFill').style.width = Math.max(0, (gladiatorHp / gladiatorMaxHp) * 100) + '%';
-      document.getElementById('gladiatorHpText').innerText = `${gladiatorHp} / ${gladiatorMaxHp} HP`;
+      document.getElementById('hudQuestionProgress').innerText = `${currentQIndex + 1} / ${TOTAL_QUESTIONS}`;
+      document.getElementById('hudScore').innerText = score.toLocaleString();
+      
+      let multText = 'x1.0';
+      if (streak >= 4) multText = '🔥 x2.0';
+      else if (streak >= 2) multText = '⚡ x1.5';
+      else if (streak >= 1) multText = 'x1.2';
+      document.getElementById('hudStreak').innerText = multText;
+
+      const maxHp = gladiatorMaxHp || 1000;
+      const hpPercent = Math.max(0, Math.min(100, (gladiatorHp / maxHp) * 100));
+      document.getElementById('gladiatorHpFill').style.width = hpPercent + '%';
+      document.getElementById('gladiatorHpText').innerText = `${gladiatorHp} / ${maxHp} HP`;
+
+      const hudJoker = document.getElementById('hudJokerCount');
+      if (hudJoker) {
+        const nextChestIn = 3 - (currentQIndex % 3);
+        if (activeJokerEffect === '5050') {
+          hudJoker.innerText = '✂️ 50:50';
+          hudJoker.style.color = '#34d399';
+          hudJoker.style.textShadow = '0 0 10px rgba(52, 211, 153, 0.8)';
+        } else if (activeJokerEffect === 'double') {
+          hudJoker.innerText = '⚡ 2X';
+          hudJoker.style.color = '#fbbf24';
+          hudJoker.style.textShadow = '0 0 10px rgba(251, 191, 36, 0.8)';
+        } else if (activeJokerEffect === 'triple') {
+          hudJoker.innerText = '💥 3X';
+          hudJoker.style.color = '#f87171';
+          hudJoker.style.textShadow = '0 0 10px rgba(248, 113, 113, 0.8)';
+        } else if (activeJokerEffect === 'shield') {
+          hudJoker.innerText = '🛡️ Kalkan';
+          hudJoker.style.color = '#60a5fa';
+          hudJoker.style.textShadow = '0 0 10px rgba(96, 165, 250, 0.8)';
+        } else {
+          hudJoker.innerText = `${nextChestIn} Soru`;
+          hudJoker.style.color = '#94a3b8';
+          hudJoker.style.textShadow = 'none';
+        }
+      }
     }
 
     function loadSoloQuestion() {
-      if (soloState.qIndex >= 15) { showResult('solo'); return; }
+      if (currentQIndex >= TOTAL_QUESTIONS) {
+        finishSoloGame();
+        return;
+      }
+
       updateSoloHUD();
-      const q = soloState.questions[soloState.qIndex];
+      const q = currentQuestions[currentQIndex];
+
       document.getElementById('questionCategoryBadge').innerText = q.badge;
       document.getElementById('questionText').innerText = q.text;
-      
-      const vBox = document.getElementById('questionVisualBox');
-      if(q.visual) { vBox.innerHTML = q.visual; vBox.style.display = 'flex'; } else { vBox.style.display = 'none'; }
-      
-      const choices = [q.correct, ...q.distractors].sort(() => Math.random() - 0.5);
+
+      // Dinamik Geometri Çizimi
+      const visBox = document.getElementById('questionVisualBox');
+      if (q.visual) {
+        visBox.innerHTML = q.visual;
+        visBox.style.display = 'flex';
+      } else {
+        visBox.innerHTML = '';
+        visBox.style.display = 'none';
+      }
+      // Kesinlikle Benzersiz 4 Şık (1 Doğru, 3 Çeldirici)
+      const allChoices = [q.correct];
+      (q.distractors || []).forEach(d => {
+        const val = String(d).trim();
+        if (val !== q.correct && !allChoices.includes(val) && allChoices.length < 4) {
+          allChoices.push(val);
+        }
+      });
+      for (let i = allChoices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];
+      }
+
       const grid = document.getElementById('optionsGrid');
       grid.innerHTML = '';
-      
-      choices.forEach((c, idx) => {
+      const letters = ['A', 'B', 'C', 'D'];
+
+      allChoices.forEach((choice, idx) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.innerHTML = `<span class="option-letter">${['A','B','C','D'][idx]}</span> <span>${c}</span>`;
-        btn.onclick = () => handleSoloAnswer(c, q.correct, btn);
+        btn.dataset.choice = choice;
+        btn.innerHTML = `<span class="option-letter">${letters[idx]}</span> <span>${choice}</span>`;
+        btn.onclick = () => handleSoloAnswer(choice, q.correct, btn);
         grid.appendChild(btn);
       });
 
+      // Hız Bonusu Barı (Süre bitse de soru kalır, sadece bonus hafifçe azalır)
       qStartTime = Date.now();
       clearInterval(speedBarInterval);
       const fillEl = document.getElementById('speedBarFill');
       fillEl.style.width = '100%';
+
       speedBarInterval = setInterval(() => {
-        fillEl.style.width = (Math.max(0.15, 1 - ((Date.now() - qStartTime) / 12000)) * 100) + '%';
+        const elapsed = (Date.now() - qStartTime) / 1000;
+        const remainingRatio = Math.max(0.15, 1 - (elapsed / 12));
+        fillEl.style.width = (remainingRatio * 100) + '%';
       }, 100);
+
+      // KAZANILAN GLADYATÖR GÜCÜ ANINDA DEVREYE GİRER (BEKLETMEDEN SIRADAKİ SORUDA OTOMATİK KULLANILIR)
+      applyActiveJokerPower(q);
     }
 
-    function handleSoloAnswer(selected, correct, btn) {
+    function handleSoloAnswer(selectedChoice, correctChoice, clickedBtn) {
       clearInterval(speedBarInterval);
-      document.querySelectorAll('#optionsGrid .option-btn').forEach(b => b.disabled = true);
-      
-      if (selected === correct) {
-        btn.classList.add('correct'); soundCorrect();
-        soloState.correct++; soloState.streak++;
-        if (soloState.streak > soloState.maxStreak) soloState.maxStreak = soloState.streak;
-        
-        let mult = soloState.streak >= 4 ? 2.0 : (soloState.streak >= 2 ? 1.5 : (soloState.streak >= 1 ? 1.2 : 1.0));
-        let pts = Math.round((500 + Math.max(100, 500 - ((Date.now() - qStartTime)/1000 * 35))) * mult);
-        let dmg = Math.round(70 * mult);
-        
-        soloState.score += pts; gladiatorHp = Math.max(0, gladiatorHp - dmg);
-        
-        const gAv = document.getElementById('gladiatorAvatar');
-        gAv.classList.remove('hit'); void gAv.offsetWidth; gAv.classList.add('hit');
-        
-        const cText = document.getElementById('combatText');
-        cText.innerText = `-${dmg} HP!`; cText.style.animation = 'none'; void cText.offsetWidth; cText.style.animation = 'floatDamage 1s forwards ease-out';
+      const isCorrect = (selectedChoice === correctChoice);
+
+      const allBtns = document.querySelectorAll('.option-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      // KESİN KURAL: Kazanılan joker sadece BU TEK SORUDA geçerlidir!
+      // Soru doğru veya yanlış nasıl sonuçlanırsa sonuçlansın, joker etkisi bu soruda tüketilir ve sıfırlanır.
+      const currentPower = activeJokerEffect;
+      activeJokerEffect = null;
+
+      if (isCorrect) {
+        clickedBtn.classList.add('correct');
+        soundCorrect();
+        correctCount++;
+        streak++;
+        if (streak > maxStreak) maxStreak = streak;
+
+        // Hız Puanı: 500 taban + 500'e varan hız bonusu
+        const elapsedSec = (Date.now() - qStartTime) / 1000;
+        let speedBonus = Math.max(100, Math.round(500 - (elapsedSec * 35)));
+        let baseQuestionPoints = 500 + speedBonus;
+
+        let multiplier = 1.0;
+        if (streak >= 4) multiplier = 2.0;
+        else if (streak >= 2) multiplier = 1.5;
+        else if (streak >= 1) multiplier = 1.2;
+
+        let questionPoints = Math.round(baseQuestionPoints * multiplier);
+        let damageToBoss = Math.round(70 * multiplier);
+
+        if (currentPower === 'double') {
+          questionPoints *= 2;
+          damageToBoss *= 2;
+          triggerFloatingText('⚡ 2X ÇİFTE DARBE!');
+        } else if (currentPower === 'triple') {
+          questionPoints *= 3;
+          damageToBoss *= 3;
+          triggerFloatingText('💥 3X SÜPER DARBE!');
+        }
+
+        score += questionPoints;
+        gladiatorHp = Math.max(0, gladiatorHp - damageToBoss);
+
+        animateGladiatorHit(damageToBoss);
+
+        // GLADYATÖR YENİLDİĞİNDE: Oyun kesilmez, yeni ve daha güçlü gladyatör arenaya girer!
+        if (gladiatorHp <= 0) {
+          defeatedGladiatorsCount++;
+          gladiatorTier++;
+          const victoryBonus = 500 + (gladiatorTier * 500); // 1. için 1000, 2. için 1500, vb.
+          score += victoryBonus;
+
+          try {
+            soundFanfare();
+            confetti({
+              particleCount: 130,
+              spread: 85,
+              origin: { y: 0.5 }
+            });
+          } catch(e) {}
+
+          triggerFloatingText(`🏆 ${defeatedGladiatorsCount}. GLADYATÖR YIKILDI! +${victoryBonus.toLocaleString()} ZAFER PUANI!`);
+
+          setTimeout(() => {
+            gladiatorMaxHp = 1000 + (gladiatorTier - 1) * 250;
+            gladiatorHp = gladiatorMaxHp;
+
+            const bossTiers = [
+              { name: "🛡️ 1. GLADYATÖR: ACEMİ MUAFIZ", level: "1. Seviye Maarif Savaşçısı", speech: "🛡️ 'Kalkanımı kırmak için soruları doğru cevapla gladyatör!'" },
+              { name: "⚔️ 2. GLADYATÖR: ARENA SAVAŞÇISI", level: "2. Seviye Usta Savaşçı", speech: "⚔️ 'İlk gladyatörü devirdin ama beni geçemezsin! Kılıcını çek!'" },
+              { name: "🦁 3. GLADYATÖR: ARENA ŞAMPİYONU", level: "3. Seviye Arena Şampiyonu", speech: "🦁 'İnanılmaz bir güç! Şimdi arenanın gerçek şampiyonuyla yüzleş!'" },
+              { name: "👑 4. GLADYATÖR: İMPARATOR MUHAFIZI", level: "4. Seviye Efsanevi Gladyatör", speech: "👑 'Roma senin matematiğin karşısında titriyor! Zafer tacı çok yakın!'" }
+            ];
+            const nextBoss = bossTiers[Math.min(gladiatorTier - 1, bossTiers.length - 1)];
+
+            const bName = document.getElementById('bossNameTitle');
+            const bLvl = document.getElementById('bossLevelPill');
+            const bSpeech = document.getElementById('bossDialogue');
+            if (bName) bName.innerText = nextBoss.name;
+            if (bLvl) bLvl.innerText = nextBoss.level;
+            if (bSpeech) bSpeech.innerText = nextBoss.speech;
+
+            updateSoloHUD();
+          }, 600);
+        }
       } else {
-        btn.classList.add('wrong'); soundWrong(); soloState.streak = 0;
-        document.querySelectorAll('#optionsGrid .option-btn').forEach(b => { if(b.innerText.includes(correct)) b.classList.add('correct'); });
+        clickedBtn.classList.add('wrong');
+        soundWrong();
+        updateBossDialogue(false);
+
+        // Yalnızca ve yalnızca birebir eşleşen tek bir doğru cevap yeşil yanar!
+        allBtns.forEach(b => {
+          if (b.dataset.choice === correctChoice) {
+            b.classList.add('correct');
+          }
+        });
+
+        if (currentPower === 'shield') {
+          triggerFloatingText('🛡️ Gladyatör Kalkanı Serini Korudu!');
+          // Kalkan seriyi korur, sıfırlanmaz!
+        } else {
+          streak = 0;
+        }
       }
 
+      // Aktif joker bittiği için bildirim şeridini kapat ve HUD'ı hemen güncelle
+      const bannerEl = document.getElementById('jokerActiveBanner');
+      if (bannerEl) bannerEl.style.display = 'none';
       updateSoloHUD();
-      setTimeout(() => { soloState.qIndex++; loadSoloQuestion(); }, 1200);
+
+      setTimeout(() => {
+        currentQIndex++;
+
+        // Her 3 Soruda Bir Joker (3, 6, 9, 12 tamamlandığında)
+        if (currentQIndex % 3 === 0 && currentQIndex < TOTAL_QUESTIONS) {
+          openJokerModal();
+        } else {
+          loadSoloQuestion();
+        }
+      }, 1200);
+    }
+
+    function animateGladiatorHit(dmg) {
+      updateBossDialogue(true);
+      soundHit();
+      const gAvatar = document.getElementById('gladiatorAvatar');
+      gAvatar.classList.remove('hit');
+      void gAvatar.offsetWidth;
+      gAvatar.classList.add('hit');
+
+      const combatText = document.getElementById('combatText');
+      combatText.innerText = `-${dmg} HP!`;
+      combatText.style.animation = 'none';
+      void combatText.offsetWidth;
+      combatText.style.animation = 'floatDamage 1s forwards ease-out';
+    }
+
+    function triggerFloatingText(msg) {
+      const combatText = document.getElementById('combatText');
+      combatText.innerText = msg;
+      combatText.style.color = '#fbbf24';
+      combatText.style.animation = 'none';
+      void combatText.offsetWidth;
+      combatText.style.animation = 'floatDamage 1.2s forwards ease-out';
     }
 
     /* ==========================================================
-       DÜELLO MODU KODLARI (DUEL)
+       JOKER YÖNETİMİ
        ========================================================== */
-    let duelState = { limit: 60, remain: 60, p1S: 0, p2S: 0, p1Str: 0, p2Str: 0, qIndex: 0, qs: [], answered: false };
-    let duelTimerInterval;
+    function openJokerModal() {
+      soundJoker();
+      document.getElementById('jokerModal').style.display = 'flex';
+    }
 
-    function setDuelTime(sec) { duelState.limit = sec; }
+    
+    /* ==========================================================
+       OTOMATİK GLADYATÖR GÜCÜ YÖNETİMİ (SIRADAKİ SORUDA ANINDA KULLANIM)
+       ========================================================== */
+    function applyActiveJokerPower(q) {
+      const bannerEl = document.getElementById('jokerActiveBanner');
+      const titleEl = document.getElementById('jokerTitleText');
+      const statusEl = document.getElementById('jokerBarStatus');
+      const listEl = document.getElementById('activeJokersList');
+      if (listEl) listEl.innerHTML = '';
 
+      const nextChestIn = 3 - (currentQIndex % 3);
+
+      if (activeJokerEffect === '5050') {
+        // İki yanlış seçeneği kılıçla anında eler!
+        const allBtns = Array.from(document.querySelectorAll('.option-btn'));
+        const wrongBtns = allBtns.filter(b => b.dataset.choice !== q.correct);
+        if (wrongBtns.length >= 2) {
+          wrongBtns[0].classList.add('eliminated');
+          wrongBtns[1].classList.add('eliminated');
+        }
+        if (bannerEl) {
+          bannerEl.style.display = 'flex';
+          bannerEl.innerHTML = '✂️ <b>50:50 Eleme Devrede!</b> İki yanlış seçenek kılıçla anında elendi!';
+        }
+        if (titleEl) titleEl.innerHTML = '✂️ 50:50 ELEME AKTİF (1 SORULUK)';
+        if (statusEl) statusEl.innerHTML = '⚡ Bu soruda iki yanlış şık silindi!';
+        triggerFloatingText('✂️ 50:50 Devrede!');
+        soundHit();
+      } else if (activeJokerEffect === 'double') {
+        if (bannerEl) {
+          bannerEl.style.display = 'flex';
+          bannerEl.innerHTML = '⚡ <b>2X Çifte Darbe Devrede!</b> Doğru yanıtlarsan x2 boss hasarı ve x2 puan!';
+        }
+        if (titleEl) titleEl.innerHTML = '⚡ 2X ÇİFTE DARBE AKTİF (1 SORULUK)';
+        if (statusEl) statusEl.innerHTML = '🔥 Bu soruda 2 kat puan ve 2 kat hasar!';
+      } else if (activeJokerEffect === 'triple') {
+        if (bannerEl) {
+          bannerEl.style.display = 'flex';
+          bannerEl.innerHTML = '💥 <b>3X Süper Darbe Devrede!</b> Doğru yanıtlarsan x3 boss hasarı ve x3 puan!';
+        }
+        if (titleEl) titleEl.innerHTML = '💥 3X SÜPER DARBE AKTİF (1 SORULUK)';
+        if (statusEl) statusEl.innerHTML = '🔥 Bu soruda 3 kat puan ve 3 kat hasar!';
+      } else if (activeJokerEffect === 'shield') {
+        if (bannerEl) {
+          bannerEl.style.display = 'flex';
+          bannerEl.innerHTML = '🛡️ <b>Gladyatör Kalkanı Devrede!</b> Yanlış yanıt versen bile serin bozulmayacak!';
+        }
+        if (titleEl) titleEl.innerHTML = '🛡️ GLADYATÖR KALKANI AKTİF (1 SORULUK)';
+        if (statusEl) statusEl.innerHTML = '🛡️ Bu soruda serin güvende!';
+      } else {
+        if (bannerEl) {
+          bannerEl.style.display = 'none';
+          bannerEl.innerHTML = '';
+        }
+        if (titleEl) titleEl.innerHTML = '⚔️ GLADYATÖR GÜCÜ';
+        if (statusEl) {
+          if (nextChestIn === 3) {
+            statusEl.innerHTML = '🎁 3 soru sonra yeni Gladyatör Gücü Sandığı açılacak!';
+          } else {
+            statusEl.innerHTML = `🎁 <b>${nextChestIn} soru sonra</b> yeni Gladyatör Gücü Sandığı açılacak!`;
+          }
+        }
+      }
+
+      // HUD üzerindeki joker durumunu güncelle
+      const hudJoker = document.getElementById('hudJokerCount');
+      if (hudJoker) {
+        if (activeJokerEffect === '5050') hudJoker.innerText = '✂️ 50:50';
+        else if (activeJokerEffect === 'double') hudJoker.innerText = '⚡ 2X';
+        else if (activeJokerEffect === 'triple') hudJoker.innerText = '💥 3X';
+        else if (activeJokerEffect === 'shield') hudJoker.innerText = '🛡️ Kalkan';
+        else hudJoker.innerText = `${nextChestIn} Soru`;
+      }
+    }
+
+        function claimJoker(type) {
+      document.getElementById('jokerModal').style.display = 'none';
+      soundCorrect();
+
+      // Kazanılan güç beklemeden sıradaki soruda HEMEN devreye girer!
+      activeJokerEffect = type;
+
+      let jName = 'Yeni Güç';
+      if (type === '5050') jName = '✂️ 50:50 Eleme';
+      else if (type === 'double') jName = '⚡ 2X Çifte Darbe';
+      else if (type === 'triple') jName = '💥 3X Süper Darbe';
+      else if (type === 'shield') jName = '🛡️ Gladyatör Kalkanı';
+
+      triggerFloatingText(jName + ' Sıradaki Soruda Devrede!');
+      loadSoloQuestion();
+    }
+
+    function renderActiveJokers() {
+      const bar = document.getElementById('jokerActionBar');
+      const container = document.getElementById('activeJokersList');
+      const titleEl = document.getElementById('jokerTitleText');
+      const statusEl = document.getElementById('jokerBarStatus');
+      const bannerEl = document.getElementById('jokerActiveBanner');
+      if (!bar || !container) return;
+
+      container.innerHTML = '';
+
+      // HUD Joker sayısını güncelle
+      const hudJoker = document.getElementById('hudJokerCount');
+      if (hudJoker) {
+        hudJoker.innerText = inventoryJokers.length;
+      }
+
+      // Aktif efekt bildirimini göster
+      if (activeJokerEffect === 'double') {
+        bannerEl.style.display = 'flex';
+        bannerEl.innerHTML = '⚡ <b>2X Çifte Darbe Devrede!</b> Bu soruda doğru yanıtlarsan x2 puan alacaksın!';
+      } else if (activeJokerEffect === 'triple') {
+        bannerEl.style.display = 'flex';
+        bannerEl.innerHTML = '💥 <b>3X Süper Darbe Devrede!</b> Bu soruda doğru yanıtlarsan x3 puan ve x3 hasar!';
+      } else if (activeJokerEffect === 'shield') {
+        bannerEl.style.display = 'flex';
+        bannerEl.innerHTML = '🛡️ <b>Roma Kalkanı Devrede!</b> Yanlış yanıt versen bile serin korunacak!';
+      } else {
+        bannerEl.style.display = 'none';
+        bannerEl.innerHTML = '';
+      }
+
+      if (inventoryJokers.length === 0) {
+        bar.className = 'joker-action-bar joker-bar-empty';
+        if (titleEl) titleEl.innerText = 'GLADYATÖR ÇANTASI';
+
+        // Sonraki sandığa kalan soru sayısı (3, 6, 9, 12)
+        const nextChestAt = Math.min(TOTAL_QUESTIONS, Math.ceil((currentQIndex + 1) / 3) * 3);
+        const rem = nextChestAt - (currentQIndex + 1);
+        if (statusEl) {
+          if (rem === 0) {
+            statusEl.innerHTML = '🎁 Bu sorudan sonra <b>Altın Sandık</b> açılıyor!';
+          } else {
+            statusEl.innerHTML = `🎁 <b>${nextChestAt}. soruda</b> Altın Sandık açılacak (${rem} soru kaldı)`;
+          }
+        }
+        return;
+      }
+
+      // Joker varsa: Parlayan Gladyatör Kemeri
+      bar.className = 'joker-action-bar joker-bar-has-items';
+      if (titleEl) titleEl.innerHTML = '🔥 KULLANILABİLİR JOKERLERİN <span style="font-size: 11px; color: #fef08a; font-weight: normal;">(Zorlandığında dokun!)</span>';
+      if (statusEl) statusEl.innerHTML = `🎒 Toplam: <b>${inventoryJokers.length} Joker</b>`;
+
+      inventoryJokers.forEach((jType, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+
+        if (jType === '5050') {
+          btn.className = 'joker-btn joker-btn-5050';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">✂️</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">50:50 Eleme</span>
+              <span class="joker-btn-sub">2 Yanlış Şıkkı Yok Et</span>
+            </div>
+          `;
+          btn.onclick = () => useJoker5050(idx);
+        } else if (jType === 'double') {
+          btn.className = 'joker-btn joker-btn-double';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">⚡</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">2x Çifte Darbe</span>
+              <span class="joker-btn-sub">x2 Puan ve Hasar</span>
+            </div>
+          `;
+          btn.onclick = () => useJokerDouble(idx);
+        } else if (jType === 'triple') {
+          btn.className = 'joker-btn joker-btn-triple';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">💥</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">3x Süper Darbe</span>
+              <span class="joker-btn-sub">x3 Puan ve Hasar</span>
+            </div>
+          `;
+          btn.onclick = () => useJokerTriple(idx);
+        } else if (jType === 'shield') {
+          btn.className = 'joker-btn joker-btn-shield';
+          btn.innerHTML = `
+            <span class="joker-btn-icon">🛡️</span>
+            <div class="joker-btn-info">
+              <span class="joker-btn-name">Roma Kalkanı</span>
+              <span class="joker-btn-sub">Serini Yanmaktan Koru</span>
+            </div>
+          `;
+          btn.onclick = () => useJokerShield(idx);
+        }
+
+        container.appendChild(btn);
+      });
+    }
+
+    function useJoker5050(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+
+      const q = currentQuestions[currentQIndex];
+      const allBtns = Array.from(document.querySelectorAll('.option-btn'));
+      const wrongBtns = allBtns.filter(b => b.dataset.choice !== q.correct);
+
+      if (wrongBtns.length >= 2) {
+        wrongBtns[0].classList.add('eliminated');
+        wrongBtns[1].classList.add('eliminated');
+      }
+    }
+
+    function useJokerDouble(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+      activeJokerEffect = 'double';
+      triggerFloatingText('⚡ 2X Aktif!');
+    }
+
+    
+    function useJokerTriple(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+      activeJokerEffect = 'triple';
+      triggerFloatingText('💥 3X Süper Darbe Aktif!');
+    }
+
+    function useJokerShield(idx) {
+      inventoryJokers.splice(idx, 1);
+      renderActiveJokers();
+      soundJoker();
+      activeJokerEffect = 'shield';
+      triggerFloatingText('🛡️ Kalkan Hazır!');
+    }
+
+    /* ==========================================================
+       ZAFER VE BİREYSEL MOD SONU
+       ========================================================== */
+    function finishSoloGame() {
+      clearInterval(speedBarInterval);
+      const statsGrid = document.querySelector('.result-stats-grid');
+      if (statsGrid) statsGrid.style.display = 'grid';
+      showScreen('screenResult');
+
+      const studentName = currentStudentName || (document.getElementById('playerFullName') ? document.getElementById('playerFullName').value.trim() : 'Gladyatör');
+      document.getElementById('resCorrectCount').innerText = `${correctCount} / ${TOTAL_QUESTIONS}`;
+      document.getElementById('resTotalScore').innerText = score.toLocaleString();
+      document.getElementById('resMaxStreak').innerText = `🔥 x${maxStreak >= 4 ? '2.0' : (maxStreak >= 2 ? '1.5' : '1.2')}`;
+
+      // Konfeti Şöleni
+      confetti({
+        particleCount: 150,
+        spread: 90,
+        origin: { y: 0.6 }
+      });
+
+      if (defeatedGladiatorsCount > 0) {
+        const subEl = document.getElementById('resSubtitle');
+        if (subEl) {
+          subEl.innerHTML = `Tebrikler! <b>${defeatedGladiatorsCount} Gladyatörü</b> dize getirdin ve 100 tam puanın <b>Altın Defne Tacını</b> kazandın!`;
+        }
+      }
+
+      // Firebase'e kaydet (Tarih sütunu olmadan)
+      saveScoreToFirebase(studentName, score, correctCount);
+    }
+
+    /* ==========================================================
+       DÜELLO MODU (2 KİŞİLİK AKILLI TAHTA)
+       ========================================================== */
     function startDuelGame() {
-      duelState = { limit: duelState.limit, remain: duelState.limit, p1S: 0, p2S: 0, p1Str: 0, p2Str: 0, qIndex: 0, qs: getShuffledQuestions(25), answered: false };
+      duelP1Score = 0;
+      duelP2Score = 0;
+      duelP1Streak = 0;
+      duelP2Streak = 0;
+      duelQuestions = generateQuestionPool();
+      for (let i = duelQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [duelQuestions[i], duelQuestions[j]] = [duelQuestions[j], duelQuestions[i]];
+      }
+      duelQIndex = 0;
+      duelTimeRemaining = duelTimeLimit;
+
       document.getElementById('duelP1Score').innerText = '0';
       document.getElementById('duelP2Score').innerText = '0';
-      document.getElementById('duelTimerDisplay').innerText = duelState.remain;
+      document.getElementById('duelTimerDisplay').innerText = duelTimeRemaining;
+
       showScreen('screenDuel');
       loadDuelQuestion();
 
       clearInterval(duelTimerInterval);
       duelTimerInterval = setInterval(() => {
-        duelState.remain--;
-        document.getElementById('duelTimerDisplay').innerText = duelState.remain;
-        if(duelState.remain <= 0) { clearInterval(duelTimerInterval); showResult('duel'); }
+        duelTimeRemaining--;
+        document.getElementById('duelTimerDisplay').innerText = duelTimeRemaining;
+
+        if (duelTimeRemaining <= 0) {
+          clearInterval(duelTimerInterval);
+          finishDuelGame();
+        }
       }, 1000);
     }
 
     function loadDuelQuestion() {
-      duelState.answered = false;
-      const q = duelState.qs[duelState.qIndex % duelState.qs.length];
+      if (duelQIndex >= duelQuestions.length) duelQIndex = 0;
+      duelQuestionAnswered = false;
+
+      const q = duelQuestions[duelQIndex];
       document.getElementById('duelCategoryBadge').innerText = q.badge;
       document.getElementById('duelQuestionText').innerText = q.text;
-      
-      const vBox = document.getElementById('duelVisualBox');
-      if(q.visual) { vBox.innerHTML = q.visual; vBox.style.display = 'flex'; } else { vBox.style.display = 'none'; }
-      
-      const choices = [q.correct, ...q.distractors].sort(() => Math.random() - 0.5);
-      
-      [1, 2].forEach(p => {
-        const btns = document.querySelectorAll(`#duelP${p}Options .duel-opt-btn`);
-        choices.forEach((c, idx) => {
-          btns[idx].querySelector('.opt-val').innerText = c;
-          btns[idx].disabled = false;
-          btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
-        });
+
+      const visBox = document.getElementById('duelVisualBox');
+      if (q.visual) {
+        visBox.innerHTML = q.visual;
+        visBox.style.display = 'flex';
+      } else {
+        visBox.innerHTML = '';
+        visBox.style.display = 'none';
+      }
+
+      const choices = [q.correct];
+      (q.distractors || []).forEach(d => {
+        const val = String(d).trim();
+        if (val !== q.correct && !choices.includes(val) && choices.length < 4) {
+          choices.push(val);
+        }
+      });
+      for (let i = choices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [choices[i], choices[j]] = [choices[j], choices[i]];
+      }
+
+      const p1Btns = document.querySelectorAll('#duelP1Options .duel-opt-btn');
+      const p2Btns = document.querySelectorAll('#duelP2Options .duel-opt-btn');
+
+      choices.forEach((c, idx) => {
+        p1Btns[idx].querySelector('.opt-val').innerText = c;
+        p2Btns[idx].querySelector('.opt-val').innerText = c;
+        p1Btns[idx].disabled = false;
+        p2Btns[idx].disabled = false;
+        p1Btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
+        p2Btns[idx].style.background = 'rgba(30, 41, 59, 0.9)';
       });
     }
 
     function handleDuelAnswer(playerNum, btnIndex) {
-      if (duelState.answered) return;
-      const q = duelState.qs[duelState.qIndex % duelState.qs.length];
-      const clickedBtns = document.querySelectorAll(`#duelP${playerNum}Options .duel-opt-btn`);
-      const val = clickedBtns[btnIndex].querySelector('.opt-val').innerText;
-      
-      if (val === q.correct) {
-        duelState.answered = true; soundCorrect();
+      if (duelQuestionAnswered) return;
+      const q = duelQuestions[duelQIndex];
+      const p1Btns = document.querySelectorAll('#duelP1Options .duel-opt-btn');
+      const p2Btns = document.querySelectorAll('#duelP2Options .duel-opt-btn');
+
+      const clickedBtns = (playerNum === 1) ? p1Btns : p2Btns;
+      const otherBtns = (playerNum === 1) ? p2Btns : p1Btns;
+      const selectedVal = clickedBtns[btnIndex].querySelector('.opt-val').innerText;
+
+      if (selectedVal === q.correct) {
+        duelQuestionAnswered = true;
+        soundCorrect();
         clickedBtns[btnIndex].style.background = 'rgba(16, 185, 129, 0.85)';
-        if(playerNum===1) { duelState.p1S += 100; duelState.p1Str++; duelState.p2Str=0; }
-        else { duelState.p2S += 100; duelState.p2Str++; duelState.p1Str=0; }
-        
-        document.getElementById('duelP1Score').innerText = duelState.p1S; document.getElementById('duelP2Score').innerText = duelState.p2S;
-        document.getElementById('duelP1Streak').innerText = `${duelState.p1Str} Seri`; document.getElementById('duelP2Streak').innerText = `${duelState.p2Str} Seri`;
-        
-        setTimeout(() => { duelState.qIndex++; loadDuelQuestion(); }, 900);
+
+        if (playerNum === 1) {
+          duelP1Score += 100;
+          duelP1Streak++;
+          duelP2Streak = 0;
+        } else {
+          duelP2Score += 100;
+          duelP2Streak++;
+          duelP1Streak = 0;
+        }
+
+        document.getElementById('duelP1Score').innerText = duelP1Score;
+        document.getElementById('duelP2Score').innerText = duelP2Score;
+        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
+        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
+
+        setTimeout(() => {
+          duelQIndex++;
+          loadDuelQuestion();
+        }, 900);
       } else {
-        soundWrong(); clickedBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)'; clickedBtns[btnIndex].disabled = true;
-        if(playerNum===1) duelState.p1Str=0; else duelState.p2Str=0;
-        document.getElementById('duelP1Streak').innerText = `${duelState.p1Str} Seri`; document.getElementById('duelP2Streak').innerText = `${duelState.p2Str} Seri`;
+        soundWrong();
+        clickedBtns[btnIndex].style.background = 'rgba(239, 68, 68, 0.85)';
+        clickedBtns[btnIndex].disabled = true;
+
+        if (playerNum === 1) duelP1Streak = 0;
+        else duelP2Streak = 0;
+
+        document.getElementById('duelP1Streak').innerText = `${duelP1Streak} Seri`;
+        document.getElementById('duelP2Streak').innerText = `${duelP2Streak} Seri`;
       }
     }
 
+    function finishDuelGame() {
+      showScreen('screenResult');
+      let winnerText = "Arenada Berabere!";
+      let trophy = "🤝";
+
+      if (duelP1Score > duelP2Score) {
+        winnerText = "Mavi Gladyatör Kazandı!";
+        trophy = "🛡️👑";
+      } else if (duelP2Score > duelP1Score) {
+        winnerText = "Kırmızı Gladyatör Kazandı!";
+        trophy = "⚔️👑";
+      }
+
+      document.getElementById('resTrophy').innerText = trophy;
+      document.getElementById('resTitle').innerText = winnerText;
+      document.getElementById('resSubtitle').innerText = `Mavi: ${duelP1Score} Puan  |  Kırmızı: ${duelP2Score} Puan`;
+      document.getElementById('resCorrectCount').innerText = `${duelP1Score / 100 + duelP2Score / 100} Soru`;
+      document.getElementById('resTotalScore').innerText = Math.max(duelP1Score, duelP2Score).toLocaleString();
+      document.getElementById('resMaxStreak').innerText = "Arena Düellosu";
+      document.getElementById('resLeaderboardStatus').innerText = "Düello tamamlandı!";
+
+      confetti({ particleCount: 150, spread: 90 });
+    }
+
+    // İlk açılışta liderlik tablosunu çek
+    
     /* ==========================================================
-       GRUP MODU KODLARI (GROUP) - YENİ
+       YÖNETİCİ PANELİ & GELİŞMİŞ GLADYATÖR DİYALOGLARI (5. Sınıf)
+       ========================================================== */
+    let isAdminUnlocked = false;
+
+    function openAdminModal() {
+      const modal = document.getElementById('adminModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      const countEl = document.getElementById('adminStudentCount');
+      if (countEl && typeof authorizedStudents !== 'undefined') countEl.innerText = authorizedStudents.length;
+
+      if (isAdminUnlocked) {
+        const authSec = document.getElementById('adminAuthSection');
+        const ctrlSec = document.getElementById('adminPanelControls');
+        if (authSec) authSec.style.display = 'none';
+        if (ctrlSec) ctrlSec.style.display = 'block';
+      } else {
+        const authSec = document.getElementById('adminAuthSection');
+        const ctrlSec = document.getElementById('adminPanelControls');
+        if (authSec) authSec.style.display = 'block';
+        if (ctrlSec) ctrlSec.style.display = 'none';
+        const passInput = document.getElementById('adminPasswordInput');
+        if (passInput) {
+          passInput.value = '';
+          setTimeout(() => passInput.focus(), 100);
+        }
+      }
+    }
+
+    function closeAdminModal() {
+      const modal = document.getElementById('adminModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function verifyAdminPass() {
+      const input = document.getElementById('adminPasswordInput');
+      const msg = document.getElementById('adminAuthMsg');
+      const val = input ? input.value.trim() : '';
+
+      const valid = ['26575982824.bati', '1234', 'admin', 'ogretmen', 'öğretmen', 'yonetici', 'yönetici'];
+      if (valid.includes(val.toLowerCase()) || valid.includes(val.toLocaleLowerCase('tr-TR'))) {
+        isAdminUnlocked = true;
+        const authSec = document.getElementById('adminAuthSection');
+        const ctrlSec = document.getElementById('adminPanelControls');
+        if (authSec) authSec.style.display = 'none';
+        if (ctrlSec) ctrlSec.style.display = 'block';
+        if (msg) msg.innerText = '';
+      } else {
+        if (msg) msg.innerText = '❌ Hatalı şifre! Lütfen tekrar deneyiniz.';
+        if (input) input.select();
+      }
+    }
+
+    function confirmResetLeaderboard() {
+      if (!confirm('DİKKAT: İlk 10 Gladyatör Liderlik Tablosundaki tüm kayıtlar silinecektir. Devam etmek istiyor musunuz?')) {
+        return;
+      }
+
+      // 1. Önce yerel önbellekleri temizle ve ekranı sıfırla
+      localStorage.removeItem('meb_yaziliarenasi_top10');
+      updateLeaderboard([]);
+
+      // 2. Firebase bağlantısını kontrol et ve temizle (cloudDb / DB_NODE)
+      if (cloudDb) {
+        cloudDb.ref(DB_NODE).remove().then(() => {
+          localStorage.removeItem('meb_yaziliarenasi_top10');
+          updateLeaderboard([]);
+          alert('🏆 İlk 10 Gladyatör Liderlik Tablosu başarıyla sıfırlandı!');
+          closeAdminModal();
+        }).catch(err => {
+          alert('Yerel tablo temizlendi, ancak Firebase sıfırlama hatası verdi: ' + err.message);
+          closeAdminModal();
+        });
+      } else {
+        alert('🏆 İlk 10 Gladyatör Liderlik Tablosu yerel olarak başarıyla sıfırlandı!');
+        closeAdminModal();
+      }
+    }
+
+    function refreshStudentRoster() {
+      if (cloudDb) {
+        cloudDb.ref(STUDENTS_NODE).once('value', snap => {
+          let data = snap.val();
+          if (data) {
+            authorizedStudents = data.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+          } else {
+            authorizedStudents = [];
+          }
+          populateStudentDropdown();
+          const countEl = document.getElementById('adminStudentCount');
+          if (countEl) countEl.innerText = authorizedStudents.length;
+          alert('✅ Öğrenci listesi Firebase ile senkronize edildi: ' + authorizedStudents.length + ' yetkili öğrenci mevcut.');
+        }).catch(err => {
+          alert('Senkronizasyon hatası: ' + err.message);
+        });
+      } else {
+        alert('Sistemde yetkili öğrenci sayısı: ' + authorizedStudents.length);
+      }
+    }
+
+    function updateBossDialogue(isHit) {
+      try {
+        const dEl = document.getElementById('bossDialogue');
+        if (!dEl) return;
+        if (isHit) {
+          const hitQuotes = [
+            "🛡️ 'Ah! Kalkanım çatladı! Müthiş bir matematik vuruşu!'",
+            "⚡ 'Bu bilgi gücü de ne? Zırhım sarsıldı!'",
+            "💥 'Tebrikler gladyatör! Arenanın efendisi darbe aldı!'",
+            "🔥 'Kılıcımın dengesini bozdun! Sıradaki soruya hazır ol!'"
+          ];
+          dEl.innerText = hitQuotes[Math.floor(Math.random() * hitQuotes.length)];
+        } else {
+          const blockQuotes = [
+            "⚔️ 'Hah! Kalkanımı delmek o kadar kolay değil!'",
+            "🛡️ 'Dikkatini topla gladyatör! Arena hata affetmez!'",
+            "🏛️ 'Arenanın efendisi dimdik ayakta! Daha iyisini yapabilirsin!'",
+            "⚔️ 'Kılıcım hala keskin! Pes etme ve tekrar odaklan!'"
+          ];
+          dEl.innerText = blockQuotes[Math.floor(Math.random() * blockQuotes.length)];
+        }
+      } catch (err) {
+        console.error('Boss dialogue error:', err);
+      }
+    }
+
+
+    
+    /* ==========================================================
+       4. SEÇENEK: KADER KÜRESİ (DÖNSÜN DÖNSÜN DÖNSÜN! - V2)
+       ========================================================== */
+    let isSpinningMystery = false;
+
+    function soundTick() {
+      if (typeof playTone === 'function') {
+        playTone(750, 'sine', 0.04, 0.06);
+      }
+    }
+
+    function claimMysteryWheel() {
+      if (isSpinningMystery) return;
+      isSpinningMystery = true;
+
+      const card = document.getElementById('mysteryCard');
+      const iconEl = document.getElementById('mysteryCardIcon');
+      const titleEl = document.getElementById('mysteryCardTitle');
+      const subEl = document.getElementById('mysteryCardSub');
+      const otherCards = document.querySelectorAll('.joker-card-select:not(#mysteryCard)');
+
+      // Diğer kartları hafif soluklaştır ve tıklamayı engelle
+      otherCards.forEach(c => {
+        c.style.opacity = '0.3';
+        c.style.pointerEvents = 'none';
+      });
+
+      if (card) {
+        card.classList.add('mystery-card-spinning');
+      }
+
+      // Zar yok! Dönsün dönsün dönsün animasyonu (Slot / Çark efekti)
+      const rollIcons = ['🔮', '✂️', '💎', '💥', '🌪️', '🛡️', '👑', '⚠️', '✨', '💨', '🔥', '🗡️'];
+      let spinCount = 0;
+      const totalSpins = 26; // ~1.9 saniye
+      let currentDelay = 45;
+
+      function runSpin() {
+        spinCount++;
+        const randomIcon = rollIcons[spinCount % rollIcons.length];
+        if (iconEl) iconEl.innerText = randomIcon;
+        if (titleEl) titleEl.innerText = 'Dönüyor...';
+        if (subEl) subEl.innerText = 'Kader küresi dönüyor!';
+        soundTick();
+
+        if (spinCount < totalSpins) {
+          if (spinCount > 18) currentDelay += 25; // Sona yaklaşınca heyecanla yavaşla
+          setTimeout(runSpin, currentDelay);
+        } else {
+          finalizeMysteryOutcome();
+        }
+      }
+
+      runSpin();
+    }
+
+    function finalizeMysteryOutcome() {
+      const card = document.getElementById('mysteryCard');
+      const iconEl = document.getElementById('mysteryCardIcon');
+      const titleEl = document.getElementById('mysteryCardTitle');
+      const subEl = document.getElementById('mysteryCardSub');
+
+      if (card) {
+        card.classList.remove('mystery-card-spinning');
+        card.classList.add('mystery-card-result');
+      }
+
+      // Olası Sonuçlar Havuzu (3X Darbe, 50:50, Kalkan, +Puanlar, 0 Puan Boş, -Puan Riskleri)
+      const outcomes = [
+        { type: 'joker', id: 'triple', icon: '💥', title: '3X Süper Darbe!', sub: '💥 Efsanevi 3 kat hasar ve puan!', sound: 'correct' },
+        { type: 'joker', id: '5050', icon: '✂️', title: '50:50 Eleme!', sub: '🎉 Joker çantana eklendi!', sound: 'correct' },
+        { type: 'joker', id: 'shield', icon: '🛡️', title: 'Gladyatör Kalkanı!', sub: '🛡️ Joker çantana eklendi!', sound: 'correct' },
+        { type: 'points_add', amount: 600, icon: '💎', title: '+600 Puan!', sub: '💰 Büyük hazineyi buldun!', sound: 'correct' },
+        { type: 'points_add', amount: 1000, icon: '👑', title: '+1000 Puan!', sub: '🔥 Efsanevi İmparator Ödülü!', sound: 'correct' },
+        { type: 'empty', amount: 0, icon: '💨', title: 'Boş Çıktı (0 Puan)!', sub: 'Talih bu sefer pas geçti: Ne kazanç ne kayıp!', sound: 'neutral' },
+        { type: 'points_sub', amount: 250, icon: '🌪️', title: '-250 Puan!', sub: '⚠️ Arena kum fırtınası tuzağı!', sound: 'wrong' },
+        { type: 'points_sub', amount: 150, icon: '⚠️', title: '-150 Puan!', sub: '⚔️ Gladyatör karşı hamlesi!', sound: 'wrong' }
+      ];
+
+      // Ağırlıklar: 3X (%18), 50:50 (%18), Kalkan (%14), +600 (%15), +1000 (%10), Boş 0 Puan (%12), -250 (%8), -150 (%5)
+      const weights = [18, 18, 14, 15, 10, 12, 8, 5];
+      const randNum = Math.random() * 100;
+      let accumulated = 0;
+      let selected = outcomes[0];
+
+      for (let i = 0; i < weights.length; i++) {
+        accumulated += weights[i];
+        if (randNum <= accumulated) {
+          selected = outcomes[i];
+          break;
+        }
+      }
+
+      // Sonucu ekrana bas
+      if (iconEl) iconEl.innerText = selected.icon;
+      if (titleEl) titleEl.innerText = selected.title;
+      if (subEl) subEl.innerText = selected.sub;
+
+      if (selected.sound === 'correct') {
+        soundCorrect();
+        try { confetti({ particleCount: 90, spread: 75 }); } catch (e) {}
+      } else if (selected.sound === 'wrong') {
+        soundWrong();
+      } else {
+        // Nötr / Boş durum (0 Puan)
+        soundJoker();
+      }
+
+      if (selected.type === 'joker') {
+        activeJokerEffect = selected.id;
+        triggerFloatingText(selected.icon + ' ' + selected.title + ' Sıradaki Soruda Devrede!');
+        const bar = document.getElementById('jokerActionBar');
+        if (bar) {
+          bar.classList.add('new-joker-flash');
+          setTimeout(() => bar.classList.remove('new-joker-flash'), 1200);
+        }
+      } else if (selected.type === 'points_add') {
+        score += selected.amount;
+        triggerFloatingText('💰 +' + selected.amount + ' Puan Kazandın!');
+      } else if (selected.type === 'empty') {
+        triggerFloatingText('💨 Boş Çıktı! (0 Puan)');
+      } else if (selected.type === 'points_sub') {
+        score = Math.max(0, score - selected.amount);
+        triggerFloatingText('⚠️ -' + selected.amount + ' Puan Kaybettin!');
+      }
+
+      updateSoloHUD();
+      renderActiveJokers();
+
+      // 1.8 saniye sonra modalı kapat ve sıradaki soruya devam et
+      setTimeout(() => {
+        document.getElementById('jokerModal').style.display = 'none';
+        isSpinningMystery = false;
+
+        if (card) {
+          card.classList.remove('mystery-card-result');
+        }
+        const otherCards = document.querySelectorAll('.joker-card-select');
+        otherCards.forEach(c => {
+          c.style.opacity = '1';
+          c.style.pointerEvents = 'auto';
+        });
+        if (iconEl) iconEl.innerText = '🔮';
+        if (titleEl) titleEl.innerText = 'Kader Küresi';
+        if (subEl) subEl.innerText = 'Büyük risk, büyük ödül! Şansını dene!';
+
+        loadSoloQuestion();
+      }, 1800);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateLeaderboard([]);
+    });
+  
+    /* ==========================================================
+       GRUP MODU KODLARI (GROUP)
        ========================================================== */
     const groupJokers = [
       { type: 'j', subType: 'buff', points: 40, msg: "🎁 İMPARATORUN LÜTFU", desc: "Sezar'dan sana altın bir hediye! (+40 Puan)" },
@@ -2317,14 +4431,24 @@
       pendingJokerAction: null
     };
 
+    function getShuffledGroupQuestions(count) {
+      const fullPool = generateQuestionPool();
+      for (let i = fullPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+      }
+      return fullPool.slice(0, count);
+    }
+
     function startGroupGame() {
+      if (typeof initAudio === 'function') initAudio();
       groupState.teams.forEach(t => t.score = 0);
       groupState.currentTurn = 0;
       groupState.solvedCount = 0;
       groupState.activeCardIndex = null;
       groupState.pendingJokerAction = null;
 
-      const qs = getShuffledQuestions(22).map(q => ({ ...q, type: 'q', points: 30, solved: false }));
+      const qs = getShuffledGroupQuestions(22).map(q => ({ ...q, type: 'q', points: 30, solved: false }));
       const js = groupJokers.map(j => ({ ...j, solved: false }));
       groupState.cards = [...qs, ...js].sort(() => Math.random() - 0.5);
 
@@ -2335,6 +4459,7 @@
 
     function renderGroupTeams() {
       const row = document.getElementById('groupTeamsRow');
+      if (!row) return;
       row.innerHTML = groupState.teams.map((t, idx) => `
         <div class="group-team-box ${idx === groupState.currentTurn ? 'active-team' : ''}">
           <div class="team-name">${t.name}</div>
@@ -2346,6 +4471,7 @@
 
     function renderGroupGrid() {
       const grid = document.getElementById('groupGrid');
+      if (!grid) return;
       grid.innerHTML = groupState.cards.map((c, i) => {
         let backContent = '';
         let backClass = 'g-card-back';
@@ -2355,9 +4481,9 @@
             backContent = `<div style="font-size:32px;">🎁</div>`;
           } else {
             if (c.status === 'correct') {
-              backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981;">+${c.points}</div>`;
+              backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981; font-weight:800;">+${c.points}</div>`;
             } else {
-              backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:10px; margin-top:4px;">${c.correct}</div>`;
+              backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:11px; margin-top:2px; color:#fca5a5; font-weight:700;">${c.correct}</div>`;
             }
           }
         } else {
@@ -2388,17 +4514,23 @@
     }
 
     function openGroupQuestionModal(card) {
-      document.getElementById('gqBadge').innerText = card.badge;
-      document.getElementById('gqText').innerText = card.text;
+      document.getElementById('gqBadge').innerText = card.badge || 'Kazanım';
+      document.getElementById('gqText').innerText = card.text || '';
       
       const vBox = document.getElementById('gqVisualBox');
-      if (card.visual) { vBox.innerHTML = card.visual; vBox.style.display = 'flex'; } 
-      else { vBox.style.display = 'none'; }
+      if (card.visual) { 
+        vBox.innerHTML = card.visual; 
+        vBox.style.display = 'flex'; 
+      } else { 
+        vBox.innerHTML = '';
+        vBox.style.display = 'none'; 
+      }
       
       const choices = [card.correct, ...card.distractors].sort(() => Math.random() - 0.5);
+      card.currentChoices = choices;
       const grid = document.getElementById('gqOptionsGrid');
       grid.innerHTML = choices.map((c, idx) => `
-        <button class="option-btn" onclick="submitGroupAnswer('${c}')" style="min-height: 60px; font-size: 18px;">
+        <button class="option-btn" onclick="submitGroupAnswer(${idx})" style="min-height: 60px; font-size: 18px;">
           <span class="option-letter" style="width:36px; height:36px; font-size:18px;">${['A','B','C','D'][idx]}</span>
           <span style="flex:1;">${c}</span>
         </button>
@@ -2407,16 +4539,17 @@
       document.getElementById('groupQModal').style.display = 'flex';
     }
 
-    function submitGroupAnswer(selected) {
+    function submitGroupAnswer(choiceIndex) {
       document.getElementById('groupQModal').style.display = 'none';
       const card = groupState.cards[groupState.activeCardIndex];
+      const selected = card.currentChoices ? card.currentChoices[choiceIndex] : null;
       
       if (selected === card.correct) {
-        soundCorrect();
+        if (typeof soundCorrect === 'function') soundCorrect();
         card.status = 'correct';
         groupState.teams[groupState.currentTurn].score += card.points;
       } else {
-        soundWrong();
+        if (typeof soundWrong === 'function') soundWrong();
         card.status = 'wrong';
         groupState.teams[groupState.currentTurn].score -= Math.floor(card.points / 2);
       }
@@ -2448,7 +4581,7 @@
         groupState.pendingJokerAction = () => { groupState.teams.forEach(t => t.score = Math.floor(t.score / 2)); };
       }
 
-      soundJoker();
+      if (typeof soundJoker === 'function') soundJoker();
       document.getElementById('groupJModal').style.display = 'flex';
     }
 
@@ -2468,71 +4601,112 @@
       renderGroupGrid();
       
       if (groupState.solvedCount >= 30) {
-        setTimeout(() => showResult('group'), 1000);
+        setTimeout(() => finishGroupGame(), 1000);
       } else {
         groupState.currentTurn = (groupState.currentTurn + 1) % 3;
         renderGroupTeams();
       }
     }
 
-    /* ==========================================================
-       SONUÇ EKRANI YÖNETİMİ
-       ========================================================== */
-    function showResult(mode) {
+    function finishGroupGame() {
       showScreen('screenResult');
+      const statsGrid = document.querySelector('.result-stats-grid');
       const lbStat = document.getElementById('resLeaderboardStatus');
-      const statsGrid = document.getElementById('resStatsGrid');
+      if (statsGrid) statsGrid.style.display = 'none';
+      if (lbStat) lbStat.innerText = '';
 
-      if (mode === 'solo') {
-        statsGrid.style.display = 'grid';
-        document.getElementById('resTrophy').innerText = '👑';
-        document.getElementById('resTitle').innerText = 'Arenanın Fatihi Oldun!';
-        document.getElementById('resSubtitle').innerText = 'Soru Gladyatörünü dize getirdin!';
-        document.getElementById('resCorrectCount').innerText = `${soloState.correct} / 15`;
-        document.getElementById('resTotalScore').innerText = soloState.score.toLocaleString();
-        document.getElementById('resMaxStreak').innerText = `🔥 x${soloState.maxStreak >= 4 ? '2.0' : (soloState.maxStreak >= 2 ? '1.5' : '1.2')}`;
-        
-        let local = JSON.parse(localStorage.getItem('meb_yaziliarenasi_top10') || '[]');
-        local.push({ name: document.getElementById('playerFullName').value || 'Gladyatör', score: soloState.score, correct: soloState.correct });
-        localStorage.setItem('meb_yaziliarenasi_top10', JSON.stringify(local));
-        lbStat.innerText = 'Liderlik tablosuna kaydedildi!';
-      } 
-      else if (mode === 'duel') {
-        statsGrid.style.display = 'none';
-        lbStat.innerText = '';
-        let winnerText = "Arenada Berabere!"; let trophy = "🤝";
-        if (duelState.p1S > duelState.p2S) { winnerText = "Mavi Gladyatör Kazandı!"; trophy = "🛡️👑"; } 
-        else if (duelState.p2S > duelState.p1S) { winnerText = "Kırmızı Gladyatör Kazandı!"; trophy = "⚔️👑"; }
-        document.getElementById('resTrophy').innerText = trophy;
-        document.getElementById('resTitle').innerText = winnerText;
-        document.getElementById('resSubtitle').innerText = `Mavi: ${duelState.p1S} Puan  |  Kırmızı: ${duelState.p2S} Puan`;
+      let maxScore = -9999;
+      let winners = [];
+      groupState.teams.forEach(t => {
+        if (t.score > maxScore) { maxScore = t.score; winners = [t.name]; }
+        else if (t.score === maxScore) { winners.push(t.name); }
+      });
+      document.getElementById('resTrophy').innerText = '🏛️🏆';
+      document.getElementById('resTitle').innerText = winners.join(' & ') + ' KAZANDI!';
+
+      const winMessages = [
+        "Arenanın kumları şampiyonları selamlıyor! Müthiş bir zafer!",
+        "İmparator bu eşsiz galibiyeti ayakta alkışlıyor!",
+        "Kalkanlar parçalandı, kılıçlar çekildi ve zafer sizin oldu!",
+        "Roma sokakları bu efsanevi galibiyetle yankılanıyor!",
+        "Rakipler dize geldi, arenanın gerçek hakimi sizsiniz!"
+      ];
+      const randomMsg = winMessages[Math.floor(Math.random() * winMessages.length)];
+
+      document.getElementById('resSubtitle').innerText = `${maxScore} Puanla ${randomMsg}`;
+
+      if (typeof soundFanfare === 'function') soundFanfare();
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
       }
-      else if (mode === 'group') {
-        statsGrid.style.display = 'none';
-        lbStat.innerText = '';
-        let maxScore = -9999;
-        let winners = [];
-        groupState.teams.forEach(t => {
-          if (t.score > maxScore) { maxScore = t.score; winners = [t.name]; }
-          else if (t.score === maxScore) { winners.push(t.name); }
-        });
-        document.getElementById('resTrophy').innerText = '🏛️🏆';
-        document.getElementById('resTitle').innerText = winners.join(' & ') + ' KAZANDI!';
-
-        const winMessages = [
-          "Arenanın kumları şampiyonları selamlıyor! Müthiş bir zafer!",
-          "İmparator bu eşsiz galibiyeti ayakta alkışlıyor!",
-          "Kalkanlar parçalandı, kılıçlar çekildi ve zafer sizin oldu!",
-          "Roma sokakları bu efsanevi galibiyetle yankılanıyor!",
-          "Rakipler dize geldi, arenanın gerçek hakimi sizsiniz!"
-        ];
-        const randomMsg = winMessages[Math.floor(Math.random() * winMessages.length)];
-
-        document.getElementById('resSubtitle').innerText = `${maxScore} Puanla ${randomMsg}`;
-      }
-
-      confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
     }
+
   </script>
+
+  <!-- Yönetici / Ayarlar Modalı -->
+  <div id="adminModal" class="admin-modal-overlay" style="display: none;">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">⚙️ Arena Yönetici Paneli (5. Sınıf)</div>
+        <button class="admin-modal-close" onclick="closeAdminModal()">✕</button>
+      </div>
+      
+      <div id="adminAuthSection">
+        <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px; line-height: 1.5;">
+          Liderlik tablosunu sıfırlamak veya öğrenci listesini yönetmek için yönetici şifresini giriniz:
+        </p>
+        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+          <input type="password" id="adminPasswordInput" class="admin-input" placeholder="Yönetici şifresi..." onkeydown="if(event.key==='Enter') verifyAdminPass()">
+          <button class="btn-admin-submit" onclick="verifyAdminPass()">Giriş Yap</button>
+        </div>
+        <div id="adminAuthMsg" style="font-size: 13px; font-weight: 700; color: #ef4444; min-height: 18px;"></div>
+      </div>
+
+      <div id="adminPanelControls" style="display: none;">
+        <div class="admin-badge-success">✓ Yönetici Girişi Doğrulandı</div>
+        
+        <div class="admin-section-box">
+          <div class="admin-section-title">🏆 İlk 10 Gladyatör Liderlik Tablosu</div>
+          <p style="color: #94a3b8; font-size: 13px; margin-bottom: 12px; line-height: 1.4;">
+            Tüm kayıtlı ilk 10 şampiyon skorunu Firebase veritabanından kalıcı olarak temizler ve tabloyu sıfırlar.
+          </p>
+          <button class="btn-danger-reset" onclick="confirmResetLeaderboard()">
+            🗑️ İlk 10 Gladyatör Tablosunu Sıfırla
+          </button>
+        </div>
+
+        <div class="admin-section-box">
+          <div class="admin-section-title">👥 Öğrenci Listesi Durumu</div>
+          <p style="color: #94a3b8; font-size: 13px; margin-bottom: 8px;">
+            Sistemde Yetkili Öğrenci Sayısı: <b id="adminStudentCount" style="color: #fbbf24; font-size: 16px;">0</b>
+          </p>
+          <button class="btn-secondary-admin" onclick="refreshStudentRoster()">
+            🔄 Öğrenci Listesini Yeniden Senkronize Et
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUP MODU SORU MODALI -->
+  <div class="modal-overlay" id="groupQModal" style="display: none; z-index: 200;">
+    <div class="joker-modal-content" style="max-width: 800px; padding: 24px; width: 90%;">
+      <div class="question-badge" id="gqBadge" style="display:inline-block; margin-bottom:12px;">Kazanım</div>
+      <div class="question-text" id="gqText" style="font-size: 20px !important;">Soru Metni</div>
+      <div class="question-visual-box" id="gqVisualBox" style="width: 100%; min-height: 120px; background: rgba(15, 23, 42, 0.9) !important; display: none; align-items: center; justify-content: center; margin-bottom: 12px; border-radius: 12px;"></div>
+      <div class="options-grid" id="gqOptionsGrid" style="margin-top: 16px;"></div>
+    </div>
+  </div>
+
+  <!-- GRUP MODU JOKER MODALI -->
+  <div class="modal-overlay" id="groupJModal" style="display: none; z-index: 200;">
+    <div class="joker-modal-content" style="max-width: 500px; padding: 40px 30px; width: 90%;">
+      <div id="gjIcon" style="font-size: 64px; margin-bottom: 12px; animation: bounce 1s infinite alternate;">🎁</div>
+      <h2 id="gjTitle" style="font-family: var(--font-fun); font-size: 28px; color: #fbbf24; font-weight: 800; margin-bottom: 16px;">ŞANS KARTI</h2>
+      <p id="gjDesc" style="color: #cbd5e1; font-size: 16px; margin-bottom: 24px; line-height: 1.5;"></p>
+      <button class="btn-start" onclick="applyGroupJoker()" style="font-size: 18px; padding: 12px; width: 100%;">DEVAM ET ⚔️</button>
+    </div>
+  </div>
+
 </body>
 </html>
