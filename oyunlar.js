@@ -121,6 +121,13 @@ const SISTEM_OYUNLARI = [
         image: "./yazili_arenasi_kapak.jpg",
         url: ".//yazili_arenasi_7.html"
     },
+    {
+        id: "oyun-18",
+        title: "Perili Köşk Ondalık Kaçış",
+        grade: "6",
+        image: "./perili_kosk_kapak.jpg",
+        url: ".//perili_kosk.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
