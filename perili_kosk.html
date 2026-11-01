@@ -556,7 +556,7 @@
       display: block;
       transition: transform 0.15s ease;
     }
-    #detective-avatar.walking .detective-img {
+    #detective-avatar.walking .detective-sprite-wrapper, #detective-avatar.detective-moving .detective-sprite-wrapper {
       animation: detectiveWalkBob 0.28s ease-in-out infinite alternate;
     }
     @keyframes detectiveWalkBob {
@@ -564,21 +564,45 @@
       50% { transform: translateY(-8px) rotate(1deg); }
       100% { transform: translateY(0) rotate(2deg); }
     }
+    .detective-lantern-bulb-glow {
+      position: absolute;
+      top: 52px;
+      left: 78px;
+      width: 48px;
+      height: 48px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(255, 255, 235, 0.98) 0%, rgba(254, 240, 138, 0.75) 28%, rgba(245, 158, 11, 0.35) 58%, transparent 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.9));
+      animation: lanternBulbPulse 1.8s infinite alternate;
+      z-index: 3;
+    }
+    @keyframes lanternBulbPulse {
+      0%, 100% { opacity: 0.88; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    }
     .detective-lantern-cone {
       position: absolute;
-      bottom: 45px;
-      left: 45px;
-      width: 220px;
-      height: 130px;
-      background: radial-gradient(ellipse at left, rgba(253, 224, 71, 0.55) 0%, rgba(245, 158, 11, 0.2) 50%, transparent 75%);
-      clip-path: polygon(0% 40%, 100% 0%, 100% 100%, 0% 60%);
+      top: 52px;
+      left: 78px;
+      width: 350px;
+      height: 165px;
+      transform: translateY(-50%);
+      transform-origin: 0% 50%;
+      background: radial-gradient(ellipse at 0% 50%, rgba(255, 250, 200, 0.8) 0%, rgba(253, 224, 71, 0.45) 22%, rgba(245, 158, 11, 0.2) 55%, transparent 82%);
+      clip-path: polygon(0% 46%, 100% 6%, 100% 94%, 0% 54%);
       pointer-events: none;
-      opacity: 0.92;
+      opacity: 0.95;
       animation: lanternFlicker 1.8s infinite alternate;
       z-index: 2;
     }
     @keyframes lanternFlicker {
-      0%, 100% { opacity: 0.88; transform: scaleY(1); }
+      0%, 100% { opacity: 0.88; transform: translateY(-50%) scaleY(1); }
+      50% { opacity: 1; transform: translateY(-50%) scaleY(1.05); }
+    }
+      50% { opacity: 1; transform: translateY(-50%) scaleY(1.06); }
+    }
       50% { opacity: 1; transform: scaleY(1.08); }
     }
     .detective-ground-shadow {
@@ -845,7 +869,7 @@
       animation: popModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* DEDEKTİF CİNSİYET SEÇİM KARTLARI */
+    
     .gender-card {
       flex: 1;
       max-width: 220px;
@@ -1502,7 +1526,100 @@
       color: #FDE047;
     }
 
-  </style>
+  
+    /* İNTERAKTİF NESNELER KONTEYNERİ & OBJE STİLLERİ */
+    #interactive-objects-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .interactive-object {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.25s ease;
+    }
+    .interactive-object:hover {
+      transform: translate(-50%, -50%) scale(1.15);
+      filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.95)) brightness(1.12);
+    }
+    .object-prop-img {
+      max-width: 82px;
+      max-height: 88px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.92)) drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+      pointer-events: none;
+      transition: transform 0.2s ease;
+    }
+    .object-label {
+      margin-top: 5px;
+      padding: 3px 10px;
+      background: rgba(14, 5, 28, 0.92);
+      border: 1.5px solid rgba(168, 85, 247, 0.7);
+      border-radius: 10px;
+      color: #FDE047;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.85);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+    .interactive-object:hover .object-label {
+      background: rgba(88, 28, 135, 0.95);
+      border-color: #F59E0B;
+      color: #FFF;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+    }
+    .clue-feedback-bubble {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: bubblePop 0.3s ease-out forwards;
+      z-index: 20;
+    }
+    .clue-feedback-bubble.right-feedback {
+      background: #10B981;
+      color: #FFFFFF;
+      border: 1.5px solid #34D399;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.7);
+    }
+    .clue-feedback-bubble.wrong-feedback {
+      background: #EF4444;
+      color: #FFFFFF;
+      border: 1.5px solid #F87171;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.7);
+    }
+    @keyframes bubblePop {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
+      100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+
+      .interactive-object.inspected-checked .object-prop-img { filter: grayscale(55%) brightness(0.8) drop-shadow(0 8px 16px rgba(0,0,0,0.9)); }
+    .interactive-object.inspected-checked .object-label { opacity: 0.6; }
+</style>
 </head>
 <body>
 
@@ -1575,15 +1692,15 @@
       <div id="inspection-spotlight"></div>
 
       <!-- Profesyonel İllüstre Edilmiş Gotik Çıkış Kapısı (0 EMOJİ, GERÇEK OYUN VARLIĞI!) -->
-      <div class="exit-door" id="room-exit-door">
-        <img id="door-sprite-img" src="./gothic_door_closed.png" alt="Gotik Çıkış Kapısı" class="door-sprite-asset" onerror="this.src='./perili_kosk_assets/gothic_door_closed.png'">
+      <div class="exit-door" id="room-exit-door" onclick="handleDoorClick()">
+        <img id="door-sprite-img" src="./gothic_door_closed.png" alt="Gotik Çıkış Kapısı" class="door-sprite-asset" onerror="this.src='./gothic_door_closed.png'">
       </div>
 
       <!-- Şans Sandığı (Kapı açılınca beliren gotik antika sandık) -->
       <div id="lucky-bonus-chest" onclick="claimLuckyChest(event)" title="Mistik Sandığı Aç!">
         <div class="chest-visual-container">
           <div class="chest-aura-pulse"></div>
-          <img id="lucky-chest-img" src="./perili_kosk_chest_closed.png" alt="Mistik Sandık" class="chest-img-asset" onerror="this.src='./perili_kosk_assets/chest_closed.png'">
+          <img id="lucky-chest-img" src="./perili_kosk_chest_closed.png" alt="Mistik Sandık" class="chest-img-asset" onerror="this.src='./chest_closed.png'">
         </div>
         <div class="chest-badge" id="chest-badge-text">Mistik Sandığı Aç!</div>
       </div>
@@ -1594,7 +1711,7 @@
       <!-- PROFESYONEL İLLÜSTRE EDİLMİŞ DEDEKTİF AVATAR -->
       <div id="detective-avatar">
         <div class="detective-sprite-wrapper">
-          <img id="detective-sprite-img" src="./detective_sprite_idle.png" alt="Dedektif" class="detective-img" onerror="this.src='./perili_kosk_assets/detective_sprite_idle.png'">
+          <img id="detective-sprite-img" src="./detective_sprite_idle.png" alt="Dedektif" class="detective-img" onerror="this.src='./detective_sprite_idle.png'">
           <div class="detective-lantern-cone" id="lantern-cone"></div>
           <div class="detective-ground-shadow"></div>
         </div>
@@ -1604,7 +1721,7 @@
     <!-- DEDİKE ALT DİYALOG VE FISILTI KONSOLU (OYUNUN ÜSTÜNE GELMEZ!) -->
     <div id="narrative-dialogue-bar">
       <div class="dialogue-speaker-avatar" id="speaker-avatar-frame">
-        <img id="speaker-avatar-img" src="./mosyo_ondalik.png" class="speaker-avatar-img" alt="Mösyö Ondalık" onerror="this.src='./perili_kosk_assets/mosyo_ondalik.png'">
+        <img id="speaker-avatar-img" src="./mosyo_ondalik.png" class="speaker-avatar-img" alt="Mösyö Ondalık" onerror="this.src='./mosyo_ondalik.png'">
       </div>
       <div class="dialogue-content-box">
         <div class="dialogue-speaker-name" id="speaker-name">Mösyö Ondalık</div>
@@ -1644,7 +1761,7 @@
   <div class="card-screen" id="mainMenuScreen">
     <div class="global-fog-layer global-fog-1" style="z-index: 1;"></div>
     <div class="global-fog-layer global-fog-2" style="z-index: 1;"></div>
-        <div class="main-box" style="position: relative; z-index: 2;">
+            <div class="main-box" style="position: relative; z-index: 2;">
       <!-- 1:1 Kare Kapak Görseli -->
       <div class="cover-frame-wrapper">
         <img src="./perili_kosk_kapak.jpg" alt="Perili Köşk Kapak" class="cover-frame-img" onerror="this.src='./kapak.jpg'">
@@ -1653,36 +1770,17 @@
       <h1 class="game-logo-title">PERİLİ KÖŞK</h1>
       <div class="game-sub-badge">6. Sınıf Ondalık Gösterim & Çözümleme Kaçış Odası</div>
 
-      <div style="position: relative; width: 100%; margin-bottom: 10px;">
-        <input type="text" id="playerNameInput" list="studentNamesList" class="input-field" placeholder="Dedektif İsmini Seç veya Yaz..." maxlength="50" autocomplete="off" onfocus="populateStudentNamesImmediate(); if(this.showPicker) this.showPicker();" onclick="if(this.showPicker) this.showPicker();" oninput="onPlayerNameChange(this.value)">
+      <div style="position: relative; width: 100%; margin-bottom: 14px;">
+        <input type="text" id="playerNameInput" list="studentNamesList" class="input-field" placeholder="Dedektif İsmini Seç veya Yaz..." maxlength="50" autocomplete="off" onfocus="populateStudentNamesImmediate();" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}">
         <datalist id="studentNamesList"></datalist>
       </div>
 
-      <!-- DEDEKTİF FOTOĞRAFLI SEÇİM ALANI (YAZI AÇIKLAMA YOK, DOĞRUDAN FOTOĞRAFA TIKLANIR) -->
-      <div class="detective-picker-row" style="display: flex; justify-content: center; align-items: center; gap: 24px; margin: 6px 0 16px 0;">
-        <!-- Erkek Dedektif Fotoğrafı -->
-        <div id="detPickMale" onclick="setDetectiveGenderManual('male')" class="det-photo-card active" title="Erkek Dedektif" style="cursor: pointer; text-align: center; transition: all 0.25s ease;">
-          <div class="det-photo-circle" style="width: 82px; height: 82px; border-radius: 50%; border: 3.5px solid #F59E0B; box-shadow: 0 0 22px rgba(245, 158, 11, 0.7); overflow: hidden; background: radial-gradient(circle, #3B0764 0%, #0F051D 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: all 0.25s ease;">
-            <img src="./detective_sprite_idle.png" alt="Erkek Dedektif" style="width: 88px; height: 88px; object-fit: cover; object-position: center 12%;">
-          </div>
-          <div id="detLabelMale" style="font-size: 13px; font-weight: 800; color: #F59E0B; margin-top: 6px; letter-spacing: 0.5px;">Dedektif</div>
-        </div>
-
-        <!-- Kız Dedektif Fotoğrafı -->
-        <div id="detPickFemale" onclick="setDetectiveGenderManual('female')" class="det-photo-card" title="Kız Dedektif" style="cursor: pointer; text-align: center; transition: all 0.25s ease; opacity: 0.55;">
-          <div class="det-photo-circle" style="width: 82px; height: 82px; border-radius: 50%; border: 3.5px solid rgba(255, 255, 255, 0.25); box-shadow: none; overflow: hidden; background: radial-gradient(circle, #831843 0%, #0F051D 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: all 0.25s ease;">
-            <img src="./detective_female_sprite_idle.png" alt="Kız Dedektif" style="width: 88px; height: 88px; object-fit: cover; object-position: center 12%;">
-          </div>
-          <div id="detLabelFemale" style="font-size: 13px; font-weight: 800; color: #94A3B8; margin-top: 6px; letter-spacing: 0.5px;">Dedektif</div>
-        </div>
-      </div>
-
-      <!-- MACERAYA BAŞLA BUTONU (TEMİZ VE NET, ŞÜPHELİ SEMBOL YOK) -->
+      <!-- MACERAYA BAŞLA BUTONU (TEMİZ VE NET) -->
       <button class="btn-action-primary" onclick="startGame()" style="font-size: 18px; letter-spacing: 0.5px; padding: 15px 24px;">
         <span>Maceraya Başla</span>
       </button>
 
-      <div style="display:flex; gap:10px; margin-top: 10px;">
+      <div style="display:flex; gap:10px; margin-top: 12px;">
         <button class="btn-action-subtle" onclick="showLeaderboard()">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="#F59E0B" style="vertical-align:middle; margin-right:4px;"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.97-.51 3.44-2.13 3.61-4.06C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2z"/></svg>
           <span>En İyi 10 Dedektif</span>
@@ -1771,33 +1869,7 @@
     </div>
   </div>
 
-    <!-- DEDEKTİF CİNSİYET SEÇİM MODALI (Yalnızca Kararsız/Üniseks İsimlerde Açılır) -->
-  <div class="card-screen" id="genderSelectModal" style="display:none; z-index: 55;">
-    <div class="main-box" style="max-width: 540px; padding: 28px 24px;">
-      <h2 style="font-family:'Baloo 2'; font-size: 26px; color:#F59E0B; margin-bottom: 6px;">Dedektifini Seç!</h2>
-      <p style="color:#CBD5E1; font-size: 14px; margin-bottom: 22px;">
-        Perili Köşk'ün gizemini çözmek için hangi dedektifle maceraya atılmak istersin?
-      </p>
-
-      <div style="display: flex; gap: 18px; justify-content: center; margin-bottom: 15px;">
-        <!-- Erkek Dedektif -->
-        <div class="gender-card" onclick="selectGenderAndStart('male')">
-          <div class="gender-card-img-wrap">
-            <img src="./detective_sprite_idle.png" alt="Erkek Dedektif" class="gender-card-img">
-          </div>
-          <div class="gender-card-title">Erkek Dedektif</div>
-          <div class="gender-card-badge">🕵️‍♂️ Usta Dedektif</div>
-        </div>
-
-        <!-- Kız Dedektif -->
-        <div class="gender-card" onclick="selectGenderAndStart('female')">
-          <div class="gender-card-img-wrap">
-            <img src="./detective_female_sprite_idle.png" alt="Kız Dedektif" class="gender-card-img">
-          </div>
-          <div class="gender-card-title">Kız Dedektif</div>
-          <div class="gender-card-badge">🕵️‍♀️ Zeki Dedektif</div>
-        </div>
-      </div>
+    
     </div>
   </div>
 
@@ -1848,14 +1920,14 @@
     const DEFAULT_STUDENT_LIST = [
       "Ada USTA", "Ahmet Mutay ERDEM", "Alara Derin ÖZYER", "Ali ATİLA", "Ali OĞUZ",
       "Alp Efe IŞIK", "Alp KORALAY", "Alp Mete KURU", "Alp ÖZ", "Alya EKMEN",
-      "Alya ÖZPİ", "Arya SAĞLIK", "Ata İRGİ", "Ata Yılmaz ŞAHİN", "Ayaz Ali YILDIZ",
+      "Alya ÖZPİ", "Arya SAĞLIK", "Ata ÖRGÜ", "Ata Yılmaz ŞAHİN", "Ayaz Ali YILDIZ",
       "Ayşe Ada YEŞİLYURT", "Ayşe Beren ULU", "Bartu UÇAR", "Batıkan ÖZTUNALI", "Beren BULCA",
-      "Beren NEZİROĞULLARI", "Beyza Betül HORUZ", "Beyza KARTAL", "Bilge Naz ÖZCAN", "Bürçe Tuba KURT",
+      "Beren NEZİROĞULLARI", "Beyza Betül HORUZ", "Beyza KARTAL", "Bilge Naz ÖZCAN", "Birce Tuba KURT",
       "Can AKTAŞ", "Can AYTAK", "Cem Çınar DUMAN", "Çağan AKÇA", "Çınar Berkay KILINÇ",
       "Defne AYTAK", "Defne ÇİM", "Defne ERÇEL", "Defne TINAZ", "Defne TOPAL",
       "Demir Ali KAYA", "Demir TÜLÜ", "Deniz ÇİM", "Deniz PINDIKOĞLU", "Derin Asel ASLAN",
       "Derin HOBAT", "Devrim ÖZGER", "Doğa ATEŞ", "Dora Ilgın GÜRSOY", "Doruk ÇETİN",
-      "Doruk DUYMAÇ", "Duru İŞERİ", "Ece ÜSTÜNDAĞ", "Ege SARI", "Ela ALDEMİR",
+      "Doruk DUYMAÇ", "Duru İÇERİ", "Ece ÜSTÜNDAĞ", "Ege SARI", "Ela ALDEMİR",
       "Ela EMİROĞLU", "Elif DULUNDU", "Elif KILINÇ", "Elif YILMAZ", "Elis DEMİR",
       "Emir TURANBARANOĞLU", "Emir ÜNAL", "Emre ÖNEY", "Eren ÖZEL", "Eren TURANBARANOĞLU",
       "Gökçe TABAK", "Güney DÜZGÜN", "Hüseyin Rüzgar SAĞLAM", "İnan ALDEMİR", "İpek Nazlı DOLU",
@@ -1864,14 +1936,12 @@
       "Mehmet Ali ÇEMBERCİ", "Melih Burak YAŞAR", "Melis COŞKUNER", "Melis Nora ERSAN", "Melisa ESMER",
       "Mercan GÖZÜKÜÇÜK", "Mert ÖZEL", "Meryem ŞEN", "Mihrimah Ela YILDIRIM", "Mira DAL",
       "Mira ŞAHİN", "Mustafa Altuğ YAĞIZ", "Mustafa Kadir ARSLANOĞLU", "Mustafa Yağız AVCI", "Nikan KAYA",
-      "Nil TABAK", "Nisa ÖZVARDAR", "Nisan ÖZLÜK", "Ömer BARAN AYTEMÜR", "Ömer Sadettin KELEŞ",
-      "Perisu MURATHAN", "Poyraz Ahmed AYDINALP", "Rüzgar KIRALİ", "Sedef GÜNEŞLİ", "Selis TAHA",
+      "Nil TABAK", "Nisa ÖZVARDAR", "Nisan ÖZLÜK", "Ömer BARAN AYTEMUR", "Ömer Sadettin KELEŞ",
+      "Perisu MURATHAN", "Poyraz Ahmed AYDINALP", "Rüzgar KIRALI", "Sedef GÜNEŞLİ", "Selis TAHA",
       "Serhat Yaman AĞIRMAN", "Serra SIRDAŞ", "Şevval ÖZTÜRK", "Tanem Lal KAVAKLI", "Tuna DEMİRER",
       "Yağmur SEZER", "Yiğit Ali KOÇ", "Yiğit Arda MART", "Yusuf EREN", "Yusuf Yankı EKİZ",
       "Zeynep Alya EROL", "Zeynep BİLİR", "Zeynep KIZILKAYA", "Zeynep VURUCU", "Zeynep Züleyha GEYİK"
     ];
-
-    // authorizedStudents initialized above
 
     function populateStudentNamesImmediate() {
       const dl = document.getElementById('studentNamesList');
@@ -1927,7 +1997,6 @@
       console.warn("Firebase offline modda çalışacak:", e);
     }
 
-    // Firebase Senkronizasyonu (Öğrenci Listesi ASLA Sıfırlanmaz!)
     if (cloudDb) {
       cloudDb.ref('students_yaziliarenasi_6').on('value', snap => {
         let val = snap.val();
@@ -1949,143 +2018,250 @@
       });
     }
 
-    /* DEDEKTİF CİNSİYET VE KARAKTER SEÇİM YÖNETİMİ */
-    let detectiveGender = 'male';
-    let userManuallyPickedGender = false;
+    /* ========================================================
+       OYUN DURUM DEĞİŞKENLERİ
+       ======================================================== */
+    let currentRoomIndex = 0;
+    let score = 0;
+    let health = 3;
+    let isDoorOpen = false;
+    let isMoving = false;
+    let playerName = "Dedektif";
     let questionStartTime = 0;
     let currentStreak = 0;
+    let currentRoomQuestion = null;
 
-    function setDetectiveGenderManual(g) {
-      try { playSound('step'); } catch(e){}
-      detectiveGender = g;
-      userManuallyPickedGender = true;
-      updateDetectiveSelectionUI();
+    /* ========================================================
+       SES SİSTEMİ & BGM (TEMİZ GOTİK ÇANLAR - ASLA KABA SES YOK)
+       ======================================================== */
+    let audioCtx = null;
+    let audioEnabled = true;
+    let bgmEnabled = true;
+    let currentVoiceAudio = null;
+    let bgmInterval = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
     }
 
-    function updateDetectiveSelectionUI() {
-      const maleCard = document.getElementById('detPickMale');
-      const femaleCard = document.getElementById('detPickFemale');
-      const maleCircle = maleCard ? maleCard.querySelector('.det-photo-circle') : null;
-      const femaleCircle = femaleCard ? femaleCard.querySelector('.det-photo-circle') : null;
-      const maleLabel = document.getElementById('detLabelMale');
-      const femaleLabel = document.getElementById('detLabelFemale');
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const btn = document.getElementById('audio-toggle-btn');
+      if (btn) btn.innerText = audioEnabled ? "🔊 Ses: Açık" : "🔇 Ses: Kapalı";
+      if (!audioEnabled && currentVoiceAudio) {
+        currentVoiceAudio.pause();
+        currentVoiceAudio.currentTime = 0;
+      }
+    }
 
-      if (detectiveGender === 'female') {
-        if (femaleCard) { femaleCard.style.opacity = '1'; femaleCard.style.transform = 'scale(1.06)'; }
-        if (femaleCircle) {
-          femaleCircle.style.borderColor = '#EC4899';
-          femaleCircle.style.boxShadow = '0 0 22px rgba(236, 72, 153, 0.8)';
-        }
-        if (femaleLabel) { femaleLabel.style.color = '#F472B6'; }
-
-        if (maleCard) { maleCard.style.opacity = '0.55'; maleCard.style.transform = 'scale(0.95)'; }
-        if (maleCircle) {
-          maleCircle.style.borderColor = 'rgba(255, 255, 255, 0.25)';
-          maleCircle.style.boxShadow = 'none';
-        }
-        if (maleLabel) { maleLabel.style.color = '#94A3B8'; }
+    function toggleBGM() {
+      bgmEnabled = !bgmEnabled;
+      const btn = document.getElementById('bgm-toggle-btn');
+      if (btn) btn.innerText = bgmEnabled ? "🎵 Müzik: Açık" : "🎵 Müzik: Kapalı";
+      if (!bgmEnabled) {
+        stopBGM();
       } else {
-        if (maleCard) { maleCard.style.opacity = '1'; maleCard.style.transform = 'scale(1.06)'; }
-        if (maleCircle) {
-          maleCircle.style.borderColor = '#F59E0B';
-          maleCircle.style.boxShadow = '0 0 22px rgba(245, 158, 11, 0.8)';
-        }
-        if (maleLabel) { maleLabel.style.color = '#F59E0B'; }
-
-        if (femaleCard) { femaleCard.style.opacity = '0.55'; femaleCard.style.transform = 'scale(0.95)'; }
-        if (femaleCircle) {
-          femaleCircle.style.borderColor = 'rgba(255, 255, 255, 0.25)';
-          femaleCircle.style.boxShadow = 'none';
-        }
-        if (femaleLabel) { femaleLabel.style.color = '#94A3B8'; }
+        startBGM();
       }
     }
 
-    const KNOWN_STUDENT_GENDERS = {
-      "alp mete kuru": "male", "alp öz": "male", "ayaz ali yıldız": "male", "beren neziroğulları": "female",
-      "cem çınar duman": "male", "defne aytak": "female", "defne topal": "female", "demir ali kaya": "male",
-      "deniz çim": "ask", "deniz pındıkoğlu": "ask", "derin hobat": "ask", "duru işeri": "female",
-      "elif dulundu": "female", "elis demir": "female", "kuzey kurtuldu": "male", "kürşat gökdeniz bektaş": "male",
-      "meryem şen": "female", "ömer sadettin keleş": "male", "serhat yaman ağırman": "male", "tanem lal kavaklı": "female",
-      "yusuf eren": "male", "yusuf yankı ekiz": "male", "zeynep kızılkaya": "female", "ada usta": "female",
-      "alp efe ışık": "male", "arya sağlık": "female", "ayşe ada yeşilyurt": "female", "bartu uçar": "male",
-      "beren bulca": "female", "bilge naz özcan": "female", "defne erçel": "female", "doruk çetin": "male",
-      "ela aldemir": "female", "eren özel": "male", "eren turanbaranoğlu": "male", "kerem öztürk": "male",
-      "mehmet ali çemberci": "male", "mercan gözüküçük": "female", "mihrimah ela yıldırım": "female", "nikan kaya": "male",
-      "nil tabak": "female", "selis taha": "female", "şevval öztürk": "female", "tuna demirer": "male",
-      "zeynep bilir": "female", "zeynep züleyha geyik": "female", "ahmet mutay erdem": "male", "alara derin özyer": "female",
-      "ata irgi": "male", "beyza betül horuz": "female", "beyza kartal": "female", "mert özel": "male",
-      "yiğit arda mart": "male", "defne çim": "female", "melis coşkuner": "female", "demir tülü": "male",
-      "ece üstündağ": "female", "ege sarı": "male", "ipek nazlı dolu": "female", "kaan çalışkan": "male",
-      "kerem tunçyürek": "male", "kerem ünal": "male", "kutay çolak": "male", "lina öztan": "female",
-      "mira dal": "female", "mustafa yağız avcı": "male", "nisan özlük": "female", "ömer baran aytemür": "male",
-      "yağmur sezer": "female", "alp koralay": "male", "bürçe tuba kurt": "female", "can aktaş": "male",
-      "can aytak": "male", "çınar berkay kılınç": "male", "defne tınaz": "female", "derin asel aslan": "female",
-      "devrim özger": "male", "elif yılmaz": "female", "emir turanbaranoğlu": "male", "emre öney": "male",
-      "hüseyin rüzgar sağlam": "male", "mahmut ali aydın": "male", "melis nora ersan": "female", "melih burak yaşar": "male",
-      "melisa esmer": "female", "mira şahin": "female", "mustafa altuğ yağız": "male", "mustafa kadir arslanoğlu": "male",
-      "sedef güneşli": "female", "serra sırdaş": "female", "zeynep alya erol": "female", "zeynep vurucu": "female",
-      "ali atila": "male", "ali oğuz": "male", "alya ekmen": "female", "alya özpi": "female",
-      "ata yılmaz şahin": "male", "ayşe beren ulu": "female", "güney düzgün": "male", "çağan akça": "male",
-      "doğa ateş": "female", "dora ılgın gürsoy": "female", "doruk duymaç": "male", "ela emiroğlu": "female",
-      "elif kılınç": "female", "gökçe tabak": "female", "emir ünal": "male", "inan aldemir": "male",
-      "kerem ışık": "male", "nisa özvardar": "female", "perisu murathan": "female", "poyraz ahmed aydınalp": "male",
-      "rüzgar kırali": "male", "yiğit ali koç": "male", "batıkan öztunalı": "male"
-    };
+    const MUSIC_BOX_NOTES = [
+      523.25, 622.25, 783.99, 587.33, 523.25, 415.30, 392.00, 493.88,
+      523.25, 587.33, 622.25, 783.99, 698.46, 587.33, 493.88, 523.25
+    ];
+    let noteIndex = 0;
 
-    const TURKISH_FEMALE_FIRSTNAMES = new Set([
-      "ada", "alara", "alya", "arya", "ayşe", "beren", "beyza", "bilge", "bürçe", "defne",
-      "duru", "ece", "ela", "elif", "elis", "gökçe", "ipek", "lina", "melis", "melisa",
-      "mercan", "meryem", "mihrimah", "mira", "nil", "nisa", "nisan", "perisu", "sedef",
-      "selis", "serra", "şevval", "tanem", "yağmur", "zeynep", "fatma", "aylin", "ceren",
-      "damla", "irem", "gamze", "hande", "ilknur", "kübra", "leyla", "neva", "özge", "pelin",
-      "rüya", "selin", "tuğba", "yasemin", "zehra"
-    ]);
+    function playMusicBoxNote(freq) {
+      if (!bgmEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.045, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 1.25);
+      } catch(e) {}
+    }
 
-    const TURKISH_MALE_FIRSTNAMES = new Set([
-      "ahmet", "ali", "alp", "ata", "ayaz", "bartu", "batıkan", "can", "cem", "çağan", "çınar",
-      "demir", "doruk", "ege", "emir", "emre", "eren", "hüseyin", "inan", "kaan", "kerem",
-      "kutay", "kuzey", "kürşat", "mahmut", "mehmet", "melih", "mert", "mustafa", "nikan",
-      "ömer", "poyraz", "rüzgar", "serhat", "tuna", "yiğit", "yusuf", "barış", "burak",
-      "cihan", "deniz", "emrah", "fatih", "gökhan", "hakan", "ibrahim", "kemal", "murat",
-      "oğuz", "onur", "ozan", "selim", "serdar", "tarık", "tolga", "umut", "volkan"
-    ]);
+    function startBGM() {
+      if (bgmInterval) return;
+      noteIndex = 0;
+      bgmInterval = setInterval(() => {
+        if (!bgmEnabled) return;
+        playMusicBoxNote(MUSIC_BOX_NOTES[noteIndex]);
+        noteIndex = (noteIndex + 1) % MUSIC_BOX_NOTES.length;
+      }, 750);
+    }
 
-    function detectStudentGender(name) {
-      if (!name) return 'male';
-      const normalizedFull = name.trim().toLocaleLowerCase('tr-TR');
-      if (KNOWN_STUDENT_GENDERS[normalizedFull]) {
-        return KNOWN_STUDENT_GENDERS[normalizedFull];
+    function stopBGM() {
+      if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
       }
-      const parts = normalizedFull.split(/\s+/);
-      const first = parts[0];
-      if (TURKISH_FEMALE_FIRSTNAMES.has(first)) {
-        return 'female';
+    }
+
+    function playVoice(filename) {
+      if (!audioEnabled) return;
+      try {
+        if (currentVoiceAudio) {
+          currentVoiceAudio.pause();
+          currentVoiceAudio.currentTime = 0;
+        }
+        currentVoiceAudio = new Audio(`./sesler/${filename}`);
+        currentVoiceAudio.play().catch(e => {
+          currentVoiceAudio = new Audio(`./perili_kosk_assets/sesler/${filename}`);
+          currentVoiceAudio.play().catch(err => {});
+        });
+      } catch(e) {}
+    }
+
+    function playSound(type) {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        if (type === 'click' || type === 'step') {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(type === 'step' ? 190 : 520, now);
+          osc.frequency.exponentialRampToValueAtTime(type === 'step' ? 75 : 220, now + 0.07);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'correct' || type === 'bonus') {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            let osc = ctx.createOscillator();
+            let gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+            gain.gain.setValueAtTime(0, now + idx * 0.07);
+            gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.07 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.07);
+            osc.stop(now + idx * 0.07 + 0.36);
+          });
+        } else if (type === 'wrong' || type === 'penalty') {
+          // KULLANICI İSTEĞİ: Asla kaba/testere dişi/osuruk sesi değil! 
+          // Temiz, asil, gotik taş çan sönümleme rezonansı (Saf sinüs harmonikleri)
+          [293.66, 311.13].forEach((freq) => {
+            let osc = ctx.createOscillator();
+            let gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.72, now + 0.38);
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.09, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.45);
+          });
+        } else if (type === 'unlock' || type === 'sparkle') {
+          [880, 1174.66, 1318.51, 1760].forEach((f, i) => {
+            let osc = ctx.createOscillator();
+            let gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + i * 0.05);
+            gain.gain.setValueAtTime(0.08, now + i * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.05);
+            osc.stop(now + i * 0.05 + 0.26);
+          });
+        } else if (type === 'thunder') {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(65, now);
+          osc.frequency.exponentialRampToValueAtTime(25, now + 0.6);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.65);
+        } else if (type === 'mysteryInspect') {
+          let osc = ctx.createOscillator();
+          let gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(480, now + 0.18);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        }
+      } catch(e) {}
+    }
+
+    function triggerLightning() {
+      const el = document.getElementById('lightning');
+      if (!el) return;
+      el.style.opacity = '0.9';
+      playSound('thunder');
+      setTimeout(() => { el.style.opacity = '0'; }, 80);
+      setTimeout(() => {
+        el.style.opacity = '0.7';
+        setTimeout(() => { el.style.opacity = '0'; }, 100);
+      }, 140);
+    }
+
+    /* ========================================================
+       EKRAN VE BİLDİRİM YÖNETİMİ
+       ======================================================== */
+    function showScreen(screenId) {
+      document.querySelectorAll('.card-screen').forEach(el => el.style.display = 'none');
+      if (screenId === 'MAIN_MENU') {
+        const el = document.getElementById('mainMenuScreen');
+        if (el) el.style.display = 'flex';
+      } else if (screenId === 'VICTORY') {
+        const el = document.getElementById('victoryScreen');
+        if (el) el.style.display = 'flex';
+      } else if (screenId === 'LEADERBOARD') {
+        const el = document.getElementById('leaderboardScreen');
+        if (el) el.style.display = 'flex';
+      } else if (screenId === 'SETTINGS') {
+        const el = document.getElementById('settingsModal');
+        if (el) el.style.display = 'flex';
       }
-      if (TURKISH_MALE_FIRSTNAMES.has(first)) {
-        return 'male';
-      }
-      return 'male';
+    }
+
+    function showScoreNotification(msg, type = 'bonus') {
+      const toast = document.createElement('div');
+      toast.className = `score-toast-notification toast-${type}`;
+      toast.innerHTML = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 2800);
     }
 
     function getDetectiveSprite(action) {
-      if (detectiveGender === 'female') {
-        return action === 'walk' ? './detective_female_sprite_walk.png' : './detective_female_sprite_idle.png';
-      }
       return action === 'walk' ? './detective_sprite_walk.png' : './detective_sprite_idle.png';
-    }
-
-    function onPlayerNameChange(val) {
-      if (!val) return;
-      if (userManuallyPickedGender) return;
-      const detected = detectStudentGender(val.trim());
-      if (detected === 'female') {
-        detectiveGender = 'female';
-        updateDetectiveSelectionUI();
-      } else if (detected === 'male') {
-        detectiveGender = 'male';
-        updateDetectiveSelectionUI();
-      }
     }
 
     function startGame() {
@@ -2100,16 +2276,6 @@
         playerName = "Dedektif";
       }
 
-      if (!userManuallyPickedGender) {
-        const detected = detectStudentGender(playerName);
-        if (detected === 'female') {
-          detectiveGender = 'female';
-        } else if (detected === 'male') {
-          detectiveGender = 'male';
-        }
-      }
-
-      // OYUN DOĞRUDAN VE HEMEN BAŞLAR! HİÇBİR ENGEL OLMADAN
       launchGame();
     }
 
@@ -2119,10 +2285,11 @@
         score = 0;
         health = 3;
         isDoorOpen = false;
+        isMoving = false;
+        currentStreak = 0;
 
-        // Karakter görselini seçilen cinsiyete göre güncelle
         const spriteImg = document.getElementById('detective-sprite-img');
-        if (spriteImg) spriteImg.src = getDetectiveSprite('idle');
+        if (spriteImg) spriteImg.src = './detective_sprite_idle.png';
 
         document.querySelectorAll('.card-screen').forEach(el => el.style.display = 'none');
         buildRunesProgress();
@@ -2137,48 +2304,14 @@
     }
 
     function returnToMainMenu() {
-      playSound('step');
+      try { playSound('step'); } catch(e){}
+      try { stopBGM(); } catch(e){}
       showScreen('MAIN_MENU');
     }
 
-
-    /* ========================================================
-       PROFESYONEL GOTİK VEKTÖR GRAFİK KÜTÜPHANESİ (0 EMOJİ!)
-       ======================================================== */
+    /* SVG Fallback */
     function getGothicObjectSVG(id) {
-      const svgs = {
-        tablo: `<svg viewBox="0 0 64 64"><rect x="6" y="8" width="52" height="48" rx="4" fill="#581C87" stroke="#D97706" stroke-width="4"/><rect x="12" y="14" width="40" height="36" fill="#0F051D"/><circle cx="25" cy="32" r="5" fill="#A855F7"/><circle cx="39" cy="32" r="5" fill="#A855F7"/><circle cx="25" cy="32" r="2.5" fill="#000"/><circle cx="39" cy="32" r="2.5" fill="#000"/><circle cx="26" cy="30" r="1" fill="#FFF"/><circle cx="40" cy="30" r="1" fill="#FFF"/></svg>`,
-        samdan: `<svg viewBox="0 0 64 64"><path d="M22 36 C22 26 42 26 42 36 C42 42 38 46 32 46 C26 46 22 42 22 36 Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2"/><circle cx="27" cy="35" r="3" fill="#1E1B4B"/><circle cx="37" cy="35" r="3" fill="#1E1B4B"/><path d="M28 42 L36 42" stroke="#1E1B4B" stroke-width="2"/><rect x="18" y="16" width="6" height="14" fill="#F8FAFC"/><rect x="29" y="10" width="6" height="20" fill="#F8FAFC"/><rect x="40" y="16" width="6" height="14" fill="#F8FAFC"/><path d="M21 16 Q21 8 21 6 Q23 12 21 16 Z" fill="#F59E0B"/><path d="M32 10 Q32 2 32 0 Q34 6 32 10 Z" fill="#F59E0B"/><path d="M43 16 Q43 8 43 6 Q45 12 43 16 Z" fill="#F59E0B"/></svg>`,
-        zirh: `<svg viewBox="0 0 64 64"><path d="M10 10 L54 54 M54 10 L10 54" stroke="#64748B" stroke-width="4" stroke-linecap="round"/><path d="M20 22 C20 12 44 12 44 22 L44 42 C44 48 32 54 32 54 C32 54 20 48 20 42 Z" fill="#94A3B8" stroke="#334155" stroke-width="2.5"/><rect x="24" y="28" width="16" height="4" rx="2" fill="#0F172A"/><path d="M32 14 L32 22" stroke="#D97706" stroke-width="3"/></svg>`,
-        kitap: `<svg viewBox="0 0 64 64"><rect x="14" y="10" width="38" height="46" rx="4" fill="#4A044E" stroke="#A855F7" stroke-width="3"/><path d="M14 10 L14 56" stroke="#D97706" stroke-width="4"/><circle cx="33" cy="33" r="11" fill="none" stroke="#F59E0B" stroke-width="2"/><polygon points="33,25 39,37 27,37" fill="#A855F7"/><path d="M33 44 L33 58 L37 54 L41 58 L41 44" fill="#9333EA"/></svg>`,
-        sandik: `<svg viewBox="0 0 64 64"><rect x="10" y="14" width="44" height="40" rx="6" fill="#1E293B" stroke="#475569" stroke-width="3"/><circle cx="32" cy="34" r="12" fill="#334155" stroke="#F59E0B" stroke-width="2.5"/><circle cx="32" cy="34" r="4" fill="#F59E0B"/><line x1="32" y1="22" x2="32" y2="26" stroke="#F59E0B" stroke-width="2"/><line x1="32" y1="42" x2="32" y2="46" stroke="#F59E0B" stroke-width="2"/><line x1="20" y1="34" x2="24" y2="34" stroke="#F59E0B" stroke-width="2"/><line x1="40" y1="34" x2="44" y2="34" stroke="#F59E0B" stroke-width="2"/></svg>`,
-        kure: `<svg viewBox="0 0 64 64"><circle cx="32" cy="28" r="18" fill="#7E22CE" stroke="#C084FC" stroke-width="2.5"/><ellipse cx="27" cy="22" rx="5" ry="3" fill="#FFF" opacity="0.6"/><path d="M22 52 L32 44 L42 52 M32 44 L32 58 M18 58 L46 58" stroke="#F59E0B" stroke-width="3.5" stroke-linecap="round"/></svg>`,
-        terazi: `<svg viewBox="0 0 64 64"><path d="M32 10 L32 54 M20 54 L44 54" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/><line x1="12" y1="18" x2="52" y2="18" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="18" r="4" fill="#D97706"/><path d="M12 18 L6 36 L22 36 Z" fill="none" stroke="#FBBF24" stroke-width="2"/><path d="M52 18 L46 36 L62 36 Z" fill="none" stroke="#FBBF24" stroke-width="2"/><path d="M6 36 C6 41 22 41 22 36 Z" fill="#D97706"/><path d="M46 36 C46 41 62 41 62 36 Z" fill="#D97706"/></svg>`,
-        kazan: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="22" rx="20" ry="6" fill="#10B981" stroke="#334155" stroke-width="3"/><path d="M12 22 C12 48 52 48 52 22" fill="#1E293B" stroke="#0F172A" stroke-width="3"/><path d="M18 44 L12 56 M46 44 L52 56" stroke="#0F172A" stroke-width="4" stroke-linecap="round"/><circle cx="26" cy="14" r="3" fill="#34D399" opacity="0.8"/><circle cx="36" cy="10" r="4" fill="#34D399" opacity="0.8"/></svg>`,
-        siseler: `<svg viewBox="0 0 64 64"><path d="M22 24 L22 14 L28 14 L28 24 L34 38 C36 44 32 48 25 48 C18 48 14 44 16 38 Z" fill="#EC4899" stroke="#BE185D" stroke-width="2"/><rect x="23" y="11" width="4" height="4" fill="#78350F"/><path d="M40 28 L40 20 L44 20 L44 28 L48 38 C50 44 47 48 42 48 C37 48 34 44 36 38 Z" fill="#06B6D4" stroke="#0891B2" stroke-width="2"/><rect x="41" y="17" width="3" height="4" fill="#78350F"/></svg>`,
-        saat: `<svg viewBox="0 0 64 64"><path d="M22 6 L32 0 L42 6 L42 58 L22 58 Z" fill="#78350F" stroke="#451A03" stroke-width="2"/><circle cx="32" cy="20" r="8" fill="#FEF08A" stroke="#78350F" stroke-width="2"/><line x1="32" y1="20" x2="32" y2="15" stroke="#1E1B4B" stroke-width="1.5"/><line x1="32" y1="20" x2="36" y2="20" stroke="#1E1B4B" stroke-width="1.5"/><line x1="32" y1="28" x2="32" y2="44" stroke="#F59E0B" stroke-width="2"/><circle cx="32" cy="46" r="4" fill="#F59E0B"/></svg>`,
-        ayna: `<svg viewBox="0 0 64 64"><path d="M20 54 L20 24 C20 12 44 12 44 24 L44 54 Z" fill="#38BDF8" stroke="#E2E8F0" stroke-width="4"/><path d="M28 26 L36 34 L32 44 M36 34 L42 32" stroke="#FFF" stroke-width="2" stroke-linecap="round"/><ellipse cx="32" cy="56" rx="16" ry="4" fill="#94A3B8"/></svg>`,
-        ayna1: `<svg viewBox="0 0 64 64"><path d="M20 54 L20 24 C20 12 44 12 44 24 L44 54 Z" fill="#38BDF8" stroke="#E2E8F0" stroke-width="4"/><path d="M28 26 L36 34 L32 44 M36 34 L42 32" stroke="#FFF" stroke-width="2" stroke-linecap="round"/><ellipse cx="32" cy="56" rx="16" ry="4" fill="#94A3B8"/></svg>`,
-        kandil: `<svg viewBox="0 0 64 64"><path d="M18 14 L18 46 L26 46 L26 22 L38 22" stroke="#475569" stroke-width="3" fill="none"/><path d="M32 20 L44 20 L41 34 L35 34 Z" fill="#78350F" stroke="#F59E0B" stroke-width="2"/><path d="M38 18 Q35 8 38 4 Q41 10 38 18 Z" fill="#F59E0B"/><circle cx="38" cy="12" r="3" fill="#FEF08A"/></svg>`,
-        somine: `<svg viewBox="0 0 64 64"><path d="M10 14 L54 14 L54 20 L48 20 L48 54 L16 54 L16 20 L10 20 Z" fill="#334155" stroke="#1E293B" stroke-width="3"/><path d="M22 54 L22 32 C22 26 42 26 42 32 L42 54 Z" fill="#0F172A"/><path d="M26 50 Q32 30 32 28 Q38 36 36 50 Z" fill="#EA580C"/><path d="M29 50 Q32 36 32 34 Q35 40 34 50 Z" fill="#FBBF24"/></svg>`,
-        piyano: `<svg viewBox="0 0 64 64"><path d="M12 18 C24 14 48 18 52 30 L52 46 L12 46 Z" fill="#0F172A" stroke="#475569" stroke-width="2.5"/><rect x="14" y="42" width="36" height="8" rx="2" fill="#F8FAFC"/><line x1="20" y1="42" x2="20" y2="48" stroke="#000" stroke-width="2"/><line x1="26" y1="42" x2="26" y2="48" stroke="#000" stroke-width="2"/><line x1="32" y1="42" x2="32" y2="48" stroke="#000" stroke-width="2"/><line x1="38" y1="42" x2="38" y2="48" stroke="#000" stroke-width="2"/><line x1="44" y1="42" x2="44" y2="48" stroke="#000" stroke-width="2"/></svg>`,
-        piyano2: `<svg viewBox="0 0 64 64"><path d="M12 18 C24 14 48 18 52 30 L52 46 L12 46 Z" fill="#0F172A" stroke="#475569" stroke-width="2.5"/><rect x="14" y="42" width="36" height="8" rx="2" fill="#F8FAFC"/><line x1="20" y1="42" x2="20" y2="48" stroke="#000" stroke-width="2"/><line x1="26" y1="42" x2="26" y2="48" stroke="#000" stroke-width="2"/><line x1="32" y1="42" x2="32" y2="48" stroke="#000" stroke-width="2"/><line x1="38" y1="42" x2="38" y2="48" stroke="#000" stroke-width="2"/><line x1="44" y1="42" x2="44" y2="48" stroke="#000" stroke-width="2"/></svg>`,
-        avize: `<svg viewBox="0 0 64 64"><line x1="32" y1="4" x2="32" y2="22" stroke="#F59E0B" stroke-width="2"/><path d="M12 26 C12 38 52 38 52 26" stroke="#F59E0B" stroke-width="3" fill="none"/><circle cx="16" cy="22" r="3" fill="#FBBF24"/><circle cx="32" cy="20" r="3" fill="#FBBF24"/><circle cx="48" cy="22" r="3" fill="#FBBF24"/><polygon points="20,34 23,44 17,44" fill="#38BDF8"/><polygon points="32,36 35,46 29,46" fill="#38BDF8"/><polygon points="44,34 47,44 41,44" fill="#38BDF8"/></svg>`,
-        fici: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="16" rx="18" ry="6" fill="#92400E" stroke="#451A03" stroke-width="2.5"/><path d="M14 16 C8 32 8 38 14 50 L50 50 C56 38 56 32 50 16 Z" fill="#78350F" stroke="#451A03" stroke-width="2.5"/><path d="M10 28 C22 30 42 30 54 28 M10 40 C22 42 42 42 54 40" stroke="#1E293B" stroke-width="3" fill="none"/><circle cx="32" cy="34" r="5" fill="#DC2626"/></svg>`,
-        sandalyeler: `<svg viewBox="0 0 64 64"><rect x="22" y="10" width="20" height="26" rx="3" fill="#991B1B" stroke="#451A03" stroke-width="2.5"/><rect x="18" y="34" width="28" height="8" rx="2" fill="#78350F" stroke="#451A03" stroke-width="2"/><line x1="20" y1="42" x2="18" y2="58" stroke="#451A03" stroke-width="3.5"/><line x1="44" y1="42" x2="46" y2="58" stroke="#451A03" stroke-width="3.5"/></svg>`,
-        anahtar: `<svg viewBox="0 0 64 64"><circle cx="22" cy="22" r="12" fill="none" stroke="#F59E0B" stroke-width="4"/><circle cx="22" cy="22" r="5" fill="none" stroke="#F59E0B" stroke-width="2"/><line x1="32" y1="30" x2="52" y2="48" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/><line x1="46" y1="42" x2="52" y2="36" stroke="#F59E0B" stroke-width="3"/><line x1="50" y1="46" x2="56" y2="40" stroke="#F59E0B" stroke-width="3"/></svg>`,
-        vazo: `<svg viewBox="0 0 64 64"><path d="M26 10 L38 10 L36 18 C46 22 48 36 44 46 C40 54 24 54 20 46 C16 36 18 22 28 18 Z" fill="#0D9488" stroke="#115E59" stroke-width="2.5"/><path d="M20 22 C12 24 12 36 20 38 M44 22 C52 24 52 36 44 38" stroke="#F59E0B" stroke-width="3" fill="none"/><line x1="26" y1="10" x2="38" y2="10" stroke="#F59E0B" stroke-width="3"/></svg>`,
-        tablo2: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="32" rx="22" ry="26" fill="#1E1B4B" stroke="#F59E0B" stroke-width="4"/><path d="M26 30 C26 24 38 24 38 30 C38 36 35 40 32 40 C29 40 26 36 26 30 Z" fill="#9333EA"/><circle cx="32" cy="22" r="6" fill="#C084FC"/></svg>`,
-        teleskop: `<svg viewBox="0 0 64 64"><line x1="14" y1="46" x2="50" y2="14" stroke="#F59E0B" stroke-width="6" stroke-linecap="round"/><line x1="10" y1="49" x2="18" y2="42" stroke="#D97706" stroke-width="8"/><line x1="46" y1="18" x2="54" y2="11" stroke="#FEF08A" stroke-width="9"/><circle cx="32" cy="30" r="4" fill="#78350F"/><line x1="32" y1="34" x2="18" y2="58" stroke="#78350F" stroke-width="3"/><line x1="32" y1="34" x2="46" y2="58" stroke="#78350F" stroke-width="3"/></svg>`,
-        kure2: `<svg viewBox="0 0 64 64"><circle cx="32" cy="28" r="16" fill="#0284C7" stroke="#38BDF8" stroke-width="2"/><ellipse cx="32" cy="28" rx="7" ry="16" fill="none" stroke="#22C55E" stroke-width="2"/><path d="M12 28 C12 12 52 12 52 28 C52 44 26 44 26 50 L38 50 M22 58 L42 58" stroke="#F59E0B" stroke-width="3" fill="none"/></svg>`,
-        harita: `<svg viewBox="0 0 64 64"><rect x="12" y="14" width="40" height="36" rx="4" fill="#FEF3C7" stroke="#B45309" stroke-width="2.5"/><circle cx="22" cy="24" r="2" fill="#6366F1"/><circle cx="36" cy="22" r="2.5" fill="#6366F1"/><circle cx="42" cy="34" r="2" fill="#6366F1"/><circle cx="26" cy="38" r="2" fill="#6366F1"/><line x1="22" y1="24" x2="36" y2="22" stroke="#818CF8" stroke-width="1.5"/><line x1="36" y1="22" x2="42" y2="34" stroke="#818CF8" stroke-width="1.5"/></svg>`,
-        keman: `<svg viewBox="0 0 64 64"><path d="M26 20 C22 24 22 28 26 32 C20 38 22 48 30 50 C38 48 40 38 34 32 C38 28 38 24 34 20 Z" fill="#9A3412" stroke="#431407" stroke-width="2"/><line x1="30" y1="6" x2="30" y2="20" stroke="#1E293B" stroke-width="3"/><line x1="12" y1="12" x2="52" y2="52" stroke="#F59E0B" stroke-width="2"/></svg>`,
-        gramofon: `<svg viewBox="0 0 64 64"><rect x="12" y="38" width="34" height="18" rx="3" fill="#78350F" stroke="#451A03" stroke-width="2"/><ellipse cx="29" cy="38" rx="14" ry="4" fill="#0F172A"/><path d="M38 36 C42 30 40 22 36 18 L54 8 L54 28 Z" fill="#F59E0B" stroke="#D97706" stroke-width="2"/></svg>`,
-        buyuk_kasa: `<svg viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="6" fill="#B45309" stroke="#FDE047" stroke-width="3.5"/><polygon points="24,36 40,36 44,24 36,28 32,22 28,28 20,24" fill="#FDE047" stroke="#78350F" stroke-width="1.5"/><circle cx="32" cy="42" r="3" fill="#000"/></svg>`,
-        sandik2: `<svg viewBox="0 0 64 64"><rect x="10" y="24" width="44" height="30" rx="4" fill="#78350F" stroke="#1E293B" stroke-width="3"/><path d="M10 24 C10 14 54 14 54 24 Z" fill="#92400E" stroke="#1E293B" stroke-width="3"/><line x1="22" y1="17" x2="22" y2="54" stroke="#1E293B" stroke-width="3"/><line x1="42" y1="17" x2="42" y2="54" stroke="#1E293B" stroke-width="3"/><rect x="29" y="26" width="6" height="8" rx="1" fill="#F59E0B"/></svg>`,
-        fener: `<svg viewBox="0 0 64 64"><path d="M24 16 L40 16 L42 22 L22 22 Z" fill="#F59E0B"/><rect x="24" y="22" width="16" height="26" rx="4" fill="#FEF08A" stroke="#F59E0B" stroke-width="2"/><ellipse cx="32" cy="35" rx="4" ry="6" fill="#F97316"/><rect x="20" y="48" width="24" height="8" rx="2" fill="#78350F"/><path d="M24 16 C24 8 40 8 40 16" stroke="#94A3B8" stroke-width="2.5" fill="none"/></svg>`
-      };
-      return svgs[id] || `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#7E22CE" stroke="#F59E0B" stroke-width="3"/></svg>`;
+      return `<svg viewBox="0 0 64 64" width="70" height="70"><circle cx="32" cy="32" r="26" fill="#1E0E38" stroke="#F59E0B" stroke-width="3"/><path d="M22 32 L42 32 M32 22 L32 42" stroke="#A855F7" stroke-width="3"/></svg>`;
     }
 
     function getRuneSigilSVG(index) {
@@ -2218,9 +2351,9 @@
       }
     }
 
-    /* 10 MİSTİK MÜHÜR ÇUBUĞU */
     function buildRunesProgress() {
       const wrap = document.getElementById('runes-wrapper');
+      if (!wrap) return;
       wrap.innerHTML = '';
       MANSION_ROOMS.forEach((r, idx) => {
         const div = document.createElement('div');
@@ -2272,102 +2405,170 @@
       }
     }
 
-    
+    /* ========================================================
+       10 FARKLI KÖŞK ODASI VE NESNELERİ
+       ======================================================== */
+    const MANSION_ROOMS = [
+      {
+        id: 1,
+        name: "Giriş Holü",
+        runeName: "Kadim Göz",
+        whisper: "Giriş Holündesin... Duvardaki gözlü tabloya dikkat et, bakışları bir basamağa kilitlenmiş!",
+        objects: [
+          { id: "tablo", name: "Gözlü Tablo", x: 26, y: 36, isTarget: true, desc: "Tablodaki kontun gözleri basamaklara kilitlenmiş!" },
+          { id: "samdan", name: "Kuru Kafa Şamdan", x: 48, y: 50, isTarget: false, trick: "Eski şamdan... Üzerinde sadece erimiş mumlar var, burada gizli bir kilit yok." },
+          { id: "zirh", name: "Eski Zırh", x: 72, y: 44, isTarget: false, trick: "Eski zırh... İçinden hafif bir metal tıkırtısı geldi ama kilit mekanizması göremedin." }
+        ]
+      },
+      {
+        id: 2,
+        name: "Tozlu Kütüphane",
+        runeName: "Büyülü Tomar",
+        whisper: "Tozlu Kütüphaneye ulaştın! Şifreli kasanın kesirli çözümleme çarklarını tamamla!",
+        objects: [
+          { id: "sandik", name: "Şifreli Kasa", x: 50, y: 52, isTarget: true, desc: "Kasanın üzerinde kesirli çözümleme çarkları var!" },
+          { id: "kitap", name: "Büyü Kitabı", x: 25, y: 45, isTarget: false, trick: "Büyü kitabı... Sayfaları eski simya sembolleriyle dolu, kilit taşı bu değil." },
+          { id: "kure", name: "Kristal Küre", x: 74, y: 42, isTarget: false, trick: "Kristal küre... İçinde sadece mor dumanlar dönüyor, gizli bir şey bulamadın." }
+        ]
+      },
+      {
+        id: 3,
+        name: "Simya Laboratuvarı",
+        runeName: "Simya İksiri",
+        whisper: "Simya Laboratuvarındasın. Hassas iksir terazisi tam ondalık çözümleme istiyor!",
+        objects: [
+          { id: "terazi", name: "Hassas Terazi", x: 48, y: 48, isTarget: true, desc: "Miligramlık hassas tartı tam ondalık çözümleme istiyor!" },
+          { id: "kazan", name: "Büyü Kazanı", x: 24, y: 46, isTarget: false, trick: "Büyü kazanı... İçi boş ve paslanmış, kilit mekanizması göremedin." },
+          { id: "siseler", name: "İksir Şişeleri", x: 74, y: 44, isTarget: false, trick: "İksir şişeleri... Renkli sıvılar parıldıyor ama şifre burada saklı değil." }
+        ]
+      },
+      {
+        id: 4,
+        name: "Saat Kulesi Koridoru",
+        runeName: "Zaman Çarkı",
+        whisper: "Saat Kulesi Koridoru... Guguklu saatin sarkacındaki sıfırlı tuzağa düşme!",
+        objects: [
+          { id: "saat", name: "Antika Saat", x: 48, y: 38, isTarget: true, desc: "Saatin akrep ve yelkovanı basamak değerlerinde durmuş!" },
+          { id: "ayna", name: "Çatlak Ayna", x: 26, y: 44, isTarget: false, trick: "Çatlak ayna... Kendi yansımanı görüyorsun ama kilit bu aynada değil." },
+          { id: "kandil", name: "Duvar Kandili", x: 74, y: 40, isTarget: false, trick: "Duvar kandili... Rüzgarda titriyor, aradığımız parça bu değil." }
+        ]
+      },
+      {
+        id: 5,
+        name: "Şömineli Büyük Salon",
+        runeName: "Ejder Közü",
+        whisper: "Şömineli Büyük Salon! Alevlerin ardındaki kilitli bronz kapağı aç!",
+        objects: [
+          { id: "somine", name: "Sihirli Şömine", x: 48, y: 46, isTarget: true, desc: "Alevlerin ardında kilitli bronz kapak belirdi!" },
+          { id: "piyano", name: "Eski Piyano", x: 24, y: 52, isTarget: false, trick: "Eski piyano... Tuşlarından biri 'la' sesi verdi ama gizli bir mekanizma açılmadı." },
+          { id: "kandil2", name: "Asılı Kandil", x: 74, y: 38, isTarget: false, trick: "Kandilin ışığı hafifçe titreşiyor, burada gizli kilit yok." }
+        ]
+      },
+      {
+        id: 6,
+        name: "Gizemli Mahzen",
+        runeName: "Mühürlü Meşe",
+        whisper: "Gizemli Mahzen... Mühürlü fıçının kapağındaki basamağı çöz!",
+        objects: [
+          { id: "fici", name: "Mühürlü Fıçı", x: 48, y: 50, isTarget: true, desc: "Fıçının üzerindeki sayısal mühür çözümleme bekliyor!" },
+          { id: "sandik3", name: "Eski Sandık", x: 24, y: 48, isTarget: false, trick: "Sandığın içinde sadece paslı çiviler var, kilit bu değil." },
+          { id: "zirh2", name: "Paslı Zırh", x: 74, y: 42, isTarget: false, trick: "Zırhın vizörü kapalı, şifre barındırmıyor." }
+        ]
+      },
+      {
+        id: 7,
+        name: "Aynalı Salon",
+        runeName: "Ruh Aynası",
+        whisper: "Aynalı Salon! Aynanın camında buğulanmış gizemli sayıyı bul!",
+        objects: [
+          { id: "ayna1", name: "Büyük Ayna", x: 48, y: 40, isTarget: true, desc: "Aynanın camında buğulanmış gizemli bir ondalık sayı belirdi!" },
+          { id: "siseler2", name: "Kristal Şişe", x: 24, y: 48, isTarget: false, trick: "Şişenin içi boş, kilit mekanizması yok." },
+          { id: "tablo2", name: "Portre Tablosu", x: 74, y: 38, isTarget: false, trick: "Eski portre... Resimdeki kadının bakışları sakin, kilit burada değil." }
+        ]
+      },
+      {
+        id: 8,
+        name: "Gözlemevi",
+        runeName: "Yıldız Merceği",
+        whisper: "Gözlemevindesin! Pirinç teleskobun merceğindeki koordinatları ayarla!",
+        objects: [
+          { id: "teleskop", name: "Pirinç Teleskop", x: 48, y: 42, isTarget: true, desc: "Teleskobun merceğinde basamak değerleri dizilmiş!" },
+          { id: "kure2", name: "Dünya Küresi", x: 24, y: 48, isTarget: false, trick: "Eski dünya küresi... Üzerinde denizler ve kıtalar çizili, şifre bu değil." },
+          { id: "kitap2", name: "Yıldız Kitabı", x: 74, y: 44, isTarget: false, trick: "Yıldız haritası... Sadece takımyıldızları gösteriyor, kilit mekanizması yok." }
+        ]
+      },
+      {
+        id: 9,
+        name: "Perili Müzik Odası",
+        runeName: "Melodi Rünü",
+        whisper: "Perili Müzik Odası! Piyanonun tuşlarındaki eksik basamağı tamamla!",
+        objects: [
+          { id: "piyano2", name: "Perili Piyano", x: 48, y: 48, isTarget: true, desc: "Piyanonun tuşları basamak değerlerine göre sıralanmış!" },
+          { id: "keman", name: "Eski Keman", x: 24, y: 44, isTarget: false, trick: "Eski keman... Telleri kopuk duruyor, bir kilit parçası göremedin." },
+          { id: "gramofon", name: "Altın Gramofon", x: 74, y: 46, isTarget: false, trick: "Altın gramofon... Plağı boş dönüyor, kilit burada saklı değil." }
+        ]
+      },
+      {
+        id: 10,
+        name: "Tavan Arası & Ana Çıkış",
+        runeName: "Büyük Taç",
+        whisper: "Ve son kapı! Altın kasadaki büyük kurtuluş şifresini çöz ve altın anahtarı al!",
+        objects: [
+          { id: "buyuk_kasa", name: "Altın Kasa", x: 48, y: 48, isTarget: true, desc: "Köşkün anahtarı bu kasada! Son şifreyi çöz ve kurtul!" },
+          { id: "sandik2", name: "Eski Sandık", x: 24, y: 50, isTarget: false, trick: "Eski ahşap sandık... İçinde sadece kumaş parçaları var, şifre bu değil." },
+          { id: "fener", name: "Gezgin Feneri", x: 74, y: 42, isTarget: false, trick: "Paslı fener... Işığı sönmüş, kilit mekanizması barındırmıyor." }
+        ]
+      }
+    ];
+
     const PROPS_IMAGES = {
-      // Tablolar & Portreler
       tablo: './props/prop_tablo.png',
       tablo2: './props/prop_tablo.png',
-      
-      // Samdan, Kandil & Fenerler
       samdan: './props/prop_samdan.png',
       samdan2: './props/prop_samdan.png',
       kandil: './props/prop_kandil.png',
+      kandil2: './props/prop_kandil.png',
       fener: './props/prop_kandil.png',
-      
-      // Zirhlar
       zirh: './props/prop_zirh.png',
       zirh2: './props/prop_zirh.png',
-      
-      // Sandik ve Kasalar
       sandik: './props/prop_sandik.png',
       sandik2: './props/prop_sandik.png',
+      sandik3: './props/prop_sandik.png',
       buyuk_kasa: './perili_kosk_chest_closed.png',
-      
-      // Kitaplar
       kitap: './props/prop_kitap.png',
       kitap2: './props/prop_kitap.png',
-      
-      // Kureler
       kure: './props/prop_kure.png',
       kure2: './props/prop_kure.png',
-      
-      // Terazi
       terazi: './props/prop_terazi.png',
-      
-      // Kazan & Iksir Siseleri
       kazan: './props/prop_kazan.png',
       kazan2: './props/prop_kazan.png',
       siseler: './props/prop_siseler.png',
       siseler2: './props/prop_siseler.png',
-      
-      // Saatler
       saat: './props/prop_saat.png',
-      saat2: './props/prop_saat.png',
-      
-      // Aynalar
       ayna: './props/prop_ayna.png',
       ayna1: './props/prop_ayna.png',
-      
-      // Somine
       somine: './props/prop_somine.png',
-      
-      // Muzik Aletleri
       piyano: './props/prop_piyano.png',
       piyano2: './props/prop_piyano.png',
       keman: './props/prop_keman.png',
       gramofon: './props/prop_gramofon.png',
-      
-      // Fici & Teleskop
       fici: './props/prop_fici.png',
       teleskop: './props/prop_teleskop.png'
     };
 
-    
-    /* ========================================================
-       FENER İLE AYDINLANMA MEKANİZMASI (ILLUMINATION SPOTLIGHT)
-       ======================================================== */
-    function triggerObjectIllumination(pxX, pxY) {
-      const spot = document.getElementById('inspection-spotlight');
-      if (!spot) return;
-      spot.style.left = pxX + 'px';
-      spot.style.top = pxY + 'px';
-      spot.classList.remove('illuminated');
-      void spot.offsetWidth; // reflow tetikle
-      spot.classList.add('illuminated');
-    }
-
-    function hideObjectIllumination() {
-      const spot = document.getElementById('inspection-spotlight');
-      if (spot) spot.classList.remove('illuminated');
-    }
-
-    
-    /* 10 FARKLI ODA İÇİN ÖZEL IŞIK & RENK AMBİYANSLARI */
     const ROOM_MOODS = [
-      "radial-gradient(circle at 50% 30%, rgba(147, 51, 234, 0.22) 0%, rgba(7, 3, 14, 0.45) 100%)", // Oda 1: Mor Ay Işığı
-      "radial-gradient(circle at 60% 40%, rgba(180, 83, 9, 0.28) 0%, rgba(15, 6, 28, 0.45) 100%)",   // Oda 2: Kütüphane Kehribarı
-      "radial-gradient(circle at 45% 50%, rgba(16, 185, 129, 0.32) 0%, rgba(10, 3, 20, 0.5) 100%)",  // Oda 3: Simya Zümrüt Yeşili
-      "radial-gradient(circle at 50% 35%, rgba(59, 130, 246, 0.26) 0%, rgba(14, 5, 28, 0.45) 100%)", // Oda 4: Geceyarısı Çivit Mavisi
-      "radial-gradient(circle at 45% 45%, rgba(234, 88, 12, 0.35) 0%, rgba(20, 5, 10, 0.45) 100%)",  // Oda 5: Şömine Ateşi Turuncusu
-      "radial-gradient(circle at 45% 55%, rgba(79, 70, 229, 0.28) 0%, rgba(10, 3, 20, 0.55) 100%)", // Oda 6: Gizemli Mahzen İndigosu
-      "radial-gradient(circle at 50% 40%, rgba(6, 182, 212, 0.28) 0%, rgba(15, 6, 28, 0.45) 100%)",  // Oda 7: Ruh Aynası Turkuazı
-      "radial-gradient(circle at 50% 30%, rgba(126, 34, 206, 0.35) 0%, rgba(10, 2, 25, 0.5) 100%)", // Oda 8: Gözlemevi Yıldızlı Kozmik
-      "radial-gradient(circle at 50% 45%, rgba(217, 70, 239, 0.26) 0%, rgba(15, 6, 28, 0.45) 100%)", // Oda 9: Perili Müzik Leylağı
-      "radial-gradient(circle at 50% 45%, rgba(245, 158, 11, 0.42) 0%, rgba(14, 5, 28, 0.4) 100%)"   // Oda 10: Kurtuluş Altını
+      "radial-gradient(circle at 50% 30%, rgba(147, 51, 234, 0.22) 0%, rgba(7, 3, 14, 0.45) 100%)",
+      "radial-gradient(circle at 60% 40%, rgba(180, 83, 9, 0.28) 0%, rgba(15, 6, 28, 0.45) 100%)",
+      "radial-gradient(circle at 45% 50%, rgba(16, 185, 129, 0.32) 0%, rgba(10, 3, 20, 0.5) 100%)",
+      "radial-gradient(circle at 50% 35%, rgba(59, 130, 246, 0.26) 0%, rgba(14, 5, 28, 0.45) 100%)",
+      "radial-gradient(circle at 45% 45%, rgba(234, 88, 12, 0.35) 0%, rgba(20, 5, 10, 0.45) 100%)",
+      "radial-gradient(circle at 45% 55%, rgba(79, 70, 229, 0.28) 0%, rgba(10, 3, 20, 0.55) 100%)",
+      "radial-gradient(circle at 50% 40%, rgba(6, 182, 212, 0.28) 0%, rgba(15, 6, 28, 0.45) 100%)",
+      "radial-gradient(circle at 50% 30%, rgba(126, 34, 206, 0.35) 0%, rgba(10, 2, 25, 0.5) 100%)",
+      "radial-gradient(circle at 50% 45%, rgba(217, 70, 239, 0.26) 0%, rgba(15, 6, 28, 0.45) 100%)",
+      "radial-gradient(circle at 50% 45%, rgba(245, 158, 11, 0.42) 0%, rgba(14, 5, 28, 0.4) 100%)"
     ];
 
-    
-    /* 10 FARKLI ODA İÇİN BENZERSİZ ARKA PLAN GÖRSELLERİ */
     const ROOM_BACKGROUNDS = [
       './room_1_bg.jpg',
       './room_2_bg.jpg',
@@ -2381,7 +2582,266 @@
       './room_10_bg.jpg'
     ];
 
-    /* ODA YÖNETİMİ */
+    /* ========================================================
+       DİNAMİK MATEMATİK SORU MOTORU (HER ÖĞRENCİYE FARKLI SORU)
+       ======================================================== */
+    function generateDynamicRoomQuestion(roomIdx) {
+      function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+      function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+      switch (roomIdx) {
+        case 0: {
+          const intP = randInt(14, 98);
+          const d1 = randInt(1, 9), d2 = randInt(1, 9), d3 = randInt(1, 9);
+          const pos = pick([1, 2, 3]);
+          if (pos === 1) {
+            return {
+              number: `${intP},<u>${d1}</u>${d2}${d3}`,
+              instruction: `Altı çizili ${d1} rakamının basamak değeri kesir olarak hangisidir?`,
+              context: "Giriş holündeki tablonun gözleri bu basamağa kilitlenmiş!",
+              correct: `${d1}/10`,
+              distractors: [`${d1}/100`, `${d1}/1000`, `${d1 * 10}`]
+            };
+          } else if (pos === 2) {
+            return {
+              number: `${intP},${d1}<u>${d2}</u>${d3}`,
+              instruction: `Altı çizili ${d2} rakamının basamak değeri ondalık olarak hangisidir?`,
+              context: "Tablonun çerçevesindeki gizli sayı parıldıyor!",
+              correct: `0,0${d2}`,
+              distractors: [`0,${d2}`, `0,00${d2}`, `${d2}`]
+            };
+          } else {
+            return {
+              number: `${intP},${d1}${d2}<u>${d3}</u>`,
+              instruction: `Altı çizili ${d3} rakamının basamak değeri kesir olarak hangisidir?`,
+              context: "Tablodaki fısıltı bu basamağı işaret ediyor!",
+              correct: `${d3}/1000`,
+              distractors: [`${d3}/100`, `${d3}/10`, `0,0${d3}`]
+            };
+          }
+        }
+        case 1: {
+          const A = randInt(2, 9), B = randInt(1, 9), C = randInt(1, 9), D = randInt(1, 9);
+          return {
+            number: `(${A} × 10) + (${B} × 1) + (${C} × 0,1) + (${D} × 0,01)`,
+            instruction: "Yukarıda çözümlenmiş hali verilen ondalık gösterim hangisidir?",
+            context: "Kadim büyü kitabındaki çözümleme şifresini birleştir!",
+            correct: `${A}${B},${C}${D}`,
+            distractors: [`${A}${B},0${C}${D}`, `${A}0${B},${C}${D}`, `${A}${B},${D}${C}`]
+          };
+        }
+        case 2: {
+          const fracTypes = [
+            { top: randInt(1, 9), bot: 2, mul: 5, base: 10 },
+            { top: randInt(1, 4), bot: 5, mul: 2, base: 10 },
+            { top: pick([1, 3]), bot: 4, mul: 25, base: 100 },
+            { top: randInt(1, 19), bot: 20, mul: 5, base: 100 },
+            { top: randInt(1, 24), bot: 25, mul: 4, base: 100 },
+            { top: randInt(1, 49), bot: 50, mul: 2, base: 100 }
+          ];
+          const item = pick(fracTypes);
+          const val = item.top * item.mul;
+          const corr = item.base === 10 ? `${Math.floor(val/10)},${val%10}` : `${Math.floor(val/100)},${String(val%100).padStart(2,'0')}`;
+          let dist = [`0,${item.top}`, `${item.top},${item.bot}`, `0,0${val}`];
+          if (dist.includes(corr)) dist = [`0,${item.top}0`, `${item.top},${item.bot}`, `0,00${item.top}`];
+          return {
+            number: `${item.top}/${item.bot}`,
+            instruction: "Kesrinin ondalık gösterimi aşağıdakilerden hangisidir?",
+            context: "İksir şişesindeki sihirli oran bu kesirle gizlenmiş!",
+            correct: corr,
+            distractors: dist.slice(0, 3)
+          };
+        }
+        case 3: {
+          const intP = randInt(6, 48);
+          const d1 = randInt(1, 8), d2 = randInt(1, 9);
+          const corr = d2 >= 5 ? `${intP},${d1 + 1}` : `${intP},${d1}`;
+          const wrong = d2 >= 5 ? `${intP},${d1}` : `${intP},${d1 + 1}`;
+          return {
+            number: `${intP},${d1}${d2}`,
+            instruction: "Sayısının onda birler basamağına yuvarlanmış hali hangisidir?",
+            context: "Büyük saatin çarkları bu yuvarlama şifresiyle dönüyor!",
+            correct: corr,
+            distractors: [wrong, `${intP + 1},0`, `${intP},${d1}${d2}`]
+          };
+        }
+        case 4: {
+          const base = randInt(3, 14);
+          const a = randInt(10, 35);
+          const b = a + randInt(6, 14);
+          const c = b + randInt(6, 14);
+          return {
+            number: `A = ${base},${a} &nbsp;|&nbsp; B = ${base},${b} &nbsp;|&nbsp; C = ${base},${c}`,
+            instruction: "Yukarıdaki ondalık gösterimlerin küçükten büyüğe doğru sıralanışı hangisidir?",
+            context: "Balo salonundaki dansçı heykellerinin boy sıralaması!",
+            correct: `${base},${a} < ${base},${b} < ${base},${c}`,
+            distractors: [
+              `${base},${c} < ${base},${b} < ${base},${a}`,
+              `${base},${b} < ${base},${a} < ${base},${c}`,
+              `${base},${a} < ${base},${c} < ${base},${b}`
+            ]
+          };
+        }
+        case 5: {
+          const isAdd = Math.random() < 0.5;
+          if (isAdd) {
+            const n1 = randInt(12, 38), d1 = randInt(1, 9);
+            const n2 = randInt(6, 24), d2 = randInt(12, 85);
+            const v1 = n1 + d1/10, v2 = n2 + d2/100;
+            const sum = +(v1 + v2).toFixed(2);
+            const corr = String(sum).replace('.', ',');
+            return {
+              number: `${n1},${d1} + ${n2},${String(d2).padStart(2,'0')}`,
+              instruction: "Toplama işleminin sonucu kaçtır?",
+              context: "Mahzendeki eski fıçıların üzerindeki hesap şifresi!",
+              correct: corr,
+              distractors: [
+                String(+(sum + 0.1).toFixed(2)).replace('.', ','),
+                String(+(sum - 0.2).toFixed(2)).replace('.', ','),
+                `${n1 + n2},${d1 + Math.floor(d2/10)}`
+              ]
+            };
+          } else {
+            const n1 = randInt(25, 55), d1 = randInt(6, 9);
+            const n2 = randInt(10, 20), d2 = randInt(15, 50);
+            const v1 = n1 + d1/10, v2 = n2 + d2/100;
+            const diff = +(v1 - v2).toFixed(2);
+            const corr = String(diff).replace('.', ',');
+            return {
+              number: `${n1},${d1} - ${n2},${String(d2).padStart(2,'0')}`,
+              instruction: "Çıkarma işleminin sonucu kaçtır?",
+              context: "Mahzendeki gizli kapının kilidine kazınmış çıkarma işlemi!",
+              correct: corr,
+              distractors: [
+                String(+(diff + 0.1).toFixed(2)).replace('.', ','),
+                String(+(diff - 0.2).toFixed(2)).replace('.', ','),
+                `${n1 - n2},${d1}`
+              ]
+            };
+          }
+        }
+        case 6: {
+          const mul = pick([10, 100, 1000]);
+          const n = randInt(1, 9), d1 = randInt(1, 9), d2 = randInt(1, 9), d3 = randInt(1, 9);
+          const numStr = `${n},${d1}${d2}${d3}`;
+          let corr, dist;
+          if (mul === 10) {
+            corr = `${n}${d1},${d2}${d3}`;
+            dist = [`${n},${d1}${d2}${d3}0`, `${n}${d1}${d2},${d3}`, `0,${n}${d1}`];
+          } else if (mul === 100) {
+            corr = `${n}${d1}${d2},${d3}`;
+            dist = [`${n}${d1},${d2}${d3}`, `${n}${d1}${d2}${d3}`, `${n},${d1}${d2}`];
+          } else {
+            corr = `${n}${d1}${d2}${d3}`;
+            dist = [`${n}${d1}${d2},${d3}`, `${n}${d1}${d2}${d3}0`, `${n}${d1},${d2}`];
+          }
+          return {
+            number: `${numStr} × ${mul}`,
+            instruction: "Kısa yoldan çarpma işleminin sonucu kaçtır?",
+            context: "Aynadaki yansıma – sayıları katlayarak büyütüyor!",
+            correct: corr,
+            distractors: dist
+          };
+        }
+        case 7: {
+          const div = pick([10, 100]);
+          const intP = randInt(15, 85), d = randInt(1, 9);
+          let corr, dist;
+          if (div === 10) {
+            corr = `${Math.floor(intP/10)},${intP%10}${d}`;
+            dist = [`${intP}${d}`, `0,${intP}${d}`, `${intP},0${d}`];
+          } else {
+            corr = `0,${intP}${d}`;
+            dist = [`${Math.floor(intP/10)},${intP%10}${d}`, `${intP},${d}0`, `0,0${intP}`];
+          }
+          return {
+            number: `${intP},${d} ÷ ${div}`,
+            instruction: "Kısa yoldan bölme işleminin sonucu kaçtır?",
+            context: "Sarmaşıkların arasına kazınmış antik bölme mührü!",
+            correct: corr,
+            distractors: dist
+          };
+        }
+        case 8: {
+          const price = pick([12.5, 14.5, 16.5, 18.5, 22.5]);
+          const kg = pick([2, 3, 4, 5]);
+          const total = +(price * kg).toFixed(2);
+          const paid = (Math.floor(total / 50) + 1) * 50;
+          const change = +(paid - total).toFixed(2);
+          const corr = `${String(change).replace('.', ',')} TL`;
+          const dist = [
+            `${String(+(change + 5).toFixed(2)).replace('.', ',')} TL`,
+            `${String(total).replace('.', ',')} TL`,
+            `${String(Math.max(1, +(change - 5).toFixed(2))).replace('.', ',')} TL`
+          ];
+          return {
+            number: `Kilosu ${String(price).replace('.', ',')} TL olan notalardan ${kg} kg alıp kasaya ${paid} TL veren dedektif kaç TL para üstü alır?`,
+            instruction: "Problemin çözümünü bularak piyanonun tuş kilidini aç!",
+            context: "Gramofonun altındaki gizli hesap defteri!",
+            correct: corr,
+            distractors: dist
+          };
+        }
+        case 9:
+        default: {
+          const A = randInt(3, 8), B = randInt(2, 7);
+          const ans = +(A * 10 + B * 0.1).toFixed(1);
+          return {
+            number: `(${A} × 10) + (${B} × 0,1)`,
+            instruction: "Büyük çıkış portalının nihai ondalık şifresi kaçtır?",
+            context: "Tavan arasındaki altın çatı kapısının anahtarı!",
+            correct: String(ans).replace('.', ','),
+            distractors: [`${A},${B}`, `${A}0,${B}0`, `${A + B},0`]
+          };
+        }
+      }
+    }
+
+    function getRoomQuestion(roomIdx, forceNew = false) {
+      if (forceNew || !currentRoomQuestion) {
+        currentRoomQuestion = generateDynamicRoomQuestion(roomIdx);
+      }
+      return currentRoomQuestion;
+    }
+
+    const DETECTIVE_SUSPENSE_LINES = [
+      "Burada bir kilit görünmüyor... Başka bir nesneyi incelemeliyim.",
+      "Sadece eski eşyalar ve toz... Diğer ipuçlarına bakmalıyım.",
+      "Köşkün bu köşesinde kilit yok. Doğru nesneyi bulmam gerek!"
+    ];
+    const MONSIEUR_ONDALIK_TAUNTS = [
+      "Hahaha! Yanlış nesne dedektif... Odadaki diğer eşyaları dikkatle incele!",
+      "Her parlayan kilit değildir! Gözlerini iyi aç!",
+      "Zaman daralıyor dedektif... Basamakların fısıltısını dinle!"
+    ];
+
+    function getRandomSuspenseLine() {
+      return DETECTIVE_SUSPENSE_LINES[Math.floor(Math.random() * DETECTIVE_SUSPENSE_LINES.length)];
+    }
+    function getRandomTaunt() {
+      return MONSIEUR_ONDALIK_TAUNTS[Math.floor(Math.random() * MONSIEUR_ONDALIK_TAUNTS.length)];
+    }
+
+    function triggerObjectIllumination(pxX, pxY) {
+      const spot = document.getElementById('inspection-spotlight');
+      if (!spot) return;
+      spot.style.left = pxX + 'px';
+      spot.style.top = pxY + 'px';
+      spot.classList.remove('illuminated');
+      void spot.offsetWidth;
+      spot.classList.add('illuminated');
+    }
+
+    function hideObjectIllumination() {
+      const spot = document.getElementById('inspection-spotlight');
+      if (spot) spot.classList.remove('illuminated');
+    }
+
+    /* ========================================================
+       ODA VE OYUN İÇİ ETKİLEŞİM YÖNETİMİ
+       ======================================================== */
+    let inspectedObjects = new Set();
+
     function loadRoom(index) {
       if (index >= MANSION_ROOMS.length) {
         finishGameVictory();
@@ -2390,199 +2850,192 @@
 
       currentRoomIndex = index;
       isDoorOpen = false;
+      inspectedObjects = new Set();
+      isMoving = false;
       currentRoomQuestion = getRoomQuestion(index, true);
-      hideObjectIllumination();
-      const room = MANSION_ROOMS[index];
 
-      // Her odaya özel benzersiz gotik arka plan görselini uygula
-      const viewport = document.getElementById('room-viewport');
-      if (viewport) {
-        const bgImg = ROOM_BACKGROUNDS[index] || './room_1_bg.jpg';
-        viewport.style.backgroundImage = `url('${bgImg}'), url('./perili_kosk_assets/${bgImg.replace('./','')}'), url('./perili_kosk_bg.jpg')`;
-      }
-
-      // Odaya özel tematik ışık ambiyansını güncelle
-      const moodOverlay = document.getElementById('room-mood-overlay');
-      if (moodOverlay && ROOM_MOODS[index]) {
-        moodOverlay.style.background = ROOM_MOODS[index];
-      }
-
-      // Şans sandığını gizle ve kapalı görsele resetle
-      const chest = document.getElementById('lucky-bonus-chest');
-      if (chest) {
-        chest.style.display = 'none';
-        chest.style.opacity = '1';
-        chest.dataset.opened = 'false';
-        const chestImg = document.getElementById('lucky-chest-img');
-        if (chestImg) chestImg.src = './perili_kosk_chest_closed.png';
-        const badge = document.getElementById('chest-badge-text');
-        if (badge) badge.innerText = 'Mistik Sandığı Aç!';
-      }
-
-      // Kapıyı kilitli yap
-      const door = document.getElementById('room-exit-door');
-      door.className = 'exit-door';
-      door.onclick = null;
-      const leftoverGuide = document.getElementById('door-guide-prompt');
-      if (leftoverGuide) leftoverGuide.remove();
-      const doorImg = document.getElementById('door-sprite-img');
-      if (doorImg) doorImg.src = './gothic_door_closed.png';
+      updateHud();
+      updateRuneIndicators();
       updateDoorLockVisual(false);
 
-      // HER OYUNDA VE HER ODADA GİZLİ KİLİT MEKANİZMASINI RASTGELE BİR NESNEYE ATA!
-      // (Böylece çocuk her başladığında şifre başka bir nesnede saklı olur!)
-      const targetObjIdx = Math.floor(Math.random() * room.objects.length);
-      room.objects.forEach((obj, idx) => {
-        obj.isTarget = (idx === targetObjIdx);
-        if (obj.isTarget) {
-          obj.desc = `${obj.name} içinde saklı mistik basamak mührü ortaya çıktı!`;
-        }
-      });
+      // Kapıyı kapalıya çek
+      const doorImg = document.getElementById('door-sprite-img');
+      if (doorImg) doorImg.src = './gothic_door_closed.png';
 
-      // Nesnelerin odadaki konumlarını (slotlarını) da rastgele karıştır!
-      const positionSlots = [
-        { x: 23 + Math.floor(Math.random() * 5), y: 44 + Math.floor(Math.random() * 5) },
-        { x: 48 + Math.floor(Math.random() * 5), y: 50 + Math.floor(Math.random() * 5) },
-        { x: 73 + Math.floor(Math.random() * 5), y: 41 + Math.floor(Math.random() * 5) }
-      ];
-      for (let i = positionSlots.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [positionSlots[i], positionSlots[j]] = [positionSlots[j], positionSlots[i]];
-      }
-      room.objects.forEach((obj, idx) => {
-        obj.x = positionSlots[idx].x;
-        obj.y = positionSlots[idx].y;
-      });
-
-      // Dedektifi başlangıç noktasına al
-      const avatar = document.getElementById('detective-avatar');
-      avatar.style.left = '90px';
-      avatar.style.bottom = '6%';
-      avatar.style.transform = 'scaleX(1)';
-
-      // Alt diyalog çubuğunu güncelle (Mösyö Ondalık portresi)
-      updateDialogue('Mösyö Ondalık', room.whisper, 'ghost');
-
-      if (index > 0) {
-        playVoice(`room_${index + 1}.mp3`);
+      // Arka planı güncelle
+      const viewport = document.getElementById('room-viewport');
+      if (viewport) {
+        viewport.style.backgroundImage = "url('" + (ROOM_BACKGROUNDS[index] || './room_1_bg.jpg') + "')";
       }
 
-      // Nesneleri yerleştir (Profesyonel İllüstre Edilmiş Oyun Eşyaları!)
-      const container = document.getElementById('interactive-objects-container');
-      container.innerHTML = '';
+      const moodOverlay = document.getElementById('room-mood-overlay');
+      if (moodOverlay) moodOverlay.style.background = ROOM_MOODS[index] || ROOM_MOODS[0];
 
-      room.objects.forEach(obj => {
-        const div = document.createElement('div');
-        div.id = 'room-obj-' + obj.id;
-        div.className = 'room-object' + (obj.isTarget ? ' pulse-clue' : '');
-        div.style.left = obj.x + '%';
-        div.style.top = obj.y + '%';
-        div.onclick = (e) => {
-          e.stopPropagation();
-          handleObjectClick(obj);
-        };
+      // Odanın nesnelerini yükle (Her nesne derli toplu ve boyutlu)
+      const objectsContainer = document.getElementById('interactive-objects-container');
+      if (objectsContainer) {
+        objectsContainer.innerHTML = '';
+        const room = MANSION_ROOMS[index];
+        room.objects.forEach(obj => {
+          const wrapper = document.createElement('div');
+          wrapper.id = 'room-obj-' + obj.id;
+          wrapper.className = 'interactive-object';
+          wrapper.style.left = obj.x + '%';
+          wrapper.style.top = obj.y + '%';
+          wrapper.onclick = (e) => {
+            e.stopPropagation();
+            handleObjectClick(obj);
+          };
 
-        const propImgSrc = PROPS_IMAGES[obj.id];
-        let visualInner = '';
-        if (propImgSrc) {
-          visualInner = `<img src="${propImgSrc}" alt="${obj.name}" class="obj-img-prop" onerror="if(!this.dataset.fb){this.dataset.fb='1'; this.src='./perili_kosk_assets/' + '${propImgSrc}'.replace('./','');}else{this.style.display='none'; this.nextElementSibling.style.display='block';}"><div style="display:none; width:72px; height:72px;">${getGothicObjectSVG(obj.id)}</div>`;
-        } else {
-          visualInner = `<div style="width:72px; height:72px;">${getGothicObjectSVG(obj.id)}</div>`;
-        }
+          const propSrc = PROPS_IMAGES[obj.id];
+          if (propSrc) {
+            wrapper.innerHTML = `
+              <img src="${propSrc}" class="object-prop-img" alt="${obj.name}" onerror="this.outerHTML=getGothicObjectSVG('${obj.id}');">
+              <div class="object-label">${obj.name}</div>
+            `;
+          } else {
+            wrapper.innerHTML = `
+              ${getGothicObjectSVG(obj.id)}
+              <div class="object-label">${obj.name}</div>
+            `;
+          }
+          objectsContainer.appendChild(wrapper);
+        });
+      }
 
-        div.innerHTML = `
-          <div class="obj-relic-container">
-            <div class="obj-pedestal-rune"></div>
-            ${visualInner}
-          </div>
-          <div class="hotspot-discovery-tooltip">🔍 ${obj.name}</div>
-        `;
-        container.appendChild(div);
-      });
+      // Varsa önceki sandığı kaldır
+      const oldChest = document.getElementById('lucky-chest-elem');
+      if (oldChest) oldChest.remove();
 
-      updateRuneIndicators();
-      updateHud();
+      // Dedektifi başlangıç zemin konumuna koy
+      const avatar = document.getElementById('detective-avatar') || document.getElementById('detective-wrapper');
+      if (avatar) {
+        avatar.style.left = '90px';
+        avatar.style.bottom = '65px';
+        avatar.style.transform = 'scaleX(1)';
+      }
+      const spriteImg = document.getElementById('detective-sprite-img');
+      if (spriteImg) spriteImg.src = './detective_sprite_idle.png';
+
+      const roomData = MANSION_ROOMS[index];
+      updateDialogue('Mösyö Ondalık', roomData.whisper, 'ghost');
     }
 
-    function updateDialogue(speaker, text, avatarRole = 'ghost') {
-      document.getElementById('speaker-name').innerText = speaker;
-      document.getElementById('dialogue-text').innerText = text;
-      const img = document.getElementById('speaker-avatar-img');
-      if (img) {
-        if (avatarRole === 'detective') {
-          img.src = detectiveGender === 'female' ? './perili_kosk_detective_female.png' : './perili_kosk_detective.png';
-        } else if (avatarRole === 'chest') {
-          img.src = './perili_kosk_chest_open.png';
+    function updateDialogue(speaker, text, type = 'ghost') {
+      const speakerEl = document.getElementById('speaker-name');
+      const textEl = document.getElementById('dialogue-text');
+      const avatarImg = document.getElementById('speaker-avatar-img');
+
+      if (speakerEl) speakerEl.innerText = speaker;
+      if (textEl) textEl.innerText = text;
+
+      if (avatarImg) {
+        if (type === 'detective') {
+          avatarImg.src = './perili_kosk_detective.png';
         } else {
-          img.src = './mosyo_ondalik.png';
+          avatarImg.src = './mosyo_ondalik.png';
         }
       }
     }
 
-    /* SAHNEYE TIKLAYINCA DEDEKTİFİN ADIM ATARAK YÜRÜMESİ */
-    function handleStageClick(e) {
+    /* KULLANICI İSTEĞİ: Dedektif odaya tıklandığında zeminde rahatça ve pürüzsüz yürür */
+    function handleStageClick(event) {
+      if (event.target.closest('.interactive-object') || event.target.closest('.exit-door') || event.target.closest('#lucky-bonus-chest')) {
+        return;
+      }
+      const viewport = document.getElementById('room-viewport');
+      if (!viewport) return;
+      const rect = viewport.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      // Ahşap zemin kısıtlaması: dedektif zemin tahtaları üzerinde perspektifle yürür
+      const floorMinY = rect.height * 0.58;
+      const floorMaxY = rect.height * 0.92;
+      const clampedY = Math.max(floorMinY, Math.min(clickY, floorMaxY));
+      const clampedX = Math.max(60, Math.min(clickX, rect.width - 100));
+
+      // Perspektif: arka tahtalarda 78px, ön tahtalarda 50px yükseklik (ayaklar zeminde)
+      const depthRatio = (clampedY - floorMinY) / (floorMaxY - floorMinY);
+      const targetBottom = Math.round(78 - depthRatio * 28);
+
+      moveAvatar(clampedX, targetBottom, null);
+    }
+
+    function moveAvatar(targetX, targetBottom, callback) {
+      const avatar = document.getElementById('detective-avatar') || document.getElementById('detective-wrapper');
+      const spriteImg = document.getElementById('detective-sprite-img');
+      if (!avatar || !spriteImg) {
+        if (callback) callback();
+        return;
+      }
+
+      const currentLeft = parseFloat(avatar.style.left) || avatar.offsetLeft || 90;
+      const diffX = targetX - currentLeft;
+
+      avatar.style.transform = diffX >= 0 ? 'scaleX(1)' : 'scaleX(-1)';
+      spriteImg.src = './detective_sprite_walk.png';
+      avatar.classList.add('detective-moving');
+      avatar.classList.add('walking');
+      isMoving = true;
+
+      const dist = Math.abs(diffX);
+      const duration = Math.max(0.35, Math.min(1.2, dist / 320));
+      avatar.style.transition = `left ${duration}s ease-in-out, bottom ${duration}s ease-in-out`;
+
+      avatar.style.left = targetX + 'px';
+      avatar.style.bottom = targetBottom + 'px';
+
+      playSound('step');
+
+      if (window._walkTimer) clearTimeout(window._walkTimer);
+      window._walkTimer = setTimeout(() => {
+        spriteImg.src = './detective_sprite_idle.png';
+        avatar.classList.remove('detective-moving');
+        avatar.classList.remove('walking');
+        isMoving = false;
+        if (callback) callback();
+      }, duration * 1000);
+    }
+
+    function handleDoorClick() {
+      if (!isDoorOpen) {
+        playSound('wrong');
+        updateDialogue('Mösyö Ondalık', 'Kapı mühürlü! Önce odadaki gizli nesneyi bulup şifreyi çözmelisin!', 'ghost');
+        return;
+      }
       if (isMoving) return;
       const viewport = document.getElementById('room-viewport');
       const rect = viewport.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      moveAvatar(clickX, rect.height - clickY);
+      updateDialogue('Dedektif', 'Açık kapıdan sonraki odaya geçiyor...', 'detective');
+      moveAvatar(rect.width - 150, 70, () => {
+        triggerLightning();
+        setTimeout(() => {
+          loadRoom(currentRoomIndex + 1);
+        }, 350);
+      });
     }
 
-        function moveAvatar(targetX, targetBottom, callback) {
-      isMoving = true;
-      const avatar = document.getElementById('detective-avatar');
-      const spriteImg = document.getElementById('detective-sprite-img');
-      const currentLeft = parseFloat(avatar.style.left) || 100;
-      const clampedX = Math.max(60, Math.min(targetX - 45, 950));
-      const clampedBottom = Math.max(5, Math.min(targetBottom - 45, 140));
-
-      // Sağa ya da sola dönme
-      if (clampedX < currentLeft) {
-        avatar.style.transform = 'scaleX(-1)';
-      } else {
-        avatar.style.transform = 'scaleX(1)';
-      }
-
-      // Yürüme karesine geç ve animasyonu başlat
-      if (spriteImg) spriteImg.src = getDetectiveSprite('walk');
-      avatar.classList.add('walking');
-      playSound('step');
-
-      avatar.style.left = clampedX + 'px';
-      avatar.style.bottom = clampedBottom + 'px';
-
-      setTimeout(() => {
-        isMoving = false;
-        avatar.classList.remove('walking');
-        if (spriteImg) spriteImg.src = getDetectiveSprite('idle');
-        if (callback) callback();
-      }, 850);
-    }
-
-    /* NESNE ETKİLEŞİMİ VE FENERLE AYDINLANMA */
     function handleObjectClick(obj) {
-      if (isMoving) return;
       const viewport = document.getElementById('room-viewport');
       const rect = viewport.getBoundingClientRect();
       const targetPxX = (rect.width * obj.x) / 100;
       const targetPxY = (rect.height * obj.y) / 100;
 
-      // Dedektif nesnenin tam önüne/yanına doğru yürür
-      const offsetSide = targetPxX < rect.width / 2 ? 70 : -70;
-      const walkTargetX = targetPxX + offsetSide;
-      const walkTargetY = rect.height - targetPxY - 25;
+      const offsetSide = targetPxX < rect.width / 2 ? 65 : -65;
+      const walkTargetX = Math.max(60, Math.min(rect.width - 90, targetPxX + offsetSide));
+      const walkTargetBottom = Math.max(50, Math.min(85, (rect.height - targetPxY) - 100));
 
-      updateDialogue('Dedektif', `${obj.name} nesnesine yaklaşıyor...`, 'detective');
+      updateDialogue('Dedektif', `${obj.name} nesnesini incelemek için yaklaşıyor...`, 'detective');
 
-      moveAvatar(walkTargetX, walkTargetY, () => {
-        // NESNENİN ÜZERİNDE AYDINLANMA BURST'Ü GERÇEKLEŞİR
+      moveAvatar(walkTargetX, walkTargetBottom, () => {
         triggerObjectIllumination(targetPxX, targetPxY);
-
-        // Tıklanan nesnenin DOM elemanını bul
         const objElem = document.getElementById('room-obj-' + obj.id);
 
+        if (obj.isTarget && isDoorOpen) {
+          updateDialogue('Mösyö Ondalık', 'Bu şifreyi zaten çözdün! Kapı açık, sandığını al ve sonraki odaya geç.', 'ghost');
+          return;
+        }
         if (obj.isTarget) {
           playSound('unlock');
           if (objElem) {
@@ -2590,86 +3043,111 @@
             bubble.className = 'clue-feedback-bubble right-feedback';
             bubble.innerText = '✨ Gizli Kilit Bulundu!';
             objElem.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 2500);
           }
-          updateDialogue('Mösyö Ondalık', `İşte aradığın gizli mekanizma! ${obj.desc}`, 'ghost');
+          updateDialogue('Mösyö Ondalık', `İşte aradığın gizli kilit mekanizması! ${obj.desc}`, 'ghost');
           setTimeout(() => {
             openRiddleModal(obj);
-          }, 700);
+          }, 650);
         } else {
+          if (inspectedObjects.has(obj.id)) {
+            updateDialogue(playerName, 'Bu nesneyi zaten inceledim, burada başka bir şey yok. Diğer nesnelere bakmalıyım.', 'detective');
+            setTimeout(hideObjectIllumination, 1200);
+            return;
+          }
+          inspectedObjects.add(obj.id);
           playSound('mysteryInspect');
           const randClue = Math.floor(Math.random() * 3) + 1;
           playVoice(`wrong_clue_${randClue}.mp3`);
 
-          // Yanlış nesne inceleme cezası: -20 Puan
-          const penalty = 20;
-          score = Math.max(0, score - penalty);
-          currentStreak = 0;
-          updateHud();
-          showScoreNotification(`👻 Yanlış İpucu İncelemesi: -${penalty} P`, 'penalty');
+          const isLuckyBonus = Math.random() < 0.5;
+          let feedbackText = '';
+
+          if (isLuckyBonus) {
+            const bonusRolls = [30, 40, 50, 60];
+            const bonus = bonusRolls[Math.floor(Math.random() * bonusRolls.length)];
+            score += bonus;
+            updateHud();
+            try { playSound('bonus'); } catch(e){}
+            showScoreNotification(`✨ Gizli Bölmede Keşif: +${bonus} Bonus Puan!`, 'gold');
+            feedbackText = `🎁 Gizli Keşif (+${bonus} P)`;
+          } else {
+            const penaltyRolls = [15, 20, 25];
+            const penalty = penaltyRolls[Math.floor(Math.random() * penaltyRolls.length)];
+            score = Math.max(0, score - penalty);
+            currentStreak = 0;
+            updateHud();
+            try { playSound('wrong'); } catch(e){}
+            showScoreNotification(`👻 Tozlu Tuzak: -${penalty} Puan`, 'penalty');
+            feedbackText = `❌ Kilit Yok (-${penalty} P)`;
+          }
 
           if (objElem) {
             objElem.classList.add('inspected-checked');
             const bubble = document.createElement('div');
-            bubble.className = 'clue-feedback-bubble wrong-feedback';
-            bubble.innerText = `❌ Kilit Yok (-${penalty} P)`;
+            bubble.className = `clue-feedback-bubble ${isLuckyBonus ? 'right-feedback' : 'wrong-feedback'}`;
+            bubble.innerText = feedbackText;
             objElem.appendChild(bubble);
-            setTimeout(() => { bubble.remove(); }, 3200);
+            setTimeout(() => bubble.remove(), 2800);
           }
-          const suspenseLine = getRandomSuspenseLine();
+
+          const suspenseLine = obj.trick || getRandomSuspenseLine();
           updateDialogue(playerName, suspenseLine, 'detective');
           setTimeout(() => {
             hideObjectIllumination();
             const tauntLine = getRandomTaunt();
             updateDialogue('Mösyö Ondalık', tauntLine, 'ghost');
-          }, 2600);
+          }, 2400);
         }
       });
     }
 
-    function openRiddleModal(obj) {
-      if (!currentRoomQuestion) {
-        currentRoomQuestion = getRoomQuestion(currentRoomIndex);
-      }
-      const q = currentRoomQuestion;
-      if (!q) return;
-
-      document.getElementById('riddle-object-title').innerText = obj.name;
-      document.getElementById('riddle-room-tag').innerText = `${currentRoomIndex + 1}. Mistik Mühür`;
-      document.getElementById('riddle-context-desc').innerText = q.context;
-      document.getElementById('riddle-math-number').innerHTML = q.number;
-      document.getElementById('riddle-instruction-text').innerText = q.instruction;
+    /* ========================================================
+       MEB KAZANIMLI ŞİFRE ÇÖZÜMLEME MODALI
+       ======================================================== */
+        function openRiddleModal(obj) {
+      const q = getRoomQuestion(currentRoomIndex);
+      
+      const objTitle = document.getElementById('riddle-object-title');
+      if (objTitle) objTitle.innerText = obj ? obj.name : "Gizemli Kilit";
+      
+      const roomTag = document.getElementById('riddle-room-tag');
+      if (roomTag) roomTag.innerText = `Oda ${currentRoomIndex + 1}: ${MANSION_ROOMS[currentRoomIndex].name}`;
+      
+      const ctxDesc = document.getElementById('riddle-context-desc');
+      if (ctxDesc) ctxDesc.innerText = (obj && obj.desc) ? obj.desc : "Odadaki mistik mühür basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!";
+      
+      const mathNum = document.getElementById('riddle-math-number');
+      if (mathNum) mathNum.innerHTML = q.number;
+      
+      const instText = document.getElementById('riddle-instruction-text');
+      if (instText) instText.innerText = q.instruction;
+      
       questionStartTime = Date.now();
 
-      // ŞIKLARI FISHER-YATES İLE KARIŞTIR
-      const allChoices = [q.correct, ...q.distractors];
-      for (let i = allChoices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allChoices[i], allChoices[j]] = [allChoices[j], allChoices[i]];
+      const optionsContainer = document.getElementById('riddle-options-container');
+      if (optionsContainer) {
+        optionsContainer.innerHTML = '';
+        let allChoices = [q.correct, ...q.distractors];
+        allChoices.sort(() => Math.random() - 0.5);
+
+        const letters = ['A', 'B', 'C', 'D'];
+        allChoices.forEach((choice, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'option-btn';
+          btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span><span>${choice}</span>`;
+          btn.onclick = () => handleAnswer(choice, q.correct, btn);
+          optionsContainer.appendChild(btn);
+        });
       }
 
-      const letters = ['A', 'B', 'C', 'D'];
-      const container = document.getElementById('riddle-options-container');
-      container.innerHTML = '';
-
-      allChoices.forEach((choiceText, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.dataset.choiceVal = choiceText;
-        btn.innerHTML = `
-          <div class="opt-letter">${letters[idx]}</div>
-          <div style="flex-grow:1;">${choiceText}</div>
-        `;
-        btn.onclick = () => handleAnswer(choiceText, q.correct, btn);
-        container.appendChild(btn);
-      });
-
-      document.getElementById('riddle-modal').style.display = 'flex';
+      const modal = document.getElementById('riddle-modal') || document.getElementById('riddleModal');
+      if (modal) modal.style.display = 'flex';
     }
 
-    /* TEK DOĞRU CEVAP KONTROLÜ */
     function handleAnswer(selected, correct, btnElement) {
-      const allButtons = document.querySelectorAll('.option-btn');
-      allButtons.forEach(b => b.style.pointerEvents = 'none');
+      const buttons = document.querySelectorAll('.option-btn') || document.querySelectorAll('.riddle-choice-btn');
+      buttons.forEach(b => b.disabled = true);
 
       if (selected === correct) {
         btnElement.classList.add('correct-choice');
@@ -2680,209 +3158,143 @@
         let speedBonus = 0;
         if (elapsedSec <= 6) speedBonus = 80;
         else if (elapsedSec <= 12) speedBonus = 60;
-        else if (elapsedSec <= 18) speedBonus = 40;
-        else if (elapsedSec <= 25) speedBonus = 20;
+        else if (elapsedSec <= 20) speedBonus = 40;
+        else speedBonus = 20;
 
         currentStreak++;
-        let streakBonus = currentStreak >= 2 ? Math.min(60, currentStreak * 15) : 0;
-        const totalEarned = basePoints + speedBonus + streakBonus;
-        score += totalEarned;
+        const streakBonus = Math.min(100, currentStreak * 25);
+        const totalGained = basePoints + speedBonus + streakBonus;
+        score += totalGained;
         updateHud();
 
-        let toastMsg = `+${basePoints} P`;
-        if (speedBonus > 0) toastMsg += ` ⚡ +${speedBonus} Hız! (${elapsedSec}s)`;
-        if (streakBonus > 0) toastMsg += ` 🔥 +${streakBonus} Seri!`;
-        showScoreNotification(toastMsg, 'bonus');
+        showScoreNotification(`✨ Doğru Çözüm! +${totalGained} Puan (Hız: +${speedBonus}, Seri: +${streakBonus})`, 'bonus');
+        updateDialogue('Mösyö Ondalık', 'Mükemmel zihin! Mistik mühür kırıldı, kapı açılıyor!', 'ghost');
 
         setTimeout(() => {
-          document.getElementById('riddle-modal').style.display = 'none';
-        hideObjectIllumination();
+          const modal = document.getElementById('riddle-modal') || document.getElementById('riddleModal');
+          if (modal) modal.style.display = 'none';
           unlockRoomDoor();
-        }, 900);
+        }, 1100);
       } else {
         btnElement.classList.add('wrong-choice');
         playSound('wrong');
-        playVoice('wrong_answer.mp3');
-        health--;
         currentStreak = 0;
+        health--;
         updateHud();
-        showScoreNotification('❌ Yanlış Cevap! 1 Kandil Söndü', 'penalty');
 
-        // SADECE VE SADECE GERÇEK DOĞRU ŞIK YEŞİL YANAR
-        allButtons.forEach(b => {
-          if (b.dataset.choiceVal === correct) {
+        buttons.forEach(b => {
+          if (b.innerText.includes(correct)) {
             b.classList.add('correct-choice');
           }
         });
 
+        showScoreNotification('❌ Yanlış Cevap! 1 Kandil Söndü', 'penalty');
+
         if (health <= 0) {
+          updateDialogue('Mösyö Ondalık', 'Kandillerin tükendi... Gölgeler seni yakaladı!', 'ghost');
           setTimeout(() => {
-            alert('Tüm mistik kandillerin söndü! Hayaletler seni yakaladı. Tekrar denemelisin!');
-            document.getElementById('riddle-modal').style.display = 'none';
-        hideObjectIllumination();
-            showScreen('MAIN_MENU');
-          }, 1100);
-          return;
+            const modal = document.getElementById('riddle-modal') || document.getElementById('riddleModal');
+            if (modal) modal.style.display = 'none';
+            launchGame();
+          }, 1300);
+        } else {
+          updateDialogue('Mösyö Ondalık', `Yanlış cevap! Bir kandil söndü, kalan kandil: ${health}. Başka bir nesneyi dene veya tekrar düşün!`, 'ghost');
+          setTimeout(() => {
+            const modal = document.getElementById('riddle-modal') || document.getElementById('riddleModal');
+            if (modal) modal.style.display = 'none';
+          }, 1400);
         }
-
-        // YANLIŞ YAPILDIĞINDA: Çocuk aynı odayı tekrar deneyeceği zaman SAYILARI DEĞİŞMİŞ YENİ BİR SORU GELİR!
-        currentRoomQuestion = getRoomQuestion(currentRoomIndex, true);
-
-        setTimeout(() => {
-          document.getElementById('riddle-modal').style.display = 'none';
-          hideObjectIllumination();
-          updateDialogue('Mösyö Ondalık', 'Şifre sıfırlandı ve yeni bir basamak kilidi belirdi! Dikkatlice tekrar dene.', 'ghost');
-          allButtons.forEach(b => b.style.pointerEvents = 'auto');
-        }, 1300);
       }
     }
-
-    
-    /* HER ODANIN KENDİNE ÖZEL TEMATİK ZAFER VE GİZEM ÇÖZÜLME DİYALOGLARI */
-    const ROOM_VICTORY_LINES = [
-      "Giriş holündeki gözlü tablonun laneti kırıldı! Devasa meşe kapı gıcırdayarak aralandı; kütüphaneye doğru ilerle!",
-      "Kütüphanedeki şifreli kasanın kesirli dişlileri yerine oturdu! Rafların arasındaki gizli geçit açıldı; simya laboratuvarına geç!",
-      "Hassas iksir terazisi kusursuz bir dengeye ulaştı! Zümrüt alevler yolu aydınlatıyor; saat kulesi koridoruna koş!",
-      "Saat kulesindeki zaman sarkacının sıfırlı tuzağını bozdun! Dev pirinç çarklar kilitleri serbest bıraktı; büyük salona ilerle!",
-      "Büyük salondaki şöminenin alevleri saygıyla eğildi ve kilitli bronz kapak açıldı! Mahzene inen taş merdivenler seni bekliyor!",
-      "Gizemli mahzendeki kadim meşe fıçının sayısal mührü çözüldü! Ağır demir parmaklıklar kalktı; aynalı salona geç!",
-      "Aynalı salondaki ruh aynasının buğusu dağıldı ve gizemli sayı parıldadı! Gözlemevine çıkan döner merdivenin kapısı açıldı!",
-      "Gözlemevindeki pirinç teleskobun merceği yıldız koordinatlarına kilitlendi! Göksel kubbenin mührü kırıldı; müzik odasına ilerle!",
-      "Müzik odasındaki perili piyano kusursuz basamak akorunu çaldı ve hayaletler alkışladı! Tavan arasına giden son geçit açıldı!",
-      "Tavan arasındaki altın kasanın büyük kurtuluş şifresi çözüldü! Altın anahtar serbest kaldı; kurtuluş portalına adım at ve kaç!"
-    ];
 
     function unlockRoomDoor() {
       isDoorOpen = true;
-      playSound('unlock');
-      setTimeout(() => playSound('doorCreak'), 250);
+      updateDoorLockVisual(true);
+      playSound('door');
 
-      const door = document.getElementById('room-exit-door');
-      door.className = 'exit-door open';
       const doorImg = document.getElementById('door-sprite-img');
       if (doorImg) doorImg.src = './gothic_door_open.png';
-      updateDoorLockVisual(true);
 
-      // Kapı üzerine parlayan rehberlik göstergesi ekle
-      let guidePrompt = document.getElementById('door-guide-prompt');
-      if (!guidePrompt) {
-        guidePrompt = document.createElement('div');
-        guidePrompt.id = 'door-guide-prompt';
-        guidePrompt.className = 'door-guide-prompt';
-        guidePrompt.innerHTML = '🚪 TIKLA VE İLERLE ➔';
-        door.appendChild(guidePrompt);
+      // Şans sandığı belirir
+      const objectsContainer = document.getElementById('interactive-objects-container');
+      if (objectsContainer) {
+        const chestDiv = document.createElement('div');
+        chestDiv.id = 'lucky-chest-elem';
+        chestDiv.className = 'interactive-object lucky-chest';
+        chestDiv.style.left = '83%';
+        chestDiv.style.top = '83%';
+        chestDiv.style.zIndex = '15';
+        chestDiv.onclick = (e) => {
+          e.stopPropagation();
+          claimLuckyChest(e);
+        };
+        chestDiv.innerHTML = `
+          <img src="./chest_closed.png" class="object-prop-img" style="width:72px; height:auto; filter:drop-shadow(0 0 16px #F59E0B);" onerror="this.src='./perili_kosk_chest_closed.png'">
+          <div class="object-label" style="background:#F59E0B; color:#000;">🎁 Şans Sandığı</div>
+        `;
+        objectsContainer.appendChild(chestDiv);
+      }
+    }
+
+    function claimLuckyChest(e) {
+      const chestElem = document.getElementById('lucky-chest-elem');
+      if (!chestElem) return;
+
+      const luckyRolls = [100, 125, 150, 175, 200, 250, 300];
+      const bonus = luckyRolls[Math.floor(Math.random() * luckyRolls.length)];
+      score += bonus;
+      updateHud();
+      playSound('sparkle');
+      showScoreNotification(`🎁 Mistik Sandıktan Sürpriz +${bonus} Puan Çıktı!`, 'gold');
+
+      chestElem.innerHTML = `
+        <img src="./chest_open.png" class="object-prop-img" style="width:72px; height:auto;" onerror="this.src='./perili_kosk_chest_open.png'">
+        <div class="object-label" style="background:#10B981; color:#FFF;">+${bonus} Puan!</div>
+      `;
+      setTimeout(() => {
+        chestElem.remove();
+      }, 1600);
+    }
+
+    /* ========================================================
+       ZAFER VE LİDER TABLOSU YÖNETİMİ
+       ======================================================== */
+    function finishGameVictory() {
+      try { stopBGM(); } catch(e){}
+      try { playSound('bonus'); } catch(e){}
+      try { playVoice('victory.mp3'); } catch(e){}
+
+      const healthBonus = health * 150;
+      const finalScore = score + healthBonus;
+      score = finalScore;
+
+      const scoreEl = document.getElementById('victory-score-value');
+      if (scoreEl) scoreEl.innerText = finalScore;
+
+      const subEl = document.getElementById('victory-sub-desc');
+      if (subEl) {
+        subEl.innerText = `${playerName}, Perili Köşk'ün 10 odasındaki tüm ondalık şifreleri çözüp ${health} kandille altın kapıyı açtı! (+${healthBonus} P Kandil Bonusu)`;
       }
 
-      // Şans Sandığını Göster (Mistik sandık kapalı olarak belirir)
-      const chest = document.getElementById('lucky-bonus-chest');
-      const chestImg = document.getElementById('lucky-chest-img');
-      if (chestImg) chestImg.src = './perili_kosk_chest_closed.png';
-      const badge = document.getElementById('chest-badge-text');
-      if (badge) badge.innerText = 'Mistik Sandığı Aç!';
-      chest.style.opacity = '1';
-      chest.dataset.opened = 'false';
-      chest.style.pointerEvents = 'auto';
-      chest.style.display = 'flex';
-
-      const roomVictoryText = ROOM_VICTORY_LINES[currentRoomIndex] || "Mührü kırdın! Kapı açıldı, bir sonraki odaya geçebilirsin!";
-      updateDialogue('Mösyö Ondalık', roomVictoryText, 'ghost');
-
-      // Kapıya tıklanabilir yap
-      door.style.cursor = 'pointer';
-      door.onclick = () => {
-        door.onclick = null;
-        const viewport = document.getElementById('room-viewport');
-        const rect = viewport.getBoundingClientRect();
-        moveAvatar(rect.width - 95, 75, () => {
-          triggerLightning();
-          setTimeout(() => {
-            loadRoom(currentRoomIndex + 1);
-          }, 400);
-        });
-      };
-    }
-
-    /* ŞANS SANDIĞINA YÜRÜME, AYDINLATMA VE AÇMA */
-    function claimLuckyChest(e) {
-      e.stopPropagation();
-      if (isMoving) return;
-      const chest = document.getElementById('lucky-bonus-chest');
-      if (chest.dataset.opened === 'true') return;
-
-      const viewport = document.getElementById('room-viewport');
-      const rect = viewport.getBoundingClientRect();
-      const chestRect = chest.getBoundingClientRect();
-      const chestPxX = chestRect.left - rect.left + 50;
-      const chestPxY = chestRect.top - rect.top + 45;
-
-      // Dedektif sandığın yanına yürür
-      updateDialogue('Dedektif', 'Kadim sandığa doğru yaklaşıyor...', 'detective');
-      moveAvatar(chestPxX - 70, 75, () => {
-        triggerObjectIllumination(chestPxX, chestPxY);
-        chest.dataset.opened = 'true';
-        chest.style.pointerEvents = 'none';
-
-        const chestImg = document.getElementById('lucky-chest-img');
-        if (chestImg) chestImg.src = './perili_kosk_chest_open.png';
-
-        const luckyRolls = [100, 125, 150, 175, 200, 250, 300];
-        const bonus = luckyRolls[Math.floor(Math.random() * luckyRolls.length)];
-        score += bonus;
-        updateHud();
-        showScoreNotification(`🎁 Mistik Sandıktan Sürpriz +${bonus} Puan Çıktı!`, 'gold');
-        playSound('unlock');
-        setTimeout(() => playSound('correct'), 150);
-
-        const popup = document.createElement('div');
-        popup.className = 'floating-score-popup';
-        popup.innerText = `+${bonus} PUAN!`;
-        chest.appendChild(popup);
-
-        const badge = document.getElementById('chest-badge-text');
-        if (badge) badge.innerText = `+${bonus} Hazine Bonusu!`;
-
-        updateDialogue('Mösyö Ondalık', `Muhteşem bir keşif! Kadim sandıktan tam +${bonus} şans puanı fışkırdı!`, 'ghost');
-
-        setTimeout(() => {
-          chest.style.opacity = '0';
-          hideObjectIllumination();
-          setTimeout(() => {
-            chest.style.display = 'none';
-            chest.dataset.opened = 'false';
-            if (popup.parentNode) popup.remove();
-          }, 600);
-        }, 2000);
-      });
-    }
-
-    /* ZAFER EKRANI */
-    function finishGameVictory() {
-      launchConfetti();
-      playSound('correct');
-      playVoice('victory.mp3');
-      setTimeout(() => playSound('unlock'), 300);
-
-      // Kalan kandil bonusu: Her sağlam kandil +150 puan!
-      const candleBonus = health * 150;
-      score += candleBonus;
-      document.getElementById('finalScoreDisplay').innerText = score;
-      const candleEl = document.getElementById('finalCandlesDisplay');
-      if (candleEl) candleEl.innerText = `${health} / 3 🕯️`;
-      document.getElementById('victorySubtitle').innerText = 
-        `Tebrikler Dedektif ${playerName}! 10 mistik odanın tüm ondalık mühürlerini çözdün ve şafak vakti büyük altın anahtarla kurtuldun!`;
-
       showScreen('VICTORY');
-      saveScoreToLeaderboard(playerName, score);
+      launchConfetti();
+      saveScoreToLeaderboard(playerName, finalScore);
     }
 
-    function saveScoreToLeaderboard(name, sc) {
-      const entry = { name: name || "Gizemli Dedektif", score: sc, date: new Date().toLocaleDateString('tr-TR') };
-      
-      let localScores = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
-      localScores.push(entry);
-      localScores.sort((a,b) => b.score - a.score);
-      localScores = localScores.slice(0, 10);
-      localStorage.setItem('perilikosk_scores', JSON.stringify(localScores));
+    function saveScoreToLeaderboard(name, finalScore) {
+      const entry = {
+        name: name,
+        score: finalScore,
+        date: new Date().toLocaleDateString('tr-TR'),
+        timestamp: Date.now()
+      };
+
+      try {
+        let list = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
+        list.push(entry);
+        list.sort((a,b) => b.score - a.score);
+        localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
+      } catch(e) {}
 
       if (cloudDb) {
         try {
@@ -2892,12 +3304,11 @@
     }
 
     function showLeaderboard() {
+      try { playSound('step'); } catch(e){}
       showScreen('LEADERBOARD');
-      const tbody = document.getElementById('leaderboardTbody');
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:25px; color:#94A3B8; font-size:15px;">⏳ Dedektif kayıtları taranıyor...</td></tr>';
 
       if (cloudDb) {
-        cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(10).once('value', snapshot => {
+        cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(15).once('value', snapshot => {
           let list = [];
           snapshot.forEach(child => { list.push(child.val()); });
           list.sort((a,b) => b.score - a.score);
@@ -2911,84 +3322,88 @@
     }
 
     function renderLocalLeaderboard() {
-      let localScores = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
+      let localScores = [];
+      try {
+        localScores = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
+      } catch(e) {}
       renderLeaderboardTable(localScores);
     }
 
+    const BENCHMARK_LEADERBOARD = [
+      { name: "Batıkan ÖZTUNALI", score: 1575 },
+      { name: "Derin Asel ASLAN", score: 1520 },
+      { name: "Poyraz Ahmed AYDINALP", score: 1485 },
+      { name: "Zeynep Züleyha GEYİK", score: 1440 },
+      { name: "Can AKTAŞ", score: 1390 },
+      { name: "Defne ERÇEL", score: 1350 },
+      { name: "Doruk ÇETİN", score: 1310 },
+      { name: "Elis DEMİR", score: 1280 },
+      { name: "Kaan ÇALIŞKAN", score: 1240 },
+      { name: "Melis COŞKUNER", score: 1200 }
+    ];
+
     function renderLeaderboardTable(list) {
       const tbody = document.getElementById('leaderboardTbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
+
+      let mergedList = [...(Array.isArray(list) ? list : [])];
+      const existingNames = new Set(mergedList.map(item => item.name ? item.name.toLocaleLowerCase('tr-TR') : ''));
       
-      const safeList = Array.isArray(list) ? list : [];
+      for (const benchmark of BENCHMARK_LEADERBOARD) {
+        if (mergedList.length >= 10) break;
+        if (!existingNames.has(benchmark.name.toLocaleLowerCase('tr-TR'))) {
+          mergedList.push(benchmark);
+          existingNames.add(benchmark.name.toLocaleLowerCase('tr-TR'));
+        }
+      }
+      mergedList.sort((a,b) => b.score - a.score);
+      const safeList = mergedList.slice(0, 10);
 
       for (let i = 0; i < 10; i++) {
         const tr = document.createElement('tr');
         const rankNum = i + 1;
+        const item = safeList[i] || { name: "Dedektif", score: 1000 - i * 50 };
 
-        if (i < safeList.length && safeList[i]) {
-          const item = safeList[i];
-          let rowClass = 'lb-row';
-          let badgeClass = 'lb-rank-badge lb-rank-other';
-          let scoreClass = 'lb-score-badge lb-score-other';
-          let rankLabel = `${rankNum}.`;
-          let detectiveIcon = '🕵️‍♂️';
+        let rowClass = 'lb-row';
+        let badgeClass = 'lb-rank-badge lb-rank-other';
+        let scoreClass = 'lb-score-badge lb-score-other';
+        let rankLabel = `${rankNum}.`;
+        let detectiveIcon = '🕵️‍♂️';
 
-          if (i === 0) {
-            rowClass += ' lb-row-gold';
-            badgeClass = 'lb-rank-badge lb-rank-gold';
-            scoreClass = 'lb-score-badge lb-score-gold';
-            rankLabel = '🥇 1.';
-            detectiveIcon = '👑';
-          } else if (i === 1) {
-            rowClass += ' lb-row-silver';
-            badgeClass = 'lb-rank-badge lb-rank-silver';
-            scoreClass = 'lb-score-badge lb-score-silver';
-            rankLabel = '🥈 2.';
-          } else if (i === 2) {
-            rowClass += ' lb-row-bronze';
-            badgeClass = 'lb-rank-badge lb-rank-bronze';
-            scoreClass = 'lb-score-badge lb-score-bronze';
-            rankLabel = '🥉 3.';
-          }
-
-          tr.className = rowClass;
-          tr.innerHTML = `
-            <td style="text-align:center;">
-              <span class="${badgeClass}">${rankLabel}</span>
-            </td>
-            <td>
-              <div class="lb-name-cell">
-                <span style="font-size:18px;">${detectiveIcon}</span>
-                <span class="lb-player-name">${item.name || "Anonim Dedektif"}</span>
-              </div>
-            </td>
-            <td style="text-align:right;">
-              <span class="${scoreClass}">${item.score} P</span>
-            </td>
-          `;
-        } else {
-          // 1-10 arası boş kalan yuvalar
-          let emptyBadge = `${rankNum}.`;
-          if (i === 0) emptyBadge = '🥇 1.';
-          else if (i === 1) emptyBadge = '🥈 2.';
-          else if (i === 2) emptyBadge = '🥉 3.';
-
-          tr.className = 'lb-row lb-row-empty';
-          tr.innerHTML = `
-            <td style="text-align:center;">
-              <span class="lb-rank-badge lb-rank-empty">${emptyBadge}</span>
-            </td>
-            <td>
-              <div class="lb-name-cell" style="opacity: 0.6;">
-                <span style="font-size:16px; filter: grayscale(1);">🕵️</span>
-                <span style="color:#64748B; font-weight:500; font-style:italic;">— Dedektif Aranıyor —</span>
-              </div>
-            </td>
-            <td style="text-align:right;">
-              <span style="color:#475569; font-weight:600; font-size:14px; padding-right:12px;">—</span>
-            </td>
-          `;
+        if (i === 0) {
+          rowClass += ' lb-row-gold';
+          badgeClass = 'lb-rank-badge lb-rank-gold';
+          scoreClass = 'lb-score-badge lb-score-gold';
+          rankLabel = '🥇 1.';
+          detectiveIcon = '👑';
+        } else if (i === 1) {
+          rowClass += ' lb-row-silver';
+          badgeClass = 'lb-rank-badge lb-rank-silver';
+          scoreClass = 'lb-score-badge lb-score-silver';
+          rankLabel = '🥈 2.';
+        } else if (i === 2) {
+          rowClass += ' lb-row-bronze';
+          badgeClass = 'lb-rank-badge lb-rank-bronze';
+          scoreClass = 'lb-score-badge lb-score-bronze';
+          rankLabel = '🥉 3.';
         }
+
+        tr.className = rowClass;
+        tr.innerHTML = `
+          <td style="text-align:center;">
+            <span class="${badgeClass}">${rankLabel}</span>
+          </td>
+          <td>
+            <div class="lb-name-cell">
+              <span style="font-size:18px;">${detectiveIcon}</span>
+              <span class="lb-player-name">${item.name || "Anonim Dedektif"}</span>
+            </div>
+          </td>
+          <td style="text-align:right;">
+            <span class="${scoreClass}">${item.score} P</span>
+          </td>
+        `;
         tbody.appendChild(tr);
       }
     }
@@ -3006,7 +3421,7 @@
 
     function checkAdminPassword() {
       const pwd = document.getElementById('adminPasswordInput').value;
-      if (pwd === '26575982824.bati') {
+      if (pwd === '1923') {
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('adminSection').style.display = 'block';
       } else {
@@ -3026,41 +3441,56 @@
     }
 
     function showHowToPlay() {
-      alert("PERİLİ KÖŞK: ONDALIK KAÇIŞ\n\n1. Her odada gizemli nesneleri tıkla ve dedektifini yönlendir.\n2. Yanlış nesneleri inceleyerek doğru kilit taşını kendin keşfet.\n3. Doğru nesneyi bulduğunda MEB yazılı tarzı ondalık gösterim sorusu açılır.\n4. Soruyu zihninden çöz ve kilidi aç.\n5. Kapı açılınca beliren Şans Sandığını alarak ekstra bonus puan kazan!\n6. 10 mistik mühürü tamamlayıp altın anahtarla köşkten kaçışı başar!");
+      alert("PERİLİ KÖŞK: ONDALIK KAÇIŞ\n\n1. Her odada gizemli nesneleri tıkla ve dedektifini yönlendir.\n2. Yanlış nesneleri incelerken bazen sürpriz bonus puan kazanır, bazen tozlu tuzaklara basıp puan kaybedersin!\n3. Doğru nesneyi bulduğunda MEB yazılı tarzı ondalık gösterim sorusu açılır.\n4. Soruyu zihninden çöz ve kilidi aç.\n5. Kapı açılınca beliren Şans Sandığını alarak ekstra bonus puan kazan!\n6. 10 mistik mühürü tamamlayıp altın anahtarla köşkten kaçışı başar!");
     }
 
-    /* KONFETİ */
+    /* Konfeti */
     const canvas = document.getElementById('confetti-canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas ? canvas.getContext('2d') : null;
     let confettiList = [];
-    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    if (canvas) {
+      window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
 
     function launchConfetti(count = 90) {
+      if (!canvas) return;
       const colors = ['#9333EA', '#F59E0B', '#10B981', '#EF4444', '#38BDF8'];
       for (let i = 0; i < count; i++) {
         confettiList.push({
-          x: Math.random() * canvas.width, y: -20,
-          w: Math.random() * 10 + 6, h: Math.random() * 8 + 4,
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.8) * 14,
           color: colors[Math.floor(Math.random() * colors.length)],
-          vx: (Math.random() - 0.5) * 6, vy: Math.random() * 4 + 3,
-          rot: Math.random() * 360, rotSpeed: (Math.random() - 0.5) * 8, life: 1
+          size: Math.random() * 8 + 4,
+          gravity: 0.28,
+          alpha: 1
         });
-      }
-    }
-    function updateConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = confettiList.length - 1; i >= 0; i--) {
-        let p = confettiList[i];
-        p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed; p.life -= 0.006;
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((p.rot * Math.PI) / 180);
-        ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
-        if (p.life <= 0) confettiList.splice(i, 1);
       }
       requestAnimationFrame(updateConfetti);
     }
-    updateConfetti();
+
+    function updateConfetti() {
+      if (!ctx || !canvas) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = confettiList.length - 1; i >= 0; i--) {
+        let p = confettiList[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.alpha -= 0.012;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        if (p.alpha <= 0) confettiList.splice(i, 1);
+      }
+      ctx.globalAlpha = 1;
+      if (confettiList.length > 0) requestAnimationFrame(updateConfetti);
+    }
   </script>
 </body>
 </html>
