@@ -2163,21 +2163,19 @@
             osc.stop(now + idx * 0.07 + 0.36);
           });
         } else if (type === 'wrong' || type === 'penalty') {
-          // KULLANICI İSTEĞİ: Asla kaba/testere dişi/osuruk sesi değil! 
-          // Temiz, asil, gotik taş çan sönümleme rezonansı (Saf sinüs harmonikleri)
-          [293.66, 311.13].forEach((freq) => {
+          // Yumuşak iki notalı uyarı çanı (E5 -> C5), kayma yok, kalın ses yok
+          [[659.25, 0], [523.25, 0.16]].forEach(([freq, delay]) => {
             let osc = ctx.createOscillator();
             let gain = ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now);
-            osc.frequency.exponentialRampToValueAtTime(freq * 0.72, now + 0.38);
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.09, now + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+            osc.frequency.setValueAtTime(freq, now + delay);
+            gain.gain.setValueAtTime(0, now + delay);
+            gain.gain.linearRampToValueAtTime(0.11, now + delay + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.32);
             osc.connect(gain);
             gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.45);
+            osc.start(now + delay);
+            osc.stop(now + delay + 0.34);
           });
         } else if (type === 'unlock' || type === 'sparkle') {
           [880, 1174.66, 1318.51, 1760].forEach((f, i) => {
@@ -2193,17 +2191,23 @@
             osc.stop(now + i * 0.05 + 0.26);
           });
         } else if (type === 'thunder') {
-          let osc = ctx.createOscillator();
-          let gain = ctx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(65, now);
-          osc.frequency.exponentialRampToValueAtTime(25, now + 0.6);
-          gain.gain.setValueAtTime(0.18, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now);
-          osc.stop(now + 0.65);
+          const dur = 1.4;
+          const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          const lp = ctx.createBiquadFilter();
+          lp.type = 'lowpass';
+          lp.frequency.setValueAtTime(700, now);
+          lp.frequency.exponentialRampToValueAtTime(180, now + dur);
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.10, now + 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+          src.connect(lp); lp.connect(gain); gain.connect(ctx.destination);
+          src.start(now);
+          src.stop(now + dur);
         } else if (type === 'mysteryInspect') {
           let osc = ctx.createOscillator();
           let gain = ctx.createGain();
@@ -2851,6 +2855,8 @@
       currentRoomIndex = index;
       isDoorOpen = false;
       inspectedObjects = new Set();
+      const doorElR = document.getElementById('room-exit-door');
+      if (doorElR) { doorElR.style.cursor = 'not-allowed'; doorElR.title = 'Kapı mühürlü'; }
       isMoving = false;
       currentRoomQuestion = getRoomQuestion(index, true);
 
@@ -3009,7 +3015,7 @@
       const rect = viewport.getBoundingClientRect();
       updateDialogue('Dedektif', 'Açık kapıdan sonraki odaya geçiyor...', 'detective');
       moveAvatar(rect.width - 150, 70, () => {
-        triggerLightning();
+        try { playSound('unlock'); } catch(e){}
         setTimeout(() => {
           loadRoom(currentRoomIndex + 1);
         }, 350);
@@ -3136,6 +3142,7 @@
           const btn = document.createElement('button');
           btn.className = 'option-btn';
           btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span><span>${choice}</span>`;
+          btn.dataset.choice = choice;
           btn.onclick = () => handleAnswer(choice, q.correct, btn);
           optionsContainer.appendChild(btn);
         });
@@ -3183,7 +3190,7 @@
         updateHud();
 
         buttons.forEach(b => {
-          if (b.innerText.includes(correct)) {
+          if (b.dataset.choice === correct) {
             b.classList.add('correct-choice');
           }
         });
@@ -3210,6 +3217,8 @@
     function unlockRoomDoor() {
       isDoorOpen = true;
       updateDoorLockVisual(true);
+      const doorEl = document.getElementById('room-exit-door');
+      if (doorEl) { doorEl.style.cursor = 'pointer'; doorEl.title = 'Sonraki odaya geç'; }
       playSound('door');
 
       const doorImg = document.getElementById('door-sprite-img');
