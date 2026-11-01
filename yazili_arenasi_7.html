@@ -2073,6 +2073,179 @@
       box-shadow: 0 0 15px rgba(244, 63, 94, 0.6) !important;
     }
     
+      /* ==========================================================
+       GRUP MODU ÖZEL STİLLERİ
+       ========================================================== */
+    .group-teams-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .group-teams-row {
+        gap: 8px;
+      }
+    }
+
+    .group-team-box {
+      background: rgba(30, 41, 59, 0.85);
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 12px 10px;
+      text-align: center;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .group-team-box.active-team {
+      transform: scale(1.05) translateY(-4px);
+      border-color: #fbbf24;
+      box-shadow: 0 10px 25px rgba(251, 191, 36, 0.4);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .team-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+    }
+
+    .team-score {
+      font-family: var(--font-fun);
+      font-size: 32px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .group-team-box.active-team .team-name {
+      color: #fbbf24;
+    }
+
+    .active-team-indicator {
+      display: none;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #fbbf24;
+      animation: pulseActive 1.5s infinite;
+    }
+
+    .group-team-box.active-team .active-team-indicator {
+      display: block;
+    }
+
+    @keyframes pulseActive {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .group-card-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (max-width: 800px) {
+      .group-card-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    }
+    @media (max-width: 600px) {
+      .group-card-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    }
+
+    .g-card {
+      position: relative;
+      height: 80px;
+      cursor: pointer;
+      perspective: 1000px;
+      opacity: 0;
+      animation: dropInCard 0.5s ease-out forwards;
+    }
+
+    @keyframes dropInCard {
+      0% { opacity: 0; transform: translateY(-20px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .g-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .g-card:hover:not(.opened) .g-card-inner {
+      transform: scale(1.05) translateY(-3px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+    }
+
+    .g-card.opened .g-card-inner {
+      transform: rotateY(180deg);
+      cursor: default;
+    }
+
+    .g-card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-weight: 800;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .g-card-front {
+      background: linear-gradient(135deg, #b45309, #991b1b);
+      color: #fff;
+      font-family: var(--font-fun);
+      font-size: 26px;
+      border-color: #fbbf24;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .g-card-front::before {
+      content: '⚔️';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      opacity: 0.3;
+      font-size: 14px;
+    }
+
+    .g-card-front::after {
+      content: '🛡️';
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      opacity: 0.3;
+      font-size: 14px;
+    }
+
+    .g-card-back {
+      background-color: rgba(30, 41, 59, 0.95);
+      transform: rotateY(180deg);
+      flex-direction: column;
+      padding: 4px;
+      text-align: center;
+      color: #fff;
+      border: 2px solid #fbbf24;
+    }
+
   </style>
 </head>
 <body>
@@ -2134,6 +2307,15 @@
               <p>Arkadaşınla karşı karşıya geç! İlk doğru cevaba basan arenanın şampiyonu olur!</p>
             </div>
           </div>
+
+          <!-- Grup Modu -->
+          <div class="mode-card" id="cardModeGroup" onclick="selectGameMode('group')" role="button" tabindex="0">
+            <div class="mode-icon">👥</div>
+            <div class="mode-info">
+              <h4>Grup Modu</h4>
+              <p>Sınıfı 3 gruba böl! 30 Roma kalkanını aç, sürprizleri keşfet ve takımını zafere taşı!</p>
+            </div>
+          </div>
         </div>
 
         <!-- Bireysel Mod Öğrenci Seçimi -->
@@ -2169,6 +2351,12 @@
           <button type="button" class="btn-start" onclick="startDuelGame()" style="margin-top: 14px; background: linear-gradient(135deg, #1e3a8a, #dc2626); border-color: #fbbf24; box-shadow: 0 0 20px rgba(220, 38, 38, 0.4); font-size: 16px; padding: 14px 20px;">
             <span>⚔️ DÜELLOYU HEMEN BAŞLAT! (Mavi VS Kırmızı)</span>
           </button>
+        </div>
+
+        <!-- Grup Modu Açıklaması -->
+        <div class="student-select-box" id="groupSettingsBox" style="display: none; background: rgba(15, 23, 42, 0.7); border: 1.5px solid rgba(251, 191, 36, 0.3); padding: 14px 16px; border-radius: 16px;">
+          <p style="font-size: 13px; font-weight: 800; color: #fbbf24; margin-bottom: 4px;">🏛️ LEJYONERLER, GLADYATÖRLER ve SPARTAKÜSLER olarak 3 takım yarışacak!</p>
+          <p style="font-size: 12px; color: #cbd5e1; margin: 0;">Her tur sırası gelen takım bir Roma kalkanı seçer; soruları doğru çözen puanı kapar, şans kartlarına dikkat edin!</p>
         </div>
 
         <button class="btn-start" onclick="startGame()" id="btnStartGame">
@@ -2469,6 +2657,23 @@
           </div>
         </div>
 
+      </div>
+    </div>
+
+        <!-- EKRAN 3B: GRUP MODU (GROUP) -->
+    <div id="screenGroup" style="display: none; width: 100%; max-width: 1000px; flex-direction: column; align-items: center;">
+      <div class="group-teams-row" id="groupTeamsRow">
+        <!-- JS ile 3 takım yüklenecek -->
+      </div>
+
+      <div class="glass-card" style="width: 100%; max-width: 1000px; padding: 20px;">
+        <div class="group-card-grid" id="groupGrid">
+          <!-- 30 Kalkan Yüklenecek -->
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+        <button class="btn-secondary" onclick="goHome()">🏠 Ana Menü</button>
       </div>
     </div>
 
@@ -3612,12 +3817,18 @@
         startDuelGame();
         return;
       }
+      if (currentMode === mode && mode === 'group') {
+        startGroupGame();
+        return;
+      }
 
       currentMode = mode;
       const soloCard = document.getElementById('cardModeSolo');
       const duelCard = document.getElementById('cardModeDuel');
+      const groupCard = document.getElementById('cardModeGroup');
       const soloBox = document.getElementById('soloStudentBox');
       const duelBox = document.getElementById('duelSettingsBox');
+      const groupBox = document.getElementById('groupSettingsBox');
       const startText = document.getElementById('startBtnText');
       const startIcon = document.getElementById('startBtnIcon');
 
@@ -3627,17 +3838,25 @@
       if (duelCard) {
         duelCard.className = 'mode-card' + (mode === 'duel' ? ' active' : '');
       }
+      if (groupCard) {
+        groupCard.className = 'mode-card' + (mode === 'group' ? ' active' : '');
+      }
 
       if (soloBox) soloBox.style.display = (mode === 'solo') ? 'block' : 'none';
       if (duelBox) duelBox.style.display = (mode === 'duel') ? 'block' : 'none';
+      if (groupBox) groupBox.style.display = (mode === 'group') ? 'block' : 'none';
 
       if (startText) {
-        startText.innerText = (mode === 'solo')
-          ? 'ARENAYA GİR VE BAŞLA!'
-          : '⚔️ DÜELLOYU BAŞLAT! (Mavi VS Kırmızı)';
+        if (mode === 'solo') {
+          startText.innerText = 'ARENAYA GİR VE BAŞLA!';
+        } else if (mode === 'duel') {
+          startText.innerText = '⚔️ DÜELLOYU BAŞLAT! (Mavi VS Kırmızı)';
+        } else if (mode === 'group') {
+          startText.innerText = '👥 GRUP SAVAŞINI BAŞLAT!';
+        }
       }
       if (startIcon) {
-        startIcon.innerText = (mode === 'solo') ? '⚔️' : '⚔️';
+        startIcon.innerText = (mode === 'group') ? '👥' : '⚔️';
       }
 
       try {
@@ -3661,15 +3880,17 @@
     }
 
     function showScreen(screenId) {
-      ['screenHome', 'screenSolo', 'screenDuel', 'screenResult'].forEach(id => {
+      ['screenHome', 'screenSolo', 'screenDuel', 'screenGroup', 'screenResult'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = (id === screenId) ? 'block' : 'none';
+        if (el) el.style.display = (id === screenId) ? (id === 'screenGroup' ? 'flex' : 'block') : 'none';
       });
       clearInterval(speedBarInterval);
       clearInterval(duelTimerInterval);
     }
 
     function goHome() {
+      const statsGrid = document.querySelector('.result-stats-grid');
+      if (statsGrid) statsGrid.style.display = 'grid';
       showScreen('screenHome');
       loadLeaderboard();
     }
@@ -3688,8 +3909,10 @@
     function startGame() {
       if (currentMode === 'solo') {
         startSoloGame();
-      } else {
+      } else if (currentMode === 'duel') {
         startDuelGame();
+      } else if (currentMode === 'group') {
+        startGroupGame();
       }
     }
 
@@ -4216,6 +4439,8 @@
     function finishSoloGame() {
       clearInterval(speedBarInterval);
       soundFanfare();
+      const statsGrid = document.querySelector('.result-stats-grid');
+      if (statsGrid) statsGrid.style.display = 'grid';
 
       const studentName = sessionStorage.getItem('current_gladiator_name') || 'Gladyatör';
       saveScoreToFirebase(studentName, correctCount, score);
@@ -4773,6 +4998,244 @@
       initStudents();
       loadLeaderboard();
     });
+  
+    /* ==========================================================
+       GRUP MODU KODLARI (GROUP)
+       ========================================================== */
+    const groupJokers = [
+      { type: 'j', subType: 'buff', points: 40, msg: "🎁 İMPARATORUN LÜTFU", desc: "Sezar'dan sana altın bir hediye! (+40 Puan)" },
+      { type: 'j', subType: 'buff', points: 30, msg: "🧪 GLADYATÖR İKSİRİ", desc: "Arenada gücüne güç kattın! (+30 Puan)" },
+      { type: 'j', subType: 'buff', points: 25, msg: "🐎 SAVAŞ ARABASI", desc: "Hızlı bir hamle yaparak öne geçtin! (+25 Puan)" },
+      { type: 'j', subType: 'debuff', points: -20, msg: "⚔️ KIRIK KILIÇ", desc: "Kılıcın kırıldı, yeni kılıç alırken zaman kaybettin! (-20 Puan)" },
+      { type: 'j', subType: 'debuff', points: -15, msg: "🌪️ KUM FIRTINASI", desc: "Arenada gözüne kum kaçtı! (-15 Puan)" },
+      { type: 'j', subType: 'attack', points: 0, msg: "🦁 ASLAN SALDIRISI", desc: "Kafesler açıldı! Sıradaki takım korkup kaçtı! (Sıradaki takımdan 20 Puan silinir)" },
+      { type: 'j', subType: 'drain', points: 0, msg: "🏃 HIRSIZ SPARTAKÜS", desc: "Kaçak köleler rakibin ganimetini çaldı! (Sıradaki takımdan 25 Puan aşırdın)" },
+      { type: 'j', subType: 'bomb', points: 0, msg: "🔥 ROMA ATEŞİ", desc: "Arena alevler içinde kaldı! (Tüm takımların puanı yarıya iner)" }
+    ];
+
+    let groupState = {
+      teams: [
+        { name: "LEJYONERLER 🛡️", score: 0 },
+        { name: "GLADYATÖRLER ⚔️", score: 0 },
+        { name: "SPARTAKÜSLER 🔱", score: 0 }
+      ],
+      currentTurn: 0,
+      cards: [],
+      solvedCount: 0,
+      activeCardIndex: null,
+      pendingJokerAction: null
+    };
+
+    function getShuffledGroupQuestions(count) {
+      const fullPool = generateQuestionPool();
+      for (let i = fullPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+      }
+      return fullPool.slice(0, count);
+    }
+
+    function startGroupGame() {
+      if (typeof initAudio === 'function') initAudio();
+      groupState.teams.forEach(t => t.score = 0);
+      groupState.currentTurn = 0;
+      groupState.solvedCount = 0;
+      groupState.activeCardIndex = null;
+      groupState.pendingJokerAction = null;
+
+      const qs = getShuffledGroupQuestions(22).map(q => ({ ...q, type: 'q', points: 30, solved: false }));
+      const js = groupJokers.map(j => ({ ...j, solved: false }));
+      groupState.cards = [...qs, ...js].sort(() => Math.random() - 0.5);
+
+      renderGroupTeams();
+      renderGroupGrid();
+      showScreen('screenGroup');
+    }
+
+    function renderGroupTeams() {
+      const row = document.getElementById('groupTeamsRow');
+      if (!row) return;
+      row.innerHTML = groupState.teams.map((t, idx) => `
+        <div class="group-team-box ${idx === groupState.currentTurn ? 'active-team' : ''}">
+          <div class="team-name">${t.name}</div>
+          <div class="team-score">${t.score}</div>
+          <div class="active-team-indicator"></div>
+        </div>
+      `).join('');
+    }
+
+    function renderGroupGrid() {
+      const grid = document.getElementById('groupGrid');
+      if (!grid) return;
+      grid.innerHTML = groupState.cards.map((c, i) => {
+        let backContent = '';
+        let backClass = 'g-card-back';
+        
+        if (c.solved) {
+          if (c.type === 'j') {
+            backContent = `<div style="font-size:32px;">🎁</div>`;
+          } else {
+            if (c.status === 'correct') {
+              backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981; font-weight:800;">+${c.points}</div>`;
+            } else {
+              backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:11px; margin-top:2px; color:#fca5a5; font-weight:700;">${c.correct}</div>`;
+            }
+          }
+        } else {
+          if (c.type === 'q') backContent = `<div style="position:absolute; top:4px; right:4px; font-size:10px; color:#fbbf24;">${c.points}P</div>`;
+        }
+
+        return `
+          <div class="g-card ${c.solved ? 'opened' : ''}" style="animation-delay: ${i*0.03}s" onclick="handleGroupCardClick(${i})">
+            <div class="g-card-inner">
+              <div class="g-card-face g-card-front">${i + 1}</div>
+              <div class="g-card-face ${backClass}">${backContent}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleGroupCardClick(index) {
+      if (groupState.cards[index].solved || groupState.activeCardIndex !== null) return;
+      groupState.activeCardIndex = index;
+      
+      const card = groupState.cards[index];
+      if (card.type === 'j') {
+        openGroupJokerModal(card);
+      } else {
+        openGroupQuestionModal(card);
+      }
+    }
+
+    function openGroupQuestionModal(card) {
+      document.getElementById('gqBadge').innerText = card.badge || 'Kazanım';
+      document.getElementById('gqText').innerText = card.text || '';
+      
+      const vBox = document.getElementById('gqVisualBox');
+      if (card.visual) { 
+        vBox.innerHTML = card.visual; 
+        vBox.style.display = 'flex'; 
+      } else { 
+        vBox.innerHTML = '';
+        vBox.style.display = 'none'; 
+      }
+      
+      const choices = [card.correct, ...card.distractors].sort(() => Math.random() - 0.5);
+      card.currentChoices = choices;
+      const grid = document.getElementById('gqOptionsGrid');
+      grid.innerHTML = choices.map((c, idx) => `
+        <button class="option-btn" onclick="submitGroupAnswer(${idx})" style="min-height: 60px; font-size: 18px;">
+          <span class="option-letter" style="width:36px; height:36px; font-size:18px;">${['A','B','C','D'][idx]}</span>
+          <span style="flex:1;">${c}</span>
+        </button>
+      `).join('');
+
+      document.getElementById('groupQModal').style.display = 'flex';
+    }
+
+    function submitGroupAnswer(choiceIndex) {
+      document.getElementById('groupQModal').style.display = 'none';
+      const card = groupState.cards[groupState.activeCardIndex];
+      const selected = card.currentChoices ? card.currentChoices[choiceIndex] : null;
+      
+      if (selected === card.correct) {
+        if (typeof soundCorrect === 'function') soundCorrect();
+        card.status = 'correct';
+        groupState.teams[groupState.currentTurn].score += card.points;
+      } else {
+        if (typeof soundWrong === 'function') soundWrong();
+        card.status = 'wrong';
+        groupState.teams[groupState.currentTurn].score -= Math.floor(card.points / 2);
+      }
+
+      finishGroupTurn();
+    }
+
+    function openGroupJokerModal(joker) {
+      const tId = groupState.currentTurn;
+      const nextTId = (tId + 1) % 3;
+      
+      document.getElementById('gjTitle').innerText = joker.msg;
+      document.getElementById('gjDesc').innerText = joker.desc;
+      
+      if (joker.subType === 'buff') {
+        document.getElementById('gjIcon').innerText = "🎉";
+        groupState.pendingJokerAction = () => { groupState.teams[tId].score += joker.points; };
+      } else if (joker.subType === 'debuff') {
+        document.getElementById('gjIcon').innerText = "😭";
+        groupState.pendingJokerAction = () => { groupState.teams[tId].score += joker.points; };
+      } else if (joker.subType === 'attack') {
+        document.getElementById('gjIcon').innerText = "🦁";
+        groupState.pendingJokerAction = () => { groupState.teams[nextTId].score -= 20; };
+      } else if (joker.subType === 'drain') {
+        document.getElementById('gjIcon').innerText = "🏃";
+        groupState.pendingJokerAction = () => { groupState.teams[tId].score += 25; groupState.teams[nextTId].score -= 25; };
+      } else if (joker.subType === 'bomb') {
+        document.getElementById('gjIcon').innerText = "🔥";
+        groupState.pendingJokerAction = () => { groupState.teams.forEach(t => t.score = Math.floor(t.score / 2)); };
+      }
+
+      if (typeof soundJoker === 'function') soundJoker();
+      document.getElementById('groupJModal').style.display = 'flex';
+    }
+
+    function applyGroupJoker() {
+      if (groupState.pendingJokerAction) groupState.pendingJokerAction();
+      document.getElementById('groupJModal').style.display = 'none';
+      finishGroupTurn();
+    }
+
+    function finishGroupTurn() {
+      const c = groupState.cards[groupState.activeCardIndex];
+      c.solved = true;
+      groupState.solvedCount++;
+      groupState.activeCardIndex = null;
+      groupState.pendingJokerAction = null;
+
+      renderGroupGrid();
+      
+      if (groupState.solvedCount >= 30) {
+        setTimeout(() => finishGroupGame(), 1000);
+      } else {
+        groupState.currentTurn = (groupState.currentTurn + 1) % 3;
+        renderGroupTeams();
+      }
+    }
+
+    function finishGroupGame() {
+      showScreen('screenResult');
+      const statsGrid = document.querySelector('.result-stats-grid');
+      const lbStat = document.getElementById('resLeaderboardStatus');
+      if (statsGrid) statsGrid.style.display = 'none';
+      if (lbStat) lbStat.innerText = '';
+
+      let maxScore = -9999;
+      let winners = [];
+      groupState.teams.forEach(t => {
+        if (t.score > maxScore) { maxScore = t.score; winners = [t.name]; }
+        else if (t.score === maxScore) { winners.push(t.name); }
+      });
+      document.getElementById('resTrophy').innerText = '🏛️🏆';
+      document.getElementById('resTitle').innerText = winners.join(' & ') + ' KAZANDI!';
+
+      const winMessages = [
+        "Arenanın kumları şampiyonları selamlıyor! Müthiş bir zafer!",
+        "İmparator bu eşsiz galibiyeti ayakta alkışlıyor!",
+        "Kalkanlar parçalandı, kılıçlar çekildi ve zafer sizin oldu!",
+        "Roma sokakları bu efsanevi galibiyetle yankılanıyor!",
+        "Rakipler dize geldi, arenanın gerçek hakimi sizsiniz!"
+      ];
+      const randomMsg = winMessages[Math.floor(Math.random() * winMessages.length)];
+
+      document.getElementById('resSubtitle').innerText = `${maxScore} Puanla ${randomMsg}`;
+
+      if (typeof soundFanfare === 'function') soundFanfare();
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+      }
+    }
+
   </script>
 
   <!-- Yönetici / Ayarlar Modalı -->
@@ -4862,5 +5325,25 @@
       </div>
     </div>
   </div>
+  <!-- GRUP MODU SORU MODALI -->
+  <div class="modal-overlay" id="groupQModal" style="display: none; z-index: 200;">
+    <div class="joker-modal-content" style="max-width: 800px; padding: 24px; width: 90%;">
+      <div class="question-badge" id="gqBadge" style="display:inline-block; margin-bottom:12px;">Kazanım</div>
+      <div class="question-text" id="gqText" style="font-size: 20px !important;">Soru Metni</div>
+      <div class="question-visual-box" id="gqVisualBox" style="width: 100%; min-height: 120px; background: rgba(15, 23, 42, 0.9) !important; display: none; align-items: center; justify-content: center; margin-bottom: 12px; border-radius: 12px;"></div>
+      <div class="options-grid" id="gqOptionsGrid" style="margin-top: 16px;"></div>
+    </div>
+  </div>
+
+  <!-- GRUP MODU JOKER MODALI -->
+  <div class="modal-overlay" id="groupJModal" style="display: none; z-index: 200;">
+    <div class="joker-modal-content" style="max-width: 500px; padding: 40px 30px; width: 90%;">
+      <div id="gjIcon" style="font-size: 64px; margin-bottom: 12px; animation: bounce 1s infinite alternate;">🎁</div>
+      <h2 id="gjTitle" style="font-family: var(--font-fun); font-size: 28px; color: #fbbf24; font-weight: 800; margin-bottom: 16px;">ŞANS KARTI</h2>
+      <p id="gjDesc" style="color: #cbd5e1; font-size: 16px; margin-bottom: 24px; line-height: 1.5;"></p>
+      <button class="btn-start" onclick="applyGroupJoker()" style="font-size: 18px; padding: 12px; width: 100%;">DEVAM ET ⚔️</button>
+    </div>
+  </div>
+
 </body>
 </html>
