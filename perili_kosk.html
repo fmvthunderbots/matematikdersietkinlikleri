@@ -1304,6 +1304,15 @@
       transition: border-color 0.2s;
     }
     .input-field:focus { border-color: #F59E0B; }
+    #nameSuggest {
+      display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+      max-height: 210px; overflow-y: auto; text-align: left;
+      background: rgba(16, 8, 30, 0.98); border: 2px solid #8B5CF6; border-radius: 14px;
+      z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+    }
+    .name-opt { padding: 9px 16px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 16px; color: #F3E8FF; cursor: pointer; }
+    .name-opt:hover { background: rgba(147, 51, 234, 0.35); color: #FDE047; }
+    .name-opt-empty { padding: 10px 16px; color: #94A3B8; font-size: 14px; font-weight: 700; }
 
     #confetti-canvas {
       position: fixed;
@@ -1788,9 +1797,13 @@
       <h1 class="game-logo-title">PERİLİ KÖŞK</h1>
       <div class="game-sub-badge">6. Sınıf Ondalık Gösterim & Çözümleme Kaçış Odası</div>
 
-      <div style="position: relative; width: 100%; margin-bottom: 14px;">
-        <input type="text" id="playerNameInput" list="studentNamesList" class="input-field" placeholder="Dedektif İsmini Listeden Seç..." maxlength="50" autocomplete="off" oninput="hideNameError()" onfocus="populateStudentNamesImmediate();" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}">
-        <datalist id="studentNamesList"></datalist>
+      <div id="nameWrap" style="position: relative; width: 100%; margin-bottom: 14px;">
+        <div style="position: relative;">
+          <input type="text" id="playerNameInput" class="input-field" placeholder="Dedektif İsmini Listeden Seç..." maxlength="50" autocomplete="off"
+                 oninput="hideNameError(); showNameSuggestions();" onfocus="populateStudentNamesImmediate(); showNameSuggestions();" onclick="showNameSuggestions();"
+                 onkeydown="if(event.key==='Enter'){hideNameSuggestions();startGame();}else if(event.key==='Escape'){hideNameSuggestions();}">
+          <div id="nameSuggest"></div>
+        </div>
         <div id="nameError" style="display:none; margin-top:-10px; margin-bottom:4px; color:#FCA5A5; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px;"></div>
       </div>
 
@@ -1937,6 +1950,7 @@
         </div>
 
         <button class="btn-action-primary" style="background: linear-gradient(135deg, #EF4444, #991B1B); font-size:16px; padding:12px; margin-bottom: 12px;" onclick="clearLeaderboardData()">Lider Tablosunu Sıfırla</button>
+        <button onclick="adminLogout()" style="background:transparent; border:none; color:#94A3B8; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer; margin-bottom:4px;">Bu bilgisayarda şifreyi unut (çıkış yap)</button>
       </div>
 
       <button class="btn-action-subtle" style="margin-top: 15px; width: 100%;" onclick="closeSettingsModal()">Kapat</button>
@@ -1982,47 +1996,87 @@
       "Zeynep Alya EROL", "Zeynep BİLİR", "Zeynep KIZILKAYA", "Zeynep VURUCU", "Zeynep Züleyha GEYİK"
     ];
 
-    function populateStudentNamesImmediate() {
-      const dl = document.getElementById('studentNamesList');
-      if (!dl) return;
-      let names = (typeof studentList !== 'undefined' && Array.isArray(studentList) && studentList.length > 0) 
-        ? studentList 
-        : DEFAULT_STUDENT_LIST;
-      authorizedStudents = Array.from(new Set(names.map(s => s.trim()))).sort((a,b) => a.localeCompare(b, 'tr'));
-      
-      dl.innerHTML = '';
-      authorizedStudents.forEach(name => {
-        let op = document.createElement('option');
-        op.value = name;
-        dl.appendChild(op);
-      });
-      const ts = document.getElementById('totalStudentsText');
-      if (ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+    const STUDENTS_FB_NODE = 'students_yaziliarenasi_6';
+    let remoteStudents = [];
+
+    function foldName(x) {
+      // ı/İ, ö, ü, ş, ç, ğ farkını yok sayan arama anahtarı (ör. "oztunali" = "ÖZTUNALI")
+      return normalizeName(x).replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ü/g, 'u')
+                             .replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g');
     }
 
-    function populateStudentListFromLocal() {
-      let combined = new Set(authorizedStudents.length > 0 ? authorizedStudents : DEFAULT_STUDENT_LIST);
-      if (typeof studentList !== 'undefined' && Array.isArray(studentList)) {
-        studentList.forEach(s => combined.add(s.trim()));
-      }
+    function localSavedStudents() {
       try {
-        const stored = localStorage.getItem('studentList') || localStorage.getItem('registeredStudents');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) parsed.forEach(s => combined.add(s.trim()));
-        }
-      } catch(e) {}
-      authorizedStudents = Array.from(combined).sort((a,b) => a.localeCompare(b, 'tr'));
-      const dl = document.getElementById('studentNamesList');
-      if (dl) {
-        dl.innerHTML = '';
-        authorizedStudents.forEach(name => {
-          let op = document.createElement('option');
-          op.value = name;
-          dl.appendChild(op);
-        });
-      }
+        const st = localStorage.getItem('studentList') || localStorage.getItem('registeredStudents');
+        const parsed = st ? JSON.parse(st) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) { return []; }
     }
+
+    function fbValueToLines(val) {
+      if (!val) return [];
+      if (typeof val === 'string') return val.split('\n');
+      if (Array.isArray(val)) return val.map(String);
+      return Object.values(val).map(String);
+    }
+
+    /* Tüm kaynakları (students.js / yerleşik liste + bu bilgisayarda eklenenler + ortak Firebase listesi) birleştirir */
+    function buildAuthorizedList() {
+      const base = (typeof studentList !== 'undefined' && Array.isArray(studentList) && studentList.length > 0)
+        ? studentList : DEFAULT_STUDENT_LIST;
+      const seen = new Map();
+      [...base, ...localSavedStudents(), ...remoteStudents].forEach(n => {
+        const name = String(n || '').replace(/\s+/g, ' ').trim();
+        if (!name) return;
+        const key = normalizeName(name);
+        if (!seen.has(key)) seen.set(key, name);
+      });
+      authorizedStudents = Array.from(seen.values()).sort((a, b) => a.localeCompare(b, 'tr'));
+      const ts = document.getElementById('totalStudentsText');
+      if (ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı.`;
+      renderNameSuggestions();
+    }
+    function populateStudentNamesImmediate() { buildAuthorizedList(); }
+    function populateStudentListFromLocal() { buildAuthorizedList(); }
+
+    function renderNameSuggestions() {
+      const box = document.getElementById('nameSuggest');
+      const input = document.getElementById('playerNameInput');
+      if (!box || !input) return;
+      const q = foldName(input.value);
+      const list = authorizedStudents.filter(n => !q || foldName(n).includes(q));
+      box.innerHTML = '';
+      if (!list.length) {
+        box.innerHTML = '<div class="name-opt-empty">Listede böyle bir isim yok</div>';
+        return;
+      }
+      list.forEach(n => {
+        const d = document.createElement('div');
+        d.className = 'name-opt';
+        d.textContent = n;
+        d.addEventListener('pointerdown', e => {
+          e.preventDefault();
+          input.value = n;
+          hideNameError();
+          hideNameSuggestions();
+        });
+        box.appendChild(d);
+      });
+    }
+    function showNameSuggestions() {
+      const box = document.getElementById('nameSuggest');
+      if (!box) return;
+      renderNameSuggestions();
+      box.style.display = 'block';
+    }
+    function hideNameSuggestions() {
+      const box = document.getElementById('nameSuggest');
+      if (box) box.style.display = 'none';
+    }
+    document.addEventListener('pointerdown', e => {
+      if (!e.target.closest || !e.target.closest('#nameWrap')) hideNameSuggestions();
+    });
+
     populateStudentNamesImmediate();
     setTimeout(populateStudentListFromLocal, 100);
 
@@ -2037,23 +2091,9 @@
     }
 
     if (cloudDb) {
-      cloudDb.ref('students_yaziliarenasi_6').on('value', snap => {
-        let val = snap.val();
-        if (val) {
-          let lines = (typeof val === 'string') ? val.split('\n') : (Array.isArray(val) ? val : Object.values(val));
-          let combined = new Set(authorizedStudents.length > 0 ? authorizedStudents : DEFAULT_STUDENT_LIST);
-          lines.forEach(l => { if (l && String(l).trim()) combined.add(String(l).trim()); });
-          authorizedStudents = Array.from(combined).sort((a,b) => a.localeCompare(b, 'tr'));
-          let dl = document.getElementById('studentNamesList');
-          if (dl) {
-            dl.innerHTML = '';
-            authorizedStudents.forEach(name => {
-              let op = document.createElement('option');
-              op.value = name;
-              dl.appendChild(op);
-            });
-          }
-        }
+      cloudDb.ref(STUDENTS_FB_NODE).on('value', snap => {
+        remoteStudents = fbValueToLines(snap.val());
+        buildAuthorizedList();
       });
     }
 
@@ -2380,7 +2420,12 @@
       if (!authorizedStudents.length) populateStudentNamesImmediate();
 
       // Yalnızca öğretmenin tanımladığı listedeki isimler oyuna girebilir
-      const match = typed ? authorizedStudents.find(s => normalizeName(s) === typed) : null;
+      let match = typed ? authorizedStudents.find(s => normalizeName(s) === typed) : null;
+      if (!match && typed) {
+        const f = foldName(input.value);
+        const cands = authorizedStudents.filter(s => foldName(s) === f);
+        if (cands.length === 1) match = cands[0];
+      }
       if (!match) {
         try { playSound('wrong'); } catch(e){}
         showNameError(typed
@@ -2391,6 +2436,7 @@
       }
 
       hideNameError();
+      hideNameSuggestions();
       try { playSound('step'); } catch(e){}
       playerName = match;
       launchGame();
@@ -3694,11 +3740,77 @@
       }
     }
 
+    const ADMIN_FLAG = 'perilikosk_admin_ok';
+    function isAdminRemembered() {
+      try { return localStorage.getItem(ADMIN_FLAG) === '1'; } catch (e) { return false; }
+    }
+
     function openSettingsModal() {
+      const remembered = isAdminRemembered();
       document.getElementById('settingsModal').style.display = 'flex';
+      document.getElementById('authSection').style.display = remembered ? 'none' : 'block';
+      document.getElementById('adminSection').style.display = remembered ? 'block' : 'none';
+      document.getElementById('adminPasswordInput').value = '';
+      if (remembered) buildAuthorizedList();
+    }
+
+    function adminLogout() {
+      try { localStorage.removeItem(ADMIN_FLAG); } catch (e) {}
       document.getElementById('authSection').style.display = 'block';
       document.getElementById('adminSection').style.display = 'none';
-      document.getElementById('adminPasswordInput').value = '';
+    }
+
+    function saveStudentList() {
+      const ta = document.getElementById('adminStudentList');
+      const lines = (ta ? ta.value : '').split(/\r?\n/).map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean);
+      if (!lines.length) { alert('Önce öğrenci isimlerini kutuya yazın (her satıra bir isim).'); return; }
+      const before = authorizedStudents.length;
+
+      // 1) Bu bilgisayara kaydet
+      const merged = new Map();
+      localSavedStudents().concat(lines).forEach(n => {
+        const k = normalizeName(n);
+        if (!merged.has(k)) merged.set(k, n);
+      });
+      try { localStorage.setItem('studentList', JSON.stringify(Array.from(merged.values()))); } catch (e) {}
+
+      // 2) Ortak listeye (Firebase) ekle: mevcut isimleri silmeden birleştirir
+      if (cloudDb) {
+        try {
+          const ref = cloudDb.ref(STUDENTS_FB_NODE);
+          ref.once('value').then(snap => {
+            const val = snap.val();
+            const existing = fbValueToLines(val);
+            const m = new Map();
+            existing.concat(lines).forEach(n => {
+              const t = String(n).replace(/\s+/g, ' ').trim();
+              const k = normalizeName(t);
+              if (t && !m.has(k)) m.set(k, t);
+            });
+            const all = Array.from(m.values());
+            if (val && typeof val === 'object' && !Array.isArray(val)) {
+              const have = new Set(existing.map(normalizeName));
+              lines.forEach(n => { if (!have.has(normalizeName(n))) ref.push(n); });
+              return;
+            }
+            return ref.set(Array.isArray(val) ? all : all.join('\n'));
+          }).catch(() => {});
+        } catch (e) {}
+      }
+
+      buildAuthorizedList();
+      if (ta) ta.value = '';
+      const added = authorizedStudents.length - before;
+      const ts = document.getElementById('totalStudentsText');
+      if (ts) ts.innerText = `Sistemde ${authorizedStudents.length} öğrenci kayıtlı. (${added} yeni isim eklendi${added < lines.length ? ', listede zaten olanlar tekrar eklenmedi' : ''})`;
+    }
+
+    function clearStudentList() {
+      if (!confirm('Sonradan eklenen tüm öğrenci isimleri silinecek (ana liste kalır). Bu, ortak öğrenci listesini de sıfırlar. Emin misiniz?')) return;
+      try { localStorage.removeItem('studentList'); localStorage.removeItem('registeredStudents'); } catch (e) {}
+      remoteStudents = [];
+      if (cloudDb) { try { cloudDb.ref(STUDENTS_FB_NODE).remove(); } catch (e) {} }
+      buildAuthorizedList();
     }
 
     function closeSettingsModal() {
@@ -3708,6 +3820,7 @@
     function checkAdminPassword() {
       const pwd = document.getElementById('adminPasswordInput').value;
       if (pwd === '26575982824.bati') {
+        try { localStorage.setItem(ADMIN_FLAG, '1'); } catch (e) {}
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('adminSection').style.display = 'block';
       } else {
