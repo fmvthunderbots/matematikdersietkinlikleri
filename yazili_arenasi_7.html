@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Yazılı Arenası 7 · 6. Sınıf Matematik 1. Dönem 1. Yazılıya Hazırlık</title>
+  <title>Yazılı Arenası 7 · 7. Sınıf Matematik 1. Dönem 1. Yazılıya Hazırlık</title>
   
   <!-- Türkçe Karakter Uyumlu Google Fontlar -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3074,7 +3074,8 @@
       };
     }
 
-        function generateQuestionPool() {
+    // Elle hazırlanmış (sabit) sorular — dinamik havuza eklenir
+    function generateStaticPool() {
       const pool = [];
 
       // SVG Görsel Yardımcıları
@@ -3752,13 +3753,702 @@
       return pool;
     }
 
-    function getShuffled15Questions() {
-      const fullPool = generateQuestionPool();
-      for (let i = fullPool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+    /* ==========================================================
+       YAZILI ARENASI 7 — GENİŞLETİLMİŞ & DİNAMİK SORU HAVUZU
+       7. Sınıf · Sayılar ve Nicelikler (1) — Rasyonel Sayılar
+       MAT.7.1.1 tam sayılar, rasyonel sayılar, mutlak değer, sayı doğrusu
+       MAT.7.1.2 rasyonel sayıların ondalık gösterimi (sonlu / devirli)
+       MAT.7.1.3 rasyonel sayıların karşılaştırılması ve sıralanması
+       MAT.7.1.4 rasyonel sayılarla işlemler ve problemler
+       • Sayılar, isimler ve bağlamlar her oyunda yeniden üretilir
+       • Seçici: kazanımlara dengeli dağıtır, aynı soru tipini art arda sıkıştırmaz,
+         bu tarayıcıda daha önce sorulmuş soruları sona bırakır.
+       ========================================================== */
+    const ArenaPool = (function () {
+      const KAZ_ORDER = ['MAT.7.1.1', 'MAT.7.1.2', 'MAT.7.1.3', 'MAT.7.1.4'];
+      const KAZ_WEIGHT = { 'MAT.7.1.1': 3, 'MAT.7.1.2': 3, 'MAT.7.1.3': 3, 'MAT.7.1.4': 4 };
+      const SEEN_KEY = 'yazili_arenasi_7_seen_v2';
+      const SEEN_MAX = 1500;
+    
+      /* ---------- Yardımcılar ---------- */
+      const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+      const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
+      function shuffleArr(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
       }
-      return fullPool.slice(0, 15);
+      const NAMES = ['Ali', 'Ayşe', 'Mert', 'Elif', 'Deniz', 'Kerem', 'Zeynep', 'Arda', 'Buse', 'Efe', 'Selin', 'Kaan', 'Ece', 'Can', 'Defne', 'Yusuf'];
+      const pickNames = n => shuffleArr(NAMES).slice(0, n);
+    
+      function makeQ(badge, text, visual, correct, rawDistractors) {
+        const corrStr = String(correct).trim();
+        const clean = [];
+        for (const d of rawDistractors) {
+          const v = String(d).trim();
+          if (v && v !== corrStr && !clean.includes(v)) clean.push(v);
+        }
+        return { badge, kaz: badge.split(' ')[0], tpl: badge, text, visual, correct: corrStr, distractors: clean.slice(0, 3) };
+      }
+      const mq = (badge, text, visual, correct, cands) => makeQ(badge, text, visual, correct, shuffleArr(cands));
+    
+      /* ---------- Rasyonel sayı aritmetiği (tam, kayıpsız) ---------- */
+      const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; };
+      const F = (n, d) => { if (d === undefined) d = 1; if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); return { n: n / g, d: d / g }; };
+      const fadd = (a, b) => F(a.n * b.d + b.n * a.d, a.d * b.d);
+      const fsub = (a, b) => F(a.n * b.d - b.n * a.d, a.d * b.d);
+      const fmul = (a, b) => F(a.n * b.n, a.d * b.d);
+      const fdiv = (a, b) => F(a.n * b.d, a.d * b.n);
+      const fneg = a => F(-a.n, a.d);
+      const fabs = a => F(Math.abs(a.n), a.d);
+      const fcmp = (a, b) => a.n * b.d - b.n * a.d;
+      const feq = (a, b) => a.n === b.n && a.d === b.d;
+    
+      // a/b biçimi:  "-3/4", "5/3", "2"
+      function sFrac(f, plus) {
+        const s = f.n < 0 ? '-' : (plus && f.n > 0 ? '+' : '');
+        return f.d === 1 ? s + Math.abs(f.n) : s + Math.abs(f.n) + '/' + f.d;
+      }
+      // bileşik kesir:  "-2 1/2", "1 3/4", "5"
+      function sMixed(f) {
+        const a = Math.abs(f.n), w = Math.floor(a / f.d), r = a % f.d, s = f.n < 0 ? '-' : '';
+        if (r === 0) return s + w;
+        return s + (w ? w + ' ' : '') + r + '/' + f.d;
+      }
+      // yalnızca sayı olan seçenekler: "-5/2 (-2 1/2)"
+      function sOpt(f) { return (f.d !== 1 && Math.abs(f.n) > f.d) ? sFrac(f) + ' (' + sMixed(f) + ')' : sFrac(f); }
+      function termDigits(d) { let x = d, t = 0, f = 0; while (x % 2 === 0) { x /= 2; t++; } while (x % 5 === 0) { x /= 5; f++; } return x === 1 ? Math.max(t, f) : -1; }
+      // sonlu ondalık gösterim (virgüllü) ya da null
+      function sDec(f) {
+        const k = termDigits(f.d); if (k < 0) return null;
+        const a = Math.abs(f.n), scale = Math.pow(10, k), v = a * scale / f.d;
+        let s = String(Math.floor(v / scale));
+        if (k > 0) s += ',' + String(v % scale).padStart(k, '0');
+        return (f.n < 0 ? '-' : '') + s;
+      }
+      const isTerm = (p, q) => termDigits(F(p, q).d) >= 0;
+      const sInt = (n, plus) => (n < 0 ? '-' : (plus && n > 0 ? '+' : '')) + Math.abs(n);
+    
+      // Ondalık açılım: {whole, pre[], rep[]}
+      function expand(p, q) {
+        const whole = Math.floor(p / q); let r = p % q; const digits = [], seen = {}; let idx = 0;
+        while (r !== 0 && seen[r] === undefined) { seen[r] = idx; r *= 10; digits.push(Math.floor(r / q)); r %= q; idx++; }
+        if (r === 0) return { whole, pre: digits, rep: [] };
+        const s = seen[r]; return { whole, pre: digits.slice(0, s), rep: digits.slice(s) };
+      }
+      function dispExp(e) {
+        let s = String(e.whole);
+        if (e.rep.length === 0) return e.pre.length ? s + ',' + e.pre.join('') : s;
+        return s + ',' + e.pre.join('') + e.rep.join('').repeat(e.rep.length === 1 ? 3 : 2) + '...';
+      }
+      function fromExp(e) {
+        const k = e.pre.length, m = e.rep.length;
+        const nPre = Number(String(e.whole) + e.pre.join('')), nAll = Number(String(e.whole) + e.pre.join('') + e.rep.join(''));
+        return m === 0 ? F(nPre, Math.pow(10, k)) : F(nAll - nPre, Math.pow(10, k) * (Math.pow(10, m) - 1));
+      }
+    
+      // Seçenekler için: değeri doğrudan farklı olan çeldiriciler (eşit değerli seçenek asla çıkmaz)
+      function fd(v, extras, fmt, n, o) {
+        n = n || 3; o = o || {};
+        const cands = (extras || []).concat([
+          fneg(v), fadd(v, F(1, v.d)), fsub(v, F(1, v.d)), fadd(v, F(1)), fsub(v, F(1)), fmul(v, F(2)), fdiv(v, F(2)),
+          fadd(v, F(1, 2)), (o.recip && v.n !== 0) ? F(v.d, v.n) : null, fadd(v, F(1, v.d * 2))
+        ]).filter(x => x && !(o.noNeg && x.n < 0));
+        const seen = new Set([fmt(v)]), out = [];
+        for (const c of shuffleArr(cands)) {
+          const s = fmt(c);
+          if (!seen.has(s) && !feq(c, v)) { seen.add(s); out.push(s); }
+          if (out.length >= n) return out;
+        }
+        for (let i = 2; out.length < n && i < 40; i++) {
+          const c = fadd(v, F(i, v.d)); const s = fmt(c);
+          if (!seen.has(s)) { seen.add(s); out.push(s); }
+        }
+        return out;
+      }
+      function fdInt(v, extras, pos) {
+        const seen = new Set([v]), out = [];
+        for (const c of shuffleArr((extras || []).concat([-v, v + 1, v - 1, v + 2, v - 2, v + 10, v - 10, v * 2]))) {
+          if (!seen.has(c) && Number.isFinite(c) && !(pos && c <= 0)) { seen.add(c); out.push(c); }
+        }
+        return out;
+      }
+      // rastgele sadeleşmiş, tam sayı olmayan rasyonel sayı
+      function rf(minD, maxD, maxN, signed) {
+        for (let t = 0; t < 200; t++) {
+          const d = rnd(minD, maxD), n = rnd(1, maxN || d * 2);
+          const f = F(signed && Math.random() < 0.5 ? -n : n, d);
+          if (f.d !== 1 && f.n !== 0) return f;
+        }
+        return F(1, 2);
+      }
+      const rI = (a, b) => F(rnd(a, b));
+    
+      /* ---------- Görsel yardımcılar ---------- */
+      const TB = 'padding:4px; border:1px solid rgba(255,255,255,0.1);';
+      function tableHtml(title, color, head, rows) {
+        return `<div style="width:100%; max-width:440px; background:rgba(30,41,59,0.7); border:1px solid ${color}; border-radius:10px; padding:10px; font-size:12px; margin:0 auto;">` +
+          `<div style="font-weight:bold; color:${color}; text-align:center; margin-bottom:6px; font-size:13px;">${title}</div>` +
+          `<table style="width:100%; border-collapse:collapse; color:#f8fafc; font-size:12px; text-align:center;">` +
+          `<tr style="background:rgba(56,189,248,0.2); font-weight:bold;">${head.map(h => `<th style="${TB}">${h}</th>`).join('')}</tr>` +
+          rows.map(r => `<tr>${r.map((c, i) => `<td style="${TB}${i === 0 ? ' font-weight:bold; color:#fde047;' : ''}">${c}</td>`).join('')}</tr>`).join('') +
+          `</table></div>`;
+      }
+      function numberLineSvg(k, m, j) {
+        const x0 = 30, x1 = 310, y = 40, step = (x1 - x0) / m;
+        let s = `<svg width="340" height="80" viewBox="0 0 340 80"><line x1="14" y1="${y}" x2="326" y2="${y}" stroke="#cbd5e1" stroke-width="2.5"/>`;
+        for (let i = 0; i <= m; i++) {
+          const x = x0 + i * step, tall = (i === 0 || i === m);
+          s += `<line x1="${x.toFixed(1)}" y1="${y - (tall ? 9 : 6)}" x2="${x.toFixed(1)}" y2="${y + (tall ? 9 : 6)}" stroke="#fbbf24" stroke-width="2"/>`;
+        }
+        s += `<text x="${x0}" y="${y + 26}" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">-${k}</text>`;
+        s += `<text x="${x1}" y="${y + 26}" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">${k - 1 === 0 ? '0' : '-' + (k - 1)}</text>`;
+        const ax = x0 + j * step;
+        s += `<circle cx="${ax.toFixed(1)}" cy="${y}" r="5" fill="#ec4899"/><text x="${ax.toFixed(1)}" y="${y - 14}" fill="#ec4899" font-size="14" font-weight="bold" text-anchor="middle">A</text></svg>`;
+        return s;
+      }
+    
+      /* ==========================================================
+         KAZANIM 1 — MAT.7.1.1 · Tam sayılar, rasyonel sayılar, mutlak değer, sayı doğrusu
+         ========================================================== */
+      const SIGN_CTX = [
+        { neg: n => `Sıcaklığın sıfırın ${n} °C altında olması`, pos: n => `Sıcaklığın sıfırın ${n} °C üzerinde olması` },
+        { neg: n => `Bir denizaltının deniz seviyesinin ${n} m altında bulunması`, pos: n => `Bir uçağın deniz seviyesinden ${n} m yukarıda uçması` },
+        { neg: n => `Banka hesabında ${n} TL borç bulunması`, pos: n => `Banka hesabına ${n} TL nakit yatırılması` },
+        { neg: n => `Bir asansörün zemin katın ${n} kat altındaki otoparka inmesi`, pos: n => `Bir asansörün zemin katın ${n} kat üstüne çıkması` },
+        { neg: n => `Bir dalgıcın deniz yüzeyinin ${n} m aşağısında bulunması`, pos: n => `Bir dağ evinin deniz seviyesinden ${n} m yüksekte olması` }
+      ];
+      const ANIMALS = ['Kutup tavşanı', 'Kutup tilkisi', 'Ren geyiği', 'Penguen', 'Fok', 'Kar leoparı', 'Yak', 'Beyaz ayı'];
+      const TRUE_STM1 = [
+        'Her tam sayı aynı zamanda bir rasyonel sayıdır', 'Bir tam sayının mutlak değeri hiçbir zaman negatif olamaz',
+        'Bir sayının mutlak değeri, o sayının sayı doğrusunda sıfıra olan uzaklığıdır', 'Sayı doğrusunda sıfırın solunda kalan sayılar negatiftir',
+        'Her rasyonel sayı sayı doğrusunda bir noktaya karşılık gelir', 'Payda sıfır olmamak koşuluyla a/b biçiminde yazılabilen sayılar rasyonel sayıdır',
+        'Zıt işaretli ve mutlak değerleri eşit olan iki sayı sayı doğrusunda sıfıra eşit uzaklıktadır'
+      ];
+      const FALSE_STM1 = [
+        'Her rasyonel sayı bir tam sayıdır', 'Mutlak değeri negatif olan tam sayılar vardır', 'Sıfır negatif bir rasyonel sayıdır',
+        'Paydası sıfır olan a/b ifadesi bir rasyonel sayı belirtir', 'Sayı doğrusunda sağdaki sayı soldaki sayıdan daha küçüktür',
+        '–5 sayısının mutlak değeri –5 tir', 'Sayı doğrusunda iki tam sayı arasında başka hiçbir rasyonel sayı yoktur'
+      ];
+    
+      function genKaz1(out) {
+        const B = 'MAT.7.1.1';
+    
+        // Gerçek yaşamda işaretli sayı
+        [true, false].forEach(wantNeg => {
+          const idx = shuffleArr([0, 1, 2, 3, 4]).slice(0, 4), nums = shuffleArr([3, 5, 8, 12, 15, 20, 25, 30, 45, 60]).slice(0, 4);
+          const opts = idx.map((ci, i) => (i === 0 ? (wantNeg ? SIGN_CTX[ci].neg(nums[i]) : SIGN_CTX[ci].pos(nums[i])) : (wantNeg ? SIGN_CTX[ci].pos(nums[i]) : SIGN_CTX[ci].neg(nums[i]))));
+          out.push(mq(`${B} · Tam Sayı Temsili (${wantNeg ? 'negatif' : 'pozitif'})`, `Aşağıdaki gerçek yaşam durumlarından hangisi <b>${wantNeg ? 'negatif' : 'pozitif'} bir tam sayı</b> ile ifade edilir?`, null, opts[0], opts.slice(1)));
+        });
+    
+        // Canlıların yaşayabildiği sıcaklık aralıkları
+        for (let i = 0; i < 2; i++) {
+          const names = shuffleArr(ANIMALS).slice(0, 3);
+          const rg = names.map(() => [-rnd(3, 11) * 5, rnd(1, 5) * 5]);
+          const bounds = new Set(rg.flat());
+          let t; do { t = rnd(-62, 27); } while (bounds.has(t));
+          const alive = names.filter((n, k) => t > rg[k][0] && t < rg[k][1]);
+          const fmtSub = s => s.length === 0 ? 'Hiçbiri yaşayamaz' : s.length === 3 ? 'Üçü de yaşayabilir' : s.length === 1 ? `Yalnızca ${s[0]}` : `${s[0]} ve ${s[1]}`;
+          const subsets = [[], [names[0]], [names[1]], [names[2]], [names[0], names[1]], [names[0], names[2]], [names[1], names[2]], names];
+          const correct = fmtSub(alive);
+          const dist = subsets.map(fmtSub).filter(x => x !== correct);
+          const vis = tableHtml('🌡️ Hayvanların Yaşayabildiği Sıcaklık Aralıkları', '#38bdf8', ['Hayvan', 'En Düşük', 'En Yüksek'], names.map((n, k) => [n, `${rg[k][0]} °C`, `+${rg[k][1]} °C`]));
+          out.push(mq(`${B} · Tam Sayı & Sıcaklık`, `Tabloda üç hayvanın yaşayabildiği en düşük ve en yüksek sıcaklıklar verilmiştir.<br><br>Hava sıcaklığı <b>${t} °C</b> olan bir bölgede bu hayvanlardan hangisi (hangileri) yaşayabilir?`, vis, correct, dist));
+        }
+    
+        // Mutlak değer
+        for (let i = 0; i < 2; i++) {
+          const n = rnd(4, 40);
+          out.push(mq(`${B} · Mutlak Değer ve Uzaklık`, `Sayı doğrusunda mutlak değeri <b>${n}</b> olan iki tam sayı işaretleniyor.<br><br>Bu iki nokta arasındaki uzaklık kaç birimdir?`, null, `${2 * n} birim`, [n, 0, 3 * n, 2 * n + 2, 2 * n - 2].map(x => `${x} birim`)));
+        }
+        for (let i = 0; i < 2; i++) {
+          const a = rnd(3, 14), b = rnd(2, 14); const sa = Math.random() < 0.5 ? -1 : 1, sb = sa === 1 ? -1 : (Math.random() < 0.5 ? -1 : 1);
+          const A = sa * a, B2 = sb * b;
+          const txt = x => `|${x < 0 ? '-' : '+'}${Math.abs(x)}|`;
+          out.push(mq(`${B} · Mutlak Değerlerin Toplamı`, `<b>${txt(A)} + ${txt(B2)}</b> işleminin sonucu kaçtır?`, null, String(a + b),
+            [Math.abs(A + B2), Math.abs(a - b), -(a + b), a + b + 2, a + b - 1].map(String)));
+        }
+        for (let i = 0; i < 2; i++) {
+          const a = rnd(2, 12), b = rnd(2, 12);
+          out.push(mq(`${B} · Sayı Doğrusunda Uzaklık`, `Sayı doğrusunda <b>-${a}</b> ve <b>+${b}</b> sayılarına karşılık gelen noktalar arasındaki uzaklık kaç birimdir?`, null, `${a + b} birim`,
+            [Math.abs(a - b) || a + b + 3, a + b + 2, a + b - 1, a * b, 2 * (a + b)].map(x => `${x} birim`)));
+        }
+        for (let i = 0; i < 2; i++) {
+          const n = rnd(3, 9);
+          out.push(mq(`${B} · Mutlak Değeri Sınırlı Tam Sayılar`, `Mutlak değeri <b>${n}</b> sayısından küçük olan kaç tane tam sayı vardır?`, null, `${2 * n - 1} tane`, [2 * n, 2 * n - 2, n, n - 1, 2 * n + 1].map(x => `${x} tane`)));
+        }
+        for (let i = 0; i < 2; i++) {
+          const mode = i === 0 ? 'büyük' : 'küçük';
+          let arr;
+          do { arr = [0, 0, 0, 0].map(() => (Math.random() < 0.5 ? -1 : 1) * rnd(1, 20)); } while (new Set(arr.map(Math.abs)).size < 4 || new Set(arr).size < 4);
+          const ans = arr.slice().sort((x, y) => (mode === 'büyük' ? Math.abs(y) - Math.abs(x) : Math.abs(x) - Math.abs(y)))[0];
+          out.push(mq(`${B} · Mutlak Değer Karşılaştırma (${mode})`, `<b>${arr.map(x => sInt(x, true)).join(', ')}</b> tam sayılarından hangisinin mutlak değeri <b>en ${mode}tür</b>?`, null, sInt(ans, true), arr.filter(x => x !== ans).map(x => sInt(x, true))));
+        }
+    
+        // Sayı kümeleri
+        for (let i = 0; i < 2; i++) {
+          const kinds = ['pos', 'neg', 'frac'];
+          const kind = kinds[i === 0 ? rnd(0, 2) : (rnd(0, 2))];
+          const q = rnd(2, 9), p = rnd(2, 9);
+          let expr, correct;
+          if (kind === 'pos') { expr = `${p * q}/${q}`; correct = 'Doğal sayı, tam sayı ve rasyonel sayı'; }
+          else if (kind === 'neg') { expr = `-${p * q}/${q}`; correct = 'Tam sayı ve rasyonel sayı'; }
+          else { let n; do { n = rnd(1, 3 * q); } while (n % q === 0); expr = `${n}/${q}`; correct = 'Yalnızca rasyonel sayı'; }
+          const all = ['Doğal sayı, tam sayı ve rasyonel sayı', 'Tam sayı ve rasyonel sayı', 'Yalnızca rasyonel sayı', 'Doğal sayı ve tam sayı (rasyonel sayı değildir)'];
+          out.push(mq(`${B} · Sayı Kümeleri`, `<b>${expr}</b> sayısı aşağıdaki sayı kümelerinden hangilerine aittir?`, null, correct, all.filter(x => x !== correct)));
+        }
+        {
+          const a = rnd(2, 19), b = rnd(2, 9), c = rnd(2, 9), d = rnd(11, 19);
+          const dec = `-${rnd(1, 9)},${rnd(1, 9)}`;
+          out.push(mq(`${B} · Tanımsız İfade`, 'Aşağıda verilen ifadelerden hangisi <b>rasyonel sayı belirtmez (tanımsızdır)</b>?', null, `${a}/0`, [`0/${b}`, `-${c}/${d}`, dec, `${d}/1`]));
+        }
+    
+        // Sayı doğrusunda rasyonel sayı
+        for (let i = 0; i < 2; i++) {
+          const k = rnd(2, 4), m = rnd(3, 6), j = rnd(1, m - 1);
+          const v = F(-k * m + j, m);
+          const extras = [F(-k * m - j, m), F(-(k - 1) * m - j, m), F(-(k - 1) * m + j, m), F(-k * m + j, m + 1)];
+          out.push(mq(`${B} · Sayı Doğrusunda Rasyonel Sayı`, `Sayı doğrusunda <b>-${k}</b> ile <b>${k - 1 === 0 ? '0' : '-' + (k - 1)}</b> arası <b>${m} eş parçaya</b> bölünmüştür.<br>-${k} sayısından sağa doğru ${j}. çizgi üzerinde <b>A noktası</b> işaretlenmiştir.<br><br>A noktasına karşılık gelen rasyonel sayı hangisidir?`, numberLineSvg(k, m, j), sOpt(v), fd(v, extras, sOpt)));
+        }
+        // Konum
+        for (let i = 0; i < 2; i++) {
+          const q = pickOne([2, 3, 4, 5, 8]), p = rnd(1, q - 1), back = Math.random() < 0.5; const g = gcd(p, q); const pp = p / g, qq = q / g;
+          const place = pickOne(['Çeşme', 'Otopark', 'Dinlenme tesisi', 'Bilet gişesi', 'İstasyon']);
+          const v = F(back ? -pp : pp, qq);
+          out.push(mq(`${B} · Sayı Doğrusu & Konum`, `Bir yolda başlangıç noktası <b>0 km</b> kabul ediliyor ve ileri yön pozitif seçiliyor.<br><br>${place}, başlangıç noktasının <b>${pp}/${qq} km ${back ? 'gerisinde' : 'ilerisinde'}</b> ise bu yerin konumu hangi rasyonel sayı ile gösterilir?`, null, sFrac(v, true),
+            [sFrac(fneg(v), true), sFrac(F(v.d, v.n), true), sFrac(fneg(F(v.d, v.n)), true)].filter((x, ix, ar) => ar.indexOf(x) === ix)));
+        }
+        // Aralıkta tam sayı
+        for (let i = 0; i < 2; i++) {
+          const a = rnd(2, 7), b = rnd(2, 7);
+          out.push(mq(`${B} · Aralıktaki Tam Sayılar`, `Sayı doğrusunda <b>-${a}</b> ile <b>+${b}</b> arasında (bu sayılar hariç) kaç tane tam sayı vardır?`, null, `${a + b - 1} tane`, [a + b, a + b + 1, a + b - 2, a * b].map(x => `${x} tane`)));
+        }
+        // Doğru / yanlış önermeler
+        out.push(mq(`${B} · Doğru Önerme`, 'Aşağıdaki ifadelerden hangisi <b>doğrudur</b>?', null, pickOne(TRUE_STM1), shuffleArr(FALSE_STM1).slice(0, 3)));
+        out.push(mq(`${B} · Yanlış Önerme`, 'Aşağıdaki ifadelerden hangisi <b>yanlıştır</b>?', null, pickOne(FALSE_STM1), shuffleArr(TRUE_STM1).slice(0, 3)));
+      }
+    
+      /* ==========================================================
+         KAZANIM 2 — MAT.7.1.2 · Rasyonel sayıların ondalık gösterimi
+         ========================================================== */
+      const REP_DEN = [3, 6, 9, 11, 12, 15, 18, 22, 30, 33, 45];
+      function repFrac() {
+        for (let t = 0; t < 500; t++) {
+          const q = pickOne(REP_DEN), p = rnd(1, 2 * q);
+          const f = F(p, q);
+          if (f.d === 1 || isTerm(f.n, f.d)) continue;
+          const e = expand(f.n, f.d);
+          if (e.rep.length <= 2 && e.pre.length <= 2 && e.whole <= 2) return { f, e };
+        }
+        return { f: F(5, 6), e: expand(5, 6) };
+      }
+      const repWords = e => (e.rep.length === 1 ? `yalnızca <b>${e.rep[0]}</b> rakamı devreder` : `<b>${e.rep.join('')}</b> rakam grubu devreder`);
+    
+      function genKaz2(out) {
+        const B = 'MAT.7.1.2';
+    
+        // Devirli ondalık → en sade rasyonel sayı
+        for (let i = 0; i < 3; i++) {
+          const { f, e } = repFrac();
+          const naive1 = F(Number(e.rep.join('')), Math.pow(10, e.rep.length) - 1);                 // başlangıç kısmını unutma
+          const naive2 = fromExp({ whole: e.whole, pre: e.pre.concat(e.rep), rep: [] });             // sonlu sanma
+          const extras = [fadd(F(e.whole), naive1), naive2, F(Number(String(e.whole) + e.pre.join('') + e.rep.join('')), Math.pow(10, e.pre.length) * (Math.pow(10, e.rep.length)))].filter(x => x.d !== 0);
+          out.push(mq(`${B} · Devirli Ondalıktan Rasyonel Sayıya`, `<b>${dispExp(e)}</b> ondalık gösterimi (virgülden sonra ${repWords(e)}) en sade hâliyle hangi a/b rasyonel sayısına eşittir?`, null, sFrac(f), fd(f, extras, sFrac, 3, { noNeg: true })));
+        }
+        // Sonlu ondalık → en sade rasyonel sayı
+        for (let i = 0; i < 2; i++) {
+          const q = pickOne([4, 5, 8, 20, 25, 40, 50]), p = rnd(1, q * 2); const f = F(p, q);
+          if (f.d === 1) { i--; continue; }
+          const raw = dispExp(expand(f.n, f.d));
+          out.push(mq(`${B} · Sonlu Ondalıktan Rasyonel Sayıya`, `<b>${raw}</b> sayısının <u>en sade</u> a/b biçimindeki rasyonel sayı karşılığı hangisidir?`, null, sFrac(f), fd(f, [], sFrac, 3, { noNeg: true })));
+        }
+        // Kesir → sonlu ondalık (günlük yaşam)
+        const CT = [
+          (n, d) => ({ t: `Bir kek tarifinde <b>${n}/${d} kg</b> un kullanılmaktadır. Dijital terazi bu miktarı ondalık gösterimle kaç kg gösterir?`, u: 'kg' }),
+          (n, d) => ({ t: `Bir şişedeki limonatanın miktarı <b>${n}/${d} litre</b>dir. Ölçüm cihazı bu miktarı ondalık gösterimle kaç litre gösterir?`, u: 'litre' }),
+          (n, d) => ({ t: `Bir kumaş parçasının uzunluğu <b>${n}/${d} m</b>dir. Bu uzunluğun ondalık gösterimi kaç metredir?`, u: 'm' }),
+          (n, d) => ({ t: `Bir yürüyüş parkurunun uzunluğu <b>${n}/${d} km</b>dir. Bu uzunluk ondalık gösterimle kaç km olarak yazılır?`, u: 'km' })
+        ];
+        shuffleArr(CT).slice(0, 2).forEach(fn => {
+          const d = pickOne([4, 5, 8, 16, 20, 25]), n = (() => { let x; do { x = rnd(1, d - 1); } while (gcd(x, d) !== 1); return x; })();
+          const o = fn(n, d), f = F(n, d), cor = sDec(f);
+          const cands = [F(n + 1, d), F(n - 1, d), F(d - n, d), F(n, 2 * d)].map(sDec).filter(x => x && x !== cor);
+          cands.push(`${n},${d}`, String(Math.round(n / d * 10) / 10).replace('.', ','));
+          out.push(mq(`${B} · Kesirden Sonlu Ondalığa (${o.u})`, o.t, null, `${cor} ${o.u}`, cands.filter(x => x !== cor).map(x => `${x} ${o.u}`)));
+        });
+        // Kesir → devirli ondalık gösterimi
+        for (let i = 0; i < 3; i++) {
+          const { f, e } = repFrac();
+          const cands = [];
+          cands.push(dispExp({ whole: e.whole, pre: [], rep: e.pre.concat(e.rep) }));                                        // devri kaydırma
+          cands.push(dispExp({ whole: e.whole, pre: e.pre.concat(e.rep), rep: [] }));                                       // sonlu sanma
+          cands.push(dispExp({ whole: e.whole, pre: e.pre, rep: e.rep.slice().reverse() }));
+          [F(f.n + 1, f.d), F(f.n - 1, f.d)].forEach(g => { if (g.n > 0 && g.d !== 1 && !isTerm(g.n, g.d)) { const x = expand(g.n, g.d); if (x.rep.length) cands.push(dispExp(x)); } });
+          const cor = dispExp(e);
+          out.push(mq(`${B} · Kesirden Devirli Ondalığa`, `<b>${f.n}/${f.d}</b> rasyonel sayısının ondalık gösterimi aşağıdakilerden hangisidir?`, null, cor, cands.filter(x => x !== cor)));
+        }
+        // Sonlu mu devirli mi
+        for (let i = 0; i < 2; i++) {
+          const wantTerm = i === 0;
+          const termList = [], repList = [];
+          const dens2 = [2, 4, 5, 8, 10, 20, 25, 40, 50];
+          while (termList.length < 4) { const q = pickOne(dens2), k = pickOne([1, 1, 3, 3, 7]), p = (() => { let x; do { x = rnd(1, q * 2); } while (gcd(x, q) !== 1); return x; })(); const s = `${p * k}/${q * k}`; if (!termList.includes(s) && !termList.some(x => { const [a, b] = x.split('/').map(Number); return a * q === p * b; })) termList.push(s); }
+          while (repList.length < 4) { const q = pickOne([3, 6, 7, 9, 12, 14, 15, 18, 21, 30]), p = (() => { let x; do { x = rnd(1, q + 5); } while (gcd(x, q) !== 1); return x; })(); const s = `${p}/${q}`; if (!repList.includes(s) && !isTerm(p, q)) repList.push(s); }
+          const cor = wantTerm ? termList[0] : repList[0], dist = (wantTerm ? repList : termList).slice(1, 4);
+          out.push(mq(`${B} · Sonlu ve Devirli Ayırt Etme (${wantTerm ? 'sonlu' : 'devirli'})`, `Aşağıdaki rasyonel sayılardan hangisinin ondalık gösterimi <b>${wantTerm ? 'sonludur' : 'devirlidir'}</b>?`, null, cor, dist));
+        }
+        // ?/q sonlu olsun
+        for (let i = 0; i < 2; i++) {
+          const base = pickOne([2, 4, 8, 5, 10, 20]), r = pickOne([3, 7, 9, 11]), q = base * r;
+          const mult = rnd(1, 3) * r; let wrong = [];
+          for (let t = 0; t < 300 && wrong.length < 3; t++) { const x = rnd(1, 40); if (!isTerm(x, q) && !wrong.includes(x)) wrong.push(x); }
+          out.push(mq(`${B} · Payda ve Sonlu Ondalık`, `<b>? / ${q}</b> rasyonel sayısının ondalık gösteriminin <u>sonlu</u> olabilmesi için soru işareti yerine aşağıdakilerden hangisi yazılabilir?`, null, String(mult), wrong.map(String)));
+        }
+        // 0,999... gibi
+        {
+          const V = [['0,999...', '1', ['0,9', '0,99', '0,999']], ['2,999...', '3', ['2,9', '2,99', '2,999']], ['0,4999...', '0,5', ['0,4', '0,49', '0,499']], ['3,999...', '4', ['3,9', '3,99', '3,999']]];
+          const v = pickOne(V);
+          out.push(mq(`${B} · 0,999... Sayısı`, `<b>${v[0]}</b> (virgülden sonra 9 rakamı sonsuza kadar devreder) sayısı aşağıdakilerden hangisine eşittir?`, null, v[1], v[2]));
+        }
+        // Devir sayısı
+        for (let i = 0; i < 2; i++) {
+          const { f, e } = repFrac();
+          out.push(mq(`${B} · Devreden Rakam Sayısı`, `<b>${f.n}/${f.d}</b> rasyonel sayısının ondalık gösterimine bakıldığında virgülden sonra <u>tekrar eden</u> rakam (devir) sayısı kaçtır?`, null, String(e.rep.length), [1, 2, 3, 4].filter(x => x !== e.rep.length).map(String)));
+        }
+        // Her rasyonel sayının ondalık gösterimi
+        out.push(mq(`${B} · Ondalık Gösterim Çeşitleri`, 'Her rasyonel sayının ondalık gösterimi için aşağıdakilerden hangisi doğrudur?', null,
+          'Ya sonludur ya da devirlidir', ['Her zaman sonludur', 'Her zaman devirlidir', 'Hem sonlu hem de devirli olabilir']));
+      }
+    
+      /* ==========================================================
+         KAZANIM 3 — MAT.7.1.3 · Karşılaştırma ve sıralama
+         ========================================================== */
+      function numItem() {
+        const t = rnd(0, 2);
+        if (t === 0) { let n; do { n = rnd(-9, 9); } while (n === 0); return { v: F(n), s: String(n) }; }
+        if (t === 1) { const f = rf(2, 9, 18, true); return { v: f, s: sFrac(f) }; }
+        const d = pickOne([2, 4, 5, 10, 20, 25]); let f; do { f = F((Math.random() < 0.5 ? -1 : 1) * rnd(1, 3 * d), d); } while (f.d === 1 || !sDec(f));
+        return { v: f, s: sDec(f) };
+      }
+      function distinctItems(n) {
+        for (let t = 0; t < 500; t++) {
+          const it = []; while (it.length < n) it.push(numItem());
+          let ok = true;
+          for (let i = 0; i < n && ok; i++) for (let j = i + 1; j < n; j++) if (feq(it[i].v, it[j].v)) { ok = false; break; }
+          if (ok && !it.every(x => x.v.n > 0)) return it;
+        }
+        return [{ v: F(-1, 2), s: '-1/2' }, { v: F(-3, 4), s: '-3/4' }, { v: F(1, 3), s: '1/3' }, { v: F(-2), s: '-2' }];
+      }
+      const cmpStr = (a, b, op) => `${a.s} ${op} ${b.s}`;
+    
+      function genKaz3(out) {
+        const B = 'MAT.7.1.3';
+    
+        // 4 sayıyı sıralama
+        ['küçükten büyüğe', 'büyükten küçüğe'].forEach((dir, di) => {
+          for (let k = 0; k < 2; k++) {
+            const it = distinctItems(4), asc = di === 0, op = asc ? '<' : '>';
+            const ord = it.slice().sort((x, y) => (asc ? fcmp(x.v, y.v) : fcmp(y.v, x.v)));
+            const str = arr => arr.map(x => x.s).join(` ${op} `);
+            const cor = str(ord);
+            const wrong = [];
+            const byAbs = it.slice().sort((x, y) => (asc ? fcmp(fabs(x.v), fabs(y.v)) : fcmp(fabs(y.v), fabs(x.v)))); wrong.push(str(byAbs));
+            wrong.push(str(ord.slice().reverse()));
+            for (let s = 0; s < 3; s++) { const c = ord.slice(), i = rnd(0, 2); [c[i], c[i + 1]] = [c[i + 1], c[i]]; wrong.push(str(c)); }
+            out.push(mq(`${B} · Dört Sayıyı Sıralama (${dir})`, `<b>${shuffleArr(it).map(x => x.s).join(', ')}</b> rasyonel sayılarının <u>${dir}</u> doğru sıralanışı hangisidir?`, null, cor, wrong.filter(x => x !== cor)));
+          }
+        });
+        // Gerçek yaşam: en küçük / en büyük
+        const CTX = [
+          { unit: '°C', who: 'şehir', place: ['Erzurum', 'Kars', 'Sivas', 'Ardahan', 'Van', 'Bolu'], intro: 'Dört şehirde gece ölçülen sıcaklıklar:', minQ: '<b>en soğuk</b>', maxQ: '<b>en sıcak</b>', frac: true },
+          { unit: 'm', who: 'dalgıç', place: null, intro: 'Dört dalgıcın deniz seviyesine göre konumları (yukarısı pozitif):', minQ: '<b>en derinde</b> bulunan', maxQ: '<b>en yüksekte</b> bulunan', frac: false },
+          { unit: 'TL', who: 'öğrenci', place: null, intro: 'Dört öğrencinin kantin hesabındaki bakiyeleri (borç negatif):', minQ: '<b>borcu en fazla olan</b>', maxQ: '<b>en çok parası olan</b>', frac: false }
+        ];
+        for (let k = 0; k < 3; k++) {
+          const c = CTX[k], names = c.place ? shuffleArr(c.place).slice(0, 4) : pickNames(4), wantMin = Math.random() < 0.5;
+          let it;
+          for (let t = 0; t < 300; t++) {
+            it = distinctItems(4);
+            if (c.frac || it.every(x => sDec(x.v) !== null && x.v.d !== 3)) { if (c.frac || it.every(x => x.s.indexOf('/') < 0)) break; }
+          }
+          const sorted = it.map((x, i) => ({ x, n: names[i] })).sort((a, b) => fcmp(a.x.v, b.x.v));
+          const ans = wantMin ? sorted[0] : sorted[3];
+          const list = it.map((x, i) => `${names[i]}: ${x.s} ${c.unit}`).join(' · ');
+          out.push(mq(`${B} · Gerçek Yaşamda Karşılaştırma (${c.unit})`, `${c.intro}<br><b>${list}</b><br><br>Buna göre ${wantMin ? c.minQ : c.maxQ} ${c.who} hangisidir?`, null, ans.n, names.filter(n => n !== ans.n)));
+        }
+        // Doğru / yanlış karşılaştırma ifadesi
+        [true, false].forEach(askTrue => {
+          const pairs = [];
+          while (pairs.length < 4) {
+            let a, b; const kind = rnd(0, 2);
+            if (kind === 1) { const n = rnd(1, 9), d1 = rnd(2, 9); let d2; do { d2 = rnd(2, 9); } while (d2 === d1); a = { v: F(-n, d1), s: `-${n}/${d1}` }; b = { v: F(-n, d2), s: `-${n}/${d2}` }; if (a.v.d === 1 || b.v.d === 1) continue; }
+            else if (kind === 2) { const d = rnd(3, 11), n1 = rnd(1, d - 1), n2 = rnd(1, d - 1); if (n1 === n2) continue; a = { v: F(-n1, d), s: `-${n1}/${d}` }; b = { v: F(-n2, d), s: `-${n2}/${d}` }; }
+            else { a = numItem(); b = numItem(); }
+            if (feq(a.v, b.v) || pairs.some(p => feq(p.a.v, a.v) && feq(p.b.v, b.v))) continue;
+            pairs.push({ a, b });
+          }
+          const stm = (p, truth) => { const gt = fcmp(p.a.v, p.b.v) > 0; const op = (gt === truth) ? '>' : '<'; return cmpStr(p.a, p.b, op); };
+          const opts = pairs.map((p, i) => stm(p, askTrue ? i === 0 : i !== 0));
+          out.push(mq(`${B} · Karşılaştırma İfadesi (${askTrue ? 'doğru' : 'yanlış'})`, `Aşağıdaki karşılaştırmalardan hangisi <b>${askTrue ? 'doğrudur' : 'yanlıştır'}</b>?`, null, opts[0], opts.slice(1)));
+        });
+        // İki sayı arasında rasyonel sayı
+        for (let k = 0; k < 3; k++) {
+          let l, u;
+          do { const d1 = rnd(2, 9), d2 = rnd(2, 9); l = F(rnd(-d1 * 2, d1 * 2), d1); u = fadd(l, F(rnd(1, 6), rnd(5, 12))); } while (l.d === 1 || u.d === 1 || fcmp(u, l) <= 0 || u.d > 40 || l.d > 40);
+          const mid = fdiv(fadd(l, u), F(2)), half = fdiv(fsub(u, l), F(2));
+          if (mid.d > 80) { k--; continue; }
+          const dist = [fsub(l, half), fadd(u, half), fadd(u, fmul(half, F(2))), fsub(l, fmul(half, F(3)))];
+          out.push(mq(`${B} · İki Sayı Arasındaki Rasyonel Sayı`, `<b>${sFrac(l)}</b> ile <b>${sFrac(u)}</b> rasyonel sayıları arasında bulunan rasyonel sayı aşağıdakilerden hangisidir?`, null, sFrac(mid), dist.map(x => sFrac(x))));
+        }
+        // Aralıkta tam sayı
+        for (let k = 0; k < 2; k++) {
+          const a = rnd(1, 6), b = rnd(1, 6), e1 = rnd(1, 9), e2 = rnd(1, 9);
+          out.push(mq(`${B} · Eşitsizliği Sağlayan Tam Sayılar`, `<b>-${a},${e1} &lt; x &lt; ${b},${e2}</b> koşulunu sağlayan kaç tane x tam sayısı vardır?`, null, `${a + b + 1} tane`, [a + b, a + b + 2, a + b - 1, a + b + 3].map(x => `${x} tane`)));
+        }
+        // Sayı doğrusunda konum
+        for (let k = 0; k < 2; k++) {
+          const x = distinctItems(4), pivot = x[0], lessThan = Math.random() < 0.5;
+          const ok = x.slice(1).filter(y => lessThan ? fcmp(y.v, pivot.v) < 0 : fcmp(y.v, pivot.v) > 0), bad = x.slice(1).filter(y => lessThan ? fcmp(y.v, pivot.v) > 0 : fcmp(y.v, pivot.v) < 0);
+          if (ok.length !== 1 || bad.length !== 2) { k--; continue; }
+          out.push(mq(`${B} · Sayı Doğrusunda Konum`, `Sayı doğrusunda <b>${pivot.s}</b> sayısının <b>${lessThan ? 'solunda' : 'sağında'}</b> yer alan sayı aşağıdakilerden hangisidir?`, null, ok[0].s, bad.map(y => y.s).concat([(() => { for (let st = 1; st < 9; st++) { const e = F(Math.abs(pivot.v.n) + st, pivot.v.d), ev = lessThan ? e : fneg(e); if (!x.some(y => feq(y.v, ev))) return sFrac(ev); } return '99'; })()]).filter(s => s !== ok[0].s && s !== pivot.s)));
+        }
+      }
+    
+      /* ==========================================================
+         KAZANIM 4 — MAT.7.1.4 · Rasyonel sayılarla işlemler ve problemler
+         ========================================================== */
+      function opnd(f, plus) { return sFrac(f, plus); }
+      function randOperand(allowInt) {
+        const r = Math.random();
+        if (allowInt && r < 0.25) return F(rnd(1, 6) * (Math.random() < 0.5 ? -1 : 1));
+        return rf(2, 8, 12, true);
+      }
+      const parenS = f => `(${f.n < 0 ? '-' : '+'}${f.d === 1 ? Math.abs(f.n) : Math.abs(f.n) + '/' + f.d})`;
+    
+      function genKaz4(out) {
+        const B = 'MAT.7.1.4';
+        const [n1, n2, n3] = pickNames(3);
+    
+        /* ---- Tam sayılarla problemler ---- */
+        {
+          let d, k, t1, t0;
+          do { d = pickOne([2, 3, 4, 5]); k = rnd(4, 9); t1 = -rnd(2, 12); t0 = t1 + d * k; } while (t0 < 3 || t0 > 25);
+          out.push(mq(`${B} · Sıcaklık Değişimi & Süre`, `Başlangıç sıcaklığı <b>+${t0} °C</b> olan bir soğuk hava deposunun <b>${t1} °C</b> sıcaklığa kadar soğutulması hedeflenmektedir. Soğutma sistemi sıcaklığı <b>her dakika ${d} °C</b> düşürmektedir.<br><br>Sistem aralıksız çalıştığında hedef sıcaklığa kaç dakikada ulaşılır?`, null, `${k} dakika`, fdInt(k, [k + 3, Math.round(t0 / d)], true).slice(0, 5).map(x => `${x} dakika`)));
+        }
+        {
+          const b = rnd(2, 12) * 100, y = b + rnd(1, 15) * 100, c = rnd(1, 8) * 100, res = y - b - c;
+          out.push(mq(`${B} · Banka Bakiyesi`, `Banka hesabında <b>${b} TL borcu (-${b} TL)</b> bulunan ${n1}, hesabına <b>${y} TL</b> yatırmış, ardından hesaptan <b>${c} TL</b> çekmiştir.<br><br>Buna göre hesabın son durumdaki bakiyesi kaç TL'dir?`, null, `${sInt(res, true)} TL`, fdInt(res, [y - b + c, y + b - c, -(y - b) - c, y - c]).map(x => `${sInt(x, true)} TL`)));
+        }
+        {
+          const a = rnd(3, 12), t = rnd(3, 9), u = rnd(5, 20), res = -a * t + u;
+          out.push(mq(`${B} · Dalgıç Konumu`, `Deniz yüzeyinde olan ${n2} adlı bir dalgıç <b>dakikada ${a} m</b> aşağı doğru dalmaktadır. ${t} dakika daldıktan sonra <b>${u} m</b> yukarı çıkmıştır.<br><br>Dalgıcın deniz yüzeyine göre konumu kaç metredir? (Yüzeyin altı negatif kabul edilecektir.)`, null, `${sInt(res, true)} m`, fdInt(res, [-a * t - u, a * t - u, a * t + u, -(a * t)]).map(x => `${sInt(x, true)} m`)));
+        }
+        {
+          const dg = rnd(4, 9), yn = rnd(1, 4), bs = 10 - dg - yn > 0 ? 10 - dg - yn : rnd(0, 2), pa = pickOne([5, 10]), pb = pickOne([2, 3, 4, 5]), res = pa * dg - pb * yn;
+          out.push(mq(`${B} · Sınav Puanı Hesabı`, `${dg + yn + bs} soruluk bir sınavda her doğru cevap <b>+${pa} puan</b>, her yanlış cevap <b>-${pb} puan</b> kazandırmakta, boş bırakılan sorular puanı etkilememektedir.<br>${n3} bu sınavda <b>${dg} doğru, ${yn} yanlış ve ${bs} boş</b> yapmıştır.<br><br>${n3} bu sınavdan toplam kaç puan almıştır?`, null, `${sInt(res, true)} puan`, fdInt(res, [pa * dg + pb * yn, pa * dg, pa * (dg - yn), res - pb]).map(x => `${sInt(x, true)} puan`)));
+        }
+        {
+          const n = pickOne([4, 5]); let arr, s;
+          do { arr = Array.from({ length: n }, () => rnd(-9, 9)); s = arr.reduce((a, b) => a + b, 0); const r = ((s % n) + n) % n; arr[0] -= r; s -= r; } while (Math.abs(arr[0]) > 14 || s === 0);
+          const avg = s / n;
+          out.push(mq(`${B} · Sıcaklıkların Ortalaması`, `Bir kentte ${n} gün boyunca gece sıcaklıkları sırasıyla <b>${arr.map(x => sInt(x, true)).join(' °C, ')} °C</b> ölçülmüştür.<br><br>Bu ${n} günün gece sıcaklıklarının ortalaması kaç °C'dir?`, null, `${sInt(avg, true)} °C`, fdInt(avg, [s, -s, avg + 2]).map(x => `${sInt(x, true)} °C`)));
+        }
+        {
+          const arr = Array.from({ length: 5 }, () => rnd(2, 30) * 10 * (Math.random() < 0.5 ? -1 : 1)); const s = arr.reduce((a, b) => a + b, 0);
+          const days = ['Pzt', 'Salı', 'Çarş', 'Perş', 'Cuma'];
+          const flip = s - 2 * arr.find(x => x < 0) || s + 10;
+          out.push(mq(`${B} · Haftalık Kâr / Zarar`, `Bir kantinin bir haftalık günlük kâr (+) ve zarar (-) kayıtları:<br><b>${days.map((d, i) => `${d}: ${sInt(arr[i], true)} TL`).join(', ')}</b><br><br>Kantinin haftalık toplam net kâr veya zararı kaç TL'dir?`, null, `${sInt(s, true)} TL`, fdInt(s, [flip, -s, arr.reduce((a, b) => a + Math.abs(b), 0)]).map(x => `${sInt(x, true)} TL`)));
+        }
+        {
+          const a = rnd(2, 9), t = rnd(3, 12);
+          out.push(mq(`${B} · Tam Sayı Çarpma Problemi`, `Bir musluktan her dakika <b>${a} litre su kaybedilmektedir (-${a} L)</b>.<br><br>Musluk ${t} dakika boyunca açık kalırsa depodaki su miktarındaki toplam değişim kaç litre olur?`, null, `${sInt(-a * t, true)} L`, fdInt(-a * t, [a * t, -(a + t), a + t]).map(x => `${sInt(x, true)} L`)));
+        }
+        {
+          const n = rnd(3, 8), r = rnd(6, 30), tot = r * n;
+          out.push(mq(`${B} · Tam Sayı Bölme Problemi`, `${n1} adlı öğrencinin <b>${tot} TL borcu (-${tot} TL)</b> vardır. Bu borcun <b>${n} eşit taksite</b> bölünmesiyle her taksitlik borç kısmı hangi tam sayı ile gösterilir? (Borç negatif sayı ile yazılmaktadır.)`, null, `${sInt(-r, true)} TL`, fdInt(-r, [r, -tot, -(tot + n)]).map(x => `${sInt(x, true)} TL`)));
+        }
+    
+        /* ---- Rasyonel sayılarla problemler ---- */
+        for (let i = 0; i < 2; i++) {
+          const d = pickOne([2, 4, 5, 8]); let a, b;
+          do { a = F(rnd(d * 4, d * 20), d); b = F(rnd(d, d * 4 - 1), pickOne([2, 4, 8, 5])); } while (fcmp(a, b) <= 0 || a.d === 1 || b.d === 1);
+          const useDec = (f) => Math.random() < 0.5 && sDec(f) ? sDec(f) : sMixed(f);
+          const aS = useDec(a), bS = useDec(b), res = fsub(a, b);
+          const C = pickOne([
+            { st: `Cetvelde ölçülen bir kurşun kalem <b>${aS} cm</b> uzunluğundadır. Kalem kullanıldıkça <b>${bS} cm</b> kısalmıştır.`, q: 'Kalan kalemin boyu kaç cm\'dir?', u: 'cm' },
+            { st: `Uzunluğu <b>${aS} m</b> olan bir ipten <b>${bS} m</b> kesilip kullanılmıştır.`, q: 'Geriye kalan ipin uzunluğu kaç m\'dir?', u: 'm' },
+            { st: `Boyu <b>${aS} m</b> olan bir fidan, bir fırtınada <b>${bS} m</b> kırılmıştır.`, q: 'Fidanın kalan boyu kaç m\'dir?', u: 'm' }
+          ]);
+          out.push(mq(`${B} · Uzunluk Çıkarma Problemi`, `${C.st}<br><br>${C.q}`, null, `${sMixed(res)} ${C.u}`, fd(res, [fadd(a, b)], sMixed, 3, { noNeg: true }).map(x => `${x} ${C.u}`)));
+        }
+        for (let tries = 0, done = false; tries < 100 && !done; tries++) {
+          const cap = pickOne([60, 80, 120, 150, 200, 240]), fr = pickOne([F(3, 4), F(2, 3), F(3, 5), F(5, 6), F(1, 2), F(3, 8)]);
+          const cur = fmul(F(cap), fr), use = pickOne([F(2, 5), F(1, 3), F(3, 4), F(1, 4), F(1, 2), F(2, 3)]), used = fmul(cur, use);
+          if (cur.d !== 1 || used.d !== 1) continue;
+          done = true;
+          const add = pickOne([F(37, 2), F(15, 2), F(27, 2), F(9, 2), F(25)]), lit = f => sDec(f) || sMixed(f);
+          if (Math.random() < 0.5) {
+            out.push(mq(`${B} · Depo Problemi (Kullanılan)`, `${cap} litrelik bir sulama deposunun <b>${sFrac(fr)}</b> kadarı doludur. Sabah depodaki suyun <b>${sFrac(use)}</b> kadarı bahçe sulamasında kullanılmıştır.<br><br>Sabah kaç litre su kullanılmıştır?`, null, `${lit(used)} litre`, fd(used, [cur, fsub(cur, used)], lit, 3, { noNeg: true }).map(x => `${x} litre`)));
+          } else {
+            const res = fadd(fsub(cur, used), add);
+            out.push(mq(`${B} · Depo Problemi (Son Durum)`, `${cap} litrelik bir sulama deposunun <b>${sFrac(fr)}</b> kadarı doludur. Sabah depodaki suyun <b>${sFrac(use)}</b> kadarı kullanılmış, akşam ise depoya <b>${lit(add)} litre</b> su eklenmiştir.<br><br>Son durumda depoda kaç litre su vardır?`, null, `${lit(res)} litre`, fd(res, [fadd(fadd(cur, used), add), fsub(fsub(cur, used), add), fadd(cur, add)], lit, 3, { noNeg: true }).map(x => `${x} litre`)));
+          }
+        }
+        for (let i = 0; i < 2; i++) {
+          const q = pickOne([3, 4, 5, 6, 8]), p = rnd(1, q - 1), k = q * rnd(2, 6); const fr = F(p, q), cut = fmul(F(k), fr), rest = fsub(F(k), cut);
+          if (fr.d === 1) { i--; continue; }
+          const C = pickOne([['kumaş şeridin', 'm', 'kesilip kullanılmıştır'], ['tahta çıtanın', 'cm', 'boyanmıştır']]);
+          out.push(mq(`${B} · Kesir Kadarı Problemi`, `Uzunluğu <b>${k} ${C[1]}</b> olan bir ${C[0]} <b>${sFrac(fr)}</b> kadarı ${C[2]}.<br><br>Geriye kalan kısmın uzunluğu kaç ${C[1]}'dir?`, null, `${sMixed(rest)} ${C[1]}`, fd(rest, [cut], sMixed, 3, { noNeg: true }).map(x => `${x} ${C[1]}`)));
+        }
+        {
+          const c = pickOne([F(3, 4), F(1, 2), F(2, 5), F(3, 2), F(5, 4)]), k = rnd(3, 12), tot = fmul(c, F(k));
+          const C = pickOne([['litre su', 'şişe', 'litre', 'şişelere'], ['kg un', 'poşet', 'kg', 'poşetlere'], ['m kurdele', 'parça', 'm', 'parçalara']]);
+          out.push(mq(`${B} · Rasyonel Bölme Problemi`, `<b>${sMixed(tot)} ${C[0]}</b>, her birine <b>${sFrac(c)} ${C[2]}</b> gelecek biçimde ${C[3]} ayrılıyor.<br><br>Bu işlem için kaç ${C[1]} gerekir?`, null, `${k} ${C[1]}`, fdInt(k, [Math.round(tot.n * c.n / (tot.d * c.d)) || k + 3]).filter(x => x > 0).map(x => `${x} ${C[1]}`)));
+        }
+        {
+          const q = pickOne([3, 4, 5, 8]), p = rnd(1, 2 * q), r = pickOne([2, 3, 4, 5, 6]); const tot = F(p, q), each = fdiv(tot, F(r));
+          if (tot.d !== 1) out.push(mq(`${B} · Eşit Paylaşım Problemi`, `<b>${sMixed(tot)} kg</b> şeker, ${r} kişiye eşit olarak paylaştırılıyor.<br><br>Her kişiye kaç kg şeker düşer?`, null, `${sMixed(each)} kg`, fd(each, [fmul(tot, F(r)), fsub(tot, F(r))], sMixed, 3, { noNeg: true }).map(x => `${x} kg`)));
+        }
+        {
+          const dec = pickOne([F(3, 2), F(5, 4), F(3, 4), F(5, 2), F(1, 2), F(7, 4)]), h = rnd(3, 8), res = fneg(fmul(dec, F(h)));
+          const C = pickOne([['Bir bölgede sıcaklık saatte', '°C', 'düşmektedir', 'saat sonra sıcaklıktaki toplam değişim'], ['Bir su deposundaki su miktarı saatte', 'L', 'azalmaktadır', 'saat sonra su miktarındaki toplam değişim']]);
+          const s = x => sDec(x) || sMixed(x);
+          out.push(mq(`${B} · Negatif Değişim Problemi`, `${C[0]} <b>${s(dec)} ${C[1]}</b> ${C[2]} (her saatteki değişim -${s(dec)} ${C[1]}).<br><br>${h} ${C[3]} kaç ${C[1]} olur?`, null, `${s(res)} ${C[1]}`, fd(res, [fmul(dec, F(h)), fadd(dec, F(h))], s).map(x => `${x} ${C[1]}`)));
+        }
+    
+        /* ---- Saf işlem soruları ---- */
+        for (let i = 0; i < 2; i++) {
+          const a = randOperand(false), b = randOperand(false), c = randOperand(false);
+          const o1 = Math.random() < 0.5 ? '+' : '-', o2 = Math.random() < 0.5 ? '+' : '-';
+          const r1 = o1 === '+' ? fadd(a, b) : fsub(a, b), res = o2 === '+' ? fadd(r1, c) : fsub(r1, c);
+          const alt1 = o1 === '+' ? fsub(a, b) : fadd(a, b);
+          const extras = [o2 === '+' ? fadd(alt1, c) : fsub(alt1, c), fadd(fadd(a, b), c), fneg(res)];
+          out.push(mq(`${B} · Toplama ve Çıkarma İşlemi`, `<b>${parenS(a)} ${o1} ${parenS(b)} ${o2} ${parenS(c)}</b> işleminin sonucu kaçtır?`, null, sOpt(res), fd(res, extras, sOpt)));
+        }
+        for (let i = 0; i < 2; i++) {
+          const a = randOperand(true), b = randOperand(true), mulOp = Math.random() < 0.5;
+          if (!mulOp && b.n === 0) { i--; continue; }
+          const res = mulOp ? fmul(a, b) : fdiv(a, b);
+          const extras = mulOp ? [fadd(a, b), fneg(res), fdiv(a, b)] : [fmul(a, b), fneg(res), fdiv(b, a)];
+          out.push(mq(`${B} · Çarpma ve Bölme İşlemi (${mulOp ? 'çarpma' : 'bölme'})`, `<b>${parenS(a)} ${mulOp ? '×' : '÷'} ${parenS(b)}</b> işleminin sonucu kaçtır?`, null, sOpt(res), fd(res, extras, sOpt, 3, { recip: true })));
+        }
+        // İşlem önceliği (en çok üç işlem)
+        for (let i = 0; i < 4; i++) {
+          const pat = i % 4, x = randOperand(true), y = randOperand(true), z = randOperand(true);
+          if (z.n === 0) { i--; continue; }
+          const P = [
+            { s: `${sFrac(x)} + ${parenS(y)} × ${parenS(z)}`, v: fadd(x, fmul(y, z)), w: fmul(fadd(x, y), z) },
+            { s: `${sFrac(x)} - ${parenS(y)} ÷ ${parenS(z)}`, v: fsub(x, fdiv(y, z)), w: fdiv(fsub(x, y), z) },
+            { s: `(${sFrac(x)} + ${parenS(y)}) × ${parenS(z)}`, v: fmul(fadd(x, y), z), w: fadd(x, fmul(y, z)) },
+            { s: `(${sFrac(x)} - ${parenS(y)}) ÷ ${parenS(z)}`, v: fdiv(fsub(x, y), z), w: fsub(x, fdiv(y, z)) }
+          ][pat];
+          out.push(mq(`${B} · İşlem Önceliği (${pat + 1})`, `<b>${P.s}</b> işleminin sonucu kaçtır?`, null, sOpt(P.v), fd(P.v, [P.w], sOpt)));
+        }
+        // Ters eleman
+        for (let i = 0; i < 2; i++) {
+          const v = Math.random() < 0.7 ? rf(2, 9, 14, true) : F(rnd(2, 9) * (Math.random() < 0.5 ? -1 : 1));
+          if (i === 0) out.push(mq(`${B} · Toplamaya Göre Ters Eleman`, `<b>${sFrac(v)}</b> sayısının <b>toplama işlemine göre tersi</b> hangisidir?`, null, sFrac(fneg(v)), [sFrac(v), sFrac(F(v.d, v.n)), sFrac(fneg(F(v.d, v.n)))].filter(x => x !== sFrac(fneg(v)))));
+          else out.push(mq(`${B} · Çarpmaya Göre Ters Eleman`, `<b>${sFrac(v)}</b> sayısının <b>çarpma işlemine göre tersi</b> (çarpımları 1 olan sayı) hangisidir?`, null, sFrac(F(v.d, v.n)), [sFrac(v), sFrac(fneg(v)), sFrac(fneg(F(v.d, v.n)))].filter(x => x !== sFrac(F(v.d, v.n)))));
+        }
+        // Üslü ifadeler
+        {
+          const a = pickOne([2, 3]), nn = rnd(2, 5), v = Math.pow(-a, nn);
+          out.push(mq(`${B} · Tam Sayının Kuvveti`, `<b>(-${a})<sup>${nn}</sup></b> üslü ifadesinin değeri kaçtır?`, null, String(v), fdInt(v, [-v, -a * nn, a * nn, Math.pow(a, nn - 1)]).map(String)));
+        }
+        {
+          const n = rnd(7, 60), a = pickOne([2, 3, 5, 7]), pos = n % 2 === 0;
+          out.push(mq(`${B} · Üslü İfadenin İşareti`, `<b>(-${a})<sup>${n}</sup></b> üslü ifadesinin değeri için aşağıdakilerden hangisi doğrudur?`, null, pos ? 'Pozitiftir (negatif sayının çift kuvveti pozitiftir)' : 'Negatiftir (negatif sayının tek kuvveti negatiftir)',
+            [pos ? 'Negatiftir (taban negatif olduğu için sonuç daima negatiftir)' : 'Pozitiftir (taban hangi işaretli olursa olsun sonuç pozitiftir)', 'Sıfırdır', 'İşareti belirlenemez']));
+        }
+        {
+          const base = pickOne([F(1, 2), F(-1, 2), F(2, 3), F(-2, 3), F(-1, 3), F(3, 4), F(-3, 4)]), e = pickOne([2, 3]);
+          let v = F(1); for (let k = 0; k < e; k++) v = fmul(v, base);
+          out.push(mq(`${B} · Rasyonel Sayının Kuvveti`, `<b>(${sFrac(base)})<sup>${e}</sup></b> işleminin sonucu kaçtır?`, null, sFrac(v), fd(v, [fmul(base, F(e)), F(Math.pow(base.n, e), base.d), fneg(v)], sFrac)));
+        }
+        {
+          const m = rnd(11, 60), k = rnd(11, 60), v = Math.pow(-1, m) + Math.pow(-1, k);
+          out.push(mq(`${B} · (-1) Üssü`, `<b>(-1)<sup>${m}</sup> + (-1)<sup>${k}</sup></b> işleminin sonucu kaçtır?`, null, String(v), [-2, -1, 0, 1, 2].filter(x => x !== v).map(String)));
+        }
+      }
+    
+      /* ==========================================================
+         HAVUZ ÜRETİMİ VE SEÇİCİ
+         ========================================================== */
+      function generate() {
+        const out = [];
+        genKaz1(out); genKaz2(out); genKaz3(out); genKaz4(out);
+        return out.filter(q => q.distractors.length === 3);
+      }
+    
+      function qHash(q) {
+        const s = q.text + '|' + q.correct;
+        let h = 5381;
+        for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+        return String(h);
+      }
+      function loadSeen() { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (e) { return []; } }
+      function saveSeen(list) { try { localStorage.setItem(SEEN_KEY, JSON.stringify(list.slice(-SEEN_MAX))); } catch (e) { /* yerel kayıt yoksa sorun değil */ } }
+    
+      // basePool: elle hazırlanmış (sabit) sorular; dinamik havuza eklenir.
+      function select(n, basePool, markSeen) {
+        if (markSeen === undefined) markSeen = true;
+        const merged = generate().concat(basePool || []);
+        const seenList = loadSeen();
+        const seen = new Set(seenList);
+        const groups = {}; KAZ_ORDER.forEach(k => { groups[k] = []; });
+        const textSeen = new Set();
+        shuffleArr(merged).forEach(q => {
+          const kz = q.kaz || String(q.badge).split(' ')[0];
+          if (!groups[kz] || textSeen.has(q.text)) return;
+          textSeen.add(q.text);
+          q.kaz = kz; q.tpl = q.tpl || q.badge;
+          groups[kz].push(q);
+        });
+    
+        const bag = []; KAZ_ORDER.forEach(k => { for (let i = 0; i < KAZ_WEIGHT[k]; i++) bag.push(k); });
+        const slots = [];
+        while (slots.length < n) shuffleArr(bag).forEach(k => { if (slots.length < n) slots.push(k); });
+    
+        const chosen = [], used = new Set(), tplCount = {};
+        const pickFrom = list => {
+          let best = null, bestScore = Infinity;
+          for (const q of list) {
+            if (used.has(q.text)) continue;
+            const sc = (seen.has(qHash(q)) ? 6 : 0) + (tplCount[q.tpl] || 0) * 2;
+            if (sc < bestScore) { bestScore = sc; best = q; if (sc === 0) break; }
+          }
+          return best;
+        };
+        slots.forEach(k => {
+          let q = pickFrom(groups[k]);
+          if (!q) { for (const kk of KAZ_ORDER) { q = pickFrom(groups[kk]); if (q) break; } }
+          if (q) { chosen.push(q); used.add(q.text); tplCount[q.tpl] = (tplCount[q.tpl] || 0) + 1; }
+        });
+    
+        if (markSeen) saveSeen(seenList.concat(chosen.map(qHash)));
+        return shuffleArr(chosen);
+      }
+    
+      return { generate, select, KAZ_ORDER, qHash };
+    })();
+
+    // Tüm havuz: sabit sorular + her çağrıda yeni sayı/isim/bağlamla üretilen sorular
+    function generateQuestionPool() {
+      return ArenaPool.generate().concat(generateStaticPool());
+    }
+
+    // n soru seç: 4 kazanıma dengeli dağıtır, aynı soru tipini art arda vermez,
+    // bu tarayıcıda daha önce sorulmuş soruları en sona bırakır.
+    function getQuestions(n) {
+      return ArenaPool.select(n, generateStaticPool());
+    }
+
+    // Bireysel mod ve düello için 15'lik soru seti
+    function getShuffled15Questions() {
+      return getQuestions(15);
     }
 
     /* ==========================================================
@@ -3884,6 +4574,8 @@
         const el = document.getElementById(id);
         if (el) el.style.display = (id === screenId) ? (id === 'screenGroup' ? 'flex' : 'block') : 'none';
       });
+      const sg = document.querySelector('.result-stats-grid');
+      if (sg) sg.style.display = (screenId === 'screenResult' && currentMode === 'group') ? 'none' : '';
       clearInterval(speedBarInterval);
       clearInterval(duelTimerInterval);
     }
@@ -4999,19 +5691,37 @@
       loadLeaderboard();
     });
   
+
     /* ==========================================================
-       GRUP MODU KODLARI (GROUP)
+       GRUP MODU KODLARI (3 TAKIM · 30 KALKAN)
+       22 soru + 8 şans kartı. Sorular dengeli kazanım dağılımıyla ve
+       daha önce sorulmamışlardan seçilir; şans kartları da her oyunda
+       büyük bir havuzdan yeniden seçilir.
        ========================================================== */
-    const groupJokers = [
-      { type: 'j', subType: 'buff', points: 40, msg: "🎁 İMPARATORUN LÜTFU", desc: "Sezar'dan sana altın bir hediye! (+40 Puan)" },
-      { type: 'j', subType: 'buff', points: 30, msg: "🧪 GLADYATÖR İKSİRİ", desc: "Arenada gücüne güç kattın! (+30 Puan)" },
-      { type: 'j', subType: 'buff', points: 25, msg: "🐎 SAVAŞ ARABASI", desc: "Hızlı bir hamle yaparak öne geçtin! (+25 Puan)" },
-      { type: 'j', subType: 'debuff', points: -20, msg: "⚔️ KIRIK KILIÇ", desc: "Kılıcın kırıldı, yeni kılıç alırken zaman kaybettin! (-20 Puan)" },
-      { type: 'j', subType: 'debuff', points: -15, msg: "🌪️ KUM FIRTINASI", desc: "Arenada gözüne kum kaçtı! (-15 Puan)" },
-      { type: 'j', subType: 'attack', points: 0, msg: "🦁 ASLAN SALDIRISI", desc: "Kafesler açıldı! Sıradaki takım korkup kaçtı! (Sıradaki takımdan 20 Puan silinir)" },
-      { type: 'j', subType: 'drain', points: 0, msg: "🏃 HIRSIZ SPARTAKÜS", desc: "Kaçak köleler rakibin ganimetini çaldı! (Sıradaki takımdan 25 Puan aşırdın)" },
-      { type: 'j', subType: 'bomb', points: 0, msg: "🔥 ROMA ATEŞİ", desc: "Arena alevler içinde kaldı! (Tüm takımların puanı yarıya iner)" }
-    ];
+    const GROUP_JOKER_BANK = {
+      buff: [
+        { subType: 'buff', points: 40, msg: "🎁 İMPARATORUN LÜTFU", desc: "Sezar'dan sana altın bir hediye! (+40 Puan)" },
+        { subType: 'buff', points: 30, msg: "🧪 GLADYATÖR İKSİRİ", desc: "Arenada gücüne güç kattın! (+30 Puan)" },
+        { subType: 'buff', points: 25, msg: "🐎 SAVAŞ ARABASI", desc: "Hızlı bir hamle yaparak öne geçtin! (+25 Puan)" },
+        { subType: 'buff', points: 35, msg: "🏺 ALTIN AMFORA", desc: "Arenanın hazinesinden altın dolu bir amfora buldun! (+35 Puan)" },
+        { subType: 'buff', points: 20, msg: "🌿 ZAFER DEFNESİ", desc: "Başına altın defne tacı takıldı! (+20 Puan)" }
+      ],
+      debuff: [
+        { subType: 'debuff', points: -20, msg: "⚔️ KIRIK KILIÇ", desc: "Kılıcın kırıldı, yeni kılıç alırken zaman kaybettin! (-20 Puan)" },
+        { subType: 'debuff', points: -15, msg: "🌪️ KUM FIRTINASI", desc: "Arenada gözüne kum kaçtı! (-15 Puan)" },
+        { subType: 'debuff', points: -10, msg: "🕳️ ARENA ÇUKURU", desc: "Çukura düştün, çıkarken zaman kaybettin! (-10 Puan)" }
+      ],
+      attack: [
+        { subType: 'attack', points: 20, msg: "🦁 ASLAN SALDIRISI", desc: "Kafesler açıldı! Sıradaki takım korkup kaçtı! (Sıradaki takımdan 20 Puan silinir)" },
+        { subType: 'attack', points: 15, msg: "🏹 OK YAĞMURU", desc: "Kuleden oklar yağdı! (Sıradaki takımdan 15 Puan silinir)" },
+        { subType: 'drain', points: 25, msg: "🏃 HIRSIZ SPARTAKÜS", desc: "Kaçak köleler rakibin ganimetini çaldı! (Sıradaki takımdan 25 Puan aşırdın)" }
+      ],
+      special: [
+        { subType: 'bomb', points: 0, msg: "🔥 ROMA ATEŞİ", desc: "Arena alevler içinde kaldı! (Tüm takımların puanı yarıya iner)" },
+        { subType: 'swap', points: 0, msg: "🔄 KADER TAKASI", desc: "Tanrılar terazileri değiştirdi! (Sıradaki takımla puanlarınız yer değiştirir)" },
+        { subType: 'all', points: 10, msg: "👏 ARENA ALKIŞI", desc: "Seyirciler hepinizi alkışlıyor! (Her takıma +10 Puan)" }
+      ]
+    };
 
     let groupState = {
       teams: [
@@ -5026,17 +5736,35 @@
       pendingJokerAction: null
     };
 
-    function getShuffledGroupQuestions(count) {
-      const fullPool = generateQuestionPool();
-      for (let i = fullPool.length - 1; i > 0; i--) {
+    function grpShuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+        [a[i], a[j]] = [a[j], a[i]];
       }
-      return fullPool.slice(0, count);
+      return a;
+    }
+
+    // 8 şans kartı: 3 ödül, 1 ceza, 2 saldırı, 1 özel + 1 rastgele
+    function buildGroupJokers() {
+      const B = GROUP_JOKER_BANK;
+      const chosen = [].concat(
+        grpShuffle(B.buff).slice(0, 3),
+        grpShuffle(B.debuff).slice(0, 1),
+        grpShuffle(B.attack).slice(0, 2),
+        grpShuffle(B.special).slice(0, 1)
+      );
+      const rest = grpShuffle([].concat(B.buff, B.debuff, B.attack, B.special).filter(j => !chosen.includes(j)));
+      chosen.push(rest[0]);
+      return chosen.map(j => ({ ...j, type: 'j', solved: false }));
+    }
+
+    function getShuffledGroupQuestions(count) {
+      return getQuestions(count);
     }
 
     function startGroupGame() {
-      if (typeof initAudio === 'function') initAudio();
+      try { getAudioCtx(); } catch (e) { /* ses kullanılamıyorsa oyun devam eder */ }
       groupState.teams.forEach(t => t.score = 0);
       groupState.currentTurn = 0;
       groupState.solvedCount = 0;
@@ -5044,8 +5772,8 @@
       groupState.pendingJokerAction = null;
 
       const qs = getShuffledGroupQuestions(22).map(q => ({ ...q, type: 'q', points: 30, solved: false }));
-      const js = groupJokers.map(j => ({ ...j, solved: false }));
-      groupState.cards = [...qs, ...js].sort(() => Math.random() - 0.5);
+      const js = buildGroupJokers();
+      groupState.cards = grpShuffle([...qs, ...js]);
 
       renderGroupTeams();
       renderGroupGrid();
@@ -5069,24 +5797,22 @@
       if (!grid) return;
       grid.innerHTML = groupState.cards.map((c, i) => {
         let backContent = '';
-        let backClass = 'g-card-back';
-        
+        const backClass = 'g-card-back';
+
         if (c.solved) {
           if (c.type === 'j') {
             backContent = `<div style="font-size:32px;">🎁</div>`;
+          } else if (c.status === 'correct') {
+            backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981; font-weight:800;">+${c.points}</div>`;
           } else {
-            if (c.status === 'correct') {
-              backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981; font-weight:800;">+${c.points}</div>`;
-            } else {
-              backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:11px; margin-top:2px; color:#fca5a5; font-weight:700;">${c.correct}</div>`;
-            }
+            backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:11px; margin-top:2px; color:#fca5a5; font-weight:700;">${c.correct}</div>`;
           }
-        } else {
-          if (c.type === 'q') backContent = `<div style="position:absolute; top:4px; right:4px; font-size:10px; color:#fbbf24;">${c.points}P</div>`;
+        } else if (c.type === 'q') {
+          backContent = `<div style="position:absolute; top:4px; right:4px; font-size:10px; color:#fbbf24;">${c.points}P</div>`;
         }
 
         return `
-          <div class="g-card ${c.solved ? 'opened' : ''}" style="animation-delay: ${i*0.03}s" onclick="handleGroupCardClick(${i})">
+          <div class="g-card ${c.solved ? 'opened' : ''}" style="animation-delay: ${i * 0.03}s" onclick="handleGroupCardClick(${i})">
             <div class="g-card-inner">
               <div class="g-card-face g-card-front">${i + 1}</div>
               <div class="g-card-face ${backClass}">${backContent}</div>
@@ -5099,7 +5825,7 @@
     function handleGroupCardClick(index) {
       if (groupState.cards[index].solved || groupState.activeCardIndex !== null) return;
       groupState.activeCardIndex = index;
-      
+
       const card = groupState.cards[index];
       if (card.type === 'j') {
         openGroupJokerModal(card);
@@ -5110,23 +5836,23 @@
 
     function openGroupQuestionModal(card) {
       document.getElementById('gqBadge').innerText = card.badge || 'Kazanım';
-      document.getElementById('gqText').innerText = card.text || '';
-      
+      document.getElementById('gqText').innerHTML = card.text || '';
+
       const vBox = document.getElementById('gqVisualBox');
-      if (card.visual) { 
-        vBox.innerHTML = card.visual; 
-        vBox.style.display = 'flex'; 
-      } else { 
+      if (card.visual) {
+        vBox.innerHTML = card.visual;
+        vBox.style.display = 'flex';
+      } else {
         vBox.innerHTML = '';
-        vBox.style.display = 'none'; 
+        vBox.style.display = 'none';
       }
-      
-      const choices = [card.correct, ...card.distractors].sort(() => Math.random() - 0.5);
+
+      const choices = grpShuffle([card.correct, ...card.distractors]);
       card.currentChoices = choices;
       const grid = document.getElementById('gqOptionsGrid');
       grid.innerHTML = choices.map((c, idx) => `
         <button class="option-btn" onclick="submitGroupAnswer(${idx})" style="min-height: 60px; font-size: 18px;">
-          <span class="option-letter" style="width:36px; height:36px; font-size:18px;">${['A','B','C','D'][idx]}</span>
+          <span class="option-letter" style="width:36px; height:36px; font-size:18px;">${['A', 'B', 'C', 'D'][idx]}</span>
           <span style="flex:1;">${c}</span>
         </button>
       `).join('');
@@ -5138,7 +5864,7 @@
       document.getElementById('groupQModal').style.display = 'none';
       const card = groupState.cards[groupState.activeCardIndex];
       const selected = card.currentChoices ? card.currentChoices[choiceIndex] : null;
-      
+
       if (selected === card.correct) {
         if (typeof soundCorrect === 'function') soundCorrect();
         card.status = 'correct';
@@ -5155,25 +5881,25 @@
     function openGroupJokerModal(joker) {
       const tId = groupState.currentTurn;
       const nextTId = (tId + 1) % 3;
-      
+      const T = groupState.teams;
+      const icons = { buff: '🎉', debuff: '😭', attack: '🦁', drain: '🏃', bomb: '🔥', swap: '🔄', all: '👏' };
+
       document.getElementById('gjTitle').innerText = joker.msg;
       document.getElementById('gjDesc').innerText = joker.desc;
-      
-      if (joker.subType === 'buff') {
-        document.getElementById('gjIcon').innerText = "🎉";
-        groupState.pendingJokerAction = () => { groupState.teams[tId].score += joker.points; };
-      } else if (joker.subType === 'debuff') {
-        document.getElementById('gjIcon').innerText = "😭";
-        groupState.pendingJokerAction = () => { groupState.teams[tId].score += joker.points; };
+      document.getElementById('gjIcon').innerText = icons[joker.subType] || '🎁';
+
+      if (joker.subType === 'buff' || joker.subType === 'debuff') {
+        groupState.pendingJokerAction = () => { T[tId].score += joker.points; };
       } else if (joker.subType === 'attack') {
-        document.getElementById('gjIcon').innerText = "🦁";
-        groupState.pendingJokerAction = () => { groupState.teams[nextTId].score -= 20; };
+        groupState.pendingJokerAction = () => { T[nextTId].score -= joker.points; };
       } else if (joker.subType === 'drain') {
-        document.getElementById('gjIcon').innerText = "🏃";
-        groupState.pendingJokerAction = () => { groupState.teams[tId].score += 25; groupState.teams[nextTId].score -= 25; };
+        groupState.pendingJokerAction = () => { T[tId].score += joker.points; T[nextTId].score -= joker.points; };
       } else if (joker.subType === 'bomb') {
-        document.getElementById('gjIcon').innerText = "🔥";
-        groupState.pendingJokerAction = () => { groupState.teams.forEach(t => t.score = Math.floor(t.score / 2)); };
+        groupState.pendingJokerAction = () => { T.forEach(t => { t.score = Math.trunc(t.score / 2); }); };
+      } else if (joker.subType === 'swap') {
+        groupState.pendingJokerAction = () => { const tmp = T[tId].score; T[tId].score = T[nextTId].score; T[nextTId].score = tmp; };
+      } else if (joker.subType === 'all') {
+        groupState.pendingJokerAction = () => { T.forEach(t => { t.score += joker.points; }); };
       }
 
       if (typeof soundJoker === 'function') soundJoker();
@@ -5194,8 +5920,9 @@
       groupState.pendingJokerAction = null;
 
       renderGroupGrid();
-      
-      if (groupState.solvedCount >= 30) {
+
+      if (groupState.solvedCount >= groupState.cards.length) {
+        renderGroupTeams();
         setTimeout(() => finishGroupGame(), 1000);
       } else {
         groupState.currentTurn = (groupState.currentTurn + 1) % 3;
@@ -5205,12 +5932,8 @@
 
     function finishGroupGame() {
       showScreen('screenResult');
-      const statsGrid = document.querySelector('.result-stats-grid');
-      const lbStat = document.getElementById('resLeaderboardStatus');
-      if (statsGrid) statsGrid.style.display = 'none';
-      if (lbStat) lbStat.innerText = '';
 
-      let maxScore = -9999;
+      let maxScore = -Infinity;
       let winners = [];
       groupState.teams.forEach(t => {
         if (t.score > maxScore) { maxScore = t.score; winners = [t.name]; }
@@ -5227,8 +5950,10 @@
         "Rakipler dize geldi, arenanın gerçek hakimi sizsiniz!"
       ];
       const randomMsg = winMessages[Math.floor(Math.random() * winMessages.length)];
+      const board = groupState.teams.slice().sort((a, b) => b.score - a.score)
+        .map(t => `<span style="display:inline-block; margin:3px 8px;">${t.name}: <b style="color:#fbbf24;">${t.score}</b></span>`).join('');
 
-      document.getElementById('resSubtitle').innerText = `${maxScore} Puanla ${randomMsg}`;
+      document.getElementById('resSubtitle').innerHTML = `${maxScore} Puanla ${randomMsg}<div style="margin-top:10px; font-size:15px;">${board}</div>`;
 
       if (typeof soundFanfare === 'function') soundFanfare();
       if (typeof confetti === 'function') {

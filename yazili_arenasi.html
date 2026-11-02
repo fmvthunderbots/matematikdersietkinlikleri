@@ -3328,6 +3328,10 @@ function soundJoker() {
       }
       const mq = (badge, text, visual, correct, cands) => makeQ(badge, text, visual, correct, shuffleArr(cands));
     
+      /* ---------- Açı gösterimi: köşe harfinin üstünde şapka (A B̂ C) ---------- */
+      const hat = x => `<span style="position:relative;display:inline-block;">${x}<span style="position:absolute;left:0;right:0;top:-0.62em;text-align:center;font-size:0.85em;line-height:1;font-weight:800;">^</span></span>`;
+      const ang = (a, vertex, b) => `${a}${hat(vertex)}${b}`;
+    
       /* ---------- Şekil (SVG) yardımcıları ---------- */
       function angleSvg(deg, color) {
         const vx = 90, vy = 76, L1 = 80, L2 = 66, ar = 22;
@@ -3549,7 +3553,7 @@ function soundJoker() {
           const L = shuffleArr(['A', 'B', 'C', 'D', 'E', 'K', 'L', 'M', 'N', 'P', 'R', 'S']).slice(0, 3);
           const [v, p, q] = L;
           out.push(mq(`${B} · Açının Gösterimi`, `Köşesi ${v} noktası, kolları [${v}${p} ve [${v}${q} olan açı aşağıdakilerden hangisi ile gösterilir?`, null,
-            `∠${p}${v}${q}`, [`∠${v}${p}${q}`, `∠${p}${q}${v}`, `∠${v}${q}${p}`]));
+            ang(p, v, q), [ang(v, p, q), `${hat(p)}${v}${q}`, `${p}${v}${hat(q)}`]));
         }
         // Kavramlar
         const st = (tpl, text, correct, dist) => out.push(mq(`${B} · ${tpl}`, text, null, correct, dist));
