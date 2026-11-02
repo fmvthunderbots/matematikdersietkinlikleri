@@ -10,8 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Fredoka:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap&subset=latin,latin-ext" rel="stylesheet">
   
   <script src="./students.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     :root {
@@ -672,13 +672,14 @@
 
     .dialogue-text-body {
       font-family: 'Baloo 2', sans-serif;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: #E2E8F0;
-      line-height: 1.35;
-      white-space: nowrap;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     /* SORU PARŞÖMENİ MODAL */
@@ -1788,8 +1789,9 @@
       <div class="game-sub-badge">6. Sınıf Ondalık Gösterim & Çözümleme Kaçış Odası</div>
 
       <div style="position: relative; width: 100%; margin-bottom: 14px;">
-        <input type="text" id="playerNameInput" list="studentNamesList" class="input-field" placeholder="Dedektif İsmini Seç veya Yaz..." maxlength="50" autocomplete="off" onfocus="populateStudentNamesImmediate();" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}">
+        <input type="text" id="playerNameInput" list="studentNamesList" class="input-field" placeholder="Dedektif İsmini Listeden Seç..." maxlength="50" autocomplete="off" oninput="hideNameError()" onfocus="populateStudentNamesImmediate();" onclick="try{if(this.showPicker)this.showPicker();}catch(e){}">
         <datalist id="studentNamesList"></datalist>
+        <div id="nameError" style="display:none; margin-top:-10px; margin-bottom:4px; color:#FCA5A5; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:14px;"></div>
       </div>
 
       <!-- MACERAYA BAŞLA BUTONU (TEMİZ VE NET) -->
@@ -1949,10 +1951,6 @@
       apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
       authDomain: "zihindencarpma.firebaseapp.com",
       databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
-      projectId: "zihindencarpma",
-      storageBucket: "zihindencarpma.appspot.com",
-      messagingSenderId: "1028701974721",
-      appId: "1:1028701974721:web:58afc46fc877405be1bce3"
     };
     const DB_NODE = "meb_perilikosk_top10";
     const STUDENTS_NODE = "students_grade_6";
@@ -2059,9 +2057,6 @@
       });
     }
 
-    // Gerçek zamanlı liderlik tablosu dinleyicisini başlat
-    loadLeaderboard();
-
     /* ========================================================
        OYUN DURUM DEĞİŞKENLERİ
        ======================================================== */
@@ -2098,6 +2093,7 @@
       audioEnabled = !audioEnabled;
       const btn = document.getElementById('audio-toggle-btn');
       if (btn) btn.innerText = audioEnabled ? "🔊 Ses: Açık" : "🔇 Ses: Kapalı";
+      if (!audioEnabled) stopSpeech();
       if (!audioEnabled && currentVoiceAudio) {
         currentVoiceAudio.pause();
         currentVoiceAudio.currentTime = 0;
@@ -2166,12 +2162,64 @@
           currentVoiceAudio.pause();
           currentVoiceAudio.currentTime = 0;
         }
-        currentVoiceAudio = new Audio(`./sesler/${filename}`);
-        currentVoiceAudio.play().catch(e => {
-          currentVoiceAudio = new Audio(`./perili_kosk_assets/sesler/${filename}`);
-          currentVoiceAudio.play().catch(err => {});
+        const a = new Audio(`./sesler/${filename}`);
+        currentVoiceAudio = a;
+        a.play().catch(e => {
+          const b = new Audio(`./perili_kosk_assets/sesler/${filename}`);
+          if (currentVoiceAudio === a) currentVoiceAudio = b;
+          b.play().catch(err => { if (currentVoiceAudio === b) currentVoiceAudio = null; });
         });
       } catch(e) {}
+    }
+
+    /* ---- Mösyö Ondalık'ın alttaki konuşmalarını sesli okuma (tarayıcının Türkçe sesi) ---- */
+    let ttsToken = 0;
+    function pickTurkishVoice() {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = window.speechSynthesis.getVoices() || [];
+      const tr = voices.filter(v => (v.lang || '').toLowerCase().replace('_', '-').startsWith('tr'));
+      if (!tr.length) return null;
+      return tr.find(v => /tolga|male|erkek/i.test(v.name)) || tr[0];
+    }
+    function stopSpeech() {
+      ttsToken++;
+      try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch(e) {}
+    }
+    function isRecordedVoicePlaying() {
+      return !!(currentVoiceAudio && !currentVoiceAudio.paused && !currentVoiceAudio.ended);
+    }
+    function speakMosyo(text) {
+      if (!audioEnabled || !('speechSynthesis' in window) || !text) return;
+      const token = ++ttsToken;
+      try { window.speechSynthesis.cancel(); } catch(e) {}
+      const clean = String(text)
+        .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!clean) return;
+      const go = () => {
+        if (token !== ttsToken || !audioEnabled) return;
+        try {
+          const u = new SpeechSynthesisUtterance(clean);
+          u.lang = 'tr-TR';
+          const v = pickTurkishVoice();
+          if (v) u.voice = v;
+          u.rate = 0.95;
+          u.pitch = 0.75;
+          u.volume = 1;
+          window.speechSynthesis.speak(u);
+        } catch(e) {}
+      };
+      if (isRecordedVoicePlaying()) {
+        // Kayıtlı ses (hoş geldin / kahkaha) çalıyorsa bitmesini bekle, üst üste binmesin
+        let done = false;
+        const once = () => { if (done) return; done = true; go(); };
+        currentVoiceAudio.addEventListener('ended', once, { once: true });
+        currentVoiceAudio.addEventListener('error', once, { once: true });
+        setTimeout(once, 6000);
+      } else {
+        setTimeout(go, 80);
+      }
     }
 
     function playSound(type) {
@@ -2312,18 +2360,39 @@
       return action === 'walk' ? './detective_sprite_walk.png' : './detective_sprite_idle.png';
     }
 
+    function normalizeName(x) {
+      return String(x || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('tr-TR');
+    }
+    function showNameError(msg) {
+      const el = document.getElementById('nameError');
+      if (!el) return;
+      el.innerText = msg;
+      el.style.display = 'block';
+    }
+    function hideNameError() {
+      const el = document.getElementById('nameError');
+      if (el) el.style.display = 'none';
+    }
+
     function startGame() {
-      try { playSound('step'); } catch(e){}
       const input = document.getElementById('playerNameInput');
-      const val = input ? input.value.trim() : '';
-      
-      if (val) {
-        let match = authorizedStudents.find(s => s.toLocaleLowerCase('tr-TR') === val.toLocaleLowerCase('tr-TR'));
-        playerName = match || val;
-      } else {
-        playerName = "Dedektif";
+      const typed = normalizeName(input ? input.value : '');
+      if (!authorizedStudents.length) populateStudentNamesImmediate();
+
+      // Yalnızca öğretmenin tanımladığı listedeki isimler oyuna girebilir
+      const match = typed ? authorizedStudents.find(s => normalizeName(s) === typed) : null;
+      if (!match) {
+        try { playSound('wrong'); } catch(e){}
+        showNameError(typed
+          ? 'Bu isim listede yok! Lütfen listeden kendi ismini seç.'
+          : 'Başlamak için listeden ismini seçmelisin.');
+        if (input) input.focus();
+        return;
       }
 
+      hideNameError();
+      try { playSound('step'); } catch(e){}
+      playerName = match;
       launchGame();
     }
 
@@ -2340,12 +2409,12 @@
         if (spriteImg) spriteImg.src = './detective_sprite_idle.png';
 
         document.querySelectorAll('.card-screen').forEach(el => el.style.display = 'none');
+        try { playVoice('welcome.mp3'); } catch(e){}
         buildRunesProgress();
         loadRoom(currentRoomIndex);
         updateHud();
         try { triggerLightning(); } catch(e){}
         try { startBGM(); } catch(e){}
-        try { playVoice('welcome.mp3'); } catch(e){}
       } catch (err) {
         console.error("Game start error:", err);
       }
@@ -2354,6 +2423,7 @@
     function returnToMainMenu() {
       try { playSound('step'); } catch(e){}
       try { stopBGM(); } catch(e){}
+      try { stopSpeech(); } catch(e){}
       showScreen('MAIN_MENU');
     }
 
@@ -2461,9 +2531,9 @@
         id: 1,
         name: "Giriş Holü",
         runeName: "Kadim Göz",
-        whisper: "Giriş Holündesin... Duvardaki gözlü tabloya dikkat et, bakışları bir basamağa kilitlenmiş!",
+        whisper: "Giriş Holü... Buranın havası bile ağır. Üç eşyadan yalnızca birinde şifremi sakladım!",
         objects: [
-          { id: "tablo", name: "Gözlü Tablo", x: 26, y: 36, isTarget: true, desc: "Tablodaki kontun gözleri basamaklara kilitlenmiş!" },
+          { id: "tablo", name: "Gözlü Tablo", x: 26, y: 36, isTarget: true, desc: "Tablodaki kontun gözleri basamaklara kilitlenmiş!", trick: "Gözlü tablo... Bakışları ürkütücü ama arkasında gizli bir kilit yok." },
           { id: "samdan", name: "Kuru Kafa Şamdan", x: 48, y: 50, isTarget: false, trick: "Eski şamdan... Üzerinde sadece erimiş mumlar var, burada gizli bir kilit yok." },
           { id: "zirh", name: "Eski Zırh", x: 72, y: 44, isTarget: false, trick: "Eski zırh... İçinden hafif bir metal tıkırtısı geldi ama kilit mekanizması göremedin." }
         ]
@@ -2472,9 +2542,9 @@
         id: 2,
         name: "Tozlu Kütüphane",
         runeName: "Büyülü Tomar",
-        whisper: "Tozlu Kütüphaneye ulaştın! Şifreli kasanın kesirli çözümleme çarklarını tamamla!",
+        whisper: "Tozlu Kütüphane... Kitap kokusu ve gölgeler. Şifrem üç nesneden birinde saklı, bul bakalım!",
         objects: [
-          { id: "sandik", name: "Şifreli Kasa", x: 50, y: 52, isTarget: true, desc: "Kasanın üzerinde kesirli çözümleme çarkları var!" },
+          { id: "sandik", name: "Şifreli Kasa", x: 50, y: 52, isTarget: true, desc: "Kasanın üzerinde kesirli çözümleme çarkları var!", trick: "Şifreli kasa... Çarkları dönüyor ama kilit mekanizması bu kasada değil." },
           { id: "kitap", name: "Büyü Kitabı", x: 25, y: 45, isTarget: false, trick: "Büyü kitabı... Sayfaları eski simya sembolleriyle dolu, kilit taşı bu değil." },
           { id: "kure", name: "Kristal Küre", x: 74, y: 42, isTarget: false, trick: "Kristal küre... İçinde sadece mor dumanlar dönüyor, gizli bir şey bulamadın." }
         ]
@@ -2483,9 +2553,9 @@
         id: 3,
         name: "Simya Laboratuvarı",
         runeName: "Simya İksiri",
-        whisper: "Simya Laboratuvarındasın. Hassas iksir terazisi tam ondalık çözümleme istiyor!",
+        whisper: "Simya Laboratuvarı... Kazanlar fokurduyor! Şifreyi yalnızca bir nesne taşıyor, dikkatle incele!",
         objects: [
-          { id: "terazi", name: "Hassas Terazi", x: 48, y: 48, isTarget: true, desc: "Miligramlık hassas tartı tam ondalık çözümleme istiyor!" },
+          { id: "terazi", name: "Hassas Terazi", x: 48, y: 48, isTarget: true, desc: "Miligramlık hassas tartı tam ondalık çözümleme istiyor!", trick: "Hassas terazi... Kefeleri boş, burada şifre saklı değil." },
           { id: "kazan", name: "Büyü Kazanı", x: 24, y: 46, isTarget: false, trick: "Büyü kazanı... İçi boş ve paslanmış, kilit mekanizması göremedin." },
           { id: "siseler", name: "İksir Şişeleri", x: 74, y: 44, isTarget: false, trick: "İksir şişeleri... Renkli sıvılar parıldıyor ama şifre burada saklı değil." }
         ]
@@ -2494,9 +2564,9 @@
         id: 4,
         name: "Saat Kulesi Koridoru",
         runeName: "Zaman Çarkı",
-        whisper: "Saat Kulesi Koridoru... Guguklu saatin sarkacındaki sıfırlı tuzağa düşme!",
+        whisper: "Saat Kulesi Koridoru... Tik tak, zaman daralıyor! Şifrem üç nesneden birinin içinde gizli!",
         objects: [
-          { id: "saat", name: "Antika Saat", x: 48, y: 38, isTarget: true, desc: "Saatin akrep ve yelkovanı basamak değerlerinde durmuş!" },
+          { id: "saat", name: "Antika Saat", x: 48, y: 38, isTarget: true, desc: "Saatin akrep ve yelkovanı basamak değerlerinde durmuş!", trick: "Antika saat... Sarkaç sallanıyor ama kilit burada değil." },
           { id: "ayna", name: "Çatlak Ayna", x: 26, y: 44, isTarget: false, trick: "Çatlak ayna... Kendi yansımanı görüyorsun ama kilit bu aynada değil." },
           { id: "kandil", name: "Duvar Kandili", x: 74, y: 40, isTarget: false, trick: "Duvar kandili... Rüzgarda titriyor, aradığımız parça bu değil." }
         ]
@@ -2505,9 +2575,9 @@
         id: 5,
         name: "Şömineli Büyük Salon",
         runeName: "Ejder Közü",
-        whisper: "Şömineli Büyük Salon! Alevlerin ardındaki kilitli bronz kapağı aç!",
+        whisper: "Şömineli Büyük Salon... Alevler dans ediyor. Üç nesneden birinde şifremi sakladım!",
         objects: [
-          { id: "somine", name: "Sihirli Şömine", x: 48, y: 46, isTarget: true, desc: "Alevlerin ardında kilitli bronz kapak belirdi!" },
+          { id: "somine", name: "Sihirli Şömine", x: 48, y: 46, isTarget: true, desc: "Alevlerin ardında kilitli bronz kapak belirdi!", trick: "Sihirli şömine... Közler parlıyor ama kilit burada değil." },
           { id: "piyano", name: "Eski Piyano", x: 24, y: 52, isTarget: false, trick: "Eski piyano... Tuşlarından biri 'la' sesi verdi ama gizli bir mekanizma açılmadı." },
           { id: "kandil2", name: "Asılı Kandil", x: 74, y: 38, isTarget: false, trick: "Kandilin ışığı hafifçe titreşiyor, burada gizli kilit yok." }
         ]
@@ -2516,9 +2586,9 @@
         id: 6,
         name: "Gizemli Mahzen",
         runeName: "Mühürlü Meşe",
-        whisper: "Gizemli Mahzen... Mühürlü fıçının kapağındaki basamağı çöz!",
+        whisper: "Gizemli Mahzen... Burası serin ve karanlık. Şifre yalnızca bir nesnede, gözlerini aç!",
         objects: [
-          { id: "fici", name: "Mühürlü Fıçı", x: 48, y: 50, isTarget: true, desc: "Fıçının üzerindeki sayısal mühür çözümleme bekliyor!" },
+          { id: "fici", name: "Mühürlü Fıçı", x: 48, y: 50, isTarget: true, desc: "Fıçının üzerindeki sayısal mühür çözümleme bekliyor!", trick: "Mühürlü fıçı... İçi eski bir kokuyla dolu, şifre burada değil." },
           { id: "sandik3", name: "Eski Sandık", x: 24, y: 48, isTarget: false, trick: "Sandığın içinde sadece paslı çiviler var, kilit bu değil." },
           { id: "zirh2", name: "Paslı Zırh", x: 74, y: 42, isTarget: false, trick: "Zırhın vizörü kapalı, şifre barındırmıyor." }
         ]
@@ -2527,9 +2597,9 @@
         id: 7,
         name: "Aynalı Salon",
         runeName: "Ruh Aynası",
-        whisper: "Aynalı Salon! Aynanın camında buğulanmış gizemli sayıyı bul!",
+        whisper: "Aynalı Salon... Yansımalar seni kandırabilir! Şifre üç nesneden yalnızca birinde.",
         objects: [
-          { id: "ayna1", name: "Büyük Ayna", x: 48, y: 40, isTarget: true, desc: "Aynanın camında buğulanmış gizemli bir ondalık sayı belirdi!" },
+          { id: "ayna1", name: "Büyük Ayna", x: 48, y: 40, isTarget: true, desc: "Aynanın camında buğulanmış gizemli bir ondalık sayı belirdi!", trick: "Büyük ayna... Sadece kendi yansımanı görüyorsun, şifre burada değil." },
           { id: "siseler2", name: "Kristal Şişe", x: 24, y: 48, isTarget: false, trick: "Şişenin içi boş, kilit mekanizması yok." },
           { id: "tablo2", name: "Portre Tablosu", x: 74, y: 38, isTarget: false, trick: "Eski portre... Resimdeki kadının bakışları sakin, kilit burada değil." }
         ]
@@ -2538,9 +2608,9 @@
         id: 8,
         name: "Gözlemevi",
         runeName: "Yıldız Merceği",
-        whisper: "Gözlemevindesin! Pirinç teleskobun merceğindeki koordinatları ayarla!",
+        whisper: "Gözlemevi... Yıldızlar şahit! Şifrem üç nesneden birinde saklı, iyi bak!",
         objects: [
-          { id: "teleskop", name: "Pirinç Teleskop", x: 48, y: 42, isTarget: true, desc: "Teleskobun merceğinde basamak değerleri dizilmiş!" },
+          { id: "teleskop", name: "Pirinç Teleskop", x: 48, y: 42, isTarget: true, desc: "Teleskobun merceğinde basamak değerleri dizilmiş!", trick: "Pirinç teleskop... Mercekten bulanık yıldızlar görünüyor, kilit burada değil." },
           { id: "kure2", name: "Dünya Küresi", x: 24, y: 48, isTarget: false, trick: "Eski dünya küresi... Üzerinde denizler ve kıtalar çizili, şifre bu değil." },
           { id: "kitap2", name: "Yıldız Kitabı", x: 74, y: 44, isTarget: false, trick: "Yıldız haritası... Sadece takımyıldızları gösteriyor, kilit mekanizması yok." }
         ]
@@ -2549,9 +2619,9 @@
         id: 9,
         name: "Perili Müzik Odası",
         runeName: "Melodi Rünü",
-        whisper: "Perili Müzik Odası! Piyanonun tuşlarındaki eksik basamağı tamamla!",
+        whisper: "Perili Müzik Odası... Melodiler arasında bir şifre gizli. Hangi nesnede olduğunu bul!",
         objects: [
-          { id: "piyano2", name: "Perili Piyano", x: 48, y: 48, isTarget: true, desc: "Piyanonun tuşları basamak değerlerine göre sıralanmış!" },
+          { id: "piyano2", name: "Perili Piyano", x: 48, y: 48, isTarget: true, desc: "Piyanonun tuşları basamak değerlerine göre sıralanmış!", trick: "Perili piyano... Tuşlar kendiliğinden çalıyor ama kilit burada değil." },
           { id: "keman", name: "Eski Keman", x: 24, y: 44, isTarget: false, trick: "Eski keman... Telleri kopuk duruyor, bir kilit parçası göremedin." },
           { id: "gramofon", name: "Altın Gramofon", x: 74, y: 46, isTarget: false, trick: "Altın gramofon... Plağı boş dönüyor, kilit burada saklı değil." }
         ]
@@ -2560,9 +2630,9 @@
         id: 10,
         name: "Tavan Arası & Ana Çıkış",
         runeName: "Büyük Taç",
-        whisper: "Ve son kapı! Altın kasadaki büyük kurtuluş şifresini çöz ve altın anahtarı al!",
+        whisper: "Ve son oda, Tavan Arası! Şifre üç nesneden birinde. Çöz ve köşkten kurtul!",
         objects: [
-          { id: "buyuk_kasa", name: "Altın Kasa", x: 48, y: 48, isTarget: true, desc: "Köşkün anahtarı bu kasada! Son şifreyi çöz ve kurtul!" },
+          { id: "buyuk_kasa", name: "Altın Kasa", x: 48, y: 48, isTarget: true, desc: "Köşkün anahtarı bu kasada! Son şifreyi çöz ve kurtul!", trick: "Altın kasa... Kilidi var gibi görünüyor ama bu sahte, şifre başka yerde!" },
           { id: "sandik2", name: "Eski Sandık", x: 24, y: 50, isTarget: false, trick: "Eski ahşap sandık... İçinde sadece kumaş parçaları var, şifre bu değil." },
           { id: "fener", name: "Gezgin Feneri", x: 74, y: 42, isTarget: false, trick: "Paslı fener... Işığı sönmüş, kilit mekanizması barındırmıyor." }
         ]
@@ -2633,216 +2703,360 @@
     /* ========================================================
        DİNAMİK MATEMATİK SORU MOTORU (HER ÖĞRENCİYE FARKLI SORU)
        ======================================================== */
-    function generateDynamicRoomQuestion(roomIdx) {
-      function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-      function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function shuffleArr(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
 
-      switch (roomIdx) {
-        case 0: {
-          const intP = randInt(14, 98);
-          const d1 = randInt(1, 9), d2 = randInt(1, 9), d3 = randInt(1, 9);
-          const pos = pick([1, 2, 3]);
-          if (pos === 1) {
-            return {
-              number: `${intP},<u>${d1}</u>${d2}${d3}`,
-              instruction: `Altı çizili ${d1} rakamının basamak değeri kesir olarak hangisidir?`,
-              context: "Giriş holündeki tablonun gözleri bu basamağa kilitlenmiş!",
-              correct: `${d1}/10`,
-              distractors: [`${d1}/100`, `${d1}/1000`, `${d1 * 10}`]
-            };
-          } else if (pos === 2) {
-            return {
-              number: `${intP},${d1}<u>${d2}</u>${d3}`,
-              instruction: `Altı çizili ${d2} rakamının basamak değeri ondalık olarak hangisidir?`,
-              context: "Tablonun çerçevesindeki gizli sayı parıldıyor!",
-              correct: `0,0${d2}`,
-              distractors: [`0,${d2}`, `0,00${d2}`, `${d2}`]
-            };
-          } else {
-            return {
-              number: `${intP},${d1}${d2}<u>${d3}</u>`,
-              instruction: `Altı çizili ${d3} rakamının basamak değeri kesir olarak hangisidir?`,
-              context: "Tablodaki fısıltı bu basamağı işaret ediyor!",
-              correct: `${d3}/1000`,
-              distractors: [`${d3}/100`, `${d3}/10`, `0,0${d3}`]
-            };
-          }
+    /* Tam sayı olarak tutulan ölçekli değeri (ör. 3450 ve 3 hane) virgüllü yazıya çevirir */
+    function fmtDec(n, d) {
+      const p = Math.pow(10, d);
+      const ip = Math.floor(n / p);
+      if (d === 0) return String(ip);
+      return ip + ',' + String(n % p).padStart(d, '0');
+    }
+
+    const TR_ONES = ['sıfır', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
+    const TR_TENS = ['', 'on', 'yirmi', 'otuz', 'kırk', 'elli', 'altmış', 'yetmiş', 'seksen', 'doksan'];
+    function trWords(n) {
+      const parts = [];
+      const h = Math.floor(n / 100), t = Math.floor((n % 100) / 10), o = n % 10;
+      if (h) parts.push((h > 1 ? TR_ONES[h] + ' ' : '') + 'yüz');
+      if (t) parts.push(TR_TENS[t]);
+      if (o) parts.push(TR_ONES[o]);
+      return parts.join(' ') || TR_ONES[0];
+    }
+
+    /* ---------- 1) BASAMAK DEĞERİ ---------- */
+    function qPlaceValueFrac() {
+      const intP = randInt(14, 98);
+      const ds = [randInt(1, 9), randInt(1, 9), randInt(1, 9)];
+      const pos = randInt(1, 3);
+      const asFrac = Math.random() < 0.5;
+      const d = ds[pos - 1];
+      const shown = ds.map((x, i) => (i === pos - 1 ? `<u>${x}</u>` : String(x))).join('');
+      const val = p => (asFrac ? `${d}/${Math.pow(10, p)}` : fmtDec(d, p));
+      const others = [1, 2, 3].filter(p => p !== pos).map(val);
+      return {
+        number: `${intP},${shown}`,
+        instruction: `Altı çizili ${d} rakamının basamak değeri ${asFrac ? 'kesir' : 'ondalık'} olarak hangisidir?`,
+        correct: val(pos),
+        distractors: [...others, String(d), String(d * 10)]
+      };
+    }
+
+    function qPlaceValueName() {
+      const tens = randInt(1, 9), ones = randInt(1, 9);
+      const ds = [randInt(1, 9), randInt(1, 9), randInt(1, 9)];
+      const names = ['Birler', 'Onda birler', 'Yüzde birler', 'Binde birler'];
+      const pos = randInt(0, 3);
+      const intStr = pos === 0 ? `${tens}<u>${ones}</u>` : `${tens}${ones}`;
+      const fr = ds.map((x, i) => (i + 1 === pos ? `<u>${x}</u>` : String(x))).join('');
+      return {
+        number: `${intStr},${fr}`,
+        instruction: 'Altı çizili rakam hangi basamaktadır?',
+        correct: names[pos],
+        distractors: names.filter((_, i) => i !== pos)
+      };
+    }
+
+    function qPlaceValueWhich() {
+      const d = randInt(2, 9);
+      const pos = randInt(1, 3);
+      const other = () => { let x; do { x = randInt(1, 9); } while (x === d); return x; };
+      const mk = p => {
+        const digs = [other(), other(), other(), other()];
+        digs[p] = d;
+        return `${digs[0]},${digs[1]}${digs[2]}${digs[3]}`;
+      };
+      return {
+        number: fmtDec(d, pos),
+        instruction: `Yukarıdaki değer, aşağıdaki sayılardan hangisindeki ${d} rakamının basamak değeridir?`,
+        correct: mk(pos),
+        distractors: [0, 1, 2, 3].filter(p => p !== pos).map(mk)
+      };
+    }
+
+    /* ---------- 2) ÇÖZÜMLEME ---------- */
+    function qExpandedToNumber() {
+      const A = randInt(2, 9), B = randInt(1, 9), C = randInt(1, 9), D = randInt(1, 9);
+      const useFrac = Math.random() < 0.4;
+      const t = useFrac ? '1/10' : '0,1';
+      const h = useFrac ? '1/100' : '0,01';
+      return {
+        number: `(${A} × 10) + (${B} × 1) + (${C} × ${t}) + (${D} × ${h})`,
+        instruction: 'Yukarıda çözümlenmiş hali verilen ondalık gösterim hangisidir?',
+        correct: `${A}${B},${C}${D}`,
+        distractors: [`${A}${B},0${C}${D}`, `${A}0${B},${C}${D}`, `${A}${B},${D}${C}`, `${A}${B}${C},${D}`]
+      };
+    }
+
+    function qNumberToExpanded() {
+      const A = randInt(2, 9), B = randInt(1, 9), C = randInt(1, 9), D = randInt(1, 9);
+      const f = (a, b, c, d) => `(${a} × 10) + (${b} × 1) + (${c} × 0,1) + (${d} × 0,01)`;
+      return {
+        number: `${A}${B},${C}${D}`,
+        instruction: 'Sayısının çözümlenmiş hali aşağıdakilerden hangisidir?',
+        correct: f(A, B, C, D),
+        distractors: [
+          f(A, B, D, C),
+          `(${A} × 100) + (${B} × 10) + (${C} × 1) + (${D} × 0,1)`,
+          `(${A} × 10) + (${B} × 1) + (${C} × 0,01) + (${D} × 0,001)`,
+          f(B, A, C, D)
+        ]
+      };
+    }
+
+    /* ---------- 3) KESİR – ONDALIK ---------- */
+    function qFracToDec() {
+      let it, val, d;
+      do {
+        it = pick([
+          { top: pick([1, 3, 5, 7, 9]), bot: 2, mul: 5, base: 10 },
+          { top: randInt(1, 4), bot: 5, mul: 2, base: 10 },
+          { top: pick([1, 3]), bot: 4, mul: 25, base: 100 },
+          { top: randInt(1, 19), bot: 20, mul: 5, base: 100 },
+          { top: randInt(1, 24), bot: 25, mul: 4, base: 100 },
+          { top: randInt(1, 49), bot: 50, mul: 2, base: 100 }
+        ]);
+        val = it.top * it.mul;
+        d = it.base === 10 ? 1 : 2;
+      } while (val % 10 === 0);
+      return {
+        number: `${it.top}/${it.bot}`,
+        instruction: 'Kesrinin ondalık gösterimi aşağıdakilerden hangisidir?',
+        correct: fmtDec(val, d),
+        distractors: [`${it.top},${it.bot}`, `0,${it.top}${it.bot}`, fmtDec(val, d + 1), `0,${it.top}`]
+      };
+    }
+
+    function qDecToFrac() {
+      const k = randInt(1, 3);
+      const lim = Math.pow(10, k);
+      let n;
+      do { n = randInt(1, lim - 1); } while (k > 1 && n % 10 === 0);
+      const rev = String(n).split('').reverse().join('');
+      const cands = [`${n}/${lim * 10}`, `${n}/${lim * 100}`, `${n * 10}/${lim}`, `${rev}/${lim}`];
+      if (k > 1) cands.push(`${n}/${lim / 10}`);
+      return {
+        number: '0,' + String(n).padStart(k, '0'),
+        instruction: 'Sayısının kesir olarak yazılışı hangisidir?',
+        correct: `${n}/${lim}`,
+        distractors: cands
+      };
+    }
+
+    /* ---------- 4) YUVARLAMA ---------- */
+    function qRound(mode) {
+      const m = mode || pick(['tenth', 'hundredth', 'int']);
+      const info = {
+        tenth: { u: 100, d: 1, ask: 'onda birler basamağına' },
+        hundredth: { u: 10, d: 2, ask: 'yüzde birler basamağına' },
+        int: { u: 1000, d: 0, ask: 'en yakın tam sayıya (birler basamağına)' }
+      }[m];
+      let intP = randInt(6, 48), d1 = randInt(0, 9), d2 = randInt(0, 9), d3 = randInt(1, 9);
+      if (Math.random() < 0.25) {
+        if (m === 'tenth') { d1 = 9; d2 = randInt(5, 9); }
+        else if (m === 'hundredth') { d2 = 9; d3 = randInt(5, 9); }
+        else { intP = randInt(1, 4) * 10 + 9; d1 = randInt(5, 9); }
+      }
+      const n = intP * 1000 + d1 * 100 + d2 * 10 + d3;
+      const u = info.u;
+      const r = Math.floor((n + u / 2) / u) * u;
+      const trunc = Math.floor(n / u) * u;
+      let chain;
+      if (m === 'tenth') {
+        const h = Math.floor((n + 5) / 10) * 10;
+        chain = Math.floor((h + 50) / 100) * 100;
+      } else if (m === 'int') {
+        const t = Math.floor((n + 50) / 100) * 100;
+        chain = Math.floor((t + 500) / 1000) * 1000;
+      } else {
+        chain = trunc + u;
+      }
+      const toD = x => fmtDec(Math.round(x / Math.pow(10, 3 - info.d)), info.d);
+      const cands = [trunc, trunc + u, r - u, r + u, chain]
+        .filter(x => x >= 0 && x !== r)
+        .map(toD);
+      cands.push(fmtDec(n, 3));
+      return {
+        number: fmtDec(n, 3),
+        instruction: `Sayısının ${info.ask} yuvarlanmış hali hangisidir?`,
+        correct: toD(r),
+        distractors: cands
+      };
+    }
+
+    /* ---------- 5) DEĞERİ AYNI OLAN SAYILAR ---------- */
+    function qEquivalent() {
+      const L = randInt(1, 9), d = randInt(1, 9);
+      return {
+        number: `${L},${d}`,
+        instruction: 'Yukarıdaki sayıyla aynı değere sahip olan sayı hangisidir?',
+        correct: pick([`${L},${d}0`, `${L},${d}00`]),
+        distractors: [`${L},0${d}`, `${L}0,${d}`, `${L},00${d}`, `${L}${d},0`]
+      };
+    }
+
+    /* ---------- 6) SIRALAMA / EN BÜYÜK – EN KÜÇÜK ---------- */
+    function trickySet(count) {
+      const base = randInt(2, 48);
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const items = [];
+        for (let i = 0; i < count; i++) {
+          const len = randInt(1, 3);
+          const w = Math.pow(10, len);
+          let f = randInt(1, w - 1);
+          if (len > 1 && f % 10 === 0) f += 1;
+          items.push({ v: f * Math.pow(10, 3 - len), s: `${base},${String(f).padStart(len, '0')}` });
         }
-        case 1: {
-          const A = randInt(2, 9), B = randInt(1, 9), C = randInt(1, 9), D = randInt(1, 9);
-          return {
-            number: `(${A} × 10) + (${B} × 1) + (${C} × 0,1) + (${D} × 0,01)`,
-            instruction: "Yukarıda çözümlenmiş hali verilen ondalık gösterim hangisidir?",
-            context: "Kadim büyü kitabındaki çözümleme şifresini birleştir!",
-            correct: `${A}${B},${C}${D}`,
-            distractors: [`${A}${B},0${C}${D}`, `${A}0${B},${C}${D}`, `${A}${B},${D}${C}`]
-          };
+        if (new Set(items.map(x => x.v)).size === count) return items;
+      }
+      return [
+        { v: 100, s: `${base},1` }, { v: 120, s: `${base},12` },
+        { v: 300, s: `${base},3` }, { v: 305, s: `${base},305` }
+      ].slice(0, count);
+    }
+
+    function qOrder(forceDir) {
+      const asc = forceDir ? forceDir === 'asc' : Math.random() < 0.5;
+      const items = trickySet(3);
+      const sorted = items.slice().sort((a, b) => (asc ? a.v - b.v : b.v - a.v));
+      const sym = asc ? ' < ' : ' > ';
+      const fmt = arr => arr.map(x => x.s).join(sym);
+      const perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]].map(p => p.map(i => items[i]));
+      const correct = fmt(sorted);
+      return {
+        number: items.map(x => x.s).join('  |  '),
+        instruction: asc
+          ? 'Yukarıdaki ondalık gösterimlerin küçükten büyüğe sıralanışı hangisidir?'
+          : 'Yukarıdaki ondalık gösterimlerin büyükten küçüğe sıralanışı hangisidir?',
+        correct: correct,
+        distractors: perms.map(fmt).filter(s => s !== correct)
+      };
+    }
+
+    function qExtreme() {
+      const big = Math.random() < 0.5;
+      const items = trickySet(4);
+      const sorted = items.slice().sort((a, b) => a.v - b.v);
+      const ans = big ? sorted[sorted.length - 1] : sorted[0];
+      return {
+        number: big ? 'En büyük sayıyı bul!' : 'En küçük sayıyı bul!',
+        instruction: `Aşağıdaki şıklardan hangisi ${big ? 'en büyük' : 'en küçük'} ondalık sayıdır?`,
+        correct: ans.s,
+        distractors: items.filter(x => x !== ans).map(x => x.s)
+      };
+    }
+
+    /* ---------- 7) OKUNUŞ – YAZILIŞ ---------- */
+    function qReading() {
+      const intP = randInt(1, 20);
+      const k = randInt(1, 3);
+      let f;
+      if (k === 1) f = randInt(1, 9);
+      else if (k === 2) { f = randInt(1, 99); if (f % 10 === 0) f++; }
+      else { f = randInt(1, 999); if (f % 10 === 0) f++; }
+      const places = ['', 'onda', 'yüzde', 'binde'];
+      let text = `${trWords(intP)} tam ${places[k]} ${trWords(f)}`;
+      text = text.charAt(0).toLocaleUpperCase('tr-TR') + text.slice(1);
+      const pad = (x, kk) => String(x).padStart(kk, '0');
+      const cands = [];
+      [1, 2, 3].forEach(kk => { if (kk !== k && f < Math.pow(10, kk)) cands.push(`${intP},${pad(f, kk)}`); });
+      const fp = pad(f, k);
+      cands.push(
+        `${intP},${fp.split('').reverse().join('')}`,
+        `${intP},${fp.length > 1 ? fp[1] + fp[0] + fp.slice(2) : fp}`,
+        `${f},${intP}`,
+        `${intP + 1},${fp}`,
+        `${Math.max(intP - 1, 1)},${fp}`
+      );
+      return {
+        number: `“${text}”`,
+        instruction: 'Okunuşu yukarıda verilen ondalık sayı aşağıdakilerden hangisidir?',
+        correct: `${intP},${pad(f, k)}`,
+        distractors: cands
+      };
+    }
+
+    /* ---------- 8) SAYI DOĞRUSU / ARASINDA OLAN SAYI ---------- */
+    function qNumberLine() {
+      const L = randInt(2, 48), t = randInt(0, 8), k = randInt(2, 8);
+      const left = `${L},${t}`, right = `${L},${t + 1}`;
+      const x0 = 30, x1 = 490, step = (x1 - x0) / 10;
+      let ticks = '';
+      for (let i = 0; i <= 10; i++) {
+        const x = x0 + i * step;
+        const big = i === 0 || i === 10;
+        ticks += `<line x1="${x}" y1="${big ? 32 : 40}" x2="${x}" y2="${big ? 68 : 60}" stroke="${big ? '#FDE047' : '#A78BFA'}" stroke-width="${big ? 3 : 2}"/>`;
+      }
+      const px = x0 + k * step;
+      const svg = `<svg viewBox="0 0 520 110" style="width:100%;max-width:520px;height:auto;display:block;margin:0 auto 4px;">` +
+        `<line x1="${x0}" y1="50" x2="${x1}" y2="50" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/>` + ticks +
+        `<text x="${x0}" y="92" text-anchor="middle" fill="#FDE047" font-size="20" font-weight="800">${left}</text>` +
+        `<text x="${x1}" y="92" text-anchor="middle" fill="#FDE047" font-size="20" font-weight="800">${right}</text>` +
+        `<circle cx="${px}" cy="50" r="9" fill="#EF4444" stroke="#FFFFFF" stroke-width="2.5"/>` +
+        `<text x="${px}" y="22" text-anchor="middle" fill="#FCA5A5" font-size="22" font-weight="900">?</text></svg>`;
+      return {
+        number: svg,
+        instruction: 'Sayı doğrusu 10 eşit parçaya bölünmüştür. ? ile gösterilen nokta hangi sayıya karşılık gelir?',
+        correct: `${L},${t}${k}`,
+        distractors: [`${L},${t}${k + 1}`, `${L},${t}${k - 1}`, `${L},${k}${t}`, `${L},${t + 1}${k}`]
+      };
+    }
+
+    function qBetween() {
+      const L = randInt(1, 48), t = randInt(1, 8);
+      return {
+        number: `${L},${t}  ile  ${L},${t + 1}`,
+        instruction: 'Aşağıdakilerden hangisi bu iki sayının arasındadır?',
+        correct: `${L},${t}${randInt(1, 9)}`,
+        distractors: [`${L},${t}0`, `${L},${t + 1}`, `${L},${t - 1}9`, `${L},${t + 1}1`]
+      };
+    }
+
+    /* Odalara göre soru havuzları: önce basamak değeri / çözümleme, sonra yuvarlama, sıralama, sayı doğrusu... */
+    const ROOM_QUESTION_POOLS = [
+      [qPlaceValueFrac, qPlaceValueName],
+      [qExpandedToNumber, qNumberToExpanded],
+      [qFracToDec, qDecToFrac],
+      [() => qRound('tenth'), qEquivalent],
+      [() => qOrder(), qExtreme],
+      [qReading, qEquivalent],
+      [qNumberLine, qBetween],
+      [() => qRound('hundredth'), () => qRound('int')],
+      [qPlaceValueWhich, qReading, qDecToFrac],
+      [() => qRound(), qNumberLine, qPlaceValueWhich, () => qOrder()]
+    ];
+
+    function generateDynamicRoomQuestion(roomIdx) {
+      const pool = ROOM_QUESTION_POOLS[roomIdx] || ROOM_QUESTION_POOLS[ROOM_QUESTION_POOLS.length - 1];
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const q = pick(pool)();
+        const seen = new Set([q.correct]);
+        const ds = [];
+        for (const d of q.distractors) {
+          if (!seen.has(d)) { seen.add(d); ds.push(d); }
         }
-        case 2: {
-          const fracTypes = [
-            { top: randInt(1, 9), bot: 2, mul: 5, base: 10 },
-            { top: randInt(1, 4), bot: 5, mul: 2, base: 10 },
-            { top: pick([1, 3]), bot: 4, mul: 25, base: 100 },
-            { top: randInt(1, 19), bot: 20, mul: 5, base: 100 },
-            { top: randInt(1, 24), bot: 25, mul: 4, base: 100 },
-            { top: randInt(1, 49), bot: 50, mul: 2, base: 100 }
-          ];
-          const item = pick(fracTypes);
-          const val = item.top * item.mul;
-          const corr = item.base === 10 ? `${Math.floor(val/10)},${val%10}` : `${Math.floor(val/100)},${String(val%100).padStart(2,'0')}`;
-          let dist = [`0,${item.top}`, `${item.top},${item.bot}`, `0,0${val}`];
-          if (dist.includes(corr)) dist = [`0,${item.top}0`, `${item.top},${item.bot}`, `0,00${item.top}`];
-          return {
-            number: `${item.top}/${item.bot}`,
-            instruction: "Kesrinin ondalık gösterimi aşağıdakilerden hangisidir?",
-            context: "İksir şişesindeki sihirli oran bu kesirle gizlenmiş!",
-            correct: corr,
-            distractors: dist.slice(0, 3)
-          };
-        }
-        case 3: {
-          const intP = randInt(6, 48);
-          const d1 = randInt(1, 8), d2 = randInt(1, 9);
-          const corr = d2 >= 5 ? `${intP},${d1 + 1}` : `${intP},${d1}`;
-          const wrong = d2 >= 5 ? `${intP},${d1}` : `${intP},${d1 + 1}`;
-          return {
-            number: `${intP},${d1}${d2}`,
-            instruction: "Sayısının onda birler basamağına yuvarlanmış hali hangisidir?",
-            context: "Büyük saatin çarkları bu yuvarlama şifresiyle dönüyor!",
-            correct: corr,
-            distractors: [wrong, `${intP + 1},0`, `${intP},${d1}${d2}`]
-          };
-        }
-        case 4: {
-          const base = randInt(3, 14);
-          const a = randInt(10, 35);
-          const b = a + randInt(6, 14);
-          const c = b + randInt(6, 14);
-          return {
-            number: `A = ${base},${a} &nbsp;|&nbsp; B = ${base},${b} &nbsp;|&nbsp; C = ${base},${c}`,
-            instruction: "Yukarıdaki ondalık gösterimlerin küçükten büyüğe doğru sıralanışı hangisidir?",
-            context: "Balo salonundaki dansçı heykellerinin boy sıralaması!",
-            correct: `${base},${a} < ${base},${b} < ${base},${c}`,
-            distractors: [
-              `${base},${c} < ${base},${b} < ${base},${a}`,
-              `${base},${b} < ${base},${a} < ${base},${c}`,
-              `${base},${a} < ${base},${c} < ${base},${b}`
-            ]
-          };
-        }
-        case 5: {
-          const isAdd = Math.random() < 0.5;
-          if (isAdd) {
-            const n1 = randInt(12, 38), d1 = randInt(1, 9);
-            const n2 = randInt(6, 24), d2 = randInt(12, 85);
-            const v1 = n1 + d1/10, v2 = n2 + d2/100;
-            const sum = +(v1 + v2).toFixed(2);
-            const corr = String(sum).replace('.', ',');
-            return {
-              number: `${n1},${d1} + ${n2},${String(d2).padStart(2,'0')}`,
-              instruction: "Toplama işleminin sonucu kaçtır?",
-              context: "Mahzendeki eski fıçıların üzerindeki hesap şifresi!",
-              correct: corr,
-              distractors: [
-                String(+(sum + 0.1).toFixed(2)).replace('.', ','),
-                String(+(sum - 0.2).toFixed(2)).replace('.', ','),
-                `${n1 + n2},${d1 + Math.floor(d2/10)}`
-              ]
-            };
-          } else {
-            const n1 = randInt(25, 55), d1 = randInt(6, 9);
-            const n2 = randInt(10, 20), d2 = randInt(15, 50);
-            const v1 = n1 + d1/10, v2 = n2 + d2/100;
-            const diff = +(v1 - v2).toFixed(2);
-            const corr = String(diff).replace('.', ',');
-            return {
-              number: `${n1},${d1} - ${n2},${String(d2).padStart(2,'0')}`,
-              instruction: "Çıkarma işleminin sonucu kaçtır?",
-              context: "Mahzendeki gizli kapının kilidine kazınmış çıkarma işlemi!",
-              correct: corr,
-              distractors: [
-                String(+(diff + 0.1).toFixed(2)).replace('.', ','),
-                String(+(diff - 0.2).toFixed(2)).replace('.', ','),
-                `${n1 - n2},${d1}`
-              ]
-            };
-          }
-        }
-        case 6: {
-          const mul = pick([10, 100, 1000]);
-          const n = randInt(1, 9), d1 = randInt(1, 9), d2 = randInt(1, 9), d3 = randInt(1, 9);
-          const numStr = `${n},${d1}${d2}${d3}`;
-          let corr, dist;
-          if (mul === 10) {
-            corr = `${n}${d1},${d2}${d3}`;
-            dist = [`${n},${d1}${d2}${d3}0`, `${n}${d1}${d2},${d3}`, `0,${n}${d1}`];
-          } else if (mul === 100) {
-            corr = `${n}${d1}${d2},${d3}`;
-            dist = [`${n}${d1},${d2}${d3}`, `${n}${d1}${d2}${d3}`, `${n},${d1}${d2}`];
-          } else {
-            corr = `${n}${d1}${d2}${d3}`;
-            dist = [`${n}${d1}${d2},${d3}`, `${n}${d1}${d2}${d3}0`, `${n}${d1},${d2}`];
-          }
-          return {
-            number: `${numStr} × ${mul}`,
-            instruction: "Kısa yoldan çarpma işleminin sonucu kaçtır?",
-            context: "Aynadaki yansıma – sayıları katlayarak büyütüyor!",
-            correct: corr,
-            distractors: dist
-          };
-        }
-        case 7: {
-          const div = pick([10, 100]);
-          const intP = randInt(15, 85), d = randInt(1, 9);
-          let corr, dist;
-          if (div === 10) {
-            corr = `${Math.floor(intP/10)},${intP%10}${d}`;
-            dist = [`${intP}${d}`, `0,${intP}${d}`, `${intP},0${d}`];
-          } else {
-            corr = `0,${intP}${d}`;
-            dist = [`${Math.floor(intP/10)},${intP%10}${d}`, `${intP},${d}0`, `0,0${intP}`];
-          }
-          return {
-            number: `${intP},${d} ÷ ${div}`,
-            instruction: "Kısa yoldan bölme işleminin sonucu kaçtır?",
-            context: "Sarmaşıkların arasına kazınmış antik bölme mührü!",
-            correct: corr,
-            distractors: dist
-          };
-        }
-        case 8: {
-          const price = pick([12.5, 14.5, 16.5, 18.5, 22.5]);
-          const kg = pick([2, 3, 4, 5]);
-          const total = +(price * kg).toFixed(2);
-          const paid = (Math.floor(total / 50) + 1) * 50;
-          const change = +(paid - total).toFixed(2);
-          const corr = `${String(change).replace('.', ',')} TL`;
-          const dist = [
-            `${String(+(change + 5).toFixed(2)).replace('.', ',')} TL`,
-            `${String(total).replace('.', ',')} TL`,
-            `${String(Math.max(1, +(change - 5).toFixed(2))).replace('.', ',')} TL`
-          ];
-          return {
-            number: `Kilosu ${String(price).replace('.', ',')} TL olan notalardan ${kg} kg alıp kasaya ${paid} TL veren dedektif kaç TL para üstü alır?`,
-            instruction: "Problemin çözümünü bularak piyanonun tuş kilidini aç!",
-            context: "Gramofonun altındaki gizli hesap defteri!",
-            correct: corr,
-            distractors: dist
-          };
-        }
-        case 9:
-        default: {
-          const A = randInt(3, 8), B = randInt(2, 7);
-          const ans = +(A * 10 + B * 0.1).toFixed(1);
-          return {
-            number: `(${A} × 10) + (${B} × 0,1)`,
-            instruction: "Büyük çıkış portalının nihai ondalık şifresi kaçtır?",
-            context: "Tavan arasındaki altın çatı kapısının anahtarı!",
-            correct: String(ans).replace('.', ','),
-            distractors: [`${A},${B}`, `${A}0,${B}0`, `${A + B},0`]
-          };
+        if (ds.length >= 3) {
+          q.distractors = shuffleArr(ds).slice(0, 3);
+          q.context = q.context || 'Mistik kilit bu soruyu soruyor!';
+          return q;
         }
       }
+      return {
+        number: '4,35',
+        instruction: 'Sayısının yüzde birler basamağındaki rakamın basamak değeri hangisidir?',
+        correct: '0,05',
+        distractors: ['0,5', '0,005', '5'],
+        context: 'Mistik kilit bu soruyu soruyor!'
+      };
     }
 
     function getRoomQuestion(roomIdx, forceNew = false) {
@@ -2889,6 +3103,8 @@
        ODA VE OYUN İÇİ ETKİLEŞİM YÖNETİMİ
        ======================================================== */
     let inspectedObjects = new Set();
+    let currentRoomObjects = [];
+    let luckyChestClaimed = false;
 
     function loadRoom(index) {
       if (index >= MANSION_ROOMS.length) {
@@ -2903,6 +3119,13 @@
       if (doorElR) { doorElR.style.cursor = 'not-allowed'; doorElR.title = 'Kapı mühürlü'; }
       isMoving = false;
       currentRoomQuestion = getRoomQuestion(index, true);
+      luckyChestClaimed = false;
+
+      // Her odada soru hangi nesnede çıkacak ve nesneler nerede duracak: her seferinde rastgele
+      const baseObjs = MANSION_ROOMS[index].objects;
+      const slots = shuffleArr(baseObjs.map(o => ({ x: o.x, y: o.y })));
+      const targetIdx = randInt(0, baseObjs.length - 1);
+      currentRoomObjects = baseObjs.map((o, i) => Object.assign({}, o, { x: slots[i].x, y: slots[i].y, isTarget: i === targetIdx }));
 
       updateHud();
       updateRuneIndicators();
@@ -2925,8 +3148,7 @@
       const objectsContainer = document.getElementById('interactive-objects-container');
       if (objectsContainer) {
         objectsContainer.innerHTML = '';
-        const room = MANSION_ROOMS[index];
-        room.objects.forEach(obj => {
+        currentRoomObjects.forEach(obj => {
           const wrapper = document.createElement('div');
           wrapper.id = 'room-obj-' + obj.id;
           wrapper.className = 'interactive-object';
@@ -2978,6 +3200,7 @@
 
       if (speakerEl) speakerEl.innerText = speaker;
       if (textEl) textEl.innerText = text;
+      if (speaker === 'Mösyö Ondalık') speakMosyo(text);
 
       if (avatarImg) {
         if (type === 'detective') {
@@ -3095,7 +3318,7 @@
             objElem.appendChild(bubble);
             setTimeout(() => bubble.remove(), 2500);
           }
-          updateDialogue('Mösyö Ondalık', `İşte aradığın gizli kilit mekanizması! ${obj.desc}`, 'ghost');
+          updateDialogue('Mösyö Ondalık', `İşte aradığın gizli kilit! ${obj.name} üzerindeki mühür parlıyor...`, 'ghost');
           setTimeout(() => {
             openRiddleModal(obj);
           }, 650);
@@ -3165,7 +3388,7 @@
       if (roomTag) roomTag.innerText = `Oda ${currentRoomIndex + 1}: ${MANSION_ROOMS[currentRoomIndex].name}`;
       
       const ctxDesc = document.getElementById('riddle-context-desc');
-      if (ctxDesc) ctxDesc.innerText = (obj && obj.desc) ? obj.desc : "Odadaki mistik mühür basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!";
+      if (ctxDesc) ctxDesc.innerText = (obj && obj.name) ? `${obj.name} üzerindeki gizli şifre kilidi basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!` : "Odadaki mistik mühür basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!";
       
       const mathNum = document.getElementById('riddle-math-number');
       if (mathNum) mathNum.innerHTML = q.number;
@@ -3249,7 +3472,8 @@
             launchGame();
           }, 1300);
         } else {
-          updateDialogue('Mösyö Ondalık', `Yanlış cevap! Bir kandil söndü, kalan kandil: ${health}. Başka bir nesneyi dene veya tekrar düşün!`, 'ghost');
+          currentRoomQuestion = generateDynamicRoomQuestion(currentRoomIndex);
+          updateDialogue('Mösyö Ondalık', `Yanlış cevap! Bir kandil söndü, kalan kandil: ${health}. Kilide tekrar dokunursan yeni bir soru gelir!`, 'ghost');
           setTimeout(() => {
             const modal = document.getElementById('riddle-modal') || document.getElementById('riddleModal');
             if (modal) modal.style.display = 'none';
@@ -3269,6 +3493,7 @@
       if (doorImg) doorImg.src = './gothic_door_open.png';
 
       // Şans sandığı belirir
+      luckyChestClaimed = false;
       const objectsContainer = document.getElementById('interactive-objects-container');
       if (objectsContainer) {
         const chestDiv = document.createElement('div');
@@ -3292,6 +3517,8 @@
     function claimLuckyChest(e) {
       const chestElem = document.getElementById('lucky-chest-elem');
       if (!chestElem) return;
+      if (luckyChestClaimed) return;
+      luckyChestClaimed = true;
 
       const luckyRolls = [100, 125, 150, 175, 200, 250, 300];
       const bonus = luckyRolls[Math.floor(Math.random() * luckyRolls.length)];
@@ -3336,38 +3563,44 @@
       saveScoreToLeaderboard(playerName, finalScore);
     }
 
-    let currentLeaderboardData = [];
+    function saveScoreToLeaderboard(name, finalScore) {
+      const entry = {
+        name: name,
+        score: finalScore,
+        date: new Date().toLocaleDateString('tr-TR'),
+        timestamp: Date.now()
+      };
 
-    function loadLeaderboard() {
-      if (!cloudDb) {
-        renderLocalLeaderboard();
-        return;
-      }
-      cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(20).on('value', snap => {
-        let list = [];
-        const raw = snap.val();
-        if (raw) {
-          snap.forEach(child => {
-            const val = child.val();
-            if (val && typeof val === 'object') {
-              list.push(val);
-            }
-          });
-          list.sort((a, b) => {
-            const sA = Number(a.score ?? a.puan) || 0;
-            const sB = Number(b.score ?? b.puan) || 0;
-            return sB - sA;
-          });
-        }
-        currentLeaderboardData = list;
+      try {
+        let list = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
+        list.push(entry);
+        list.sort((a,b) => b.score - a.score);
+        localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
+      } catch(e) {}
+
+      if (cloudDb) {
         try {
-          localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
+          cloudDb.ref(DB_NODE).push(entry);
         } catch(e) {}
-        renderLeaderboardTable(list);
-      }, err => {
-        console.warn("Firebase lider tablosu okunamadı, yerel mod kullanılacak:", err);
+      }
+    }
+
+    function showLeaderboard() {
+      try { playSound('step'); } catch(e){}
+      showScreen('LEADERBOARD');
+
+      if (cloudDb) {
+        cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(15).once('value', snapshot => {
+          let list = [];
+          snapshot.forEach(child => { list.push(child.val()); });
+          list.sort((a,b) => b.score - a.score);
+          renderLeaderboardTable(list);
+        }).catch(() => {
+          renderLocalLeaderboard();
+        });
+      } else {
         renderLocalLeaderboard();
-      });
+      }
     }
 
     function renderLocalLeaderboard() {
@@ -3378,31 +3611,45 @@
       renderLeaderboardTable(localScores);
     }
 
+    const BENCHMARK_LEADERBOARD = [
+      { name: "Batıkan ÖZTUNALI", score: 1575 },
+      { name: "Derin Asel ASLAN", score: 1520 },
+      { name: "Poyraz Ahmed AYDINALP", score: 1485 },
+      { name: "Zeynep Züleyha GEYİK", score: 1440 },
+      { name: "Can AKTAŞ", score: 1390 },
+      { name: "Defne ERÇEL", score: 1350 },
+      { name: "Doruk ÇETİN", score: 1310 },
+      { name: "Elis DEMİR", score: 1280 },
+      { name: "Kaan ÇALIŞKAN", score: 1240 },
+      { name: "Melis COŞKUNER", score: 1200 }
+    ];
+
     function renderLeaderboardTable(list) {
       const tbody = document.getElementById('leaderboardTbody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      const safeList = Array.isArray(list) ? list.filter(item => item && (item.name || item.adSoyad)) : [];
-
-      if (safeList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
-        return;
+      let mergedList = [...(Array.isArray(list) ? list : [])];
+      const existingNames = new Set(mergedList.map(item => item.name ? item.name.toLocaleLowerCase('tr-TR') : ''));
+      
+      for (const benchmark of (localStorage.getItem('perilikosk_lb_cleared') === '1' ? [] : BENCHMARK_LEADERBOARD)) {
+        if (mergedList.length >= 10) break;
+        if (!existingNames.has(benchmark.name.toLocaleLowerCase('tr-TR'))) {
+          mergedList.push(benchmark);
+          existingNames.add(benchmark.name.toLocaleLowerCase('tr-TR'));
+        }
       }
+      mergedList.sort((a,b) => b.score - a.score);
+      const safeList = mergedList.slice(0, 10);
 
-      safeList.sort((a, b) => {
-        const sA = Number(a.score ?? a.puan) || 0;
-        const sB = Number(b.score ?? b.puan) || 0;
-        return sB - sA;
-      });
-
-      const top10 = safeList.slice(0, 10);
-
-      top10.forEach((item, i) => {
+      for (let i = 0; i < 10; i++) {
         const tr = document.createElement('tr');
         const rankNum = i + 1;
-        const name = item.name || item.adSoyad || "Anonim Dedektif";
-        const scoreVal = Number(item.score ?? item.puan) || 0;
+        if (!safeList[i] && localStorage.getItem('perilikosk_lb_cleared') === '1') {
+          if (i === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
+          break;
+        }
+        const item = safeList[i] || { name: "Dedektif", score: 1000 - i * 50 };
 
         let rowClass = 'lb-row';
         let badgeClass = 'lb-rank-badge lb-rank-other';
@@ -3436,48 +3683,14 @@
           <td>
             <div class="lb-name-cell">
               <span style="font-size:18px;">${detectiveIcon}</span>
-              <span class="lb-player-name">${name}</span>
+              <span class="lb-player-name">${item.name || "Anonim Dedektif"}</span>
             </div>
           </td>
           <td style="text-align:right;">
-            <span class="${scoreClass}">${scoreVal.toLocaleString('tr-TR')} P</span>
+            <span class="${scoreClass}">${item.score} P</span>
           </td>
         `;
         tbody.appendChild(tr);
-      });
-    }
-
-    function showLeaderboard() {
-      try { playSound('step'); } catch(e){}
-      showScreen('LEADERBOARD');
-      if (currentLeaderboardData && currentLeaderboardData.length > 0) {
-        renderLeaderboardTable(currentLeaderboardData);
-      } else {
-        loadLeaderboard();
-      }
-    }
-
-    function saveScoreToLeaderboard(name, finalScore) {
-      const entry = {
-        name: name,
-        score: finalScore,
-        date: new Date().toLocaleDateString('tr-TR'),
-        timestamp: Date.now()
-      };
-
-      try {
-        let list = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
-        list.push(entry);
-        list.sort((a,b) => (b.score || 0) - (a.score || 0));
-        localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
-      } catch(e) {}
-
-      if (cloudDb) {
-        try {
-          cloudDb.ref(DB_NODE).push(entry);
-        } catch(e) {
-          console.warn("Skor Firebase'e kaydedilemedi:", e);
-        }
       }
     }
 
@@ -3486,10 +3699,6 @@
       document.getElementById('authSection').style.display = 'block';
       document.getElementById('adminSection').style.display = 'none';
       document.getElementById('adminPasswordInput').value = '';
-      const txt = document.getElementById('adminStudentList');
-      if (txt && authorizedStudents && authorizedStudents.length > 0) {
-        txt.value = authorizedStudents.join('\n');
-      }
     }
 
     function closeSettingsModal() {
@@ -3506,61 +3715,15 @@
       }
     }
 
-    function saveStudentList() {
-      const txt = document.getElementById('adminStudentList');
-      if (!txt) return;
-      const raw = txt.value.trim();
-      if (!raw) {
-        alert('Lütfen öğrenci listesini girin.');
-        return;
-      }
-      const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
-      authorizedStudents = Array.from(new Set(lines)).sort((a,b) => a.localeCompare(b, 'tr'));
-      localStorage.setItem('registeredStudents', JSON.stringify(authorizedStudents));
-      if (cloudDb) {
-        cloudDb.ref('students_yaziliarenasi_6').set(authorizedStudents.join('\n'));
-      }
-      populateStudentNamesImmediate();
-      alert(`✅ ${authorizedStudents.length} öğrenci başarıyla kaydedildi!`);
-    }
-
-    function clearStudentList() {
-      if (!confirm('Öğrenci listesi varsayılana sıfırlanacak. Emin misiniz?')) return;
-      localStorage.removeItem('registeredStudents');
-      authorizedStudents = [...DEFAULT_STUDENT_LIST].sort((a,b) => a.localeCompare(b, 'tr'));
-      if (cloudDb) {
-        cloudDb.ref('students_yaziliarenasi_6').remove();
-      }
-      populateStudentNamesImmediate();
-      alert('Öğrenci listesi sıfırlandı.');
-    }
-
     function clearLeaderboardData() {
-      if (!confirm('DİKKAT: İlk 10 Lider Tablosundaki tüm kayıtlar silinecektir. Devam etmek istiyor musunuz?')) {
-        return;
-      }
-      localStorage.removeItem('perilikosk_scores');
-      localStorage.setItem('perilikosk_lb_cleared', '1');
-      const tbody = document.getElementById('leaderboardTbody');
-      if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
-      }
-
-      if (cloudDb) {
-        cloudDb.ref(DB_NODE).remove().then(() => {
-          localStorage.removeItem('perilikosk_scores');
-          currentLeaderboardData = [];
-          renderLeaderboardTable([]);
-          alert('🏆 İlk 10 Dedektif Liderlik Tablosu başarıyla sıfırlandı!');
-          closeSettingsModal();
-        }).catch(err => {
-          alert('Yerel tablo temizlendi, ancak Firebase sıfırlama hatası verdi: ' + err.message);
-          closeSettingsModal();
-        });
-      } else {
-        currentLeaderboardData = [];
-        renderLeaderboardTable([]);
-        alert('🏆 İlk 10 Dedektif Liderlik Tablosu başarıyla sıfırlandı!');
+      if (confirm('Lider tablosundaki tüm skorlar silinecek. Emin misiniz?')) {
+        localStorage.removeItem('perilikosk_scores');
+        localStorage.setItem('perilikosk_lb_cleared', '1');
+        if (cloudDb) {
+          try { cloudDb.ref(DB_NODE).remove(); } catch(e) {}
+        }
+        try { renderLeaderboardTable([]); } catch(e) {}
+        alert('İlk 10 listesi sıfırlandı.');
         closeSettingsModal();
       }
     }
@@ -3620,10 +3783,6 @@
       ctx.globalAlpha = 1;
       if (confettiList.length > 0) requestAnimationFrame(updateConfetti);
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadLeaderboard();
-    });
   </script>
 </body>
 </html>
