@@ -1624,6 +1624,17 @@
     .classic-stars { font-size: 26px; letter-spacing: 6px; margin-bottom: 10px; animation: starsPulse 1.6s ease-in-out infinite; }
     @keyframes trophyBounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg) scale(1.06); } }
     @keyframes starsPulse { 0%,100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+
+    .htp-box { width:100%; max-width:640px; max-height:92vh; overflow-y:auto; background:radial-gradient(circle at 50% 0%, #2A1548 0%, #120722 70%); border:3px solid #A855F7; border-radius:28px; padding:24px 28px; box-shadow:0 0 60px rgba(168,85,247,0.5), 0 25px 70px rgba(0,0,0,0.9); animation: popModal 0.3s cubic-bezier(0.175,0.885,0.32,1.275); text-align:left; }
+    .htp-head { display:flex; gap:16px; align-items:center; padding-bottom:14px; margin-bottom:14px; border-bottom:2px dashed rgba(168,85,247,0.4); }
+    .htp-ghost { width:84px; height:84px; object-fit:cover; border-radius:50%; border:3px solid #F59E0B; box-shadow:0 0 22px rgba(245,158,11,0.6); flex-shrink:0; animation: trophyBounce 3s ease-in-out infinite; }
+    .htp-name { font-family:'Baloo 2',sans-serif; font-size:24px; font-weight:900; color:#F59E0B; }
+    .htp-quote { color:#E9D5FF; font-style:italic; font-size:15px; line-height:1.4; }
+    .htp-steps { display:flex; flex-direction:column; gap:9px; margin-bottom:14px; }
+    .htp-step { display:flex; gap:12px; align-items:flex-start; background:rgba(28,14,52,0.7); border:1.5px solid rgba(139,92,246,0.3); border-radius:14px; padding:10px 14px; color:#E2E8F0; font-size:14.5px; line-height:1.45; }
+    .htp-step b { color:#FDE047; }
+    .htp-num { flex-shrink:0; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#A855F7,#6D28D9); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; font-size:15px; }
+    .htp-foot { color:#C4B5FD; font-style:italic; text-align:center; font-size:14px; margin-bottom:14px; }
 </style>
 </head>
 <body>
@@ -1876,6 +1887,29 @@
     </div>
   </div>
 
+
+  <!-- NASIL OYNANIR: MÖSYÖ ONDALIK ANLATIYOR -->
+  <div id="howToPlayModal" style="display:none; position:fixed; inset:0; z-index:60; background:rgba(4,1,10,0.88); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;" onclick="if(event.target===this)closeHowToPlay()">
+    <div class="htp-box">
+      <div class="htp-head">
+        <img src="./mosyo_ondalik.png" class="htp-ghost" onerror="this.src='./perili_kosk_assets/mosyo_ondalik.png'" alt="Mösyö Ondalık">
+        <div>
+          <div class="htp-name">Mösyö Ondalık</div>
+          <div class="htp-quote">"Hoş geldin dedektif... Köşkümden kaçabileceğini mi sanıyorsun? Hıh! Önce kurallarımı dinle."</div>
+        </div>
+      </div>
+      <div class="htp-steps">
+        <div class="htp-step"><span class="htp-num">1</span><div><b>Odayı keşfet.</b> Zemine tıkla, dedektifin fenerini yakıp oraya yürüsün.</div></div>
+        <div class="htp-step"><span class="htp-num">2</span><div><b>Üç nesneyi incele.</b> Her odada üç eşya var ama şifremi yalnızca <b>birine</b> sakladım!</div></div>
+        <div class="htp-step"><span class="htp-num">3</span><div><b>Sürprizlere hazır ol.</b> Yanlış eşyada bazen gizli bir bölme bulup <span style="color:#34D399">puan kazanırsın</span>, bazen tozlu tuzağıma basıp <span style="color:#F87171">puan kaybedersin</span>. Her eşya sadece bir kez!</div></div>
+        <div class="htp-step"><span class="htp-num">4</span><div><b>Ondalık şifremi çöz.</b> Doğru eşyada sorum çıkar. Ne kadar hızlı çözersen o kadar çok puan, art arda doğrularla seri bonusu!</div></div>
+        <div class="htp-step"><span class="htp-num">5</span><div><b>Kandillerini koru.</b> Üç kandilin var. Her yanlış cevapta biri söner. Hepsi sönerse... köşk seni yutar!</div></div>
+        <div class="htp-step"><span class="htp-num">6</span><div><b>Kapıdan geç.</b> Şifre çözülünce kapı açılır, önündeki şans sandığını kap ve sonraki odaya ilerle. On odayı geç, özgürlüğe kavuş!</div></div>
+      </div>
+      <div class="htp-foot">"En iyi on dedektif adını tabloma yazdırır... Bakalım sen de onlardan biri olabilecek misin? Hahaha!"</div>
+      <button class="btn-action-primary" style="font-size:17px; padding:13px;" onclick="closeHowToPlay()">Meydan Okumayı Kabul Ediyorum</button>
+    </div>
+  </div>
   <!-- AYARLAR / ÖĞRETMEN MODALI -->
   <div class="card-screen" id="settingsModal" style="display:none;">
     <div class="main-box" style="max-width: 480px;">
@@ -3461,7 +3495,11 @@
     }
 
     function showHowToPlay() {
-      alert("PERİLİ KÖŞK: ONDALIK KAÇIŞ\n\n1. Her odada gizemli nesneleri tıkla ve dedektifini yönlendir.\n2. Yanlış nesneleri incelerken bazen sürpriz bonus puan kazanır, bazen tozlu tuzaklara basıp puan kaybedersin!\n3. Doğru nesneyi bulduğunda MEB yazılı tarzı ondalık gösterim sorusu açılır.\n4. Soruyu zihninden çöz ve kilidi aç.\n5. Kapı açılınca beliren Şans Sandığını alarak ekstra bonus puan kazan!\n6. 10 mistik mühürü tamamlayıp altın anahtarla köşkten kaçışı başar!");
+      try { playSound('click'); } catch(e){}
+      document.getElementById('howToPlayModal').style.display = 'flex';
+    }
+    function closeHowToPlay() {
+      document.getElementById('howToPlayModal').style.display = 'none';
     }
 
     /* Konfeti */
