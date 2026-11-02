@@ -1619,6 +1619,11 @@
 
       .interactive-object.inspected-checked .object-prop-img { filter: grayscale(55%) brightness(0.8) drop-shadow(0 8px 16px rgba(0,0,0,0.9)); }
     .interactive-object.inspected-checked .object-label { opacity: 0.6; }
+
+    .classic-trophy { font-size: 96px; line-height: 1; margin: 6px 0 4px; animation: trophyBounce 1.2s ease-in-out infinite; filter: drop-shadow(0 0 25px rgba(245,158,11,0.8)); }
+    .classic-stars { font-size: 26px; letter-spacing: 6px; margin-bottom: 10px; animation: starsPulse 1.6s ease-in-out infinite; }
+    @keyframes trophyBounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg) scale(1.06); } }
+    @keyframes starsPulse { 0%,100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
 </style>
 </head>
 <body>
@@ -1796,11 +1801,8 @@
   <!-- ZAFER / SONUÇ EKRANI -->
     <div class="card-screen" id="victoryScreen" style="display:none;">
     <div class="main-box" style="max-width: 660px; padding: 20px 24px;">
-      <!-- Profesyonel Zafer Sanat Görseli -->
-      <div class="victory-art-frame">
-        <img src="./perili_kosk_zafer.jpg" alt="Perili Köşk Zafer Kutlaması" class="victory-art-img" onerror="this.src='./perili_kosk_assets/perili_kosk_zafer.jpg'">
-        <div class="victory-art-badge">🏆 BÜYÜK KURTULUŞ BAŞARILDI!</div>
-      </div>
+      <div class="classic-trophy">🏆</div>
+      <div class="classic-stars">⭐ 🎉 ⭐ 🎉 ⭐</div>
 
       <h2 class="game-logo-title" style="color:#10B981; font-size:30px; margin-bottom: 4px;">KÖŞKTEN KAÇMAYI BAŞARDIN!</h2>
       <p style="color:#CBD5E1; margin-bottom: 14px; font-size:14px;" id="victorySubtitle">
@@ -1880,7 +1882,7 @@
 
       <div id="authSection">
         <p style="font-size: 14px; color: #94A3B8; margin-bottom: 12px;">Öğretmen şifresini girin:</p>
-        <input type="password" id="adminPasswordInput" class="input-field" placeholder="Şifre...">
+        <input type="password" id="adminPasswordInput" class="input-field" placeholder="Şifre..." onkeydown="if(event.key==='Enter')checkAdminPassword()">
         <button class="btn-action-primary" style="font-size:16px; padding:12px;" onclick="checkAdminPassword()">Giriş Yap</button>
       </div>
 
@@ -3277,10 +3279,12 @@
       const finalScore = score + healthBonus;
       score = finalScore;
 
-      const scoreEl = document.getElementById('victory-score-value');
+      const scoreEl = document.getElementById('finalScoreDisplay');
       if (scoreEl) scoreEl.innerText = finalScore;
 
-      const subEl = document.getElementById('victory-sub-desc');
+      const candEl = document.getElementById('finalCandlesDisplay');
+      if (candEl) candEl.innerText = `${health} / 3 🕯️`;
+      const subEl = document.getElementById('victorySubtitle');
       if (subEl) {
         subEl.innerText = `${playerName}, Perili Köşk'ün 10 odasındaki tüm ondalık şifreleri çözüp ${health} kandille altın kapıyı açtı! (+${healthBonus} P Kandil Bonusu)`;
       }
@@ -3359,7 +3363,7 @@
       let mergedList = [...(Array.isArray(list) ? list : [])];
       const existingNames = new Set(mergedList.map(item => item.name ? item.name.toLocaleLowerCase('tr-TR') : ''));
       
-      for (const benchmark of BENCHMARK_LEADERBOARD) {
+      for (const benchmark of (localStorage.getItem('perilikosk_lb_cleared') === '1' ? [] : BENCHMARK_LEADERBOARD)) {
         if (mergedList.length >= 10) break;
         if (!existingNames.has(benchmark.name.toLocaleLowerCase('tr-TR'))) {
           mergedList.push(benchmark);
@@ -3372,6 +3376,10 @@
       for (let i = 0; i < 10; i++) {
         const tr = document.createElement('tr');
         const rankNum = i + 1;
+        if (!safeList[i] && localStorage.getItem('perilikosk_lb_cleared') === '1') {
+          if (i === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
+          break;
+        }
         const item = safeList[i] || { name: "Dedektif", score: 1000 - i * 50 };
 
         let rowClass = 'lb-row';
@@ -3430,7 +3438,7 @@
 
     function checkAdminPassword() {
       const pwd = document.getElementById('adminPasswordInput').value;
-      if (pwd === '1923') {
+      if (pwd === '26575982824.bati') {
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('adminSection').style.display = 'block';
       } else {
@@ -3441,10 +3449,12 @@
     function clearLeaderboardData() {
       if (confirm('Lider tablosundaki tüm skorlar silinecek. Emin misiniz?')) {
         localStorage.removeItem('perilikosk_scores');
+        localStorage.setItem('perilikosk_lb_cleared', '1');
         if (cloudDb) {
-          cloudDb.ref(DB_NODE).remove();
+          try { cloudDb.ref(DB_NODE).remove(); } catch(e) {}
         }
-        alert('Lider tablosu sıfırlandı.');
+        try { renderLeaderboardTable([]); } catch(e) {}
+        alert('İlk 10 listesi sıfırlandı.');
         closeSettingsModal();
       }
     }
