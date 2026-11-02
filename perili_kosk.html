@@ -2195,25 +2195,66 @@
       }
     }
 
-    function playVoice(filename) {
+    /* ========================================================
+       KONUŞMA SIRASI: kayıtlı sesler ve Mösyö Ondalık'ın okunan metinleri
+       tek bir sırada çalışır. Biri bitmeden diğeri başlamaz.
+       ======================================================== */
+    const speechQueue = [];
+    let speechBusy = false;
+    let speechGen = 0;
+    const SPEECH_MAX_PENDING = 3;   // bekleyen konuşma birikip bayatlamasın
+
+    function enqueueSpeech(item) {
       if (!audioEnabled) return;
-      try {
-        if (currentVoiceAudio) {
-          currentVoiceAudio.pause();
-          currentVoiceAudio.currentTime = 0;
-        }
-        const a = new Audio(`./sesler/${filename}`);
-        currentVoiceAudio = a;
-        a.play().catch(e => {
-          const b = new Audio(`./perili_kosk_assets/sesler/${filename}`);
-          if (currentVoiceAudio === a) currentVoiceAudio = b;
-          b.play().catch(err => { if (currentVoiceAudio === b) currentVoiceAudio = null; });
-        });
-      } catch(e) {}
+      speechQueue.push(item);
+      while (speechQueue.length > SPEECH_MAX_PENDING) speechQueue.shift();
+      pumpSpeech();
     }
 
-    /* ---- Mösyö Ondalık'ın alttaki konuşmalarını sesli okuma (tarayıcının Türkçe sesi) ---- */
-    let ttsToken = 0;
+    function pumpSpeech() {
+      if (speechBusy || !audioEnabled) return;
+      const item = speechQueue.shift();
+      if (!item) return;
+      speechBusy = true;
+      const gen = speechGen;
+      let finished = false;
+      let guard = null;
+      const done = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(guard);
+        if (gen !== speechGen) return;          // arada durdurulduysa devam etme
+        speechBusy = false;
+        setTimeout(pumpSpeech, 250);            // iki konuşma arasında kısa nefes
+      };
+      if (item.kind === 'clip') {
+        guard = setTimeout(done, 30000);
+        playClipThen(item.file, done);
+      } else {
+        guard = setTimeout(done, 4000 + String(item.text || '').length * 120);
+        speakTextThen(item.text, done);
+      }
+    }
+
+    function playClipThen(file, done) {
+      const paths = [`./sesler/${file}`, `./perili_kosk_assets/sesler/${file}`];
+      let i = 0;
+      const next = () => {
+        if (i >= paths.length) { done(); return; }
+        let advanced = false;
+        const advance = () => { if (advanced) return; advanced = true; next(); };
+        try {
+          const a = new Audio(paths[i++]);
+          currentVoiceAudio = a;
+          a.onended = () => done();
+          a.onerror = advance;
+          const pr = a.play();
+          if (pr && pr.catch) pr.catch(advance);
+        } catch (e) { advance(); }
+      };
+      next();
+    }
+
     function pickTurkishVoice() {
       if (!('speechSynthesis' in window)) return null;
       const voices = window.speechSynthesis.getVoices() || [];
@@ -2221,46 +2262,39 @@
       if (!tr.length) return null;
       return tr.find(v => /tolga|male|erkek/i.test(v.name)) || tr[0];
     }
-    function stopSpeech() {
-      ttsToken++;
-      try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch(e) {}
-    }
-    function isRecordedVoicePlaying() {
-      return !!(currentVoiceAudio && !currentVoiceAudio.paused && !currentVoiceAudio.ended);
-    }
-    function speakMosyo(text) {
-      if (!audioEnabled || !('speechSynthesis' in window) || !text) return;
-      const token = ++ttsToken;
-      try { window.speechSynthesis.cancel(); } catch(e) {}
-      const clean = String(text)
+
+    function speakTextThen(text, done) {
+      if (!('speechSynthesis' in window)) { done(); return; }
+      const clean = String(text || '')
         .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
         .replace(/\s+/g, ' ')
         .trim();
-      if (!clean) return;
-      const go = () => {
-        if (token !== ttsToken || !audioEnabled) return;
-        try {
-          const u = new SpeechSynthesisUtterance(clean);
-          u.lang = 'tr-TR';
-          const v = pickTurkishVoice();
-          if (v) u.voice = v;
-          u.rate = 0.95;
-          u.pitch = 0.75;
-          u.volume = 1;
-          window.speechSynthesis.speak(u);
-        } catch(e) {}
-      };
-      if (isRecordedVoicePlaying()) {
-        // Kayıtlı ses (hoş geldin / kahkaha) çalıyorsa bitmesini bekle, üst üste binmesin
-        let done = false;
-        const once = () => { if (done) return; done = true; go(); };
-        currentVoiceAudio.addEventListener('ended', once, { once: true });
-        currentVoiceAudio.addEventListener('error', once, { once: true });
-        setTimeout(once, 6000);
-      } else {
-        setTimeout(go, 80);
-      }
+      if (!clean) { done(); return; }
+      try {
+        const u = new SpeechSynthesisUtterance(clean);
+        u.lang = 'tr-TR';
+        const v = pickTurkishVoice();
+        if (v) u.voice = v;
+        u.rate = 0.95;
+        u.pitch = 0.75;
+        u.volume = 1;
+        u.onend = () => done();
+        u.onerror = () => done();
+        window.speechSynthesis.speak(u);
+      } catch (e) { done(); }
     }
+
+    /* Her şeyi sustur ve sırayı temizle (ana menü, ses kapatma) */
+    function stopSpeech() {
+      speechGen++;
+      speechQueue.length = 0;
+      speechBusy = false;
+      try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
+      try { if (currentVoiceAudio) { currentVoiceAudio.pause(); currentVoiceAudio = null; } } catch (e) {}
+    }
+
+    function playVoice(filename) { enqueueSpeech({ kind: 'clip', file: filename }); }
+    function speakMosyo(text) { if (text) enqueueSpeech({ kind: 'tts', text: text }); }
 
     function playSound(type) {
       if (!audioEnabled) return;
