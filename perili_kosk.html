@@ -10,8 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Fredoka:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap&subset=latin,latin-ext" rel="stylesheet">
   
   <script src="./students.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
     :root {
@@ -1949,6 +1949,10 @@
       apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
       authDomain: "zihindencarpma.firebaseapp.com",
       databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
+      projectId: "zihindencarpma",
+      storageBucket: "zihindencarpma.appspot.com",
+      messagingSenderId: "1028701974721",
+      appId: "1:1028701974721:web:58afc46fc877405be1bce3"
     };
     const DB_NODE = "meb_perilikosk_top10";
     const STUDENTS_NODE = "students_grade_6";
@@ -2054,6 +2058,9 @@
         }
       });
     }
+
+    // Gerçek zamanlı liderlik tablosu dinleyicisini başlat
+    loadLeaderboard();
 
     /* ========================================================
        OYUN DURUM DEĞİŞKENLERİ
@@ -3329,44 +3336,38 @@
       saveScoreToLeaderboard(playerName, finalScore);
     }
 
-    function saveScoreToLeaderboard(name, finalScore) {
-      const entry = {
-        name: name,
-        score: finalScore,
-        date: new Date().toLocaleDateString('tr-TR'),
-        timestamp: Date.now()
-      };
+    let currentLeaderboardData = [];
 
-      try {
-        let list = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
-        list.push(entry);
-        list.sort((a,b) => b.score - a.score);
-        localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
-      } catch(e) {}
-
-      if (cloudDb) {
-        try {
-          cloudDb.ref(DB_NODE).push(entry);
-        } catch(e) {}
-      }
-    }
-
-    function showLeaderboard() {
-      try { playSound('step'); } catch(e){}
-      showScreen('LEADERBOARD');
-
-      if (cloudDb) {
-        cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(15).once('value', snapshot => {
-          let list = [];
-          snapshot.forEach(child => { list.push(child.val()); });
-          list.sort((a,b) => b.score - a.score);
-          renderLeaderboardTable(list);
-        }).catch(() => {
-          renderLocalLeaderboard();
-        });
-      } else {
+    function loadLeaderboard() {
+      if (!cloudDb) {
         renderLocalLeaderboard();
+        return;
       }
+      cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(20).on('value', snap => {
+        let list = [];
+        const raw = snap.val();
+        if (raw) {
+          snap.forEach(child => {
+            const val = child.val();
+            if (val && typeof val === 'object') {
+              list.push(val);
+            }
+          });
+          list.sort((a, b) => {
+            const sA = Number(a.score ?? a.puan) || 0;
+            const sB = Number(b.score ?? b.puan) || 0;
+            return sB - sA;
+          });
+        }
+        currentLeaderboardData = list;
+        try {
+          localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
+        } catch(e) {}
+        renderLeaderboardTable(list);
+      }, err => {
+        console.warn("Firebase lider tablosu okunamadı, yerel mod kullanılacak:", err);
+        renderLocalLeaderboard();
+      });
     }
 
     function renderLocalLeaderboard() {
@@ -3377,45 +3378,31 @@
       renderLeaderboardTable(localScores);
     }
 
-    const BENCHMARK_LEADERBOARD = [
-      { name: "Batıkan ÖZTUNALI", score: 1575 },
-      { name: "Derin Asel ASLAN", score: 1520 },
-      { name: "Poyraz Ahmed AYDINALP", score: 1485 },
-      { name: "Zeynep Züleyha GEYİK", score: 1440 },
-      { name: "Can AKTAŞ", score: 1390 },
-      { name: "Defne ERÇEL", score: 1350 },
-      { name: "Doruk ÇETİN", score: 1310 },
-      { name: "Elis DEMİR", score: 1280 },
-      { name: "Kaan ÇALIŞKAN", score: 1240 },
-      { name: "Melis COŞKUNER", score: 1200 }
-    ];
-
     function renderLeaderboardTable(list) {
       const tbody = document.getElementById('leaderboardTbody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      let mergedList = [...(Array.isArray(list) ? list : [])];
-      const existingNames = new Set(mergedList.map(item => item.name ? item.name.toLocaleLowerCase('tr-TR') : ''));
-      
-      for (const benchmark of (localStorage.getItem('perilikosk_lb_cleared') === '1' ? [] : BENCHMARK_LEADERBOARD)) {
-        if (mergedList.length >= 10) break;
-        if (!existingNames.has(benchmark.name.toLocaleLowerCase('tr-TR'))) {
-          mergedList.push(benchmark);
-          existingNames.add(benchmark.name.toLocaleLowerCase('tr-TR'));
-        }
-      }
-      mergedList.sort((a,b) => b.score - a.score);
-      const safeList = mergedList.slice(0, 10);
+      const safeList = Array.isArray(list) ? list.filter(item => item && (item.name || item.adSoyad)) : [];
 
-      for (let i = 0; i < 10; i++) {
+      if (safeList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
+        return;
+      }
+
+      safeList.sort((a, b) => {
+        const sA = Number(a.score ?? a.puan) || 0;
+        const sB = Number(b.score ?? b.puan) || 0;
+        return sB - sA;
+      });
+
+      const top10 = safeList.slice(0, 10);
+
+      top10.forEach((item, i) => {
         const tr = document.createElement('tr');
         const rankNum = i + 1;
-        if (!safeList[i] && localStorage.getItem('perilikosk_lb_cleared') === '1') {
-          if (i === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
-          break;
-        }
-        const item = safeList[i] || { name: "Dedektif", score: 1000 - i * 50 };
+        const name = item.name || item.adSoyad || "Anonim Dedektif";
+        const scoreVal = Number(item.score ?? item.puan) || 0;
 
         let rowClass = 'lb-row';
         let badgeClass = 'lb-rank-badge lb-rank-other';
@@ -3449,14 +3436,48 @@
           <td>
             <div class="lb-name-cell">
               <span style="font-size:18px;">${detectiveIcon}</span>
-              <span class="lb-player-name">${item.name || "Anonim Dedektif"}</span>
+              <span class="lb-player-name">${name}</span>
             </div>
           </td>
           <td style="text-align:right;">
-            <span class="${scoreClass}">${item.score} P</span>
+            <span class="${scoreClass}">${scoreVal.toLocaleString('tr-TR')} P</span>
           </td>
         `;
         tbody.appendChild(tr);
+      });
+    }
+
+    function showLeaderboard() {
+      try { playSound('step'); } catch(e){}
+      showScreen('LEADERBOARD');
+      if (currentLeaderboardData && currentLeaderboardData.length > 0) {
+        renderLeaderboardTable(currentLeaderboardData);
+      } else {
+        loadLeaderboard();
+      }
+    }
+
+    function saveScoreToLeaderboard(name, finalScore) {
+      const entry = {
+        name: name,
+        score: finalScore,
+        date: new Date().toLocaleDateString('tr-TR'),
+        timestamp: Date.now()
+      };
+
+      try {
+        let list = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
+        list.push(entry);
+        list.sort((a,b) => (b.score || 0) - (a.score || 0));
+        localStorage.setItem('perilikosk_scores', JSON.stringify(list.slice(0, 50)));
+      } catch(e) {}
+
+      if (cloudDb) {
+        try {
+          cloudDb.ref(DB_NODE).push(entry);
+        } catch(e) {
+          console.warn("Skor Firebase'e kaydedilemedi:", e);
+        }
       }
     }
 
@@ -3465,6 +3486,10 @@
       document.getElementById('authSection').style.display = 'block';
       document.getElementById('adminSection').style.display = 'none';
       document.getElementById('adminPasswordInput').value = '';
+      const txt = document.getElementById('adminStudentList');
+      if (txt && authorizedStudents && authorizedStudents.length > 0) {
+        txt.value = authorizedStudents.join('\n');
+      }
     }
 
     function closeSettingsModal() {
@@ -3481,15 +3506,61 @@
       }
     }
 
+    function saveStudentList() {
+      const txt = document.getElementById('adminStudentList');
+      if (!txt) return;
+      const raw = txt.value.trim();
+      if (!raw) {
+        alert('Lütfen öğrenci listesini girin.');
+        return;
+      }
+      const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+      authorizedStudents = Array.from(new Set(lines)).sort((a,b) => a.localeCompare(b, 'tr'));
+      localStorage.setItem('registeredStudents', JSON.stringify(authorizedStudents));
+      if (cloudDb) {
+        cloudDb.ref('students_yaziliarenasi_6').set(authorizedStudents.join('\n'));
+      }
+      populateStudentNamesImmediate();
+      alert(`✅ ${authorizedStudents.length} öğrenci başarıyla kaydedildi!`);
+    }
+
+    function clearStudentList() {
+      if (!confirm('Öğrenci listesi varsayılana sıfırlanacak. Emin misiniz?')) return;
+      localStorage.removeItem('registeredStudents');
+      authorizedStudents = [...DEFAULT_STUDENT_LIST].sort((a,b) => a.localeCompare(b, 'tr'));
+      if (cloudDb) {
+        cloudDb.ref('students_yaziliarenasi_6').remove();
+      }
+      populateStudentNamesImmediate();
+      alert('Öğrenci listesi sıfırlandı.');
+    }
+
     function clearLeaderboardData() {
-      if (confirm('Lider tablosundaki tüm skorlar silinecek. Emin misiniz?')) {
-        localStorage.removeItem('perilikosk_scores');
-        localStorage.setItem('perilikosk_lb_cleared', '1');
-        if (cloudDb) {
-          try { cloudDb.ref(DB_NODE).remove(); } catch(e) {}
-        }
-        try { renderLeaderboardTable([]); } catch(e) {}
-        alert('İlk 10 listesi sıfırlandı.');
+      if (!confirm('DİKKAT: İlk 10 Lider Tablosundaki tüm kayıtlar silinecektir. Devam etmek istiyor musunuz?')) {
+        return;
+      }
+      localStorage.removeItem('perilikosk_scores');
+      localStorage.setItem('perilikosk_lb_cleared', '1');
+      const tbody = document.getElementById('leaderboardTbody');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:26px; color:#C4B5FD; font-weight:800;">Henüz kayıt yok. İlk dedektif sen ol! 🕵️</td></tr>';
+      }
+
+      if (cloudDb) {
+        cloudDb.ref(DB_NODE).remove().then(() => {
+          localStorage.removeItem('perilikosk_scores');
+          currentLeaderboardData = [];
+          renderLeaderboardTable([]);
+          alert('🏆 İlk 10 Dedektif Liderlik Tablosu başarıyla sıfırlandı!');
+          closeSettingsModal();
+        }).catch(err => {
+          alert('Yerel tablo temizlendi, ancak Firebase sıfırlama hatası verdi: ' + err.message);
+          closeSettingsModal();
+        });
+      } else {
+        currentLeaderboardData = [];
+        renderLeaderboardTable([]);
+        alert('🏆 İlk 10 Dedektif Liderlik Tablosu başarıyla sıfırlandı!');
         closeSettingsModal();
       }
     }
@@ -3549,6 +3620,10 @@
       ctx.globalAlpha = 1;
       if (confettiList.length > 0) requestAnimationFrame(updateConfetti);
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadLeaderboard();
+    });
   </script>
 </body>
 </html>
