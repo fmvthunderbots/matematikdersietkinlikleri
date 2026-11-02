@@ -2306,7 +2306,7 @@
         </div>
 
       </div>
-    </div>iv>
+    </div>
 
     <!-- EKRAN 2: BİREYSEL MOD (ARENA İKİ KOLONLU SAVAŞ DÜZENİ) -->
     <div id="screenSolo" style="display: none; width: 100%;">
@@ -2972,7 +2972,8 @@ function soundJoker() {
       };
     }
 
-    function generateQuestionPool() {
+    // Elle hazırlanmış (sabit) sorular — dinamik havuza eklenir
+    function generateStaticPool() {
       const pool = [];
 
       // 1. KAZANIM: MAT.5.3.1 (Çember, Yarıçap, Çap, Pergel, Cetvel)
@@ -3282,14 +3283,455 @@ function soundJoker() {
       return pool;
     }
 
-    // Rastgele 15 soru seç
-    function getShuffled15Questions() {
-      const fullPool = generateQuestionPool();
-      for (let i = fullPool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+    /* ==========================================================
+       YAZILI ARENASI 5 — GENİŞLETİLMİŞ & DİNAMİK SORU HAVUZU
+       5 kazanım (geometri): 5.3.1 çember, 5.3.2 paralel ve dik doğrular,
+       5.3.3 açılar, 5.3.4 açı ilişkileri, 5.3.5 çokgenler
+       • Sayılar, harfler ve bağlamlar her oyunda yeniden üretilir
+       • Seçici: kazanımlara dengeli dağıtır, aynı soru tipini art arda sıkıştırmaz,
+         bu tarayıcıda daha önce sorulmuş soruları sona bırakır.
+       ========================================================== */
+    const ArenaPool = (function () {
+      const KAZ_ORDER = ['MAT.5.3.1', 'MAT.5.3.2', 'MAT.5.3.3', 'MAT.5.3.4', 'MAT.5.3.5'];
+      const KAZ_WEIGHT = { 'MAT.5.3.1': 3, 'MAT.5.3.2': 2, 'MAT.5.3.3': 3, 'MAT.5.3.4': 3, 'MAT.5.3.5': 3 };
+      const SEEN_KEY = 'yazili_arenasi_5_seen_v2';
+      const SEEN_MAX = 1500;
+    
+      /* ---------- Yardımcılar ---------- */
+      const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+      const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
+      function shuffleArr(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
       }
-      return fullPool.slice(0, 15);
+      const around = (c, offs, min) => offs.map(o => c + o).filter(v => v >= (min === undefined ? 1 : min));
+    
+      function makeQ(badge, text, visual, correct, rawDistractors) {
+        const corrStr = String(correct).trim();
+        const clean = [];
+        for (const d of rawDistractors) {
+          const v = String(d).trim();
+          if (v && v !== corrStr && !clean.includes(v)) clean.push(v);
+        }
+        let offset = 1;
+        while (clean.length < 3 && offset < 40) {
+          const m = corrStr.match(/^(\d+)(.*)$/);
+          const alt = m ? `${parseInt(m[1], 10) + offset * 5}${m[2]}` : `Hiçbiri (${offset})`;
+          if (alt !== corrStr && !clean.includes(alt)) clean.push(alt);
+          offset++;
+        }
+        return { badge, kaz: badge.split(' ')[0], tpl: badge, text, visual, correct: corrStr, distractors: clean.slice(0, 3) };
+      }
+      const mq = (badge, text, visual, correct, cands) => makeQ(badge, text, visual, correct, shuffleArr(cands));
+    
+      /* ---------- Şekil (SVG) yardımcıları ---------- */
+      function angleSvg(deg, color) {
+        const vx = 90, vy = 76, L1 = 80, L2 = 66, ar = 22;
+        const rad = deg * Math.PI / 180;
+        const x2 = vx + L2 * Math.cos(rad), y2 = vy - L2 * Math.sin(rad);
+        let mark;
+        if (deg === 90) {
+          mark = `<rect x="${vx}" y="${vy - 14}" width="14" height="14" fill="none" stroke="#fbbf24" stroke-width="2"/>`;
+        } else {
+          const ax = vx + ar * Math.cos(rad), ay = vy - ar * Math.sin(rad);
+          mark = `<path d="M ${vx + ar},${vy} A ${ar},${ar} 0 0,0 ${ax.toFixed(1)},${ay.toFixed(1)}" fill="none" stroke="${color}" stroke-width="2"/>`;
+        }
+        const mid = deg < 40 ? rad + 0.3 : rad / 2;   // dar açıda yazıyı üst kolun dışına al
+        const tx = vx + (ar + 20) * Math.cos(mid), ty = vy - (ar + 20) * Math.sin(mid) + 4;
+        return `<svg width="180" height="90" viewBox="0 0 180 90"><line x1="${vx}" y1="${vy}" x2="${vx + L1}" y2="${vy}" stroke="#fff" stroke-width="3"/><line x1="${vx}" y1="${vy}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#fff" stroke-width="3"/>${mark}<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" fill="${color}" font-size="12" font-weight="bold" text-anchor="middle">${deg}°</text></svg>`;
+      }
+      const crossSvg = (given, askAt) => `<svg width="200" height="110" viewBox="0 0 200 110"><line x1="20" y1="20" x2="180" y2="90" stroke="#94a3b8" stroke-width="3"/><line x1="20" y1="90" x2="180" y2="20" stroke="#94a3b8" stroke-width="3"/><circle cx="100" cy="55" r="3" fill="#fff"/><text x="145" y="58" fill="#38bdf8" font-size="13" font-weight="bold">${given}°</text>${askAt === 'ters' ? '<text x="55" y="58" fill="#fbbf24" font-size="14" font-weight="bold">?</text>' : '<text x="95" y="32" fill="#fbbf24" font-size="14" font-weight="bold">?</text>'}</svg>`;
+      const lineRaySvg = given => `<svg width="220" height="90" viewBox="0 0 220 90"><line x1="20" y1="70" x2="200" y2="70" stroke="#cbd5e1" stroke-width="3"/><line x1="110" y1="70" x2="150" y2="20" stroke="#cbd5e1" stroke-width="3"/><text x="145" y="60" fill="#38bdf8" font-size="13" font-weight="bold">${given}°</text><text x="80" y="60" fill="#fbbf24" font-size="14" font-weight="bold">?</text></svg>`;
+      const parallelSvg = (a, b, dist) => `<svg width="240" height="90" viewBox="0 0 240 90"><line x1="20" y1="22" x2="200" y2="22" stroke="#38bdf8" stroke-width="3"/><line x1="20" y1="68" x2="200" y2="68" stroke="#38bdf8" stroke-width="3"/><text x="212" y="27" fill="#38bdf8" font-size="14" font-weight="bold">${a}</text><text x="212" y="73" fill="#38bdf8" font-size="14" font-weight="bold">${b}</text>${dist ? `<line x1="110" y1="24" x2="110" y2="66" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/><text x="118" y="50" fill="#f59e0b" font-size="12" font-weight="bold">${dist} cm</text>` : ''}</svg>`;
+      const circleSvg = (label, mode) => `<svg width="220" height="120" viewBox="0 0 220 120"><circle cx="110" cy="60" r="46" fill="none" stroke="#38bdf8" stroke-width="3"/><circle cx="110" cy="60" r="4" fill="#fbbf24"/><text x="110" y="52" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">O</text>${mode === 'cap' ? `<line x1="64" y1="60" x2="156" y2="60" stroke="#ec4899" stroke-width="2.5"/><text x="58" y="56" fill="#fff" font-size="12" font-weight="bold" text-anchor="end">A</text><text x="162" y="56" fill="#fff" font-size="12" font-weight="bold">B</text>` : `<line x1="110" y1="60" x2="156" y2="60" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="3,3"/><text x="162" y="56" fill="#fff" font-size="12" font-weight="bold">A</text><line x1="110" y1="60" x2="77" y2="93" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="3,3"/><text x="70" y="104" fill="#fff" font-size="12" font-weight="bold">B</text>`}<text x="${mode === 'cap' ? 110 : 6}" y="${mode === 'cap' ? 80 : 14}" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="${mode === 'cap' ? 'middle' : 'start'}">${label}</text></svg>`;
+      function polygonSvg(n) {
+        const cx = 95, cy = 46, R = 38;
+        const pts = [];
+        for (let i = 0; i < n; i++) {
+          const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+          pts.push(`${(cx + R * Math.cos(a)).toFixed(1)},${(cy + R * Math.sin(a)).toFixed(1)}`);
+        }
+        const dots = pts.map(p => { const [x, y] = p.split(','); return `<circle cx="${x}" cy="${y}" r="3.5" fill="#fff"/>`; }).join('');
+        return `<svg width="190" height="95" viewBox="0 0 190 95"><polygon points="${pts.join(' ')}" fill="rgba(56,189,248,0.2)" stroke="#fbbf24" stroke-width="3"/>${dots}</svg>`;
+      }
+    
+      const CLASS_NAMES = ['Dar Açı', 'Dik Açı', 'Geniş Açı', 'Doğru Açı'];
+      const angleClass = d => (d < 90 ? 'Dar Açı' : d === 90 ? 'Dik Açı' : d < 180 ? 'Geniş Açı' : 'Doğru Açı');
+      const POLY = { 3: 'Üçgen', 4: 'Dörtgen', 5: 'Beşgen', 6: 'Altıgen', 7: 'Yedigen', 8: 'Sekizgen' };
+    
+      /* ==========================================================
+         KAZANIM 1 — MAT.5.3.1 · Çember
+         ========================================================== */
+      function genKaz1(out) {
+        const B = 'MAT.5.3.1';
+        const rs = () => pickOne([3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20, 25]);
+        const near = (v, extra) => around(v, [-4, -2, 2, 4, 6, -1, 1].concat(extra || []), 1);
+    
+        // Yarıçap -> çap (farklı bağlamlar)
+        const toDia = [
+          r => ({ t: 'Pergel', q: `Pergel cetvel üzerinde ${r} cm açılarak bir çember çiziliyor. Bu çemberin ÇAPI kaç cm'dir?`, v: circleSvg(`r = ${r} cm`, 'yaricap') }),
+          r => ({ t: 'Tekerlek', q: `Yarıçapı ${r} cm olan bir bisiklet tekerleğinin çapı kaç cm'dir?`, v: null }),
+          r => ({ t: 'Havuz', q: `Yarıçapı ${r} m olan yuvarlak bir havuzun bir kenarından, merkezden geçerek karşı kenarına yürüyen biri kaç metre yol alır?`, v: null }),
+          r => ({ t: 'Halı', q: `Yarıçapı ${r} dm olan yuvarlak bir halının en geniş yeri (çapı) kaç dm'dir?`, v: null }),
+          r => ({ t: 'Pizza', q: `Yarıçapı ${r} cm olan yuvarlak bir pizzanın merkezinden geçecek şekilde ikiye bölen bıçak izi kaç cm uzunluğundadır?`, v: null })
+        ];
+        shuffleArr(toDia).slice(0, 3).forEach(f => {
+          const r = rs(); const o = f(r); const unit = o.q.match(/ (cm|m|dm)\b/)[1];
+          out.push(mq(`${B} · Yarıçaptan Çap (${o.t})`, o.q, o.v, `${2 * r} ${unit}`, [r, 2 * r + 2, 2 * r - 2, 2 * r + 4, 3 * r].filter(x => x > 0).map(x => `${x} ${unit}`)));
+        });
+        // Çap -> yarıçap
+        const toRad = [
+          d => ({ t: 'Pergel', q: `Çapı ${d} cm olan bir çember çizmek isteyen bir öğrenci, pergelin kollarını kaç cm açmalıdır?`, v: circleSvg(`Çap = ${d} cm`, 'cap') }),
+          d => ({ t: 'Pizza', q: `Çapı ${d} cm olan yuvarlak bir pizzanın yarıçapı kaç cm'dir?`, v: null }),
+          d => ({ t: 'Saat', q: `Çapı ${d} cm olan yuvarlak bir duvar saatinin merkezinden kenarına olan uzaklık kaç cm'dir?`, v: null }),
+          d => ({ t: 'Çap Şekli', q: `Şekilde [AB], O merkezli çemberin çapıdır ve |AB| = ${d} cm'dir. Buna göre |OA| kaç cm'dir?`, v: circleSvg(`|AB| = ${d} cm`, 'cap') })
+        ];
+        shuffleArr(toRad).slice(0, 3).forEach(f => {
+          const r = rs(); const d = 2 * r; const o = f(d);
+          out.push(mq(`${B} · Çaptan Yarıçap (${o.t})`, o.q, o.v, `${r} cm`, [d, r + 3, r - 2, r + 5, 2 * d].filter(x => x > 0).map(x => `${x} cm`)));
+        });
+        // Aynı çemberde yarıçaplar eşit
+        for (let i = 0; i < 2; i++) {
+          const r = rs();
+          out.push(mq(`${B} · Yarıçaplar Eşittir`, `O merkezli bir çemberde A ve B noktaları çember üzerindedir. |OA| = ${r} cm olduğuna göre |OB| kaç cm'dir?`, circleSvg(`|OA| = ${r} cm`, 'yaricap'),
+            `${r} cm`, [2 * r, r + 2, r - 1, r + 4, r + 1].map(x => `${x} cm`)));
+        }
+        // İki çemberin çapları toplamı / farkı
+        for (let i = 0; i < 2; i++) {
+          const a = rnd(2, 9), b = rnd(10, 16);
+          out.push(mq(`${B} · İki Çemberin Çapları`, `Yarıçapları ${a} cm ve ${b} cm olan iki çemberin ÇAPLARININ toplamı kaç cm'dir?`, null,
+            `${2 * (a + b)} cm`, [a + b, 2 * (a + b) + 2, 2 * (a + b) - 4, 2 * b - a, 4 * (a + b)].map(x => `${x} cm`)));
+        }
+        for (let i = 0; i < 2; i++) {
+          const a = rnd(3, 9);
+          const d2 = Math.random() < 0.5 ? 2 * a + rnd(1, 6) : 2 * a - rnd(1, a - 1);
+          const A = `Yarıçapı ${a} cm olan çember`, Bc = `Çapı ${d2} cm olan çember`;
+          out.push(mq(`${B} · Hangi Çemberin Çapı Büyük`, `${A} ile ${Bc.toLowerCase()} karşılaştırılıyor. Hangisinin çapı daha büyüktür?`, null,
+            d2 > 2 * a ? Bc : A, [d2 > 2 * a ? A : Bc, 'İkisinin çapı eşittir', 'Karşılaştırılamaz']));
+        }
+        // Kavramlar
+        const st = (tpl, text, correct, dist, vis) => out.push(mq(`${B} · ${tpl}`, text, vis || null, correct, dist));
+        st('Çap Kavramı', 'Çemberin merkezinden geçen ve çember üzerindeki iki noktayı birleştiren doğru parçasına ne ad verilir?', 'Çap', ['Yarıçap', 'Kenar', 'Köşegen']);
+        st('Çap – Yarıçap İlişkisi', 'Bir çemberde çap, yarıçapın kaç katıdır?', '2 katı', ['Yarısı', '3 katı', '4 katı']);
+        st('Çap – Yarıçap İlişkisi', 'Bir çemberin yarıçapı, çapının kaçta kaçıdır?', 'Yarısıdır', ['2 katıdır', 'Çeyreğidir', 'Eşittir']);
+        st('Çember Çizimi', 'Pergelin iki ucu arasındaki açıklık, çizilen çemberin hangi elemanına eşittir?', 'Yarıçapına', ['Çapına', 'Çevresine', 'Merkezine']);
+        st('Çember Çizimi', 'Bir çemberde çizilebilecek çap sayısı için aşağıdakilerden hangisi doğrudur?', 'Sonsuz sayıda çap çizilebilir', ['Yalnızca 1 çap çizilebilir', 'Yalnızca 2 çap çizilebilir', 'Hiç çap çizilemez']);
+        st('Çemberin Elemanları', 'Çember üzerindeki bütün noktaların merkeze olan uzaklığı için hangisi doğrudur?', 'Hepsi birbirine eşittir', ['Her noktada farklıdır', 'Merkeze yaklaştıkça artar', 'Yalnızca iki noktada eşittir']);
+        st('Çemberin Elemanları', 'Çemberin merkezi ile çember üzerindeki herhangi bir noktayı birleştiren doğru parçasına ne ad verilir?', 'Yarıçap', ['Çap', 'Köşegen', 'Kenar']);
+      }
+    
+      /* ==========================================================
+         KAZANIM 2 — MAT.5.3.2 · Paralel ve Dik Doğrular
+         ========================================================== */
+      function genKaz2(out) {
+        const B = 'MAT.5.3.2';
+        const PAIRS = [['d', 'e'], ['k', 'l'], ['m', 'n'], ['p', 'r'], ['a', 'b'], ['x', 'y'], ['s', 't']];
+    
+        // Sembolik gösterim: paralel / dik
+        shuffleArr(PAIRS).slice(0, 3).forEach(([a, b]) => {
+          out.push(mq(`${B} · Paralellik Sembolü`, `${a} doğrusu ile ${b} doğrusunun birbirine PARALEL olduğunu gösteren ifade hangisidir?`, parallelSvg(a, b),
+            `${a} // ${b}`, [`${a} ⊥ ${b}`, `${a} = ${b}`, `${a} ∩ ${b}`]));
+        });
+        shuffleArr(PAIRS).slice(0, 3).forEach(([a, b]) => {
+          out.push(mq(`${B} · Diklik Sembolü`, `${a} doğrusu ile ${b} doğrusunun birbirine DİK olduğunu gösteren ifade hangisidir?`, null,
+            `${a} ⊥ ${b}`, [`${a} // ${b}`, `${a} = ${b}`, `${a} ∩ ${b}`]));
+        });
+        shuffleArr(PAIRS).slice(0, 2).forEach(([a, b]) => {
+          const par = Math.random() < 0.5;
+          out.push(mq(`${B} · Sembolü Okuma`, `"${a} ${par ? '//' : '⊥'} ${b}" gösterimi aşağıdakilerden hangisini ifade eder?`, null,
+            par ? `${a} doğrusu ${b} doğrusuna paraleldir` : `${a} doğrusu ${b} doğrusuna diktir`,
+            par ? [`${a} doğrusu ${b} doğrusuna diktir`, `${a} doğrusu ${b} doğrusu ile çakışıktır`, `${a} doğrusu ${b} doğrusunu keser ve eğiktir`]
+              : [`${a} doğrusu ${b} doğrusuna paraleldir`, `${a} doğrusu ${b} doğrusu ile çakışıktır`, `${a} doğrusu ${b} doğrusunu hiç kesmez`]));
+        });
+        // Harfli doğru parçaları için gösterim
+        for (let i = 0; i < 2; i++) {
+          const L = shuffleArr(['A', 'B', 'C', 'D', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T']).slice(0, 4);
+          const par = Math.random() < 0.5;
+          out.push(mq(`${B} · Doğru Parçalarında Gösterim`, `[${L[0]}${L[1]}] ve [${L[2]}${L[3]}] doğru parçaları birbirine ${par ? 'PARALEL' : 'DİK'} ise bu durum nasıl gösterilir?`, null,
+            `[${L[0]}${L[1]}] ${par ? '//' : '⊥'} [${L[2]}${L[3]}]`, [`[${L[0]}${L[1]}] ${par ? '⊥' : '//'} [${L[2]}${L[3]}]`, `[${L[0]}${L[1]}] = [${L[2]}${L[3]}]`, `[${L[0]}${L[2]}] ${par ? '//' : '⊥'} [${L[1]}${L[3]}]`]));
+        }
+        // Günlük yaşam modelleri
+        const PAR = ['Tren rayları', 'Defter satır çizgileri', 'Yaya geçidindeki beyaz çizgiler', 'Çit tahtaları', 'Otoyolun şerit çizgileri', 'Kitaplığın raf kenarları', 'Merdiven korkuluğunun iki ray çubuğu'];
+        const CROSS = ['Açılmış bir makasın kolları', 'Akrep ve yelkovan', 'Yelpazenin açılmış çubukları', 'A harfinin eğik çizgileri', 'Çatının iki eğik kenarı', 'X harfinin çizgileri'];
+        for (let i = 0; i < 2; i++) {
+          out.push(mq(`${B} · Paralel Doğru Modeli (Olamaz)`, 'Aşağıdakilerden hangisi paralel doğrulara günlük yaşamdan bir model OLAMAZ?', null,
+            pickOne(CROSS), shuffleArr(PAR).slice(0, 4)));
+        }
+        for (let i = 0; i < 2; i++) {
+          out.push(mq(`${B} · Paralel Doğru Modeli`, 'Aşağıdakilerden hangisi paralel doğrulara günlük yaşamdan en uygun modeldir?', null,
+            pickOne(PAR), shuffleArr(CROSS).slice(0, 4)));
+        }
+        const PERP = ['Bir kitabın komşu iki kenarı', 'Kare bir pencere çerçevesinin komşu kenarları', 'Bir masanın köşesindeki iki kenar', 'Bir kağıdın komşu iki kenarı'];
+        for (let i = 0; i < 2; i++) {
+          out.push(mq(`${B} · Dik Doğru Modeli`, 'Aşağıdakilerden hangisi birbirine dik doğrulara günlük yaşamdan bir model olabilir?', null,
+            pickOne(PERP), shuffleArr(PAR).slice(0, 4)));
+        }
+        // Paralel doğrular arası uzaklık
+        for (let i = 0; i < 3; i++) {
+          const [a, b] = pickOne(PAIRS); const x = rnd(2, 12);
+          out.push(mq(`${B} · Paralel Doğrularda Mesafe`, `${a} // ${b} ve bu iki doğru arasındaki uzaklık ${x} cm'dir. ${a} doğrusu üzerindeki herhangi bir noktanın ${b} doğrusuna en kısa uzaklığı kaç cm'dir?`, parallelSvg(a, b, x),
+            `${x} cm`, [x + 2, 2 * x, x - 1, x + 5, Math.max(x / 2, 1)].map(v => `${v} cm`)));
+        }
+        // Dik doğruların açısı
+        for (let i = 0; i < 2; i++) {
+          const [a, b] = pickOne(PAIRS);
+          out.push(mq(`${B} · Dik Doğrular Arasındaki Açı`, `${a} ⊥ ${b} ise bu iki doğrunun kesişmesiyle oluşan açılardan her birinin ölçüsü kaç derecedir?`, null,
+            '90°', ['45°', '180°', '60°', '120°']));
+        }
+        // Kavramlar
+        const st = (tpl, text, correct, dist, vis) => out.push(mq(`${B} · ${tpl}`, text, vis || null, correct, dist));
+        st('Paralel Doğru Tanımı', 'Aynı düzlemde bulunan ve uzatılsalar bile hiçbir zaman kesişmeyen doğrulara ne ad verilir?', 'Paralel doğrular', ['Dik doğrular', 'Kesişen doğrular', 'Çakışık doğrular']);
+        st('Dik Doğru Tanımı', "Birbirini 90°'lik açı oluşturacak şekilde kesen doğrulara ne ad verilir?", 'Dik doğrular', ['Paralel doğrular', 'Çakışık doğrular', 'Doğru parçaları']);
+        st('Gönye Kullanımı', 'Bir doğruya dik bir doğru çizmek için en uygun araç hangisidir?', 'Gönye', ['Pergel', 'Şerit metre', 'Terazi']);
+        st('Paralel Doğru Özelliği', 'Birbirine paralel iki doğrunun arasındaki dik uzaklık için aşağıdakilerden hangisi doğrudur?', 'Her noktada birbirine eşittir', ['Uzatıldıkça azalır', 'Uzatıldıkça artar', 'Noktadan noktaya değişir']);
+        st('Doğruların Durumu', 'Aynı düzlemdeki iki doğrunun hiç ortak noktası yoksa bu iki doğru için ne söylenebilir?', 'Paraleldir', ['Diktir', 'Çakışıktır', 'Birbirini bir noktada keser']);
+      }
+    
+      /* ==========================================================
+         KAZANIM 3 — MAT.5.3.3 · Açılar
+         ========================================================== */
+      function genKaz3(out) {
+        const B = 'MAT.5.3.3';
+        const ANG = [];
+        for (let d = 20; d <= 170; d += 5) if (d !== 90) ANG.push(d);
+        const colorOf = c => (c === 'Dar Açı' ? '#38bdf8' : c === 'Geniş Açı' ? '#ec4899' : '#fbbf24');
+    
+        // Şekilden / ölçüden açı çeşidi
+        shuffleArr(ANG).slice(0, 5).forEach(d => {
+          const c = angleClass(d);
+          out.push(mq(`${B} · Açı Çeşidi (Şekil)`, `Şekilde ölçüsü ${d}° olan bir açı gösterilmiştir. Bu açı, çeşitlerine göre hangi gruptadır?`, angleSvg(d, colorOf(c)),
+            c, CLASS_NAMES.filter(x => x !== c)));
+        });
+        out.push(mq(`${B} · Dik Açı`, 'Ölçüsü tam 90° olan açı çeşidi hangisidir?', angleSvg(90, '#fbbf24'), 'Dik Açı', ['Dar Açı', 'Geniş Açı', 'Doğru Açı']));
+        out.push(mq(`${B} · Doğru Açı`, 'Ölçüsü tam 180° olan ve bir doğru boyunca uzanan açı çeşidi hangisidir?', angleSvg(180, '#fbbf24'), 'Doğru Açı', ['Dik Açı', 'Geniş Açı', 'Dar Açı']));
+    
+        // Hangi ölçü hangi çeşittir
+        ['Dar Açı', 'Geniş Açı', 'Dik Açı', 'Doğru Açı'].forEach(cls => {
+          const pool = ANG.filter(d => angleClass(d) === cls);
+          const corr = cls === 'Dik Açı' ? 90 : cls === 'Doğru Açı' ? 180 : pickOne(pool);
+          const dist = [];
+          const wantClasses = shuffleArr(CLASS_NAMES.filter(c => c !== cls));
+          wantClasses.forEach(c => {
+            const p = c === 'Dik Açı' ? [90] : c === 'Doğru Açı' ? [180] : ANG.filter(d => angleClass(d) === c);
+            dist.push(pickOne(p));
+          });
+          out.push(mq(`${B} · Ölçüden Açı Seçme (${cls})`, `Aşağıdaki açı ölçülerinden hangisi ${cls.toLowerCase().replace('açı', 'açıdır')}?`, null,
+            `${corr}°`, dist.map(d => `${d}°`)));
+        });
+        // Kaç tane dar / geniş
+        for (let i = 0; i < 3; i++) {
+          for (let t = 0; t < 100; t++) {
+            const list = shuffleArr(ANG.concat([90, 180])).slice(0, 6);
+            const cls = pickOne(['Dar Açı', 'Geniş Açı']);
+            const n = list.filter(d => angleClass(d) === cls).length;
+            if (n < 1 || n > 4) continue;
+            out.push(mq(`${B} · Açıları Sayma`, `${list.map(d => d + '°').join(', ')} ölçülerindeki açılardan kaç tanesi ${cls.toLowerCase().replace('açı', 'açıdır')}?`, null,
+              `${n} tane`, around(n, [-2, -1, 1, 2, 3], 0).map(v => `${v} tane`)));
+            break;
+          }
+        }
+        // Saat
+        shuffleArr([1, 2, 3, 4, 5, 7, 8, 9, 10, 11]).slice(0, 4).forEach(h => {
+          const ang = 30 * Math.min(h, 12 - h);
+          out.push(mq(`${B} · Saatte Açı Çeşidi`, `Saat tam ${h}.00'ı gösterirken akrep ile yelkovan arasında oluşan KÜÇÜK açı, çeşitlerine göre hangisidir?`, null,
+            angleClass(ang), CLASS_NAMES.filter(x => x !== angleClass(ang))));
+        });
+        // Kat ilişkisi
+        out.push(mq(`${B} · Açı Ölçüsü Düşünme`, 'Ölçüsü dik açının ölçüsünün 2 katı olan açı hangi çeşittir?', null, 'Doğru Açı', ['Dik Açı', 'Dar Açı', 'Geniş Açı']));
+        out.push(mq(`${B} · Açı Ölçüsü Düşünme`, 'Doğru açının ölçüsünün yarısı kaç derecedir?', null, '90°', ['45°', '60°', '180°', '120°']));
+        out.push(mq(`${B} · Açı Ölçüsü Düşünme`, 'Dik açının ölçüsünün yarısı olan açı hangi çeşittir?', null, 'Dar Açı', ['Dik Açı', 'Geniş Açı', 'Doğru Açı']));
+        // Gösterim
+        for (let i = 0; i < 3; i++) {
+          const L = shuffleArr(['A', 'B', 'C', 'D', 'E', 'K', 'L', 'M', 'N', 'P', 'R', 'S']).slice(0, 3);
+          const [v, p, q] = L;
+          out.push(mq(`${B} · Açının Gösterimi`, `Köşesi ${v} noktası, kolları [${v}${p} ve [${v}${q} olan açı aşağıdakilerden hangisi ile gösterilir?`, null,
+            `∠${p}${v}${q}`, [`∠${v}${p}${q}`, `∠${p}${q}${v}`, `∠${v}${q}${p}`]));
+        }
+        // Kavramlar
+        const st = (tpl, text, correct, dist) => out.push(mq(`${B} · ${tpl}`, text, null, correct, dist));
+        st('Açı Ölçme Aleti', 'Açıların ölçüsünü derece cinsinden ölçmek için kullanılan yarım daire şeklindeki aletin adı nedir?', 'İletki', ['Pergel', 'Cetvel', 'Kumpas']);
+        st('Açı Çeşitleri', 'Ölçüsü 0° ile 90° arasında olan açılara ne ad verilir?', 'Dar açı', ['Geniş açı', 'Dik açı', 'Doğru açı']);
+        st('Açı Çeşitleri', 'Ölçüsü 90° ile 180° arasında olan açılara ne ad verilir?', 'Geniş açı', ['Dar açı', 'Dik açı', 'Doğru açı']);
+      }
+    
+      /* ==========================================================
+         KAZANIM 4 — MAT.5.3.4 · Açı İlişkileri (ters, komşu bütünler)
+         ========================================================== */
+      function genKaz4(out) {
+        const B = 'MAT.5.3.4';
+        const X = []; for (let d = 15; d <= 85; d += 5) X.push(d);
+        const pickX = n => shuffleArr(X).slice(0, n);
+    
+        pickX(3).forEach(x => out.push(mq(`${B} · Ters Açılar`, `Birbirini kesen iki doğrudan birinin oluşturduğu açı ${x}° ise, onun TERS AÇISININ ölçüsü kaç derecedir?`, crossSvg(x, 'ters'),
+          `${x}°`, [180 - x, x + 20, x - 10, 90 - x, 2 * x].filter(v => v > 0).map(v => `${v}°`))));
+        pickX(3).forEach(x => out.push(mq(`${B} · Komşu Bütünler Açılar`, `Bir doğru üzerinde yan yana duran iki açıdan biri ${x}° ise diğeri kaç derecedir?`, lineRaySvg(x),
+          `${180 - x}°`, [x, 180 - x + 15, 90 - x, 90 + x, 180 - x - 10].filter(v => v > 0 && v < 180).map(v => `${v}°`))));
+        pickX(2).forEach(x => out.push(mq(`${B} · Kesişen Doğrularda Komşu Açı`, `Birbirini kesen iki doğru dört açı oluşturur. Bu açılardan biri ${x}° ise ona KOMŞU olan açılardan biri kaç derecedir?`, crossSvg(x, 'komsu'),
+          `${180 - x}°`, [x, 360 - x, 90 - x, 180 - x + 20].filter(v => v > 0).map(v => `${v}°`))));
+        pickX(2).forEach(x => out.push(mq(`${B} · Ters Açıların Toplamı`, `Birbirini kesen iki doğruda oluşan TERS açıların ölçüleri toplamı ${2 * x}°'dir. Bu açılardan birinin ölçüsü kaç derecedir?`, null,
+          `${x}°`, [2 * x, 180 - x, x + 15, x - 10, 4 * x].filter(v => v > 0).map(v => `${v}°`))));
+        // Paralel doğruları kesen doğru: komşu bütünler ve ters
+        [95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150].sort(() => Math.random() - 0.5).slice(0, 3).forEach(x => {
+          const sv = `<svg width="220" height="110" viewBox="0 0 220 110"><line x1="20" y1="35" x2="200" y2="35" stroke="#38bdf8" stroke-width="3"/><line x1="20" y1="80" x2="200" y2="80" stroke="#38bdf8" stroke-width="3"/><line x1="130" y1="10" x2="90" y2="100" stroke="#fbbf24" stroke-width="3"/><text x="125" y="30" fill="#f87171" font-size="12" font-weight="bold">${x}°</text></svg>`;
+          if (Math.random() < 0.5) {
+            out.push(mq(`${B} · Paralel Doğruları Kesen Doğru (Komşu)`, `Paralel iki doğruyu kesen bir doğruda oluşan açılardan biri ${x}° ise, bu açının komşu bütünleri kaç derecedir?`, sv,
+              `${180 - x}°`, [x, 90, 180 - x + 10, 360 - x].filter(v => v > 0 && v !== 180 - x).map(v => `${v}°`)));
+          } else {
+            out.push(mq(`${B} · Paralel Doğruları Kesen Doğru (Ters)`, `Paralel iki doğruyu kesen bir doğruda oluşan açılardan biri ${x}° ise, bu açının TERS açısı kaç derecedir?`, sv,
+              `${x}°`, [180 - x, 90, 360 - x, 180 - x + 10].filter(v => v > 0 && v !== x).map(v => `${v}°`)));
+          }
+        });
+        // Kavramlar
+        const st = (tpl, text, correct, dist) => out.push(mq(`${B} · ${tpl}`, text, null, correct, dist));
+        st('Ters Açı Özelliği', 'Ters açıların ölçüleri için aşağıdakilerden hangisi her zaman doğrudur?', 'Birbirine eşittir', ['Toplamları 180° dir', 'Toplamları 90° dir', 'Biri diğerinin 2 katıdır']);
+        st('Komşu Bütünler Özelliği', 'Komşu bütünler iki açının ölçüleri toplamı kaç derecedir?', '180°', ['90°', '360°', '120°']);
+        st('Kesişen Doğrular', 'Birbirini kesen iki doğrunun oluşturduğu dört açının ölçüleri toplamı kaç derecedir?', '360°', ['180°', '90°', '270°']);
+        st('Komşu Bütünler Çeşit', 'Komşu bütünler iki açıdan biri dar açı ise diğeri hangi çeşittir?', 'Geniş açı', ['Dar açı', 'Dik açı', 'Doğru açı']);
+        st('Komşu Bütünler Çeşit', 'Komşu bütünler iki açıdan biri dik açı ise diğeri hangi çeşittir?', 'Dik açı', ['Dar açı', 'Geniş açı', 'Doğru açı']);
+        st('Ters Açı Sayısı', 'Birbirini kesen iki doğru kaç çift ters açı oluşturur?', '2 çift', ['1 çift', '3 çift', '4 çift']);
+      }
+    
+      /* ==========================================================
+         KAZANIM 5 — MAT.5.3.5 · Çokgenler
+         ========================================================== */
+      function genKaz5(out) {
+        const B = 'MAT.5.3.5';
+        const names = n => Object.keys(POLY).map(Number).filter(k => k !== n).map(k => POLY[k]);
+    
+        // Şekilden çokgen adı
+        shuffleArr([3, 4, 5, 6, 7, 8]).slice(0, 3).forEach(n => {
+          out.push(mq(`${B} · Şekilden Çokgen Adı`, 'Şekilde gösterilen çokgenin adı nedir?', polygonSvg(n), POLY[n], names(n)));
+        });
+        // Şekilden kenar / köşe sayısı
+        shuffleArr([3, 4, 5, 6, 7, 8]).slice(0, 2).forEach(n => {
+          out.push(mq(`${B} · Şekilden Köşe Sayısı`, 'Şekilde gösterilen çokgenin kaç köşesi vardır?', polygonSvg(n), `${n} köşe`, around(n, [-2, -1, 1, 2, 3]).map(v => `${v} köşe`)));
+        });
+        // Kenar sayısı → ad
+        shuffleArr([3, 4, 5, 6, 7, 8]).slice(0, 3).forEach(n => {
+          out.push(mq(`${B} · Kenar Sayısından Ad`, `${n} kenarı olan çokgenin adı nedir?`, null, POLY[n], names(n)));
+        });
+        // Ad → kenar / köşe / iç açı
+        shuffleArr([3, 4, 5, 6, 7, 8]).slice(0, 3).forEach(n => {
+          const kind = pickOne([['kenarı', 'kenar'], ['köşesi', 'köşe'], ['iç açısı', 'iç açı']]);
+          out.push(mq(`${B} · Çokgenin Elemanları (${kind[1]})`, `Bir ${POLY[n].toLowerCase()}in kaç ${kind[0]} vardır?`, null, `${n} ${kind[1]}`, around(n, [-2, -1, 1, 2, 3]).map(v => `${v} ${kind[1]}`)));
+        });
+        shuffleArr([4, 5, 6, 7]).slice(0, 2).forEach(n => {
+          out.push(mq(`${B} · Kenar Köşe İç Açı İlişkisi`, `Bir ${POLY[n].toLowerCase()}in kenar, köşe ve iç açı sayıları aşağıdakilerden hangisidir?`, null,
+            `${n} kenar, ${n} köşe, ${n} iç açı`, [`${n} kenar, ${n + 2} köşe, ${n} iç açı`, `${n - 1} kenar, ${n} köşe, ${n - 1} iç açı`, `${n} kenar, ${n} köşe, ${n + 1} iç açı`]));
+        });
+        // Köşegen / kenar adlandırma
+        const SETS = [['A', 'B', 'C', 'D'], ['K', 'L', 'M', 'N'], ['E', 'F', 'G', 'H'], ['P', 'R', 'S', 'T'], ['A', 'B', 'C', 'D', 'E'], ['K', 'L', 'M', 'N', 'P'], ['M', 'N', 'P', 'R', 'S'], ['A', 'B', 'C', 'D', 'E', 'F']];
+        shuffleArr(SETS).slice(0, 4).forEach(V => {
+          const n = V.length; const nm = V.join('');
+          const sides = [], diags = [];
+          for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+            const adj = (j - i === 1) || (i === 0 && j === n - 1);
+            (adj ? sides : diags).push(`[${V[i]}${V[j]}]`);
+          }
+          if (n === 4 || Math.random() < 0.5) {
+            out.push(mq(`${B} · Köşegen Bulma`, `${nm} ${POLY[n].toLowerCase()}inin köşegenlerinden biri aşağıdakilerden hangisidir?`, null, pickOne(diags), shuffleArr(sides).slice(0, 4)));
+          } else {
+            out.push(mq(`${B} · Kenar Bulma`, `${nm} ${POLY[n].toLowerCase()}inin kenarlarından biri aşağıdakilerden hangisidir?`, null, pickOne(sides), shuffleArr(diags).slice(0, 4)));
+          }
+        });
+        // Bir köşeden çizilen köşegen sayısı
+        shuffleArr([4, 5, 6, 7, 8]).slice(0, 2).forEach(n => {
+          out.push(mq(`${B} · Bir Köşeden Köşegen`, `Bir ${POLY[n].toLowerCase()}in bir köşesinden diğer köşelerine çizilen köşegen sayısı kaçtır?`, polygonSvg(n),
+            `${n - 3} tane`, around(n - 3, [-2, -1, 1, 2, 3], 0).map(v => `${v} tane`)));
+        });
+        // Çokgen olmayan
+        for (let i = 0; i < 2; i++) {
+          out.push(mq(`${B} · Çokgen Olmayan`, 'Aşağıdakilerden hangisi bir çokgen DEĞİLDİR?', null, pickOne(['Çember', 'Doğru parçası', 'Işın']),
+            shuffleArr(['Üçgen', 'Dörtgen', 'Beşgen', 'Altıgen', 'Yedigen']).slice(0, 4)));
+        }
+        // Kavramlar
+        const st = (tpl, text, correct, dist) => out.push(mq(`${B} · ${tpl}`, text, null, correct, dist));
+        st('Çokgen Oluşturma', 'Düzlemde bir çokgen oluşturabilmek için ardışık olarak kesişen EN AZ kaç doğru parçası gereklidir?', '3 doğru parçası', ['2 doğru parçası', '4 doğru parçası', '5 doğru parçası']);
+        st('Üçgenin Köşegeni', 'Bir üçgenin kaç köşegeni vardır?', 'Köşegeni yoktur', ['1 tane', '2 tane', '3 tane']);
+        st('Dörtgenin Köşegeni', 'Bir dörtgenin kaç köşegeni vardır?', '2 tane', ['1 tane', '3 tane', '4 tane']);
+        st('Temel Elemanlar', 'Aşağıdakilerden hangisi bir çokgenin temel elemanlarından biri DEĞİLDİR?', 'Yarıçap', ['Kenar', 'Köşe', 'İç açı']);
+        st('Köşegen Tanımı', 'Bir çokgenin komşu olmayan iki köşesini birleştiren doğru parçasına ne ad verilir?', 'Köşegen', ['Kenar', 'Yarıçap', 'İç açı']);
+      }
+    
+      /* ==========================================================
+         HAVUZ ÜRETİMİ VE SEÇİCİ
+         ========================================================== */
+      function generate() {
+        const out = [];
+        genKaz1(out); genKaz2(out); genKaz3(out); genKaz4(out); genKaz5(out);
+        return out;
+      }
+    
+      function qHash(q) {
+        const s = q.text + '|' + q.correct;
+        let h = 5381;
+        for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+        return String(h);
+      }
+      function loadSeen() { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (e) { return []; } }
+      function saveSeen(list) { try { localStorage.setItem(SEEN_KEY, JSON.stringify(list.slice(-SEEN_MAX))); } catch (e) { /* yerel kayıt yoksa sorun değil */ } }
+    
+      // basePool: elle hazırlanmış (eski) sorular; dinamik havuza eklenir.
+      function select(n, basePool, markSeen) {
+        if (markSeen === undefined) markSeen = true;
+        const merged = generate().concat(basePool || []);
+        const seenList = loadSeen();
+        const seen = new Set(seenList);
+        const groups = {}; KAZ_ORDER.forEach(k => { groups[k] = []; });
+        const textSeen = new Set();
+        shuffleArr(merged).forEach(q => {
+          const kz = q.kaz || String(q.badge).split(' ')[0];
+          if (!groups[kz] || textSeen.has(q.text)) return;
+          textSeen.add(q.text);
+          q.kaz = kz; q.tpl = q.tpl || q.badge;
+          groups[kz].push(q);
+        });
+    
+        const bag = []; KAZ_ORDER.forEach(k => { for (let i = 0; i < KAZ_WEIGHT[k]; i++) bag.push(k); });
+        const slots = [];
+        while (slots.length < n) shuffleArr(bag).forEach(k => { if (slots.length < n) slots.push(k); });
+    
+        const chosen = [], used = new Set(), tplCount = {};
+        const pickFrom = list => {
+          let best = null, bestScore = Infinity;
+          for (const q of list) {
+            if (used.has(q.text)) continue;
+            const sc = (seen.has(qHash(q)) ? 6 : 0) + (tplCount[q.tpl] || 0) * 2;
+            if (sc < bestScore) { bestScore = sc; best = q; if (sc === 0) break; }
+          }
+          return best;
+        };
+        slots.forEach(k => {
+          let q = pickFrom(groups[k]);
+          if (!q) { for (const kk of KAZ_ORDER) { q = pickFrom(groups[kk]); if (q) break; } }
+          if (q) { chosen.push(q); used.add(q.text); tplCount[q.tpl] = (tplCount[q.tpl] || 0) + 1; }
+        });
+    
+        if (markSeen) saveSeen(seenList.concat(chosen.map(qHash)));
+        return shuffleArr(chosen);
+      }
+    
+      return { generate, select, KAZ_ORDER, qHash };
+    })();
+
+    // Tüm havuz: sabit sorular + her çağrıda yeni sayı/harf/bağlamla üretilen sorular
+    function generateQuestionPool() {
+      return ArenaPool.generate().concat(generateStaticPool());
+    }
+
+    // n soru seç: 5 kazanıma dengeli dağıtır, aynı soru tipini art arda vermez,
+    // bu tarayıcıda daha önce sorulmuş soruları en sona bırakır.
+    function getQuestions(n) {
+      return ArenaPool.select(n, generateStaticPool());
+    }
+
+    // Bireysel mod için 15'lik soru seti
+    function getShuffled15Questions() {
+      return getQuestions(15);
     }
 
     /* ==========================================================
@@ -3368,6 +3810,9 @@ function soundJoker() {
         const el = document.getElementById(id);
         if (el) el.style.display = (id === screenId) ? (id === 'screenGroup' ? 'flex' : 'block') : 'none';
       });
+      // Grup sonucunda bireysel istatistik kartları gösterilmez
+      const sg = document.querySelector('.result-stats-grid');
+      if (sg) sg.style.display = (screenId === 'screenResult' && currentMode === 'group') ? 'none' : '';
     }
 
     function goHome() {
@@ -3979,11 +4424,7 @@ function soundJoker() {
       duelP2Score = 0;
       duelP1Streak = 0;
       duelP2Streak = 0;
-      duelQuestions = generateQuestionPool();
-      for (let i = duelQuestions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [duelQuestions[i], duelQuestions[j]] = [duelQuestions[j], duelQuestions[i]];
-      }
+      duelQuestions = getQuestions(60);
       duelQIndex = 0;
       duelTimeRemaining = duelTimeLimit;
 
@@ -4404,19 +4845,37 @@ function soundJoker() {
       updateLeaderboard([]);
     });
   
+
     /* ==========================================================
-       GRUP MODU KODLARI (GROUP)
+       GRUP MODU KODLARI (3 TAKIM · 30 KALKAN)
+       22 soru + 8 şans kartı. Sorular dengeli kazanım dağılımıyla ve
+       daha önce sorulmamışlardan seçilir; şans kartları da her oyunda
+       büyük bir havuzdan yeniden seçilir.
        ========================================================== */
-    const groupJokers = [
-      { type: 'j', subType: 'buff', points: 40, msg: "🎁 İMPARATORUN LÜTFU", desc: "Sezar'dan sana altın bir hediye! (+40 Puan)" },
-      { type: 'j', subType: 'buff', points: 30, msg: "🧪 GLADYATÖR İKSİRİ", desc: "Arenada gücüne güç kattın! (+30 Puan)" },
-      { type: 'j', subType: 'buff', points: 25, msg: "🐎 SAVAŞ ARABASI", desc: "Hızlı bir hamle yaparak öne geçtin! (+25 Puan)" },
-      { type: 'j', subType: 'debuff', points: -20, msg: "⚔️ KIRIK KILIÇ", desc: "Kılıcın kırıldı, yeni kılıç alırken zaman kaybettin! (-20 Puan)" },
-      { type: 'j', subType: 'debuff', points: -15, msg: "🌪️ KUM FIRTINASI", desc: "Arenada gözüne kum kaçtı! (-15 Puan)" },
-      { type: 'j', subType: 'attack', points: 0, msg: "🦁 ASLAN SALDIRISI", desc: "Kafesler açıldı! Sıradaki takım korkup kaçtı! (Sıradaki takımdan 20 Puan silinir)" },
-      { type: 'j', subType: 'drain', points: 0, msg: "🏃 HIRSIZ SPARTAKÜS", desc: "Kaçak köleler rakibin ganimetini çaldı! (Sıradaki takımdan 25 Puan aşırdın)" },
-      { type: 'j', subType: 'bomb', points: 0, msg: "🔥 ROMA ATEŞİ", desc: "Arena alevler içinde kaldı! (Tüm takımların puanı yarıya iner)" }
-    ];
+    const GROUP_JOKER_BANK = {
+      buff: [
+        { subType: 'buff', points: 40, msg: "🎁 İMPARATORUN LÜTFU", desc: "Sezar'dan sana altın bir hediye! (+40 Puan)" },
+        { subType: 'buff', points: 30, msg: "🧪 GLADYATÖR İKSİRİ", desc: "Arenada gücüne güç kattın! (+30 Puan)" },
+        { subType: 'buff', points: 25, msg: "🐎 SAVAŞ ARABASI", desc: "Hızlı bir hamle yaparak öne geçtin! (+25 Puan)" },
+        { subType: 'buff', points: 35, msg: "🏺 ALTIN AMFORA", desc: "Arenanın hazinesinden altın dolu bir amfora buldun! (+35 Puan)" },
+        { subType: 'buff', points: 20, msg: "🌿 ZAFER DEFNESİ", desc: "Başına altın defne tacı takıldı! (+20 Puan)" }
+      ],
+      debuff: [
+        { subType: 'debuff', points: -20, msg: "⚔️ KIRIK KILIÇ", desc: "Kılıcın kırıldı, yeni kılıç alırken zaman kaybettin! (-20 Puan)" },
+        { subType: 'debuff', points: -15, msg: "🌪️ KUM FIRTINASI", desc: "Arenada gözüne kum kaçtı! (-15 Puan)" },
+        { subType: 'debuff', points: -10, msg: "🕳️ ARENA ÇUKURU", desc: "Çukura düştün, çıkarken zaman kaybettin! (-10 Puan)" }
+      ],
+      attack: [
+        { subType: 'attack', points: 20, msg: "🦁 ASLAN SALDIRISI", desc: "Kafesler açıldı! Sıradaki takım korkup kaçtı! (Sıradaki takımdan 20 Puan silinir)" },
+        { subType: 'attack', points: 15, msg: "🏹 OK YAĞMURU", desc: "Kuleden oklar yağdı! (Sıradaki takımdan 15 Puan silinir)" },
+        { subType: 'drain', points: 25, msg: "🏃 HIRSIZ SPARTAKÜS", desc: "Kaçak köleler rakibin ganimetini çaldı! (Sıradaki takımdan 25 Puan aşırdın)" }
+      ],
+      special: [
+        { subType: 'bomb', points: 0, msg: "🔥 ROMA ATEŞİ", desc: "Arena alevler içinde kaldı! (Tüm takımların puanı yarıya iner)" },
+        { subType: 'swap', points: 0, msg: "🔄 KADER TAKASI", desc: "Tanrılar terazileri değiştirdi! (Sıradaki takımla puanlarınız yer değiştirir)" },
+        { subType: 'all', points: 10, msg: "👏 ARENA ALKIŞI", desc: "Seyirciler hepinizi alkışlıyor! (Her takıma +10 Puan)" }
+      ]
+    };
 
     let groupState = {
       teams: [
@@ -4431,13 +4890,31 @@ function soundJoker() {
       pendingJokerAction: null
     };
 
-    function getShuffledGroupQuestions(count) {
-      const fullPool = generateQuestionPool();
-      for (let i = fullPool.length - 1; i > 0; i--) {
+    function grpShuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+        [a[i], a[j]] = [a[j], a[i]];
       }
-      return fullPool.slice(0, count);
+      return a;
+    }
+
+    // 8 şans kartı: 3 ödül, 1 ceza, 2 saldırı, 1 özel + 1 rastgele
+    function buildGroupJokers() {
+      const B = GROUP_JOKER_BANK;
+      const chosen = [].concat(
+        grpShuffle(B.buff).slice(0, 3),
+        grpShuffle(B.debuff).slice(0, 1),
+        grpShuffle(B.attack).slice(0, 2),
+        grpShuffle(B.special).slice(0, 1)
+      );
+      const rest = grpShuffle([].concat(B.buff, B.debuff, B.attack, B.special).filter(j => !chosen.includes(j)));
+      chosen.push(rest[0]);
+      return chosen.map(j => ({ ...j, type: 'j', solved: false }));
+    }
+
+    function getShuffledGroupQuestions(count) {
+      return getQuestions(count);
     }
 
     function startGroupGame() {
@@ -4449,8 +4926,8 @@ function soundJoker() {
       groupState.pendingJokerAction = null;
 
       const qs = getShuffledGroupQuestions(22).map(q => ({ ...q, type: 'q', points: 30, solved: false }));
-      const js = groupJokers.map(j => ({ ...j, solved: false }));
-      groupState.cards = [...qs, ...js].sort(() => Math.random() - 0.5);
+      const js = buildGroupJokers();
+      groupState.cards = grpShuffle([...qs, ...js]);
 
       renderGroupTeams();
       renderGroupGrid();
@@ -4474,24 +4951,22 @@ function soundJoker() {
       if (!grid) return;
       grid.innerHTML = groupState.cards.map((c, i) => {
         let backContent = '';
-        let backClass = 'g-card-back';
-        
+        const backClass = 'g-card-back';
+
         if (c.solved) {
           if (c.type === 'j') {
             backContent = `<div style="font-size:32px;">🎁</div>`;
+          } else if (c.status === 'correct') {
+            backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981; font-weight:800;">+${c.points}</div>`;
           } else {
-            if (c.status === 'correct') {
-              backContent = `<div style="color:#10b981; font-size:24px;">⭐</div><div style="color:#10b981; font-weight:800;">+${c.points}</div>`;
-            } else {
-              backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:11px; margin-top:2px; color:#fca5a5; font-weight:700;">${c.correct}</div>`;
-            }
+            backContent = `<div style="color:#ef4444; font-size:24px;">❌</div><div style="font-size:11px; margin-top:2px; color:#fca5a5; font-weight:700;">${c.correct}</div>`;
           }
-        } else {
-          if (c.type === 'q') backContent = `<div style="position:absolute; top:4px; right:4px; font-size:10px; color:#fbbf24;">${c.points}P</div>`;
+        } else if (c.type === 'q') {
+          backContent = `<div style="position:absolute; top:4px; right:4px; font-size:10px; color:#fbbf24;">${c.points}P</div>`;
         }
 
         return `
-          <div class="g-card ${c.solved ? 'opened' : ''}" style="animation-delay: ${i*0.03}s" onclick="handleGroupCardClick(${i})">
+          <div class="g-card ${c.solved ? 'opened' : ''}" style="animation-delay: ${i * 0.03}s" onclick="handleGroupCardClick(${i})">
             <div class="g-card-inner">
               <div class="g-card-face g-card-front">${i + 1}</div>
               <div class="g-card-face ${backClass}">${backContent}</div>
@@ -4504,7 +4979,7 @@ function soundJoker() {
     function handleGroupCardClick(index) {
       if (groupState.cards[index].solved || groupState.activeCardIndex !== null) return;
       groupState.activeCardIndex = index;
-      
+
       const card = groupState.cards[index];
       if (card.type === 'j') {
         openGroupJokerModal(card);
@@ -4516,22 +4991,22 @@ function soundJoker() {
     function openGroupQuestionModal(card) {
       document.getElementById('gqBadge').innerText = card.badge || 'Kazanım';
       document.getElementById('gqText').innerText = card.text || '';
-      
+
       const vBox = document.getElementById('gqVisualBox');
-      if (card.visual) { 
-        vBox.innerHTML = card.visual; 
-        vBox.style.display = 'flex'; 
-      } else { 
+      if (card.visual) {
+        vBox.innerHTML = card.visual;
+        vBox.style.display = 'flex';
+      } else {
         vBox.innerHTML = '';
-        vBox.style.display = 'none'; 
+        vBox.style.display = 'none';
       }
-      
-      const choices = [card.correct, ...card.distractors].sort(() => Math.random() - 0.5);
+
+      const choices = grpShuffle([card.correct, ...card.distractors]);
       card.currentChoices = choices;
       const grid = document.getElementById('gqOptionsGrid');
       grid.innerHTML = choices.map((c, idx) => `
         <button class="option-btn" onclick="submitGroupAnswer(${idx})" style="min-height: 60px; font-size: 18px;">
-          <span class="option-letter" style="width:36px; height:36px; font-size:18px;">${['A','B','C','D'][idx]}</span>
+          <span class="option-letter" style="width:36px; height:36px; font-size:18px;">${['A', 'B', 'C', 'D'][idx]}</span>
           <span style="flex:1;">${c}</span>
         </button>
       `).join('');
@@ -4543,7 +5018,7 @@ function soundJoker() {
       document.getElementById('groupQModal').style.display = 'none';
       const card = groupState.cards[groupState.activeCardIndex];
       const selected = card.currentChoices ? card.currentChoices[choiceIndex] : null;
-      
+
       if (selected === card.correct) {
         if (typeof soundCorrect === 'function') soundCorrect();
         card.status = 'correct';
@@ -4560,25 +5035,25 @@ function soundJoker() {
     function openGroupJokerModal(joker) {
       const tId = groupState.currentTurn;
       const nextTId = (tId + 1) % 3;
-      
+      const T = groupState.teams;
+      const icons = { buff: '🎉', debuff: '😭', attack: '🦁', drain: '🏃', bomb: '🔥', swap: '🔄', all: '👏' };
+
       document.getElementById('gjTitle').innerText = joker.msg;
       document.getElementById('gjDesc').innerText = joker.desc;
-      
-      if (joker.subType === 'buff') {
-        document.getElementById('gjIcon').innerText = "🎉";
-        groupState.pendingJokerAction = () => { groupState.teams[tId].score += joker.points; };
-      } else if (joker.subType === 'debuff') {
-        document.getElementById('gjIcon').innerText = "😭";
-        groupState.pendingJokerAction = () => { groupState.teams[tId].score += joker.points; };
+      document.getElementById('gjIcon').innerText = icons[joker.subType] || '🎁';
+
+      if (joker.subType === 'buff' || joker.subType === 'debuff') {
+        groupState.pendingJokerAction = () => { T[tId].score += joker.points; };
       } else if (joker.subType === 'attack') {
-        document.getElementById('gjIcon').innerText = "🦁";
-        groupState.pendingJokerAction = () => { groupState.teams[nextTId].score -= 20; };
+        groupState.pendingJokerAction = () => { T[nextTId].score -= joker.points; };
       } else if (joker.subType === 'drain') {
-        document.getElementById('gjIcon').innerText = "🏃";
-        groupState.pendingJokerAction = () => { groupState.teams[tId].score += 25; groupState.teams[nextTId].score -= 25; };
+        groupState.pendingJokerAction = () => { T[tId].score += joker.points; T[nextTId].score -= joker.points; };
       } else if (joker.subType === 'bomb') {
-        document.getElementById('gjIcon').innerText = "🔥";
-        groupState.pendingJokerAction = () => { groupState.teams.forEach(t => t.score = Math.floor(t.score / 2)); };
+        groupState.pendingJokerAction = () => { T.forEach(t => { t.score = Math.trunc(t.score / 2); }); };
+      } else if (joker.subType === 'swap') {
+        groupState.pendingJokerAction = () => { const tmp = T[tId].score; T[tId].score = T[nextTId].score; T[nextTId].score = tmp; };
+      } else if (joker.subType === 'all') {
+        groupState.pendingJokerAction = () => { T.forEach(t => { t.score += joker.points; }); };
       }
 
       if (typeof soundJoker === 'function') soundJoker();
@@ -4599,8 +5074,9 @@ function soundJoker() {
       groupState.pendingJokerAction = null;
 
       renderGroupGrid();
-      
-      if (groupState.solvedCount >= 30) {
+
+      if (groupState.solvedCount >= groupState.cards.length) {
+        renderGroupTeams();
         setTimeout(() => finishGroupGame(), 1000);
       } else {
         groupState.currentTurn = (groupState.currentTurn + 1) % 3;
@@ -4610,12 +5086,10 @@ function soundJoker() {
 
     function finishGroupGame() {
       showScreen('screenResult');
-      const statsGrid = document.querySelector('.result-stats-grid');
       const lbStat = document.getElementById('resLeaderboardStatus');
-      if (statsGrid) statsGrid.style.display = 'none';
       if (lbStat) lbStat.innerText = '';
 
-      let maxScore = -9999;
+      let maxScore = -Infinity;
       let winners = [];
       groupState.teams.forEach(t => {
         if (t.score > maxScore) { maxScore = t.score; winners = [t.name]; }
@@ -4632,8 +5106,10 @@ function soundJoker() {
         "Rakipler dize geldi, arenanın gerçek hakimi sizsiniz!"
       ];
       const randomMsg = winMessages[Math.floor(Math.random() * winMessages.length)];
+      const board = groupState.teams.slice().sort((a, b) => b.score - a.score)
+        .map(t => `<span style="display:inline-block; margin:3px 8px;">${t.name}: <b style="color:#fbbf24;">${t.score}</b></span>`).join('');
 
-      document.getElementById('resSubtitle').innerText = `${maxScore} Puanla ${randomMsg}`;
+      document.getElementById('resSubtitle').innerHTML = `${maxScore} Puanla ${randomMsg}<div style="margin-top:10px; font-size:15px;">${board}</div>`;
 
       if (typeof soundFanfare === 'function') soundFanfare();
       if (typeof confetti === 'function') {
