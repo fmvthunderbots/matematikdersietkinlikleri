@@ -1645,7 +1645,198 @@
     .htp-step b { color:#FDE047; }
     .htp-num { flex-shrink:0; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#A855F7,#6D28D9); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; font-size:15px; }
     .htp-foot { color:#C4B5FD; font-style:italic; text-align:center; font-size:14px; margin-bottom:14px; }
-</style>
+    /* ========================================================
+       GRUP MODU
+       ======================================================== */
+    .btn-action-group {
+      background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+      border: 2px solid #A78BFA;
+      border-radius: 18px;
+      padding: 12px 24px;
+      color: #F5F3FF;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 26px rgba(124, 58, 237, 0.5);
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 100%;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.15;
+    }
+    .btn-action-group small { font-size: 12px; font-weight: 700; color: #DDD6FE; opacity: 0.95; }
+    .btn-action-group:hover { transform: translateY(-3px) scale(1.02); border-color: #F59E0B; box-shadow: 0 12px 34px rgba(245, 158, 11, 0.45); }
+
+    #groupScreen {
+      background: radial-gradient(circle at 50% 40%, rgba(22, 10, 42, 0.72) 0%, rgba(6, 2, 12, 0.93) 100%),
+                  url('./room_6_bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #07030F;
+      justify-content: flex-start;
+      padding: 10px 16px;
+      overflow: hidden;
+    }
+    .g-wrap {
+      width: 100%; max-width: 980px; height: 100%;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; z-index: 2;
+    }
+    .g-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .g-bar-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .g-btn {
+      background: rgba(139, 92, 246, 0.22);
+      border: 1.5px solid #8B5CF6;
+      border-radius: 12px;
+      padding: 6px 12px;
+      color: #E9D5FF;
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .g-btn:hover { border-color: #F59E0B; color: #FDE047; transform: translateY(-1px); }
+    .g-btn.g-gold { background: linear-gradient(135deg, #F59E0B, #D97706); color: #1E1B4B; border-color: #FBBF24; }
+    .g-title {
+      text-align: center;
+      font-family: 'Fredoka', 'Baloo 2', sans-serif;
+      font-weight: 800;
+      font-size: clamp(22px, 4.4vh, 38px);
+      color: #F59E0B;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 4px 10px rgba(0,0,0,0.8);
+      line-height: 1.1;
+    }
+    .g-title small { display: block; font-size: clamp(11px, 1.8vh, 15px); color: #DDD6FE; letter-spacing: 2px; text-shadow: none; font-weight: 700; }
+
+    .g-teams { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 780px; margin: 2px auto 2px; }
+    .g-team {
+      background: rgba(16, 8, 30, 0.92);
+      border: 3px solid var(--tc);
+      border-radius: 18px;
+      padding: 6px 10px;
+      text-align: center;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .g-team.active { transform: scale(1.07) translateY(-4px); box-shadow: 0 0 30px var(--tc), 0 10px 24px rgba(0,0,0,0.7); }
+    .g-team.active::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 5px; background: var(--tc); animation: gPulse 1s infinite alternate; }
+    @keyframes gPulse { from { opacity: 0.4; } to { opacity: 1; } }
+    .g-team-name { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(13px, 2.1vh, 18px); color: var(--tc); letter-spacing: 0.5px; }
+    .g-team-score { font-family: 'Baloo 2', sans-serif; font-weight: 900; font-size: clamp(26px, 5.2vh, 44px); color: #FFF; line-height: 1; }
+    .g-team-score.bump { animation: gBump 0.5s ease; }
+    @keyframes gBump { 0% { transform: scale(1); } 40% { transform: scale(1.35); color: #FDE047; } 100% { transform: scale(1); } }
+    .g-team-badges { min-height: 20px; font-size: 14px; font-weight: 800; color: #FDE68A; }
+
+    .g-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+      width: 100%; max-width: 900px; margin: 0 auto;
+      flex: 1; min-height: 0; align-content: center;
+    }
+    @media (max-width: 760px) { .g-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; } }
+    .g-card { position: relative; height: clamp(50px, 10.5vh, 86px); cursor: pointer; perspective: 900px; opacity: 0; animation: gDrop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    @keyframes gDrop { 0% { opacity: 0; transform: translateY(-26px) scale(0.8); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+    .g-card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.55); }
+    .g-card.opened .g-card-inner { transform: rotateY(180deg); cursor: default; }
+    .g-card:not(.opened):hover .g-card-inner { transform: scale(1.07) translateY(-4px); box-shadow: 0 10px 22px rgba(245, 158, 11, 0.35); }
+    .g-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid rgba(255,255,255,0.25); }
+    .g-front {
+      background: linear-gradient(140deg, #4C1D95 0%, #2E1065 60%, #1E0A3C 100%);
+      border-color: #A78BFA;
+      color: #FDE047;
+      font-family: 'Baloo 2', sans-serif;
+      font-weight: 900;
+      font-size: clamp(20px, 3.8vh, 30px);
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 16px rgba(255,255,255,0.12);
+    }
+    .g-front::before { content: '🕯️'; position: absolute; top: 1px; left: 5px; font-size: 13px; opacity: 0.5; }
+    .g-front::after { content: '🦇'; position: absolute; bottom: 1px; right: 5px; font-size: 13px; opacity: 0.5; }
+    .g-back { transform: rotateY(180deg); background: rgba(30, 14, 56, 0.98); border-color: #7C3AED; color: #F8FAFC; text-align: center; }
+    .g-back.good { background: rgba(6, 78, 59, 0.92); border-color: #10B981; }
+    .g-back.bad { background: rgba(127, 29, 29, 0.92); border-color: #EF4444; }
+    .g-back.joker { background: rgba(88, 28, 135, 0.95); border-color: #F59E0B; }
+    .g-back-icon { font-size: clamp(18px, 3.4vh, 28px); line-height: 1; }
+    .g-back-pts { font-family: 'Baloo 2', sans-serif; font-weight: 900; font-size: clamp(14px, 2.6vh, 20px); }
+    .g-back-pts.good { color: #6EE7B7; } .g-back-pts.bad { color: #FCA5A5; }
+
+    .g-toast {
+      position: fixed; bottom: 22px; left: 50%;
+      transform: translateX(-50%) scale(0);
+      padding: 10px 28px; border-radius: 50px; z-index: 95;
+      color: #FFF; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(15px, 2.6vh, 22px);
+      border: 3px solid rgba(255,255,255,0.55);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+      opacity: 0; pointer-events: none; text-align: center; max-width: 92vw;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s;
+    }
+    .g-toast.show { transform: translateX(-50%) scale(1); opacity: 1; }
+    .g-toast.success { background: #059669; } .g-toast.error { background: #DC2626; } .g-toast.info { background: #7C3AED; }
+
+    .g-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(4, 1, 10, 0.9); backdrop-filter: blur(9px);
+      z-index: 60; display: none; align-items: center; justify-content: center; padding: 14px;
+    }
+    .g-modal.open { display: flex; }
+    .g-parchment { max-height: 96vh; overflow-y: auto; }
+    .g-turn {
+      display: inline-block; margin-bottom: 10px;
+      font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 15px;
+      padding: 4px 14px; border-radius: 30px; border: 2px solid var(--tc, #8B5CF6); color: var(--tc, #DDD6FE);
+      background: rgba(0,0,0,0.35);
+    }
+    .g-intro { font-style: italic; color: #FDBA74; font-weight: 700; font-size: 16px; margin-bottom: 12px; }
+    .g-opt {
+      background: rgba(28, 14, 50, 0.92); border: 2px solid rgba(168, 85, 247, 0.45); border-radius: 18px;
+      padding: 13px 16px; color: #F8FAFC; font-family: 'Baloo 2', sans-serif; font-size: 18px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left;
+      transition: all 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 4px 15px rgba(0,0,0,0.45);
+    }
+    .g-opt:hover:not(:disabled) { border-color: #F59E0B; transform: translateY(-2px); background: rgba(45, 22, 80, 0.98); }
+    .g-opt:disabled { cursor: default; }
+    .g-opt.correct-choice { background: rgba(16, 185, 129, 0.32) !important; border-color: #10B981 !important; color: #A7F3D0 !important; animation: pulseGreen 0.4s infinite alternate; }
+    .g-opt.wrong-choice { background: rgba(239, 68, 68, 0.32) !important; border-color: #EF4444 !important; color: #FECACA !important; }
+    .g-feedback { margin: 4px 0 14px; padding: 10px 14px; border-radius: 14px; font-weight: 800; font-size: 17px; text-align: center; line-height: 1.35; }
+    .g-feedback.ok { background: rgba(16,185,129,0.2); border: 2px solid #10B981; color: #A7F3D0; }
+    .g-feedback.no { background: rgba(239,68,68,0.2); border: 2px solid #EF4444; color: #FECACA; }
+
+    .g-joker-box { text-align: center; max-width: 620px; }
+    .g-j-badge { display: inline-block; font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 14px; color: #FDE68A; background: rgba(245,158,11,0.18); border: 1.5px solid #F59E0B; padding: 3px 14px; border-radius: 30px; margin-bottom: 6px; }
+    .g-j-icon { font-size: clamp(56px, 12vh, 92px); line-height: 1.1; filter: drop-shadow(0 0 18px rgba(245,158,11,0.55)); animation: gFloat 2s ease-in-out infinite; }
+    .g-j-icon.shake { animation: gShake 0.12s linear infinite; }
+    @keyframes gFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes gShake { 0% { transform: rotate(-8deg) scale(1.1); } 50% { transform: rotate(8deg) scale(1.15); } 100% { transform: rotate(-8deg) scale(1.1); } }
+    .g-j-title { font-family: 'Fredoka', 'Baloo 2', sans-serif; font-size: clamp(24px, 4.4vh, 34px); font-weight: 800; color: #F59E0B; margin: 2px 0 10px; }
+    .g-j-speaker { display: flex; gap: 12px; align-items: flex-start; text-align: left; margin-bottom: 12px; }
+    .g-j-avatar { width: 62px; height: 62px; border-radius: 50%; border: 3px solid #F59E0B; overflow: hidden; flex-shrink: 0; background: #1E0E38; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+    .g-j-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .g-j-avatar.noimg::before { content: '🎩'; }
+    .g-j-bubble { flex: 1; background: rgba(11, 4, 22, 0.95); border: 2px solid rgba(168, 85, 247, 0.6); border-radius: 6px 20px 20px 20px; padding: 10px 14px; }
+    .g-j-name { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 14px; color: #F59E0B; }
+    .g-j-say { font-size: 17px; font-weight: 700; color: #F1F5F9; line-height: 1.4; }
+    .g-j-effect { min-height: 48px; border-radius: 14px; padding: 10px 12px; margin-bottom: 14px; font-weight: 800; font-size: 16px; color: #E9D5FF; background: rgba(139,92,246,0.14); border: 1.5px dashed #8B5CF6; line-height: 1.4; }
+    .g-j-effect.good { background: rgba(16,185,129,0.16); border: 2px solid #10B981; color: #A7F3D0; }
+    .g-j-effect.bad { background: rgba(239,68,68,0.16); border: 2px solid #EF4444; color: #FECACA; }
+    .g-chip { display: inline-block; margin: 3px 4px; padding: 3px 12px; border-radius: 30px; background: rgba(0,0,0,0.4); border: 1.5px solid currentColor; font-weight: 900; }
+    .g-chip.up { color: #6EE7B7; } .g-chip.down { color: #FCA5A5; } .g-chip.note { color: #FDE68A; }
+
+    #g-winner { z-index: 70; background: rgba(4, 1, 10, 0.93); }
+    .g-win-box { text-align: center; max-width: 640px; width: 100%; max-height: 98vh; overflow-y: auto; }
+    .g-win-trophy { font-size: clamp(70px, 15vh, 120px); animation: gFloat 2s ease-in-out infinite; filter: drop-shadow(0 0 30px rgba(245,158,11,0.6)); }
+    .g-win-label { font-family: 'Baloo 2', sans-serif; font-weight: 800; letter-spacing: 3px; color: #DDD6FE; font-size: 16px; }
+    .g-win-name { font-family: 'Fredoka', 'Baloo 2', sans-serif; font-weight: 800; font-size: clamp(34px, 8vh, 70px); color: #F59E0B; text-shadow: 0 0 24px rgba(245,158,11,0.7), 0 4px 10px #000; line-height: 1.05; }
+    .g-win-msg { font-size: clamp(16px, 2.8vh, 24px); font-weight: 700; color: #E9D5FF; margin: 8px 0 10px; font-style: italic; }
+    .g-win-score { display: inline-block; font-family: 'Baloo 2', sans-serif; font-weight: 900; font-size: clamp(22px, 4.4vh, 34px); color: #052E16; background: #34D399; border: 4px solid #059669; padding: 4px 28px; border-radius: 50px; margin-bottom: 12px; }
+    .g-win-rank { display: grid; gap: 6px; margin: 4px auto 14px; max-width: 420px; }
+    .g-rank-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 16px; border-radius: 14px; background: rgba(28,14,50,0.85); border: 2px solid var(--tc); color: var(--tc); font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 18px; }
+    .g-win-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .g-win-btns .btn-action-primary, .g-win-btns .btn-action-subtle { width: auto; flex: 0 1 auto; padding: 12px 26px; font-size: 18px; }
+  </style>
 </head>
 <body>
 
@@ -1812,6 +2003,11 @@
         <span>Maceraya Başla</span>
       </button>
 
+      <button class="btn-action-group" onclick="startGroupMode()">
+        <span>👥 Grup Modu</span>
+        <small>3 takım · tek ekran · konuşan jokerler</small>
+      </button>
+
       <div style="display:flex; gap:10px; margin-top: 12px;">
         <button class="btn-action-subtle" onclick="showLeaderboard()">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="#F59E0B" style="vertical-align:middle; margin-right:4px;"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.97-.51 3.44-2.13 3.61-4.06C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2z"/></svg>
@@ -1821,6 +2017,79 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="#A855F7" style="vertical-align:middle; margin-right:4px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 .88-.36 1.68-.93 2.25z"/></svg>
           <span>Nasıl Oynanır?</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ GRUP MODU ============ -->
+  <div class="card-screen" id="groupScreen" style="display:none;">
+    <div class="global-fog-layer global-fog-1" style="z-index: 1;"></div>
+    <div class="g-wrap">
+      <div class="g-bar">
+        <div class="g-bar-group">
+          <button class="g-btn g-gold" id="g-last-btn" onclick="groupLastRound()">⏳ SON TUR</button>
+          <button class="g-btn" onclick="groupNewGameAsk()">🔄 YENİ OYUN</button>
+          <button class="g-btn" onclick="groupExitToMenu()">🏠 ANA MENÜ</button>
+        </div>
+        <div class="g-bar-group">
+          <button class="g-btn" id="g-audio-btn" onclick="groupToggleAudio()">🔊 Ses</button>
+          <button class="g-btn" id="g-bgm-btn" onclick="groupToggleBGM()">🎵 Müzik</button>
+        </div>
+      </div>
+      <div class="g-title">PERİLİ KÖŞK<small>GRUP MODU · 3 TAKIM · 30 MÜHÜRLÜ KAPI</small></div>
+      <div class="g-teams" id="g-teams"></div>
+      <div class="g-grid" id="g-grid"></div>
+    </div>
+  </div>
+
+  <div class="g-toast" id="g-toast"></div>
+
+  <!-- Grup modu: soru -->
+  <div class="g-modal" id="g-q-modal">
+    <div class="riddle-parchment g-parchment">
+      <div class="parchment-header">
+        <div class="parchment-title"><span id="g-q-icon">🕯️</span><span id="g-q-title">Kapı 1</span></div>
+        <div class="room-tag" id="g-q-points">15 PUAN</div>
+      </div>
+      <div class="g-turn" id="g-q-turn">Sıra: HAYALETLER</div>
+      <div class="riddle-context g-intro" id="g-q-intro"></div>
+      <div class="riddle-question-box">
+        <div class="riddle-main-number" id="g-q-number"></div>
+        <div class="riddle-instruction" id="g-q-instruction"></div>
+      </div>
+      <div class="options-grid" id="g-q-options"></div>
+      <div class="g-feedback" id="g-q-feedback" style="display:none;"></div>
+      <button class="btn-action-primary" id="g-q-next" style="display:none; justify-content:center;" onclick="groupQuestionNext()"><span>DEVAM ET ➜</span></button>
+    </div>
+  </div>
+
+  <!-- Grup modu: joker (Mösyö Ondalık konuşur) -->
+  <div class="g-modal" id="g-j-modal">
+    <div class="riddle-parchment g-parchment g-joker-box" id="g-j-box">
+      <div class="g-j-badge">🎁 ŞANS KARTI · <span id="g-j-team"></span></div>
+      <div class="g-j-icon" id="g-j-icon">🎁</div>
+      <h2 class="g-j-title" id="g-j-title">Joker</h2>
+      <div class="g-j-speaker">
+        <div class="g-j-avatar" id="g-j-avatar"><img src="./mosyo_ondalik.png" alt="Mösyö Ondalık" onerror="this.style.display='none'; this.parentNode.classList.add('noimg');"></div>
+        <div class="g-j-bubble"><div class="g-j-name">Mösyö Ondalık</div><div class="g-j-say" id="g-j-say"></div></div>
+      </div>
+      <div class="g-j-effect" id="g-j-effect"></div>
+      <button class="btn-action-primary" id="g-j-btn" style="justify-content:center;" onclick="groupJokerClick()"><span>KADERİ AÇ</span></button>
+    </div>
+  </div>
+
+  <!-- Grup modu: kazanan -->
+  <div class="g-modal" id="g-winner">
+    <div class="g-win-box">
+      <div class="g-win-trophy">🏆</div>
+      <div class="g-win-label">KÖŞKÜN ŞAMPİYONU</div>
+      <div class="g-win-name" id="g-win-name">TAKIM</div>
+      <div class="g-win-msg" id="g-win-msg"></div>
+      <div class="g-win-score" id="g-win-score">0 Puan</div>
+      <div class="g-win-rank" id="g-win-rank"></div>
+      <div class="g-win-btns">
+        <button class="btn-action-primary" onclick="newGroupGame()"><span>YENİDEN OYNA</span></button>
+        <button class="btn-action-subtle" onclick="groupExitToMenu()">ANA MENÜ</button>
       </div>
     </div>
   </div>
@@ -3101,24 +3370,443 @@
       };
     }
 
-    /* Odalara göre soru havuzları: önce basamak değeri / çözümleme, sonra yuvarlama, sıralama, sayı doğrusu... */
-    const ROOM_QUESTION_POOLS = [
-      [qPlaceValueFrac, qPlaceValueName],
-      [qExpandedToNumber, qNumberToExpanded],
-      [qFracToDec, qDecToFrac],
-      [() => qRound('tenth'), qEquivalent],
-      [() => qOrder(), qExtreme],
-      [qReading, qEquivalent],
-      [qNumberLine, qBetween],
-      [() => qRound('hundredth'), () => qRound('int')],
-      [qPlaceValueWhich, qReading, qDecToFrac],
-      [() => qRound(), qNumberLine, qPlaceValueWhich, () => qOrder()]
-    ];
+    /* ========================================================
+       GENİŞLETİLMİŞ SORU HAVUZU (11 yeni tür) + TEMALI GİRİŞ CÜMLELERİ
+       ======================================================== */
 
-    function generateDynamicRoomQuestion(roomIdx) {
-      const pool = ROOM_QUESTION_POOLS[roomIdx] || ROOM_QUESTION_POOLS[ROOM_QUESTION_POOLS.length - 1];
+    /* ---------- 9) KARŞILAŞTIRMA (<, >, =) ---------- */
+    function qCompare() {
+      const mk = (L, fs) => ({ s: `${L},${fs}`, v: L * 1000 + parseInt(fs.padEnd(3, '0').slice(0, 3), 10) });
+      const randFs = len => {
+        let t = '';
+        for (let i = 0; i < len - 1; i++) t += randInt(0, 9);
+        return t + randInt(1, 9);
+      };
+      for (let attempt = 0; attempt < 60; attempt++) {
+        const L = randInt(1, 48);
+        const a = mk(L, randFs(randInt(1, 2)));
+        let b;
+        const r = Math.random();
+        if (r < 0.28) {
+          const fa = a.s.split(',')[1];
+          b = mk(L, fa + '0'.repeat(randInt(1, 3 - fa.length)));              // değeri aynı, sonuna sıfır eklenmiş
+        } else if (r < 0.7) {
+          b = mk(L, randFs(randInt(1, 3)));                                   // tam kısım aynı, virgülden sonrası farklı uzunlukta
+        } else {
+          b = mk(L + pick([-1, 1]), randFs(randInt(1, 3)));
+        }
+        if (b.s === a.s || b.v < 0) continue;
+        const sym = a.v === b.v ? '=' : (a.v < b.v ? '<' : '>');
+        return {
+          number: `${a.s}  ⬤  ${b.s}`,
+          instruction: 'İki sayının arasındaki ⬤ yerine hangi işaret gelmelidir?',
+          correct: sym,
+          distractors: ['<', '>', '=', 'Karşılaştırılamaz'].filter(x => x !== sym)
+        };
+      }
+      return { number: '3,5  ⬤  3,50', instruction: 'İki sayının arasındaki ⬤ yerine hangi işaret gelmelidir?', correct: '=', distractors: ['<', '>', 'Karşılaştırılamaz'] };
+    }
+
+    /* ---------- 10) SAYI → OKUNUŞ ---------- */
+    function decReadText(intP, fracStr, placeLen) {
+      const places = ['', 'onda', 'yüzde', 'binde'];
+      const f = parseInt(fracStr, 10);
+      const t = `${trWords(intP)} tam ${places[placeLen]} ${trWords(f)}`;
+      return t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1);
+    }
+    function qNumberToWords() {
+      const intP = randInt(1, 20);
+      const k = randInt(1, 3);
+      let fs = '';
+      for (let i = 0; i < k - 1; i++) fs += randInt(0, 9);
+      fs += randInt(1, 9);
+      const f = parseInt(fs, 10);
+      const correct = decReadText(intP, fs, k);
+      const cands = [];
+      [1, 2, 3].forEach(kk => { if (kk !== k) cands.push(decReadText(intP, fs, kk)); });
+      cands.push(`${trWords(f).charAt(0).toLocaleUpperCase('tr-TR')}${trWords(f).slice(1)} tam ${['', 'onda', 'yüzde', 'binde'][k]} ${trWords(intP)}`);
+      cands.push(decReadText(intP + 1, fs, k));
+      return {
+        number: `${intP},${fs}`,
+        instruction: 'Yukarıdaki ondalık sayının okunuşu aşağıdakilerden hangisidir?',
+        correct: correct,
+        distractors: cands
+      };
+    }
+
+    /* ---------- 11) KAÇ TANE ONDA BİR / YÜZDE BİR / BİNDE BİR ---------- */
+    function qCountUnits() {
+      const k = randInt(1, 3);
+      const names = ['', 'onda bir', 'yüzde bir', 'binde bir'];
+      const intP = randInt(1, 9);
+      let fs = '';
+      for (let i = 0; i < k - 1; i++) fs += randInt(0, 9);
+      fs += randInt(1, 9);
+      const f = parseInt(fs, 10);
+      const total = intP * Math.pow(10, k) + f;
+      const cands = [total * 10, Math.floor(total / 10), f, intP * Math.pow(10, k), total + Math.pow(10, k - 1)]
+        .filter(x => x > 0 && x !== total).map(String);
+      return {
+        number: `${intP},${fs}`,
+        instruction: `Bu sayı kaç tane ${names[k]}den oluşur?`,
+        correct: String(total),
+        distractors: cands
+      };
+    }
+
+    /* ---------- 12) BASAMAKTAKİ RAKAM ---------- */
+    function qDigitAt() {
+      const digs = shuffleArr([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 5);
+      const names = ['Onlar', 'Birler', 'Onda birler', 'Yüzde birler', 'Binde birler'];
+      const pos = randInt(0, 4);
+      return {
+        number: `${digs[0]}${digs[1]},${digs[2]}${digs[3]}${digs[4]}`,
+        instruction: `${names[pos]} basamağındaki rakam kaçtır?`,
+        correct: String(digs[pos]),
+        distractors: digs.filter((_, i) => i !== pos).map(String)
+      };
+    }
+
+    /* ---------- 13) ONDALIK KISIM KAÇ BASAMAKLI ---------- */
+    function qDecLen() {
+      const k = randInt(1, 4);
+      let fs = '';
+      for (let i = 0; i < k - 1; i++) fs += randInt(0, 9);
+      fs += randInt(1, 9);
+      const cands = [k - 1, k + 1, k + 2, k + 3, k + 4].filter(x => x >= 1 && x !== k).map(String);
+      return {
+        number: `${randInt(1, 99)},${fs}`,
+        instruction: 'Bu sayının ondalık kısmı (virgülden sonrası) kaç basamaklıdır?',
+        correct: String(k),
+        distractors: cands
+      };
+    }
+
+    /* ---------- 14) HANGİ İKİ TAM SAYI ARASINDA ---------- */
+    function qBetweenWhole() {
+      const L = randInt(3, 48);
+      const k = randInt(1, 3);
+      let fs = '';
+      for (let i = 0; i < k - 1; i++) fs += randInt(0, 9);
+      fs += randInt(1, 9);
+      return {
+        number: `${L},${fs}`,
+        instruction: 'Bu ondalık sayı hangi iki ardışık tam sayının arasındadır?',
+        correct: `${L} ile ${L + 1}`,
+        distractors: [`${L - 1} ile ${L}`, `${L + 1} ile ${L + 2}`, `${L + 2} ile ${L + 3}`, `${L - 2} ile ${L - 1}`]
+      };
+    }
+
+    /* ---------- 15) EŞİT OLMAYANI BUL ---------- */
+    function randFrac(len) {
+      let t = '';
+      for (let i = 0; i < len - 1; i++) t += randInt(0, 9);
+      return t + randInt(1, 9);
+    }
+    function qNotEqual() {
+      const L = randInt(1, 48), fs = randFrac(randInt(1, 2));
+      const wrongs = [`${L},0${fs}`, `${L}0,${fs}`, `${L},${fs}${randInt(1, 9)}`, `${L},${fs}0${randInt(1, 9)}`, `${L},0${fs}0`];
+      return {
+        number: `${L},${fs}`,
+        instruction: 'Aşağıdakilerden hangisi yukarıdaki sayıya eşit DEĞİLDİR?',
+        correct: pick(wrongs),
+        distractors: [`${L},${fs}0`, `${L},${fs}00`, `${L},${fs}000`]
+      };
+    }
+
+    /* ---------- 15b) DEĞERİ AYNI OLAN SAYI (geniş havuz) ---------- */
+    function qEquivalentWide() {
+      const L = randInt(1, 48), fs = randFrac(randInt(1, 2));
+      return {
+        number: `${L},${fs}`,
+        instruction: 'Yukarıdaki sayıyla aynı değere sahip olan sayı hangisidir?',
+        correct: `${L},${fs}${'0'.repeat(randInt(1, 3 - fs.length + 1))}`,
+        distractors: [`${L},0${fs}`, `${L}0,${fs}`, `${L},00${fs}`, `${L}${fs[0]},${fs.slice(1) || '0'}`]
+      };
+    }
+
+    /* ---------- 15c) KESİR → ONDALIK (paydası 10, 100, 1000) ---------- */
+    function qFracToDecPow10() {
+      const k = randInt(1, 3);
+      let top;
+      do { top = randInt(1, Math.pow(10, k) - 1); } while (top % 10 === 0);
+      const sT = String(top);
+      const cands = [1, 2, 3, 4].filter(d => d !== k && d >= sT.length).map(d => '0,' + sT.padStart(d, '0'));
+      if (sT.length >= 2) cands.push(`${sT[0]},${sT.slice(1)}`);
+      if (sT.length >= 3) cands.push(`${sT.slice(0, 2)},${sT.slice(2)}`);
+      return {
+        number: `${top}/${Math.pow(10, k)}`,
+        instruction: 'Kesrinin ondalık gösterimi aşağıdakilerden hangisidir?',
+        correct: '0,' + sT.padStart(k, '0'),
+        distractors: cands
+      };
+    }
+
+    /* ---------- 16) YUVARLANINCA BU SAYI OLAN HANGİSİ ---------- */
+    function qRoundWhich() {
+      const tenth = Math.random() < 0.5;
+      const unit = tenth ? 100 : 10;          // 0,001 cinsinden yuvarlama birimi
+      const L = randInt(2, 48);
+      let tv = tenth ? randInt(1, 9) : randInt(11, 99);
+      if (!tenth && tv % 10 === 0) tv += 1;
+      const T = L * 1000 + tv * unit;
+      const roundTo = n => Math.floor((n + unit / 2) / unit) * unit;
+      const noZero = n => (n % 10 === 0 ? n + 1 : n);
+      let correctN;
+      do {
+        correctN = noZero(T + randInt(-unit / 2, unit / 2 - 1));
+      } while (roundTo(correctN) !== T);
+      const trap = [T + unit / 2 + randInt(0, 1), T - unit / 2 - 1 - randInt(0, 1), T + unit, T - unit,
+                    T + unit + randInt(1, unit / 2 - 1), T - unit - randInt(1, unit / 2 - 1)]
+        .map(noZero).filter(n => n > 0 && roundTo(n) !== T);
+      return {
+        number: fmtDec(Math.round(T / Math.pow(10, tenth ? 2 : 1)), tenth ? 1 : 2),
+        instruction: tenth
+          ? 'Aşağıdaki sayılardan hangisi onda birler basamağına yuvarlandığında yukarıdaki sayı olur?'
+          : 'Aşağıdaki sayılardan hangisi yüzde birler basamağına yuvarlandığında yukarıdaki sayı olur?',
+        correct: fmtDec(correctN, 3),
+        distractors: trap.map(n => fmtDec(n, 3))
+      };
+    }
+
+    /* ---------- 17) RAKAM KARTLARIYLA SAYI OLUŞTUR ---------- */
+    function qBuildNumber() {
+      const layout = pick([3, 3, 4, 5]);      // 3: A,BC  |  4: A,BCD  |  5: AB,C (üç rakam)
+      const cnt = layout === 4 ? 4 : 3;
+      const d = shuffleArr([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, cnt).sort((x, y) => x - y);
+      const big = Math.random() < 0.5;
+      const fmt = arr => {
+        if (layout === 3) return `${arr[0]},${arr[1]}${arr[2]}`;
+        if (layout === 4) return `${arr[0]},${arr[1]}${arr[2]}${arr[3]}`;
+        return `${arr[0]}${arr[1]},${arr[2]}`;
+      };
+      const best = big ? d.slice().reverse() : d.slice();
+      const correct = fmt(best);
+      const perms = [];
+      for (let i = 0; i < 40 && perms.length < 12; i++) {
+        const f = fmt(shuffleArr(d));
+        if (f !== correct && !perms.includes(f)) perms.push(f);
+      }
+      const where = layout === 3 ? 'tam kısmı tek, ondalık kısmı iki basamaklı'
+                  : layout === 4 ? 'tam kısmı tek, ondalık kısmı üç basamaklı'
+                  : 'tam kısmı iki, ondalık kısmı tek basamaklı';
+      return {
+        number: d.join('   '),
+        instruction: `Bu rakamlar birer kez kullanılarak, ${where} yazılabilecek en ${big ? 'BÜYÜK' : 'KÜÇÜK'} ondalık sayı hangisidir?`,
+        correct: correct,
+        distractors: perms
+      };
+    }
+
+    /* ---------- 18) SAYI DOĞRUSU (iki tam sayı arası, onda birler) ---------- */
+    function qNumberLineWhole() {
+      const L = randInt(2, 98), k = randInt(2, 8);
+      const x0 = 30, x1 = 490, step = (x1 - x0) / 10;
+      let ticks = '';
+      for (let i = 0; i <= 10; i++) {
+        const x = x0 + i * step;
+        const big = i === 0 || i === 10;
+        ticks += `<line x1="${x}" y1="${big ? 32 : 40}" x2="${x}" y2="${big ? 68 : 60}" stroke="${big ? '#FDE047' : '#A78BFA'}" stroke-width="${big ? 3 : 2}"/>`;
+      }
+      const px = x0 + k * step;
+      const svg = `<svg viewBox="0 0 520 110" style="width:100%;max-width:520px;height:auto;display:block;margin:0 auto 4px;">` +
+        `<line x1="${x0}" y1="50" x2="${x1}" y2="50" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/>` + ticks +
+        `<text x="${x0}" y="92" text-anchor="middle" fill="#FDE047" font-size="22" font-weight="800">${L}</text>` +
+        `<text x="${x1}" y="92" text-anchor="middle" fill="#FDE047" font-size="22" font-weight="800">${L + 1}</text>` +
+        `<circle cx="${px}" cy="50" r="9" fill="#EF4444" stroke="#FFFFFF" stroke-width="2.5"/>` +
+        `<text x="${px}" y="22" text-anchor="middle" fill="#FCA5A5" font-size="22" font-weight="900">?</text></svg>`;
+      return {
+        number: svg,
+        instruction: 'Sayı doğrusu 10 eşit parçaya bölünmüştür. ? ile gösterilen nokta hangi sayıya karşılık gelir?',
+        correct: `${L},${k}`,
+        distractors: [`${L},${k + 1}`, `${L},${k - 1}`, `${L},0${k}`, `${L + 1},${k}`]
+      };
+    }
+
+    /* ---------- 18b) SAYI DOĞRUSUNDA ETİKETLİ NOKTALAR ---------- */
+    function qNumberLinePick() {
+      const L = randInt(2, 98);
+      const ks = shuffleArr([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4);
+      const letters = ['A', 'B', 'C', 'D'];
+      const target = randInt(0, 3);
+      const x0 = 30, x1 = 490, step = (x1 - x0) / 10;
+      let ticks = '';
+      for (let i = 0; i <= 10; i++) {
+        const x = x0 + i * step;
+        const big = i === 0 || i === 10;
+        ticks += `<line x1="${x}" y1="${big ? 32 : 40}" x2="${x}" y2="${big ? 68 : 60}" stroke="${big ? '#FDE047' : '#A78BFA'}" stroke-width="${big ? 3 : 2}"/>`;
+      }
+      let dots = '';
+      ks.forEach((k, i) => {
+        const px = x0 + k * step;
+        dots += `<circle cx="${px}" cy="50" r="9" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2.5"/>` +
+                `<text x="${px}" y="26" text-anchor="middle" fill="#FDE68A" font-size="22" font-weight="900">${letters[i]}</text>`;
+      });
+      const svg = `<svg viewBox="0 0 520 110" style="width:100%;max-width:520px;height:auto;display:block;margin:0 auto 4px;">` +
+        `<line x1="${x0}" y1="50" x2="${x1}" y2="50" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/>` + ticks + dots +
+        `<text x="${x0}" y="92" text-anchor="middle" fill="#FDE047" font-size="22" font-weight="800">${L}</text>` +
+        `<text x="${x1}" y="92" text-anchor="middle" fill="#FDE047" font-size="22" font-weight="800">${L + 1}</text></svg>`;
+      return {
+        number: svg,
+        instruction: `Sayı doğrusu 10 eşit parçaya bölünmüştür. ${L},${ks[target]} sayısını hangi nokta gösterir?`,
+        correct: `${letters[target]} noktası`,
+        distractors: letters.filter((_, i) => i !== target).map(x => `${x} noktası`)
+      };
+    }
+
+    /* ---------- 19) TAM + ONDA BİR + YÜZDE BİR (+ BİNDE BİR) → SAYI ---------- */
+    function qUnitsToDec() {
+      const A = randInt(1, 9);
+      const patterns = [[1, 2], [2], [1, 3], [3], [1, 2, 3], [2, 3], [1]];
+      const places = pick(patterns);
+      const names = { 1: 'onda bir', 2: 'yüzde bir', 3: 'binde bir' };
+      const digs = {};
+      places.forEach(pl => { digs[pl] = randInt(1, 9); });
+      const parts = [`${A} tam`].concat(places.map(pl => `${digs[pl]} ${names[pl]}`));
+      const maxPl = places[places.length - 1];
+      let fs = '';
+      for (let pl = 1; pl <= maxPl; pl++) fs += (digs[pl] || 0);
+      const naive = places.map(pl => digs[pl]).join('');
+      const cands = [
+        `${A},${naive}`,
+        `${A},0${fs}`,
+        `${A}${fs[0]},${fs.slice(1) || '0'}`,
+        fs.length > 1 ? `${A},${fs[1]}${fs[0]}${fs.slice(2)}` : `${A},${fs}0${fs}`,
+        fs.length > 1 ? `${A},${fs.slice(0, -1)}0${fs.slice(-1)}` : `${A},00${fs}`
+      ];
+      return {
+        number: parts.join(' + '),
+        instruction: 'Yukarıda tarif edilen ondalık sayı hangisidir?',
+        correct: `${A},${fs}`,
+        distractors: cands
+      };
+    }
+
+    /* ========================================================
+       SORU TÜRÜ KAYDI: her tür için fonksiyon, puan ve esprili giriş cümleleri
+       ======================================================== */
+    const QTYPES = {
+      placeFrac: { fn: qPlaceValueFrac, pts: 15, intros: [
+        "👻 Hayalet bir rakamın altını çizmiş ama neden çizdiğini unutmuş!",
+        "🕯️ Mum ışığında bir rakamın altı çizilmiş, değerini kimse bilmiyor!",
+        "🦇 Yarasa çizgiyi çekti, rakam utanıp saklandı. Değerini bulur musun?",
+        "🧛 Kont Drakula bir rakamı sivri kalemle işaretlemiş!" ] },
+      placeName: { fn: qPlaceValueName, pts: 10, intros: [
+        "🕷️ Örümcek ağını bir rakamın altına örmüş, hangi basamakta oturduğunu fısıldıyor!",
+        "👻 Hayaletler basamak isimlerini karıştırmış, sen düzelt!",
+        "🦉 Baykuş soruyor: Altı çizili rakam hangi basamağın sakini?",
+        "🕯️ Mumun altındaki rakam köşkün hangi katında oturuyor?" ] },
+      placeWhich: { fn: qPlaceValueWhich, pts: 15, intros: [
+        "🗝️ Mösyö Ondalık anahtarı bir rakamın içine saklamış!",
+        "🔮 Kristal küre bir basamak değeri gösteriyor, sahibi hangisi?",
+        "👻 Bir hayalet değerini kaybetmiş, sahibini bulmasına yardım et!" ] },
+      expandedToNumber: { fn: qExpandedToNumber, pts: 15, intros: [
+        "🧙 Büyücü sayıyı parçalayıp kazana atmış, geri birleştir!",
+        "🧟 Zombi sayıyı parçalara ayırdı, sen tekrar topla!",
+        "⚗️ Simya kazanı sayıyı bölmüş, hangi sayı çıkacak?" ] },
+      numberToExpanded: { fn: qNumberToExpanded, pts: 20, intros: [
+        "🧩 Kayıp sayı parçalara ayrıldı, doğru çözümlemeyi seç!",
+        "🧪 Simyacı sayıyı basamak basamak kazana döktü!",
+        "🕸️ Örümcek sayıyı ağında basamaklarına ayırmış!" ] },
+      fracToDec: { fn: () => (Math.random() < 0.5 ? qFracToDec() : qFracToDecPow10()), pts: 15, intros: [
+        "🍰 Hayaletler pastayı dilimlemiş, kaç dilim kaldığını ondalık yaz!",
+        "🕰️ Saat Kulesi kesirli çaldı, ondalık gösterimi ne?",
+        "🦇 Yarasalar kesirle uçuyor, ondalık hali ne olur?" ] },
+      decToFrac: { fn: qDecToFrac, pts: 15, intros: [
+        "🎃 Balkabağı fenerindeki ondalık sayı kesir kılığına girmiş!",
+        "🧛 Ondalık sayı sivri dişli bir kesre dönüşmüş!",
+        "🔮 Kristal küre ondalığı kesir olarak görüyor, sen de gör!" ] },
+      roundTenth: { fn: () => qRound('tenth'), pts: 20, intros: [
+        "👻 Hayalet Bay Hortlak yuvarlama kursunda uyuyakalmış, yardım et!",
+        "🧹 Cadı süpürgesiyle sayıyı en yakın onda bire süpürdü!",
+        "🦇 Yarasalar sayıyı yuvarlayıp uçurmak istiyor!" ] },
+      roundHundredth: { fn: () => qRound('hundredth'), pts: 25, intros: [
+        "🎃 Balkabağı yuvarlak olur ama bu sayı yüzde bire inatla direniyor!",
+        "🕷️ Örümcek sayıyı ağına sarıp yüzde birlere yuvarlamış!",
+        "🧙 Büyücü asasını salladı: Sayı yüzde birler basamağına yuvarlansın!" ] },
+      roundInt: { fn: () => qRound('int'), pts: 20, intros: [
+        "🏚️ Köşkün kapısında sayı en yakın tam sayıya yuvarlanmayı bekliyor!",
+        "💀 İskelet sayıyı tam sayıya yuvarlarken kemiklerini şıkırdatıyor!",
+        "🚪 Sayı iki tam sayı arasında kapıyı çalıyor, hangisine yakın?" ] },
+      equivalent: { fn: qEquivalentWide, pts: 10, intros: [
+        "👻 Hayalet sayının sonuna sıfır eklemiş, değeri değişti mi acaba?",
+        "🪞 Aynalı Salon'da sayının ikizi saklanıyor!",
+        "🕯️ Bir sayı iki kılığa girmiş ama değeri aynı kalmış!" ] },
+      order: { fn: () => qOrder(), pts: 20, intros: [
+        "🏰 Köşkün merdivenleri sayılarla dolu, sıraya diz bakalım!",
+        "🧟 Zombiler sıraya girmiş ama kim önde, kim arkada?",
+        "🕸️ Örümcekler ağa sayıları dizmiş, sıralamayı bul!" ] },
+      extreme: { fn: qExtreme, pts: 15, intros: [
+        "⚖️ Mösyö Ondalık sayıları terazide tartıyor, uçtaki sayı hangisi?",
+        "👑 Hayalet kral tahta oturacak sayıyı arıyor!",
+        "💎 Köşkün kasası en uçtaki sayıyı bekliyor!" ] },
+      reading: { fn: qReading, pts: 15, intros: [
+        "📜 Eski parşömende bir sayı yazıyla yazılmış, rakamla yaz!",
+        "🗣️ Hayaletler sayıyı yüksek sesle okuyor, sen rakamla yaz!",
+        "🦉 Baykuş sayıyı okudu, kaç yazdığını anlayabildin mi?" ] },
+      numberToWords: { fn: qNumberToWords, pts: 15, intros: [
+        "🎙️ Mösyö Ondalık bu sayıyı sesli okumak istiyor, nasıl okur?",
+        "📜 Parşömendeki sayı hangi yazıya karşılık geliyor?",
+        "🦉 Baykuş sayıyı yazıyla yazmak istiyor, yardım et!" ] },
+      numberLine: { fn: qNumberLine, pts: 20, intros: [
+        "🧭 Dedektif sayı doğrusunda yolunu kaybetti, kırmızı nokta nerede?",
+        "🕯️ Mumlu koridorda bir nokta saklanıyor, sayısı ne?",
+        "👣 Hayalet bu çizgide bir noktada durdu, hangi sayıda?" ] },
+      numberLinePick: { fn: qNumberLinePick, pts: 20, intros: [
+        "🐾 Dört hayalet ayak izi bıraktı, hangi iz bu sayıya ait?",
+        "🕯️ Koridorda dört mum yanıyor, aranan sayı hangi mumun altında?",
+        "🧭 Dedektifin haritasında dört şüpheli nokta var, doğru olanı işaretle!" ] },
+      numberLineWhole: { fn: qNumberLineWhole, pts: 15, intros: [
+        "🚶 Koridorda iki kapı arasında bir hayalet yürüyor, nerede durdu?",
+        "🕯️ Mum izini takip et: Kırmızı nokta hangi sayıda?",
+        "🧭 Haritadaki kırmızı nokta bir ondalık sayıyı işaret ediyor!" ] },
+      between: { fn: qBetween, pts: 15, intros: [
+        "🚪 İki kapı arasında bir sayı saklanıyor!",
+        "🕷️ Örümcek iki sayının arasına gizlenmiş!",
+        "👻 Hayalet iki sayı arasına sıkışmış, kim olabilir?" ] },
+      compare: { fn: qCompare, pts: 10, intros: [
+        "🤺 İki sayı düello yapıyor, aralarındaki işareti sen koy!",
+        "🦇 Yarasalar hangi sayının büyük olduğunu tartışıyor!",
+        "⚖️ Mösyö Ondalık teraziyi kurdu, doğru işareti bul!" ] },
+      roundWhich: { fn: qRoundWhich, pts: 25, intros: [
+        "🕵️ Dedektif ipucu buldu: yuvarlanınca bu sayı çıkıyor, şüpheli kim?",
+        "🔍 Şüphelilerden yalnızca biri yuvarlanınca bu sonucu verir!",
+        "🎃 Hangi sayı yuvarlanınca balkabağı kadar tombul bu sayıya dönüşür?" ] },
+      buildNumber: { fn: qBuildNumber, pts: 20, intros: [
+        "🃏 Hayaletin elinde üç rakam kartı var, doğru dizilimi bul!",
+        "🧙 Büyücü üç rakamı şapkasından çıkardı, onlarla sayı yaz!",
+        "🎲 Rakam kartları karıştı, en uygun sayıyı sen kur!" ] },
+      countUnits: { fn: qCountUnits, pts: 15, intros: [
+        "🧮 Hayalet sayma makinesini bozdu, kaç parçadan oluştuğunu sen say!",
+        "🦇 Yarasa sürüsü sayılıyor: Bu sayı kaç küçük parçadan oluşuyor?",
+        "🔢 Mösyö Ondalık küçük parçaları topluyor, kaç tane var?" ] },
+      digitAt: { fn: qDigitAt, pts: 15, intros: [
+        "🔦 Dedektif fenerini bir basamağa tuttu, orada hangi rakam duruyor?",
+        "🕳️ Bir basamağın içinde rakam saklanıyor, bulabilir misin?",
+        "🗝️ Hangi rakam bu basamağın bekçisi?" ] },
+      decLen: { fn: qDecLen, pts: 10, intros: [
+        "📏 Mösyö Ondalık virgülden sonrasını ölçüyor, kaç basamak var?",
+        "🦉 Baykuş virgülün sağındaki basamakları sayıyor!",
+        "👣 Virgülden sonra kaç adım atılıyor?" ] },
+      betweenWhole: { fn: qBetweenWhole, pts: 10, intros: [
+        "🏰 Sayı iki kat arasında sıkışmış, hangi iki tam sayı?",
+        "🪜 Merdivenin iki basamağı arasında bir sayı yaşıyor!",
+        "👻 Hayalet iki tam sayı arasında kayboldu, nerede?" ] },
+      notEqual: { fn: qNotEqual, pts: 10, intros: [
+        "🕵️ Hayalet taklitçileri arasında sahte olanı bul!",
+        "🪞 Aynadaki yansımalardan biri sahte, hangisi?",
+        "🎭 Maskeli balo var: Bir sayı diğerlerinden farklı çıkıyor!" ] },
+      unitsToDec: { fn: qUnitsToDec, pts: 15, intros: [
+        "🧪 Simyacı kazana tam, onda bir ve yüzde bir attı, ne çıktı?",
+        "🍲 Cadı kazanına parçalar ekledi, ortaya çıkan sayı ne?",
+        "🕯️ Mumların parçaları birleşince hangi sayı oluşur?" ] }
+    };
+
+    /* Bir türden soru üretir; çeldiricileri tekilleştirir, giriş cümlesi ve puanı ekler */
+    function makeQ(typeId) {
+      const T = QTYPES[typeId];
       for (let attempt = 0; attempt < 40; attempt++) {
-        const q = pick(pool)();
+        const q = T.fn();
         const seen = new Set([q.correct]);
         const ds = [];
         for (const d of q.distractors) {
@@ -3126,6 +3814,35 @@
         }
         if (ds.length >= 3) {
           q.distractors = shuffleArr(ds).slice(0, 3);
+          q.type = typeId;
+          q.p = T.pts;
+          q.intro = pick(T.intros);
+          q.key = `${typeId}|${q.number}|${q.instruction}|${q.correct}`;
+          return q;
+        }
+      }
+      return null;
+    }
+
+    /* Odalara göre soru havuzları: önce basamak değeri / çözümleme, sonra yuvarlama, sıralama, sayı doğrusu... */
+    const ROOM_QUESTION_POOLS = [
+      ['placeFrac', 'placeName', 'digitAt'],
+      ['expandedToNumber', 'numberToExpanded', 'unitsToDec'],
+      ['fracToDec', 'decToFrac', 'countUnits'],
+      ['roundTenth', 'equivalent', 'notEqual', 'decLen'],
+      ['order', 'extreme', 'compare'],
+      ['reading', 'numberToWords', 'equivalent'],
+      ['numberLine', 'numberLineWhole', 'between', 'betweenWhole'],
+      ['roundHundredth', 'roundInt', 'roundWhich'],
+      ['placeWhich', 'reading', 'decToFrac', 'buildNumber'],
+      ['roundTenth', 'roundHundredth', 'numberLine', 'placeWhich', 'order', 'roundWhich']
+    ];
+
+    function generateDynamicRoomQuestion(roomIdx) {
+      const pool = ROOM_QUESTION_POOLS[roomIdx] || ROOM_QUESTION_POOLS[ROOM_QUESTION_POOLS.length - 1];
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const q = makeQ(pick(pool));
+        if (q) {
           q.context = q.context || 'Mistik kilit bu soruyu soruyor!';
           return q;
         }
@@ -3468,7 +4185,7 @@
       if (roomTag) roomTag.innerText = `Oda ${currentRoomIndex + 1}: ${MANSION_ROOMS[currentRoomIndex].name}`;
       
       const ctxDesc = document.getElementById('riddle-context-desc');
-      if (ctxDesc) ctxDesc.innerText = (obj && obj.name) ? `${obj.name} üzerindeki gizli şifre kilidi basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!` : "Odadaki mistik mühür basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!";
+      if (ctxDesc) ctxDesc.innerText = q.intro ? q.intro : ((obj && obj.name) ? `${obj.name} üzerindeki gizli şifre kilidi basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!` : "Odadaki mistik mühür basamakların sırrını soruyor. Zihninden çöz ve kilidi aç!");
       
       const mathNum = document.getElementById('riddle-math-number');
       if (mathNum) mathNum.innerHTML = q.number;
@@ -3930,6 +4647,558 @@
       ctx.globalAlpha = 1;
       if (confettiList.length > 0) requestAnimationFrame(updateConfetti);
     }
+
+    /* ========================================================
+       GRUP MODU: 3 takım, tek ekran, 22 soru + 8 konuşan joker
+       ======================================================== */
+    const GROUP_TEAMS = [
+      { name: 'HAYALETLER', icon: '👻', color: '#C4B5FD' },
+      { name: 'YARASALAR', icon: '🦇', color: '#FDBA74' },
+      { name: 'ÖRÜMCEKLER', icon: '🕷️', color: '#6EE7B7' }
+    ];
+    const GROUP_QUESTION_COUNT = 22;
+    const GROUP_JOKER_COUNT = 8;
+    const GROUP_SEEN_KEY = 'perilikosk_grp_seen_v1';
+    const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+    let grp = null;   // oyunun durumu
+
+    /* ---------- JOKERLER ---------- */
+    /* act(c, rolled): c.me / c.next takım numaraları, c.add(i, puan), c.note(metin), c.extra(), c.skip(i), c.shield(i), c.double(i)
+       Metin döndürür: Mösyö Ondalık'ın sonuç cümlesi. */
+    const GROUP_JOKERS = [
+      { id: 'hayalet', kind: 'good', icon: '👻', title: 'Dost Canlısı Hayalet', btn: 'HEDİYEYİ AÇ 🎁',
+        say: 'Huu huu! Ben dost canlısı bir hayaletim. Sana küçük bir hediyem var, biraz soğuk ama içi sıcak!',
+        desc: 'Takımına +40 puan hediye eder.',
+        act: c => { c.add(c.me, 40); return 'Hayalet reverans yaptı: +40 puan senin!'; } },
+      { id: 'mum', kind: 'good', icon: '🕯️', title: 'Büyülü Mum', btn: 'MUMU YAK 🔥',
+        say: 'Bu mumu yakan doğruyu bulur derler. Gölgem dans ediyor ama puan da veriyor!',
+        desc: 'Takımına +30 puan verir.',
+        act: c => { c.add(c.me, 30); return 'Mum parladı, zihinler aydınlandı: +30 puan!'; } },
+      { id: 'balkabagi', kind: 'good', icon: '🎃', title: 'Konuşan Balkabağı', btn: 'KABAĞA DOKUN 🎃',
+        say: 'Ben konuşan balkabağıyım! Yarın çorba olacağım ama bugün sana bir kart daha açma hakkı veriyorum.',
+        desc: 'Bir kart daha açma hakkı kazanırsın (sıra sende kalır).',
+        act: c => { c.extra(); c.note('🎃 Bir kart daha açacaksın!'); return 'Balkabağı göz kırptı: Bir kart daha senin!'; } },
+      { id: 'kalkan', kind: 'good', icon: '🛡️', title: 'Tılsımlı Kalkan', btn: 'KALKANI KUŞAN 🛡️',
+        say: 'Bu kalkan eski bir şövalyeden kaldı. Yanlış cevabın darbesini emer. Kafana tuğla düşerse ben karışmam!',
+        desc: 'Takımın bir sonraki yanlış cevabında puan kaybetmez.',
+        act: c => { c.shield(c.me); c.note('🛡️ Kalkan hazır!'); return 'Tılsım parladı: Bir sonraki yanlışın cezası silindi!'; } },
+      { id: 'cift', kind: 'good', icon: '✨', title: 'Çifte Puan Tılsımı', btn: 'TILSIMI YAK ✨',
+        say: 'Bu tılsım parladıkça puanlar katlanır! Sıradaki doğru cevabın tam iki kat sayılacak!',
+        desc: 'Takımının bir sonraki doğru cevabı iki kat puan verir.',
+        act: c => { c.double(c.me); c.note('✨ Sıradaki doğru cevap ×2!'); return 'Tılsım yandı! Bir sonraki doğru cevap iki kat!'; } },
+
+      { id: 'yarasa', kind: 'attack', icon: '🦇', title: 'Yarasa Sürüsü', btn: 'SÜRÜYÜ SALDIR 🦇',
+        say: 'Çatıdaki yarasalar uyandı! Sıradaki takımın tepesinde daire çiziyorlar. Isırmazlar, sadece puan yerler!',
+        desc: 'Sıradaki takımdan 25 puan alınır.',
+        act: c => { c.add(c.next, -25); return 'Yarasalar puanları kaptı, çatıya uçtu!'; } },
+      { id: 'zombi', kind: 'attack', icon: '🧟', title: 'Zombi Yankesici', btn: 'CEBİ KARIŞTIR 🧟',
+        say: 'Mezarlıktan bir zombi çıktı! Ayakları birbirine dolaşıyor ama cep karıştırmakta usta.',
+        desc: 'En çok puanı olan rakipten 30 puan çalıp sana verir.',
+        act: c => {
+          const others = [0, 1, 2].filter(i => i !== c.me);
+          const rich = others.reduce((a, b) => (c.score(b) > c.score(a) ? b : a));
+          c.add(rich, -30); c.add(c.me, 30);
+          return `Zombi ${GROUP_TEAMS[rich].name} takımının cebini boşalttı ve sana koştu: +30!`;
+        } },
+      { id: 'kapi', kind: 'attack', icon: '🚪', title: 'Gıcırdayan Kapı', btn: 'KAPIYI KAPAT 🚪',
+        say: 'Gıııcııırr! Kapı kapandı, sıradaki takım dışarıda kaldı. Anahtarı bulana kadar sıra onlara gelmeyecek!',
+        desc: 'Sıradaki takım bir turu atlar.',
+        act: c => { c.skip(c.next); c.note(`🚪 ${GROUP_TEAMS[c.next].name} sırasını kaybetti!`); return 'Kapı sürgülendi: Sıradaki takım bu turu kaybetti!'; } },
+      { id: 'vampir', kind: 'attack', icon: '🧛', title: 'Vampir Kont', btn: 'KONTU ÇAĞIR 🧛',
+        say: 'Kont Drakula geldi! Diş fırçasını unutmuş ama puan çekmeyi hiç unutmamış!',
+        desc: 'Diğer iki takımdan 10’ar puan çeker, sana verir (+20).',
+        act: c => { [0, 1, 2].forEach(i => { if (i !== c.me) { c.add(i, -10); c.add(c.me, 10); } }); return 'Kont puanları çekti, sana ikram etti: +20!'; } },
+
+      { id: 'orumcek', kind: 'bad', icon: '🕸️', title: 'Örümcek Ağı', btn: 'KURTULMAYA ÇALIŞ 🕷️',
+        say: 'Dikkat et, saçında bir şey var! Örümcek Hanım ağını tam senin boyuna göre örmüş.',
+        desc: 'Takımın 20 puan kaybeder.',
+        act: c => { c.add(c.me, -20); return 'Ağdan kurtuldun ama puanın ağda kaldı: −20.'; } },
+
+      { id: 'firtina', kind: 'wild', icon: '⛈️', title: 'Gök Gürültülü Fırtına', btn: 'ŞİMŞEĞİ ÇAKTIR ⚡', sound: 'thunder',
+        say: 'Gök gürledi, şimşek çaktı, mumlar söndü! Herkes saklandı, puanların yarısı da onlarla gitti!',
+        desc: 'Tüm takımların puanı yarıya iner.',
+        act: c => { [0, 1, 2].forEach(i => c.add(i, -Math.trunc(c.score(i) / 2))); return 'Fırtına dindi, ortalık sessiz. Hepiniz yarı yarıya kaldınız!'; } },
+      { id: 'ayna', kind: 'wild', icon: '🪞', title: 'Büyülü Ayna', btn: 'AYNAYA BAK 🪞',
+        say: 'Ayna ayna söyle bana, en çok puan kimde? Ayna cevap verdi ve puanları yer değiştirdi!',
+        desc: 'Puanını en yüksek puanlı takımla değiştirirsin. Zaten öndeysen +15 alırsın.',
+        act: c => {
+          const others = [0, 1, 2].filter(i => i !== c.me);
+          const top = others.reduce((a, b) => (c.score(b) > c.score(a) ? b : a));
+          if (c.score(top) > c.score(c.me)) {
+            const mine = c.score(c.me), theirs = c.score(top);
+            c.add(c.me, theirs - mine); c.add(top, mine - theirs);
+            return `Ayna puanları değiş tokuş etti! Şimdi ${GROUP_TEAMS[top].name} senin puanında!`;
+          }
+          c.add(c.me, 15);
+          return 'Zaten öndesin! Ayna kıskandı ve sana 15 puan verdi.';
+        } },
+      { id: 'para', kind: 'wild', icon: '🪙', title: 'Köşkün Altın Parası', btn: 'PARAYI HAVAYA AT 🪙', anim: 'coin',
+        roll: () => Math.random() < 0.5,
+        say: 'Altın bir para buldum! Yazı gelirse puanın ikiye katlanır, tura gelirse yarısı gider. Cesur musun?',
+        desc: 'Yazı: puanın iki katı (en çok +80). Tura: puanının yarısını kaybedersin.',
+        act: (c, win) => {
+          const sc = c.score(c.me);
+          if (win) { c.add(c.me, sc > 0 ? Math.min(sc, 80) : 30); return 'YAZI! Para parladı, puanın ikiye katlandı!'; }
+          c.add(c.me, sc > 0 ? -Math.ceil(sc / 2) : -20); return 'TURA! Para elinden kaydı, puanının yarısı gitti!';
+        } },
+      { id: 'zar', kind: 'wild', icon: '🎲', title: 'Lanetli Zar', btn: 'ZARI AT 🎲', anim: 'dice',
+        roll: () => randInt(1, 6),
+        say: 'Bu zar eski bir hayaletin cebinden çıktı. Atılınca hem şans hem korku getirir. At bakalım!',
+        desc: 'Zar sonucuna göre: 1 → −15, 2 → 0, 3 → +15, 4 → +30, 5 → +45, 6 → +60 puan.',
+        act: (c, d) => {
+          const delta = (d - 2) * 15;
+          c.add(c.me, delta);
+          return ['Eyvah, bir geldi! Zar bile üzüldü...', 'İki geldi, ne alan ne veren.', 'Üç geldi, fena değil!', 'Dört! Hayaletler alkışlıyor!', 'Beş! Mum bile parladı!', 'ALTI! Köşk sallanıyor!'][d - 1];
+        } }
+    ];
+
+    /* Her oyunda farklı 8 joker: 3 iyi, 2 saldırı, 1 kötü, 2 sürpriz */
+    function pickGroupJokers() {
+      const by = k => shuffleArr(GROUP_JOKERS.filter(j => j.kind === k));
+      return shuffleArr([
+        ...by('good').slice(0, 3), ...by('attack').slice(0, 2), ...by('bad').slice(0, 1), ...by('wild').slice(0, 2)
+      ]).slice(0, GROUP_JOKER_COUNT);
+    }
+
+    /* ---------- SORULAR: tekrarı önlemek için son oyunlarda sorulanları hatırla ---------- */
+    function loadGroupSeen() {
+      try { const a = JSON.parse(localStorage.getItem(GROUP_SEEN_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+    }
+    function saveGroupSeen(list) {
+      try { localStorage.setItem(GROUP_SEEN_KEY, JSON.stringify(list.slice(-600))); } catch (e) {}
+    }
+    function pickGroupQuestions(n) {
+      const seenList = loadGroupSeen();
+      const seen = new Set(seenList);
+      const types = shuffleArr(Object.keys(QTYPES)).slice(0, n);   // 28 tür var: her kart farklı bir türden
+      const used = new Set();
+      const out = [];
+      types.forEach(id => {
+        let chosen = null;
+        for (let t = 0; t < 40; t++) {
+          const q = makeQ(id);
+          if (!q) continue;
+          chosen = q;
+          if (!seen.has(q.key) && !used.has(q.key)) break;
+        }
+        if (chosen) { used.add(chosen.key); out.push(chosen); }
+      });
+      saveGroupSeen(seenList.concat(out.map(q => q.key)));
+      return out;
+    }
+
+    /* ---------- OYUN KURULUMU ---------- */
+    function startGroupMode() {
+      try { playSound('step'); } catch (e) {}
+      try { stopSpeech(); } catch (e) {}
+      document.querySelectorAll('.card-screen').forEach(el => { el.style.display = 'none'; });
+      const sc = document.getElementById('groupScreen');
+      if (sc) sc.style.display = 'flex';
+      try { startBGM(); } catch (e) {}
+      groupSyncAudioButtons();
+      newGroupGame(true);
+    }
+
+    function newGroupGame(first) {
+      closeGroupModals();
+      const qs = pickGroupQuestions(GROUP_QUESTION_COUNT).map(q => ({ kind: 'q', q: q, solved: false, status: null }));
+      const js = pickGroupJokers().map(j => ({ kind: 'j', j: j, solved: false }));
+      grp = {
+        cards: shuffleArr([...qs, ...js]),
+        teams: GROUP_TEAMS.map(() => ({ score: 0, shield: false, double: false, skip: false })),
+        cur: 0, active: null, solved: 0, extra: false, over: false,
+        jPhase: null, jCur: null, jRoll: null, qAnswered: false, qCard: null
+      };
+      const lastBtn = document.getElementById('g-last-btn');
+      if (lastBtn) lastBtn.style.display = '';
+      renderGroupTeams();
+      renderGroupGrid();
+      groupToast(`Köşkün kapıları açıldı! Sıra ${GROUP_TEAMS[0].icon} ${GROUP_TEAMS[0].name} takımında!`, 'info');
+      try { speakMosyo('Hoş geldiniz sevgili takımlar! Otuz mühürlü kapı var. Bazılarında sorular, bazılarında sürprizler. Cesaretiniz varsa ilk kartı açın!'); } catch (e) {}
+    }
+
+    function groupNewGameAsk() {
+      if (grp && !grp.over && grp.solved > 0) {
+        if (!confirm('Oyun yarıda kalacak ve yeni bir oyun başlayacak. Emin misiniz?')) return;
+      }
+      try { stopSpeech(); } catch (e) {}
+      newGroupGame();
+    }
+
+    function groupExitToMenu() {
+      closeGroupModals();
+      grp = null;
+      returnToMainMenu();
+    }
+
+    function closeGroupModals() {
+      ['g-q-modal', 'g-j-modal', 'g-winner'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('open');
+      });
+    }
+
+    /* ---------- EKRAN ÇİZİMİ ---------- */
+    function renderGroupTeams() {
+      const box = document.getElementById('g-teams');
+      if (!box || !grp) return;
+      box.innerHTML = GROUP_TEAMS.map((t, i) => {
+        const st = grp.teams[i];
+        const badges = [st.shield ? '🛡️ Kalkan' : '', st.double ? '✨ ×2' : '', st.skip ? '🚪 Sıra atlar' : ''].filter(Boolean).join(' · ');
+        return `<div class="g-team ${i === grp.cur ? 'active' : ''}" style="--tc:${t.color}" data-team="${i}">
+          <div class="g-team-name">${t.icon} ${t.name}</div>
+          <div class="g-team-score">${st.score}</div>
+          <div class="g-team-badges">${badges}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function bumpTeamScore(i) {
+      const el = document.querySelector(`.g-team[data-team="${i}"] .g-team-score`);
+      if (el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+    }
+
+    function groupCardBackHtml(card) {
+      if (card.kind === 'j') return { cls: 'joker', html: `<div class="g-back-icon">${card.j.icon}</div>` };
+      if (card.status === 'correct') return { cls: 'good', html: `<div class="g-back-icon">⭐</div><div class="g-back-pts good">+${card.gain}</div>` };
+      return { cls: 'bad', html: `<div class="g-back-icon">❌</div><div class="g-back-pts bad">${card.pen > 0 ? '−' + card.pen : '0'}</div>` };
+    }
+
+    function renderGroupGrid() {
+      const grid = document.getElementById('g-grid');
+      if (!grid || !grp) return;
+      grid.innerHTML = grp.cards.map((c, i) => {
+        let back = '', cls = '';
+        if (c.solved) { const b = groupCardBackHtml(c); back = b.html; cls = b.cls; }
+        return `<div class="g-card ${c.solved ? 'opened' : ''}" style="animation-delay:${i * 0.045}s" onclick="groupCardClick(${i})">
+          <div class="g-card-inner">
+            <div class="g-face g-front"><span>${i + 1}</span></div>
+            <div class="g-face g-back ${cls}">${back}</div>
+          </div></div>`;
+      }).join('');
+    }
+
+    let groupToastTimer = null;
+    function groupToast(msg, type) {
+      const t = document.getElementById('g-toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.className = 'g-toast ' + (type || 'info');
+      void t.offsetWidth;
+      t.classList.add('show');
+      clearTimeout(groupToastTimer);
+      groupToastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+    }
+
+    /* ---------- KART TIKLAMA ---------- */
+    function groupCardClick(idx) {
+      if (!grp || grp.over || grp.active !== null) return;
+      const card = grp.cards[idx];
+      if (!card || card.solved) return;
+      grp.active = idx;
+      try { playSound('click'); } catch (e) {}
+      if (card.kind === 'q') openGroupQuestion(card, idx); else openGroupJoker(card, idx);
+    }
+
+    /* ---------- SORU ---------- */
+    function openGroupQuestion(card, idx) {
+      const q = card.q;
+      const team = GROUP_TEAMS[grp.cur];
+      grp.qAnswered = false;
+      grp.qCard = card;
+      document.getElementById('g-q-title').textContent = `Mühürlü Kapı ${idx + 1}`;
+      document.getElementById('g-q-points').textContent = `${q.p} PUAN`;
+      const turn = document.getElementById('g-q-turn');
+      turn.textContent = `Sıra: ${team.icon} ${team.name}`;
+      turn.style.setProperty('--tc', team.color);
+      document.getElementById('g-q-intro').textContent = q.intro || '';
+      const numEl = document.getElementById('g-q-number');
+      numEl.innerHTML = q.number;
+      const plainLen = String(q.number).replace(/<[^>]*>/g, '').length;
+      numEl.style.fontSize = String(q.number).startsWith('<svg') ? '' : (plainLen > 44 ? '20px' : plainLen > 26 ? '27px' : '');
+      document.getElementById('g-q-instruction').textContent = q.instruction;
+      const fb = document.getElementById('g-q-feedback');
+      fb.style.display = 'none'; fb.className = 'g-feedback';
+      document.getElementById('g-q-next').style.display = 'none';
+
+      const optBox = document.getElementById('g-q-options');
+      optBox.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+      shuffleArr([q.correct, ...q.distractors]).forEach((choice, i) => {
+        const b = document.createElement('button');
+        b.className = 'g-opt';
+        b.dataset.choice = choice;
+        const l = document.createElement('span'); l.className = 'opt-letter'; l.textContent = letters[i];
+        const tx = document.createElement('span'); tx.textContent = choice;
+        b.appendChild(l); b.appendChild(tx);
+        b.onclick = () => answerGroupQuestion(choice, b);
+        optBox.appendChild(b);
+      });
+      document.getElementById('g-q-modal').classList.add('open');
+    }
+
+    function answerGroupQuestion(choice, btn) {
+      if (!grp || grp.qAnswered) return;
+      grp.qAnswered = true;
+      const card = grp.qCard;
+      const q = card.q;
+      const st = grp.teams[grp.cur];
+      const fb = document.getElementById('g-q-feedback');
+      const btns = document.querySelectorAll('#g-q-options .g-opt');
+      btns.forEach(b => { b.disabled = true; });
+      const right = choice === q.correct;
+      if (right) {
+        btn.classList.add('correct-choice');
+        const mult = st.double ? 2 : 1;
+        const gain = q.p * mult;
+        st.score += gain; st.double = false;
+        card.status = 'correct'; card.gain = gain;
+        try { playSound('correct'); } catch (e) {}
+        fb.className = 'g-feedback ok';
+        fb.textContent = `✅ Doğru! +${gain} puan${mult === 2 ? ' (✨ Çifte Puan Tılsımı!)' : ''}`;
+      } else {
+        btn.classList.add('wrong-choice');
+        btns.forEach(b => { if (b.dataset.choice === q.correct) b.classList.add('correct-choice'); });
+        let pen = Math.floor(q.p / 2);
+        let note = '';
+        if (st.shield) { pen = 0; st.shield = false; note = ' 🛡️ Kalkan seni korudu, puan kaybetmedin!'; }
+        st.score -= pen;
+        card.status = 'wrong'; card.pen = pen;
+        try { playSound('wrong'); } catch (e) {}
+        fb.className = 'g-feedback no';
+        fb.textContent = `❌ Yanlış!${pen > 0 ? ` −${pen} puan.` : ''}${note} Doğru cevap: ${q.correct}`;
+      }
+      fb.style.display = 'block';
+      renderGroupTeams();
+      bumpTeamScore(grp.cur);
+      const nx = document.getElementById('g-q-next');
+      nx.style.display = 'flex';
+      setTimeout(() => { try { nx.focus(); } catch (e) {} }, 50);
+    }
+
+    function groupQuestionNext() {
+      if (!grp || !grp.qAnswered) return;
+      document.getElementById('g-q-modal').classList.remove('open');
+      const card = grp.qCard;
+      const ok = card.status === 'correct';
+      finalizeGroupCard(card, ok ? 'Aferin! Mühür kırıldı! ⭐' : 'Mühür kırılmadı... 📉', ok ? 'success' : 'error');
+    }
+
+    /* ---------- JOKER ---------- */
+    function openGroupJoker(card, idx) {
+      const j = card.j;
+      const team = GROUP_TEAMS[grp.cur];
+      grp.jPhase = 'intro'; grp.jCur = card; grp.jRoll = null;
+      document.getElementById('g-j-team').textContent = `${team.icon} ${team.name}`;
+      const icon = document.getElementById('g-j-icon');
+      icon.textContent = j.icon; icon.className = 'g-j-icon';
+      document.getElementById('g-j-title').textContent = j.title;
+      document.getElementById('g-j-say').textContent = j.say;
+      const eff = document.getElementById('g-j-effect');
+      eff.className = 'g-j-effect';
+      eff.textContent = `Etki: ${j.desc}`;
+      const btn = document.getElementById('g-j-btn');
+      btn.disabled = false;
+      btn.querySelector('span').textContent = j.btn || 'KADERİ AÇ';
+      document.getElementById('g-j-modal').classList.add('open');
+      try { playSound('sparkle'); } catch (e) {}
+      try { speakMosyo(j.say); } catch (e) {}
+    }
+
+    function groupJokerClick() {
+      if (!grp || !grp.jCur) return;
+      if (grp.jPhase === 'intro') {
+        grp.jPhase = 'busy';
+        const j = grp.jCur.j;
+        const btn = document.getElementById('g-j-btn');
+        btn.disabled = true;
+        const icon = document.getElementById('g-j-icon');
+        const rolled = j.roll ? j.roll() : null;
+        grp.jRoll = rolled;
+        icon.classList.add('shake');
+        let timer = null;
+        if (j.anim === 'dice') {
+          timer = setInterval(() => { icon.textContent = DICE_FACES[randInt(0, 5)]; }, 90);
+        } else if (j.anim === 'coin') {
+          let flip = false;
+          timer = setInterval(() => { flip = !flip; icon.textContent = flip ? '👑' : '🪙'; }, 110);
+        }
+        try { playSound('step'); } catch (e) {}
+        setTimeout(() => {
+          if (timer) clearInterval(timer);
+          icon.classList.remove('shake');
+          if (j.anim === 'dice') icon.textContent = DICE_FACES[rolled - 1];
+          if (j.anim === 'coin') icon.textContent = rolled ? '👑' : '🦇';
+          resolveGroupJoker(j, rolled);
+        }, (j.anim ? 1200 : 750));
+      } else if (grp.jPhase === 'done') {
+        closeGroupJoker();
+      }
+    }
+
+    function resolveGroupJoker(j, rolled) {
+      const me = grp.cur;
+      const next = (me + 1) % 3;
+      const before = grp.teams.map(t => t.score);
+      const notes = [];
+      const c = {
+        me, next,
+        score: i => grp.teams[i].score,
+        add: (i, d) => { grp.teams[i].score += d; },
+        note: t => notes.push(t),
+        extra: () => { grp.extra = true; },
+        skip: i => { grp.teams[i].skip = true; },
+        shield: i => { grp.teams[i].shield = true; },
+        double: i => { grp.teams[i].double = true; }
+      };
+      const reaction = j.act(c, rolled);
+      const chips = [];
+      grp.teams.forEach((t, i) => {
+        const d = t.score - before[i];
+        if (d !== 0) chips.push(`<span class="g-chip ${d > 0 ? 'up' : 'down'}">${GROUP_TEAMS[i].icon} ${GROUP_TEAMS[i].name} ${d > 0 ? '+' : ''}${d}</span>`);
+      });
+      notes.forEach(n => chips.push(`<span class="g-chip note">${n}</span>`));
+      const eff = document.getElementById('g-j-effect');
+      const myDelta = grp.teams[me].score - before[me];
+      eff.className = 'g-j-effect ' + (myDelta > 0 ? 'good' : (myDelta < 0 ? 'bad' : ((j.kind === 'good' || j.kind === 'attack') ? 'good' : '')));
+      eff.innerHTML = chips.length ? `<div>${chips.join('')}</div>` : '<div>Bu sefer puanlar değişmedi.</div>';
+      document.getElementById('g-j-say').textContent = reaction;
+      renderGroupTeams();
+      grp.teams.forEach((t, i) => { if (t.score !== before[i]) bumpTeamScore(i); });
+      try { playSound(j.sound || (j.kind === 'good' ? 'unlock' : (j.kind === 'bad' ? 'penalty' : 'bonus'))); } catch (e) {}
+      try { speakMosyo(reaction); } catch (e) {}
+      grp.jPhase = 'done';
+      const btn = document.getElementById('g-j-btn');
+      btn.disabled = false;
+      btn.querySelector('span').textContent = 'DEVAM ET ➜';
+    }
+
+    function closeGroupJoker() {
+      if (!grp || !grp.jCur) return;
+      const card = grp.jCur;
+      document.getElementById('g-j-modal').classList.remove('open');
+      grp.jCur = null; grp.jPhase = null;
+      finalizeGroupCard(card, 'Şans Kartı çekildi! 🎲', 'info');
+    }
+
+    /* ---------- SIRA ve BİTİŞ ---------- */
+    function finalizeGroupCard(card, msg, type) {
+      const idx = grp.cards.indexOf(card);
+      card.solved = true;
+      grp.solved++;
+      grp.active = null;
+      const el = document.querySelectorAll('#g-grid .g-card')[idx];
+      if (el) {
+        const back = el.querySelector('.g-back');
+        const b = groupCardBackHtml(card);
+        back.className = 'g-face g-back ' + b.cls;
+        back.innerHTML = b.html;
+        el.classList.add('opened');
+      }
+      renderGroupTeams();
+      groupToast(msg, type);
+      if (grp.solved >= grp.cards.length) {
+        grp.over = true;
+        setTimeout(showGroupWinner, 1100);
+        return;
+      }
+      setTimeout(advanceGroupTurn, 900);
+    }
+
+    function advanceGroupTurn() {
+      if (!grp || grp.over) return;
+      if (grp.extra) {
+        grp.extra = false;
+        groupToast(`${GROUP_TEAMS[grp.cur].icon} ${GROUP_TEAMS[grp.cur].name} bir kart daha açıyor!`, 'info');
+        renderGroupTeams();
+        return;
+      }
+      let n = (grp.cur + 1) % 3;
+      if (grp.teams[n].skip) {
+        grp.teams[n].skip = false;
+        groupToast(`🚪 ${GROUP_TEAMS[n].name} sırasını kaybetti!`, 'error');
+        n = (n + 1) % 3;
+      }
+      grp.cur = n;
+      renderGroupTeams();
+    }
+
+    function groupLastRound() {
+      if (!grp || grp.over || grp.active !== null) return;
+      const open = [];
+      grp.cards.forEach((c, i) => { if (!c.solved) open.push(i); });
+      if (open.length <= 3) { groupToast('Zaten son turlardayız!', 'info'); return; }
+      const off = shuffleArr(open).slice(3);
+      const els = document.querySelectorAll('#g-grid .g-card');
+      off.forEach(i => {
+        grp.cards[i].solved = true; grp.solved++;
+        grp.cards[i].skipped = true;
+        els[i].style.opacity = '0.28'; els[i].style.pointerEvents = 'none';
+      });
+      const lastBtn = document.getElementById('g-last-btn');
+      if (lastBtn) lastBtn.style.display = 'none';
+      groupToast('⏳ SON TUR! Köşkün son üç kapısı kaldı!', 'info');
+      try { speakMosyo('Son tur! Köşkün sadece üç kapısı kaldı. Dikkatli seçin!'); } catch (e) {}
+    }
+
+    const GROUP_WIN_MESSAGES = [
+      'Köşkün tüm hayaletleri önünüzde diz çöktü!',
+      'Mum ışığında bile parladınız, şampiyon sizsiniz!',
+      'Yarasalar bile alkışlıyor, ondalıklar sizinle gurur duyuyor!',
+      'Köşkün kapıları sonuna kadar açıldı, tebrikler!',
+      'Örümcekler ağlarını sizin için yeniden ördü, harikaydınız!'
+    ];
+
+    function showGroupWinner() {
+      if (!grp) return;
+      const scores = grp.teams.map(t => t.score);
+      const max = Math.max(...scores);
+      const winners = GROUP_TEAMS.filter((_, i) => scores[i] === max);
+      document.getElementById('g-win-name').textContent = winners.map(w => `${w.name} ${w.icon}`).join(' & ');
+      const msg = GROUP_WIN_MESSAGES[randInt(0, GROUP_WIN_MESSAGES.length - 1)];
+      document.getElementById('g-win-msg').textContent = msg;
+      document.getElementById('g-win-score').textContent = `${max} Puan`;
+      const order = GROUP_TEAMS.map((t, i) => ({ t, s: scores[i] })).sort((a, b) => b.s - a.s);
+      document.getElementById('g-win-rank').innerHTML = order.map((o, k) =>
+        `<div class="g-rank-row" style="--tc:${o.t.color}"><span>${k + 1}. ${o.t.icon} ${o.t.name}</span><span>${o.s}</span></div>`).join('');
+      document.getElementById('g-winner').classList.add('open');
+      try { playSound('unlock'); } catch (e) {}
+      try { launchConfetti(160); setTimeout(() => launchConfetti(120), 500); setTimeout(() => launchConfetti(120), 1100); } catch (e) {}
+      try { speakMosyo(`Köşkün şampiyonu: ${winners.map(w => w.name).join(' ve ')}! ${msg}`); } catch (e) {}
+    }
+
+    /* ---------- SES DÜĞMELERİ ve KLAVYE ---------- */
+    function groupSyncAudioButtons() {
+      const a = document.getElementById('g-audio-btn'), b = document.getElementById('g-bgm-btn');
+      if (a) a.textContent = audioEnabled ? '🔊 Ses: Açık' : '🔇 Ses: Kapalı';
+      if (b) b.textContent = bgmEnabled ? '🎵 Müzik: Açık' : '🎵 Müzik: Kapalı';
+    }
+    function groupToggleAudio() { toggleAudio(); groupSyncAudioButtons(); }
+    function groupToggleBGM() { toggleBGM(); groupSyncAudioButtons(); }
+
+    document.addEventListener('keydown', e => {
+      if (!grp) return;
+      const sc = document.getElementById('groupScreen');
+      if (!sc || sc.style.display === 'none') return;
+      const qOpen = document.getElementById('g-q-modal').classList.contains('open');
+      const jOpen = document.getElementById('g-j-modal').classList.contains('open');
+      if (qOpen) {
+        if (grp.qAnswered) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); groupQuestionNext(); }
+        } else {
+          const i = ['a', 'b', 'c', 'd', '1', '2', '3', '4'].indexOf(String(e.key).toLowerCase());
+          if (i >= 0) {
+            const b = document.querySelectorAll('#g-q-options .g-opt')[i % 4];
+            if (b) b.click();
+          }
+        }
+      } else if (jOpen && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        const btn = document.getElementById('g-j-btn');
+        if (btn && !btn.disabled) groupJokerClick();
+      }
+    });
   </script>
 </body>
 </html>
