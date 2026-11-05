@@ -2005,6 +2005,7 @@
 
       <button class="btn-action-group" onclick="startGroupMode()">
         <span>👥 Grup Modu</span>
+        <small>3 takım · tek ekran · konuşan jokerler</small>
       </button>
 
       <div style="display:flex; gap:10px; margin-top: 12px;">
@@ -2215,6 +2216,15 @@
             <button onclick="saveStudentList()" style="background:#10B981; border:none; color:#000; font-weight:bold; font-size:12px; padding:6px 12px; border-radius:6px; cursor:pointer;">Listeyi Kaydet</button>
             <button onclick="clearStudentList()" style="background:transparent; border:none; color:#EF4444; font-size:12px; font-weight:bold; text-decoration:underline; cursor:pointer;">Listeyi Sıfırla</button>
           </div>
+        </div>
+
+        <div style="background: rgba(245, 158, 11, 0.10); border: 1.5px solid rgba(245, 158, 11, 0.45); border-radius: 14px; padding: 12px; margin-bottom: 14px; text-align: left;">
+          <div style="font-size: 14px; font-weight: 800; color: #F59E0B; margin-bottom: 4px;">Skor Temizleme (tek tek silme)</div>
+          <div style="font-size: 12px; color: #94A3B8; margin-bottom: 8px;">Hatalı/yüksek skorları sadece o kayıtları silerek temizler; diğer skorlara dokunmaz.</div>
+          <button onclick="scoreMgrQuickClean()" style="background:#EF4444; border:none; color:#FFF; font-weight:bold; font-size:12px; padding:7px 12px; border-radius:6px; cursor:pointer; margin-right:6px; margin-bottom:6px;">“Dedektif” ve “Nil Tabak” kayıtlarını sil</button>
+          <button onclick="scoreMgrLoad()" style="background:#8B5CF6; border:none; color:#FFF; font-weight:bold; font-size:12px; padding:7px 12px; border-radius:6px; cursor:pointer; margin-bottom:6px;">Kayıtları Göster</button>
+          <div id="scoreMgrStatus" style="font-size:12px; color:#C4B5FD; margin:4px 0;"></div>
+          <div id="scoreMgrList" style="max-height:200px; overflow-y:auto;"></div>
         </div>
 
         <button class="btn-action-primary" style="background: linear-gradient(135deg, #EF4444, #991B1B); font-size:16px; padding:12px; margin-bottom: 12px;" onclick="clearLeaderboardData()">Lider Tablosunu Sıfırla</button>
@@ -4360,6 +4370,7 @@
     }
 
     function saveScoreToLeaderboard(name, finalScore) {
+      if (scoreMgrIsBad(name) || !String(name || '').trim()) return; // hatalı/varsayılan isimle skor kaydedilmesin
       const entry = {
         name: name,
         score: finalScore,
@@ -4576,6 +4587,86 @@
       } else {
         alert('Hatalı şifre!');
       }
+    }
+
+    /* ===== SKOR YÖNETİMİ: sadece seçilen kayıtları sil ===== */
+    const SCORE_MGR_BAD_NAMES = ['dedektif', 'nil tabak'];
+    function scoreMgrIsBad(name) {
+      const k = foldName(name);
+      return SCORE_MGR_BAD_NAMES.indexOf(k) !== -1;
+    }
+    function scoreMgrSetStatus(msg) {
+      const el = document.getElementById('scoreMgrStatus');
+      if (el) el.innerText = msg || '';
+    }
+    function scoreMgrFetch() {
+      return new Promise((resolve, reject) => {
+        if (!cloudDb) { reject(new Error('Bulut bağlantısı yok')); return; }
+        cloudDb.ref(DB_NODE).once('value').then(snap => {
+          const rows = [];
+          snap.forEach(ch => { const v = ch.val() || {}; rows.push({ key: ch.key, name: v.name, score: Number(v.score) || 0, date: v.date || '' }); });
+          rows.sort((a, b) => b.score - a.score);
+          resolve(rows);
+        }).catch(reject);
+      });
+    }
+    function scoreMgrRemoveLocal(match) {
+      try {
+        const list = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
+        localStorage.setItem('perilikosk_scores', JSON.stringify(list.filter(e => !match(e))));
+      } catch (e) {}
+    }
+    function scoreMgrRender(rows) {
+      const box = document.getElementById('scoreMgrList');
+      if (!box) return;
+      box.innerHTML = '';
+      rows.forEach(r => {
+        const bad = scoreMgrIsBad(r.name);
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px; padding:5px 6px; border-bottom:1px solid rgba(255,255,255,0.08); font-size:12px; color:' + (bad ? '#FCA5A5' : '#E2E8F0') + ';';
+        const label = document.createElement('span');
+        label.style.cssText = 'flex:1; text-align:left;';
+        label.textContent = (bad ? '⚠ ' : '') + (r.name || '(isimsiz)') + ' — ' + r.score + ' P' + (r.date ? ' · ' + r.date : '');
+        const btn = document.createElement('button');
+        btn.textContent = 'Sil';
+        btn.style.cssText = 'background:#EF4444; border:none; color:#FFF; font-weight:bold; font-size:11px; padding:3px 9px; border-radius:5px; cursor:pointer;';
+        btn.onclick = () => scoreMgrDeleteOne(r);
+        row.appendChild(label); row.appendChild(btn);
+        box.appendChild(row);
+      });
+      if (!rows.length) box.innerHTML = '<div style="font-size:12px; color:#94A3B8; padding:6px;">Kayıt yok.</div>';
+    }
+    function scoreMgrLoad() {
+      scoreMgrSetStatus('Kayıtlar getiriliyor...');
+      scoreMgrFetch().then(rows => {
+        scoreMgrSetStatus(rows.length + ' kayıt var. Kırmızı ⚠ işaretliler Dedektif / Nil Tabak kayıtlarıdır.');
+        scoreMgrRender(rows);
+      }).catch(() => scoreMgrSetStatus('Kayıtlar alınamadı (internet / bulut bağlantısını kontrol edin).'));
+    }
+    function scoreMgrDeleteOne(r) {
+      if (!confirm('"' + (r.name || '(isimsiz)') + '" — ' + r.score + ' P kaydı silinsin mi?')) return;
+      cloudDb.ref(DB_NODE).child(r.key).remove().then(() => {
+        scoreMgrRemoveLocal(e => e.timestamp && e.name === r.name && Number(e.score) === r.score);
+        scoreMgrLoad();
+      }).catch(() => scoreMgrSetStatus('Silinemedi.'));
+    }
+    function scoreMgrQuickClean() {
+      scoreMgrSetStatus('Kayıtlar taranıyor...');
+      scoreMgrFetch().then(rows => {
+        const bad = rows.filter(r => scoreMgrIsBad(r.name));
+        if (!bad.length) {
+          scoreMgrSetStatus('Dedektif / Nil Tabak adlı kayıt bulunamadı. (Silinecek bir şey yok.)');
+          scoreMgrRender(rows);
+          return;
+        }
+        const desc = bad.map(r => '• ' + r.name + ' — ' + r.score + ' P').join('\n');
+        if (!confirm('Şu ' + bad.length + ' kayıt silinecek, diğerlerine dokunulmayacak:\n\n' + desc + '\n\nOnaylıyor musunuz?')) { scoreMgrSetStatus('İptal edildi.'); return; }
+        Promise.all(bad.map(r => cloudDb.ref(DB_NODE).child(r.key).remove())).then(() => {
+          scoreMgrRemoveLocal(e => scoreMgrIsBad(e.name));
+          scoreMgrSetStatus(bad.length + ' kayıt silindi.');
+          scoreMgrLoad();
+        }).catch(() => scoreMgrSetStatus('Silme sırasında hata oluştu.'));
+      }).catch(() => scoreMgrSetStatus('Kayıtlar alınamadı (internet / bulut bağlantısını kontrol edin).'));
     }
 
     function clearLeaderboardData() {
