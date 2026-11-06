@@ -1699,6 +1699,8 @@
       transition: all 0.15s;
     }
     .g-btn:hover { border-color: #F59E0B; color: #FDE047; transform: translateY(-1px); }
+    @keyframes gPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.55); } 50% { box-shadow: 0 0 0 9px rgba(251,191,36,0); } }
+    .g-btn.g-pulse { animation: gPulse 1.8s ease-in-out infinite; font-weight: 800; }
     .g-btn.g-gold { background: linear-gradient(135deg, #F59E0B, #D97706); color: #1E1B4B; border-color: #FBBF24; }
     .g-title {
       text-align: center;
@@ -2027,7 +2029,7 @@
     <div class="g-wrap">
       <div class="g-bar">
         <div class="g-bar-group">
-          <button class="g-btn g-gold" id="g-last-btn" onclick="groupLastRound()">⏳ SON TUR</button>
+          <button class="g-btn g-gold g-pulse" id="g-last-btn" onclick="groupLastRound()" title="Süre yetmezse: kalan kartları kapatıp son 3 kapıyla oyunu bitirir">⏳ SON TURA GEÇ</button>
           <button class="g-btn" onclick="groupNewGameAsk()">🔄 YENİ OYUN</button>
           <button class="g-btn" onclick="groupExitToMenu()">🏠 ANA MENÜ</button>
         </div>
@@ -2450,10 +2452,31 @@
         gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
         
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(getBgmMaster());
         osc.start(now);
         osc.stop(now + 1.25);
       } catch(e) {}
+    }
+
+    /* Konuşma sırasında fon müziğini kıs (ana ses seviyesi) */
+    let bgmMasterNode = null;
+    function getBgmMaster() {
+      const ctx = getAudioContext();
+      if (!bgmMasterNode || bgmMasterNode.context !== ctx) {
+        bgmMasterNode = ctx.createGain();
+        bgmMasterNode.gain.value = 1;
+        bgmMasterNode.connect(ctx.destination);
+      }
+      return bgmMasterNode;
+    }
+    function duckBGM(on) {
+      try {
+        if (!audioCtx) return;
+        const g = getBgmMaster().gain;
+        const t = audioCtx.currentTime;
+        g.cancelScheduledValues(t);
+        g.setTargetAtTime(on ? 0.08 : 1, t, 0.08);
+      } catch (e) {}
     }
 
     function startBGM() {
@@ -2492,8 +2515,9 @@
     function pumpSpeech() {
       if (speechBusy || !audioEnabled) return;
       const item = speechQueue.shift();
-      if (!item) return;
+      if (!item) { duckBGM(false); return; }
       speechBusy = true;
+      duckBGM(true);
       const gen = speechGen;
       let finished = false;
       let guard = null;
@@ -2509,8 +2533,8 @@
         guard = setTimeout(done, 30000);
         playClipThen(item.file, done);
       } else {
-        guard = setTimeout(done, 4000 + String(item.text || '').length * 120);
-        speakTextThen(item.text, done);
+        guard = setTimeout(done, 3000 + String(item.text || '').length * (item.rate && item.rate > 1.1 ? 80 : 120));
+        speakTextThen(item.text, done, item);
       }
     }
 
@@ -2541,7 +2565,7 @@
       return tr.find(v => /tolga|male|erkek/i.test(v.name)) || tr[0];
     }
 
-    function speakTextThen(text, done) {
+    function speakTextThen(text, done, opts) {
       if (!('speechSynthesis' in window)) { done(); return; }
       const clean = String(text || '')
         .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
@@ -2553,8 +2577,8 @@
         u.lang = 'tr-TR';
         const v = pickTurkishVoice();
         if (v) u.voice = v;
-        u.rate = 0.95;
-        u.pitch = 0.75;
+        u.rate = (opts && opts.rate) || 0.95;
+        u.pitch = (opts && opts.pitch) || 0.75;
         u.volume = 1;
         u.onend = () => done();
         u.onerror = () => done();
@@ -2567,12 +2591,15 @@
       speechGen++;
       speechQueue.length = 0;
       speechBusy = false;
+      duckBGM(false);
       try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
       try { if (currentVoiceAudio) { currentVoiceAudio.pause(); currentVoiceAudio = null; } } catch (e) {}
     }
 
     function playVoice(filename) { enqueueSpeech({ kind: 'clip', file: filename }); }
     function speakMosyo(text) { if (text) enqueueSpeech({ kind: 'tts', text: text }); }
+    /* Grup modu: daha hızlı okuma (oyun akışı beklemesin) */
+    function speakGroup(text) { if (text) enqueueSpeech({ kind: 'tts', text: text, rate: 1.3, pitch: 0.85 }); }
 
     function playSound(type) {
       if (!audioEnabled) return;
@@ -4758,59 +4785,59 @@
        Metin döndürür: Mösyö Ondalık'ın sonuç cümlesi. */
     const GROUP_JOKERS = [
       { id: 'hayalet', kind: 'good', icon: '👻', title: 'Dost Canlısı Hayalet', btn: 'HEDİYEYİ AÇ 🎁',
-        say: 'Huu huu! Ben dost canlısı bir hayaletim. Sana küçük bir hediyem var, biraz soğuk ama içi sıcak!',
+        say: 'Huu huu! Küçük bir hediyem var, biraz soğuk ama içi sıcak!',
         desc: 'Takımına +40 puan hediye eder.',
         act: c => { c.add(c.me, 40); return 'Hayalet reverans yaptı: +40 puan senin!'; } },
       { id: 'mum', kind: 'good', icon: '🕯️', title: 'Büyülü Mum', btn: 'MUMU YAK 🔥',
-        say: 'Bu mumu yakan doğruyu bulur derler. Gölgem dans ediyor ama puan da veriyor!',
+        say: 'Bu mum gölgemi dans ettiriyor ama puan da veriyor!',
         desc: 'Takımına +30 puan verir.',
         act: c => { c.add(c.me, 30); return 'Mum parladı, zihinler aydınlandı: +30 puan!'; } },
       { id: 'balkabagi', kind: 'good', icon: '🎃', title: 'Konuşan Balkabağı', btn: 'KABAĞA DOKUN 🎃',
-        say: 'Ben konuşan balkabağıyım! Yarın çorba olacağım ama bugün sana bir kart daha açma hakkı veriyorum.',
+        say: 'Yarın çorba olacağım ama bugün sana bir kart daha!',
         desc: 'Bir kart daha açma hakkı kazanırsın (sıra sende kalır).',
         act: c => { c.extra(); c.note('🎃 Bir kart daha açacaksın!'); return 'Balkabağı göz kırptı: Bir kart daha senin!'; } },
       { id: 'kalkan', kind: 'good', icon: '🛡️', title: 'Tılsımlı Kalkan', btn: 'KALKANI KUŞAN 🛡️',
-        say: 'Bu kalkan eski bir şövalyeden kaldı. Yanlış cevabın darbesini emer. Kafana tuğla düşerse ben karışmam!',
+        say: 'Yanlış cevabın darbesini emer. Kafana tuğla düşerse karışmam!',
         desc: 'Takımın bir sonraki yanlış cevabında puan kaybetmez.',
         act: c => { c.shield(c.me); c.note('🛡️ Kalkan hazır!'); return 'Tılsım parladı: Bir sonraki yanlışın cezası silindi!'; } },
       { id: 'cift', kind: 'good', icon: '✨', title: 'Çifte Puan Tılsımı', btn: 'TILSIMI YAK ✨',
-        say: 'Bu tılsım parladıkça puanlar katlanır! Sıradaki doğru cevabın tam iki kat sayılacak!',
+        say: 'Sıradaki doğru cevabın tam iki kat sayılacak!',
         desc: 'Takımının bir sonraki doğru cevabı iki kat puan verir.',
         act: c => { c.double(c.me); c.note('✨ Sıradaki doğru cevap ×2!'); return 'Tılsım yandı! Bir sonraki doğru cevap iki kat!'; } },
 
       { id: 'yarasa', kind: 'attack', icon: '🦇', title: 'Yarasa Sürüsü', btn: 'SÜRÜYÜ SALDIR 🦇',
-        say: 'Çatıdaki yarasalar uyandı! Sıradaki takımın tepesinde daire çiziyorlar. Isırmazlar, sadece puan yerler!',
+        say: 'Yarasalar uyandı! Isırmazlar, sadece puan yerler!',
         desc: 'Sıradaki takımdan 25 puan alınır.',
         act: c => { c.add(c.next, -25); return 'Yarasalar puanları kaptı, çatıya uçtu!'; } },
       { id: 'zombi', kind: 'attack', icon: '🧟', title: 'Zombi Yankesici', btn: 'CEBİ KARIŞTIR 🧟',
-        say: 'Mezarlıktan bir zombi çıktı! Ayakları birbirine dolaşıyor ama cep karıştırmakta usta.',
+        say: 'Zombi çıktı! Ayakları dolaşık ama cep karıştırmakta usta!',
         desc: 'En çok puanı olan rakipten 30 puan çalıp sana verir.',
         act: c => {
           const others = [0, 1, 2].filter(i => i !== c.me);
           const rich = others.reduce((a, b) => (c.score(b) > c.score(a) ? b : a));
           c.add(rich, -30); c.add(c.me, 30);
-          return `Zombi ${GROUP_TEAMS[rich].name} takımının cebini boşalttı ve sana koştu: +30!`;
+          return `Zombi ${GROUP_TEAMS[rich].name} takımının cebini boşalttı: +30!`;
         } },
       { id: 'kapi', kind: 'attack', icon: '🚪', title: 'Gıcırdayan Kapı', btn: 'KAPIYI KAPAT 🚪',
-        say: 'Gıııcııırr! Kapı kapandı, sıradaki takım dışarıda kaldı. Anahtarı bulana kadar sıra onlara gelmeyecek!',
+        say: 'Gıcır! Kapı kapandı, sıradaki takım dışarıda kaldı!',
         desc: 'Sıradaki takım bir turu atlar.',
         act: c => { c.skip(c.next); c.note(`🚪 ${GROUP_TEAMS[c.next].name} sırasını kaybetti!`); return 'Kapı sürgülendi: Sıradaki takım bu turu kaybetti!'; } },
       { id: 'vampir', kind: 'attack', icon: '🧛', title: 'Vampir Kont', btn: 'KONTU ÇAĞIR 🧛',
-        say: 'Kont Drakula geldi! Diş fırçasını unutmuş ama puan çekmeyi hiç unutmamış!',
+        say: 'Kont geldi! Diş fırçasını unutmuş ama puan çekmeyi unutmamış!',
         desc: 'Diğer iki takımdan 10’ar puan çeker, sana verir (+20).',
         act: c => { [0, 1, 2].forEach(i => { if (i !== c.me) { c.add(i, -10); c.add(c.me, 10); } }); return 'Kont puanları çekti, sana ikram etti: +20!'; } },
 
       { id: 'orumcek', kind: 'bad', icon: '🕸️', title: 'Örümcek Ağı', btn: 'KURTULMAYA ÇALIŞ 🕷️',
-        say: 'Dikkat et, saçında bir şey var! Örümcek Hanım ağını tam senin boyuna göre örmüş.',
+        say: 'Saçında bir şey var! Örümcek Hanım ağını sana örmüş!',
         desc: 'Takımın 20 puan kaybeder.',
-        act: c => { c.add(c.me, -20); return 'Ağdan kurtuldun ama puanın ağda kaldı: −20.'; } },
+        act: c => { c.add(c.me, -20); return 'Kurtuldun ama puanın ağda kaldı: −20.'; } },
 
       { id: 'firtina', kind: 'wild', icon: '⛈️', title: 'Gök Gürültülü Fırtına', btn: 'ŞİMŞEĞİ ÇAKTIR ⚡', sound: 'thunder',
-        say: 'Gök gürledi, şimşek çaktı, mumlar söndü! Herkes saklandı, puanların yarısı da onlarla gitti!',
+        say: 'Gök gürledi, mumlar söndü! Puanların yarısı da saklandı!',
         desc: 'Tüm takımların puanı yarıya iner.',
-        act: c => { [0, 1, 2].forEach(i => c.add(i, -Math.trunc(c.score(i) / 2))); return 'Fırtına dindi, ortalık sessiz. Hepiniz yarı yarıya kaldınız!'; } },
+        act: c => { [0, 1, 2].forEach(i => c.add(i, -Math.trunc(c.score(i) / 2))); return 'Fırtına geçti. Herkes yarı yarıya kaldı!'; } },
       { id: 'ayna', kind: 'wild', icon: '🪞', title: 'Büyülü Ayna', btn: 'AYNAYA BAK 🪞',
-        say: 'Ayna ayna söyle bana, en çok puan kimde? Ayna cevap verdi ve puanları yer değiştirdi!',
+        say: 'Ayna ayna söyle bana, en çok puan kimde?',
         desc: 'Puanını en yüksek puanlı takımla değiştirirsin. Zaten öndeysen +15 alırsın.',
         act: c => {
           const others = [0, 1, 2].filter(i => i !== c.me);
@@ -4818,14 +4845,14 @@
           if (c.score(top) > c.score(c.me)) {
             const mine = c.score(c.me), theirs = c.score(top);
             c.add(c.me, theirs - mine); c.add(top, mine - theirs);
-            return `Ayna puanları değiş tokuş etti! Şimdi ${GROUP_TEAMS[top].name} senin puanında!`;
+            return 'Ayna puanları değiş tokuş etti!';
           }
           c.add(c.me, 15);
           return 'Zaten öndesin! Ayna kıskandı ve sana 15 puan verdi.';
         } },
       { id: 'para', kind: 'wild', icon: '🪙', title: 'Köşkün Altın Parası', btn: 'PARAYI HAVAYA AT 🪙', anim: 'coin',
         roll: () => Math.random() < 0.5,
-        say: 'Altın bir para buldum! Yazı gelirse puanın ikiye katlanır, tura gelirse yarısı gider. Cesur musun?',
+        say: 'Yazı gelirse puan ikiye katlanır, tura gelirse yarısı gider. Cesur musun?',
         desc: 'Yazı: puanın iki katı (en çok +80). Tura: puanının yarısını kaybedersin.',
         act: (c, win) => {
           const sc = c.score(c.me);
@@ -4834,7 +4861,7 @@
         } },
       { id: 'zar', kind: 'wild', icon: '🎲', title: 'Lanetli Zar', btn: 'ZARI AT 🎲', anim: 'dice',
         roll: () => randInt(1, 6),
-        say: 'Bu zar eski bir hayaletin cebinden çıktı. Atılınca hem şans hem korku getirir. At bakalım!',
+        say: 'Lanetli zar! Hem şans hem korku getirir. At bakalım!',
         desc: 'Zar sonucuna göre: 1 → −15, 2 → 0, 3 → +15, 4 → +30, 5 → +45, 6 → +60 puan.',
         act: (c, d) => {
           const delta = (d - 2) * 15;
@@ -4905,7 +4932,7 @@
       renderGroupTeams();
       renderGroupGrid();
       groupToast(`Köşkün kapıları açıldı! Sıra ${GROUP_TEAMS[0].icon} ${GROUP_TEAMS[0].name} takımında!`, 'info');
-      try { speakMosyo('Hoş geldiniz sevgili takımlar! Otuz mühürlü kapı var. Bazılarında sorular, bazılarında sürprizler. Cesaretiniz varsa ilk kartı açın!'); } catch (e) {}
+      try { speakGroup('Hoş geldiniz takımlar! Otuz kapı var: bazılarında soru, bazılarında sürpriz. İlk kartı açın!'); } catch (e) {}
     }
 
     function groupNewGameAsk() {
@@ -5079,6 +5106,7 @@
     function openGroupJoker(card, idx) {
       const j = card.j;
       const team = GROUP_TEAMS[grp.cur];
+      try { stopSpeech(); } catch (e) {}
       grp.jPhase = 'intro'; grp.jCur = card; grp.jRoll = null;
       document.getElementById('g-j-team').textContent = `${team.icon} ${team.name}`;
       const icon = document.getElementById('g-j-icon');
@@ -5093,13 +5121,14 @@
       btn.querySelector('span').textContent = j.btn || 'KADERİ AÇ';
       document.getElementById('g-j-modal').classList.add('open');
       try { playSound('sparkle'); } catch (e) {}
-      try { speakMosyo(j.say); } catch (e) {}
+      try { setTimeout(() => speakGroup(j.say), 80); } catch (e) {}
     }
 
     function groupJokerClick() {
       if (!grp || !grp.jCur) return;
       if (grp.jPhase === 'intro') {
         grp.jPhase = 'busy';
+        try { stopSpeech(); } catch (e) {}   // giriş cümlesini bekletme
         const j = grp.jCur.j;
         const btn = document.getElementById('g-j-btn');
         btn.disabled = true;
@@ -5157,7 +5186,7 @@
       renderGroupTeams();
       grp.teams.forEach((t, i) => { if (t.score !== before[i]) bumpTeamScore(i); });
       try { playSound(j.sound || (j.kind === 'good' ? 'unlock' : (j.kind === 'bad' ? 'penalty' : 'bonus'))); } catch (e) {}
-      try { speakMosyo(reaction); } catch (e) {}
+      try { speakGroup(reaction); } catch (e) {}
       grp.jPhase = 'done';
       const btn = document.getElementById('g-j-btn');
       btn.disabled = false;
@@ -5167,6 +5196,7 @@
     function closeGroupJoker() {
       if (!grp || !grp.jCur) return;
       const card = grp.jCur;
+      try { stopSpeech(); } catch (e) {}     // sonuç cümlesi bitmeden de devam edilebilsin
       document.getElementById('g-j-modal').classList.remove('open');
       grp.jCur = null; grp.jPhase = null;
       finalizeGroupCard(card, 'Şans Kartı çekildi! 🎲', 'info');
@@ -5215,10 +5245,12 @@
     }
 
     function groupLastRound() {
-      if (!grp || grp.over || grp.active !== null) return;
+      if (!grp || grp.over) return;
+      if (grp.active !== null) { groupToast('Önce açık kartı bitirin, sonra SON TURA geçin.', 'info'); return; }
       const open = [];
       grp.cards.forEach((c, i) => { if (!c.solved) open.push(i); });
       if (open.length <= 3) { groupToast('Zaten son turlardayız!', 'info'); return; }
+      if (!confirm('SON TURA geçilsin mi?\n\nKalan ' + open.length + ' karttan sadece 3 tanesi açık kalacak, diğerleri kapanacak. Bu 3 kart bitince oyun sona erer.')) return;
       const off = shuffleArr(open).slice(3);
       const els = document.querySelectorAll('#g-grid .g-card');
       off.forEach(i => {
@@ -5229,7 +5261,7 @@
       const lastBtn = document.getElementById('g-last-btn');
       if (lastBtn) lastBtn.style.display = 'none';
       groupToast('⏳ SON TUR! Köşkün son üç kapısı kaldı!', 'info');
-      try { speakMosyo('Son tur! Köşkün sadece üç kapısı kaldı. Dikkatli seçin!'); } catch (e) {}
+      try { speakGroup('Son tur! Sadece üç kapı kaldı!'); } catch (e) {}
     }
 
     const GROUP_WIN_MESSAGES = [
@@ -5255,7 +5287,7 @@
       document.getElementById('g-winner').classList.add('open');
       try { playSound('unlock'); } catch (e) {}
       try { launchConfetti(160); setTimeout(() => launchConfetti(120), 500); setTimeout(() => launchConfetti(120), 1100); } catch (e) {}
-      try { speakMosyo(`Köşkün şampiyonu: ${winners.map(w => w.name).join(' ve ')}! ${msg}`); } catch (e) {}
+      try { speakGroup(`Köşkün şampiyonu: ${winners.map(w => w.name).join(' ve ')}! ${msg}`); } catch (e) {}
     }
 
     /* ---------- SES DÜĞMELERİ ve KLAVYE ---------- */
