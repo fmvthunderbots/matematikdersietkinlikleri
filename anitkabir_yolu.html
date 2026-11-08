@@ -572,18 +572,18 @@ function gGridRel() {
   }
   const nm = ['d₁', 'd₂'];
   const text = 'Birim kareli zeminde verilen d₁ ve d₂ doğruları için aşağıdakilerden hangisi doğrudur?';
-  const ans = { par: 'Paraleldir (d₁ = d₂)', perp: 'Diktir (d₁ ⊥ d₂)', cross: 'Kesişir ama dik değildir' }[rel];
-  const wrong = ['Paraleldir (d₁ = d₂)', 'Diktir (d₁ ⊥ d₂)', 'Kesişir ama dik değildir', 'Aynı doğrudur'].filter(x => x !== ans);
+  const ans = { par: 'Paraleldir (d₁ // d₂)', perp: 'Diktir (d₁ ⊥ d₂)', cross: 'Kesişir ama dik değildir' }[rel];
+  const wrong = ['Paraleldir (d₁ // d₂)', 'Diktir (d₁ ⊥ d₂)', 'Kesişir ama dik değildir', 'Aynı doğrudur'].filter(x => x !== ans);
   const why = { par: 'İkisi de aynı yöndedir ve hiç kesişmez: paralel.', perp: 'Dik kesiştikleri için aralarındaki açı 90° dir: dik.', cross: 'Bir noktada kesişiyorlar ama aralarındaki açı 90° değil.' }[rel];
   return Q({ key: 'gr|' + rel + v1 + v2 + c1 + c2, cat: 'K', lvl: 2, text, fig: figGrid(c1, v1, c2, v2, nm), correct: ans, wrong, hint: 'Kareli zeminde doğruların kaç kare yatay, kaç kare dikey gittiğine bak.', why, say: 'Birim kareli zeminde verilen d bir ve d iki doğruları için hangisi doğrudur?' });
 }
 function gReadSymbol() {
-  const [a, b, c, d] = pickN(LET, 4), perp = Math.random() < .5, sy = perp ? '⊥' : '=';
+  const [a, b, c, d] = pickN(LET, 4), perp = Math.random() < .5, sy = perp ? '⊥' : '//';
   const text = `<span class="mono">${N.line(a, b)} ${sy} ${N.line(c, d)}</span> sembolle gösterimi aşağıdakilerden hangisini ifade eder?`;
   const w = perp ? 'diktir' : 'paraleldir', o = perp ? 'paraleldir' : 'diktir';
   const correct = `${a}${b} doğrusu ${c}${d} doğrusuna ${w}.`;
   const wrong = [`${a}${b} doğrusu ${c}${d} doğrusuna ${o}.`, `${a}${b} doğru parçası ${c}${d} doğru parçasına ${w}.`, `${a}${b} doğru parçası ${c}${d} doğru parçasına ${o}.`];
-  return Q({ key: 'sy|' + perp + a + b + c + d, cat: 'K', lvl: 1, text, correct, wrong, hint: '⊥ dik, = paralel demektir. Üstündeki ok işareti doğruyu gösterir.', why: `${perp ? '⊥ dik' : '= paralel'} anlamına gelir; üstünde çift yönlü ok olduğu için doğrulardan söz ediyor.`, say: 'Verilen sembolün okunuşu hangisidir?' });
+  return Q({ key: 'sy|' + perp + a + b + c + d, cat: 'K', lvl: 1, text, correct, wrong, hint: '⊥ dik, // paralel demektir. Üstündeki ok işareti doğruyu gösterir.', why: `${perp ? '⊥ dik' : '// paralel'} anlamına gelir; üstünde çift yönlü ok olduğu için doğrulardan söz ediyor.`, say: 'Verilen sembolün okunuşu hangisidir?' });
 }
 
 /* ----- A: açılar ----- */
@@ -665,7 +665,7 @@ function gParNum() {
   const phi = pick([35, 40, 45, 50, 55, 60, 65, 70, 75]), M = parMeasures(phi), keys = shuffle('mnlkdacb'.split('')), k1 = keys[0], k2 = keys[1];
   const show = {}; show[k1] = deg(M[k1]); show[k2] = k2;
   const ans = M[k2], same = M[k1] === M[k2];
-  return Q({ key: 'pn|' + phi + k1 + k2, cat: 'D', lvl: 3, text: `Şekilde p = r ve t doğrusu bu doğruları kesmektedir. <b>${k1}</b> açısının ölçüsü ${deg(M[k1])} ise <b>${k2}</b> açısının ölçüsü kaç derecedir?`, fig: figParallel(phi, show), correct: deg(ans), wrong: nums(ans, [180 - ans, 90 - ans > 0 ? 90 - ans : 90 + ans > 179 ? ans + 20 : 90 + ans, M[k1] === ans ? ans + 10 : M[k1]], 1, 179).map(String), hint: 'Önce ters, komşu bütünler ya da eş açı ilişkisini bul.', why: same ? `Ters ve eş açılardan yararlanınca ${k1} ve ${k2} açılarının ölçülerinin eşit olduğu görülür: ${deg(ans)}.` : `${k1} ve ${k2} açıları ters ya da eş açıların komşu bütünleri olduğundan toplamları 180° dir: 180° − ${deg(M[k1])} = ${deg(ans)}.`, say: `${k1} açısının ölçüsü ${M[k1]} derece ise ${k2} açısının ölçüsü kaç derecedir?` });
+  return Q({ key: 'pn|' + phi + k1 + k2, cat: 'D', lvl: 3, text: `Şekilde p // r ve t doğrusu bu doğruları kesmektedir. <b>${k1}</b> açısının ölçüsü ${deg(M[k1])} ise <b>${k2}</b> açısının ölçüsü kaç derecedir?`, fig: figParallel(phi, show), correct: deg(ans), wrong: nums(ans, [180 - ans, 90 - ans > 0 ? 90 - ans : 90 + ans > 179 ? ans + 20 : 90 + ans, M[k1] === ans ? ans + 10 : M[k1]], 1, 179).map(String), hint: 'Önce ters, komşu bütünler ya da eş açı ilişkisini bul.', why: same ? `Ters ve eş açılardan yararlanınca ${k1} ve ${k2} açılarının ölçülerinin eşit olduğu görülür: ${deg(ans)}.` : `${k1} ve ${k2} açıları ters ya da eş açıların komşu bütünleri olduğundan toplamları 180° dir: 180° − ${deg(M[k1])} = ${deg(ans)}.`, say: `${k1} açısının ölçüsü ${M[k1]} derece ise ${k2} açısının ölçüsü kaç derecedir?` });
 }
 function gSymEq() {
   const th = pick([110, 115, 120, 125, 130, 135, 140, 145, 150]), ks = [10, 20, 30, 40].filter(k => 2 * th - 180 - k > 0), k = pick(ks), mode = pick(['diff', 'sum']), al = rnd(0, 179);
@@ -746,14 +746,14 @@ const PLAN12 = [['symFromFig', 'readFromSym', 'descToSym'], ['concept', 'angleMe
 const PLAN12B = [['descToSym', 'readFromSym'], ['concept', 'tf'], ['readSymbol', 'gridRel'], ['angleType', 'angleName'], ['count', 'polyName'], ['angleMeas', 'compMix'], ['protractor'], ['parNum', 'crossNum'], ['relCross', 'relPar'], ['notPoly', 'sideDiag'], ['interior', 'diagCount'], ['symEq', 'tf']];
 /* "Atatürk ve Bilim": soru türüne göre kısa bilgi veya söz (cevabı ele vermez) */
 const LEADS = {
-  symFromFig: ['1 Kasım 1928\'de kabul edilen yeni Türk harfleri okuma yazmayı kolaylaştırdı; geometride noktaları da bu harflerle adlandırıyoruz.'],
-  readFromSym: ['Harf Devrimi\'nin ardından Millet Mektepleri 1 Ocak 1929\'da eğitime başladı; yurttaşlar yeni harflerle okuma yazma öğrendi.'],
+  symFromFig: ['Atatürk, 1928 Harf Devrimi ile okuma yazmayı kolaylaştırdı ve eğitimi bütün halka yaymayı hedefledi.'],
+  readFromSym: ['Atatürk\'ün öncülüğünde açılan Millet Mektepleri 1 Ocak 1929\'da eğitime başladı; yurttaşlar okuma yazma öğrendi.'],
   descToSym: ['Atatürk, yeni harfleri halka bizzat öğretti ve Millet Mektepleri\'nin Başöğretmeni oldu.'],
   concept: ['“Hayatta en hakiki mürşit ilimdir.” — Mustafa Kemal Atatürk'],
-  tf: ['Türk Dil Kurumu 1932\'de Atatürk\'ün önderliğinde kuruldu; bilimin Türkçe yapılması hedeflendi.', 'Türk Tarih Kurumu 1931\'de Atatürk\'ün önderliğinde kuruldu.'],
-  readSymbol: ['3 Mart 1924\'te kabul edilen Tevhid-i Tedrisat Kanunu ile bütün okullar tek çatı altında toplandı.'],
-  gridRel: ['1 Ocak 1926\'dan itibaren uluslararası takvim ve saat kullanılmaya başlandı; dünyayla ortak bir bilim diline geçildi.'],
-  protractor: ['1931\'de kabul edilen Ölçüler Kanunu ile metre ve kilogram ortak ölçü oldu; bilimin temeli doğru ölçmedir.'],
+  tf: ['Atatürk, bilimin Türkçe yapılabilmesi için 1932\'de Türk Dil Kurumu\'nu kurdu.', 'Atatürk, tarih biliminin gelişmesi için 1931\'de Türk Tarih Kurumu\'nu kurdu.'],
+  readSymbol: ['Atatürk\'ün önderliğinde 3 Mart 1924\'te kabul edilen Tevhid-i Tedrisat Kanunu ile bütün okullar tek çatı altında toplandı.'],
+  gridRel: ['Atatürk, bilimi ilerlemenin temeli saydı; okullarda akla ve bilime dayalı eğitimi hedefledi.'],
+  protractor: ['Atatürk\'ün yazdığı Geometri kitabı, okullarda Türkçe terimlerle ders işlenmesine öncülük etti.'],
   angleName: ['Atatürk, 1936–37 kışında Dolmabahçe\'de bir Geometri kitabı yazdı; kitap 1937\'de kapağında adı olmadan yayımlandı.'],
   angleType: ['“Dar açı” terimi, Atatürk\'ün Geometri kitabıyla Türkçeye kazandırılan terimlerdendir.'],
   angleMeas: ['Atatürk\'ün Geometri kitabı, matematiğin Türkçe terimlerle öğretilebilmesi için hazırlandı.'],
@@ -764,12 +764,12 @@ const LEADS = {
   diagCount: ['“Toplam, oran, orantı, eşit” gibi matematik sözcükleri de Atatürk\'ün türettikleri arasındadır.'],
   interior: ['“Artı, eksi, bölü” sözcükleri de matematik dilimize Atatürk sayesinde yerleşti.'],
   compSupp: ['“Öğretmenler! Yeni nesil sizin eseriniz olacaktır.” — Mustafa Kemal Atatürk'],
-  compMix: ['1933 Üniversite Reformu ile Darülfünun kapatıldı, yerine modern İstanbul Üniversitesi kuruldu.'],
+  compMix: ['Atatürk\'ün önderliğindeki 1933 Üniversite Reformu ile çağdaş bilim eğitimi veren İstanbul Üniversitesi kuruldu.'],
   crossNum: ['“Dünyada her şey için, medeniyet için, hayat için, başarı için en hakiki mürşit ilimdir, fendir.” — Atatürk'],
-  relCross: ['Tarımda bilimi öne çıkaran Yüksek Ziraat Enstitüsü 1933\'te Ankara\'da açıldı.'],
+  relCross: ['Atatürk\'ün öncülüğünde, tarımda bilimi öne çıkaran Yüksek Ziraat Enstitüsü 1933\'te Ankara\'da açıldı.'],
   relPar: ['Dil ve Tarih-Coğrafya Fakültesi, Atatürk\'ün isteğiyle 1935\'te Ankara\'da kuruldu.'],
   parNum: ['Atatürk döneminde, 1933\'ten itibaren yurt dışından gelen bilim insanları üniversitelerimizde ders verdi.'],
-  symEq: ['Cumhuriyet\'in ilk yıllarında eğitim seferberliği başlatıldı; okullar ve öğretmen okulları yurda yayıldı.']
+  symEq: ['Atatürk döneminde öğretmen yetiştirmeye ve yeni okullar açmaya büyük önem verildi.']
 };
 function recentKeys() { try { return JSON.parse(localStorage.getItem('ay_recent_v1') || '[]'); } catch (e) { return []; } }
 function saveRecent(keys) { try { localStorage.setItem('ay_recent_v1', JSON.stringify(recentKeys().concat(keys).slice(-160))); } catch (e) {} }
@@ -1237,7 +1237,7 @@ function finish() {
 }
 function readQ() {
   const q = G.qs[G.i]; if (!q) return;
-  const L = ['A', 'B', 'C', 'D'], optsTxt = q.thumbs ? '' : q.opts.map((o, i) => `${L[i]}: ${stripTags(o).replace(/°/g, ' derece').replace(/⊥/g, ' dik ').replace(/=/g, ' paralel ').replace(/[\[\]]/g, ' ')}`).join('. ');
+  const L = ['A', 'B', 'C', 'D'], optsTxt = q.thumbs ? '' : q.opts.map((o, i) => `${L[i]}: ${stripTags(o).replace(/°/g, ' derece').replace(/⊥/g, ' dik ').replace(/\/\//g, ' paralel ').replace(/[\[\]]/g, ' ')}`).join('. ');
   Speech.speak((q.lead ? q.lead + ' ' : '') + (q.say || stripTags(q.text)) + '. ' + optsTxt);
 }
 function toggleSfx() { Snd.init(); Snd.sfx = !Snd.sfx; $('#btnSfx').classList.toggle('off', !Snd.sfx); $('#btnSfx').textContent = Snd.sfx ? '🔊' : '🔇'; }
