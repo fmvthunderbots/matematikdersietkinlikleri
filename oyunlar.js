@@ -135,6 +135,13 @@ const SISTEM_OYUNLARI = [
         image: "./anitkabir_yolu_kapak.jpg",
         url: ".//anitkabir_yolu.html"
     },
+    {
+        id: "oyun-20",
+        title: "Anıtkabir Yolu",
+        grade: "6",
+        image: "./anitkabir_yolu_kapak.jpg",
+        url: ".//anitkabir_yolu_6.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
