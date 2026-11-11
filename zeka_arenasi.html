@@ -203,6 +203,11 @@ h1 .g{background:linear-gradient(90deg,var(--gold),#ff8fab);-webkit-background-c
 .rows div.tot b{color:var(--gold2);font-size:22px}
 .mini{color:var(--muted);font-weight:700;font-size:13px;margin-bottom:16px}
 .center{text-align:center}
+.savemsg{margin:10px auto 0;max-width:340px;font-size:14px;font-weight:800;color:var(--muted);line-height:1.4;border-radius:12px;padding:8px 12px;background:#0000002a}
+.savemsg:empty{display:none}
+.savemsg.ok{color:#9dffcf;background:#34d39922}
+.savemsg.warn{color:#ffd27a;background:#ff9d2e22}
+.savemsg b{color:var(--gold2)}
 .bigscore{font-family:var(--disp);font-weight:700;font-size:68px;line-height:1;background:linear-gradient(90deg,var(--gold),#ff8fab);-webkit-background-clip:text;background-clip:text;color:transparent}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
 .kpis div{background:#ffffff10;border-radius:14px;padding:10px 4px}
@@ -370,6 +375,7 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
       <div class="card center">
         <div class="bigscore" id="rScore">0</div>
         <small style="color:var(--muted);font-weight:800">TOPLAM PUAN</small>
+        <div id="rSave" class="savemsg"></div>
         <div class="kpis">
           <div><b id="rLevel">0</b><small>Seviye</small></div>
           <div><b id="rStars">0</b><small>Yıldız</small></div>
@@ -697,13 +703,16 @@ async function bGet(game){
   }
   return sortBoard(bLoadLocal(game).filter(e=>e&&typeof e==='object').map(cleanEntry));
 }
+/* sonuç: {saved:true} yeni rekor yazıldı, {saved:false,best} eski rekor daha yüksek, {offline:true} yalnızca cihaza yazıldı */
 async function bPut(game,entry){
   bSaveLocal(game,entry);
-  if(DB){
-    try{
-      await withTimeout(DB.ref(SCORE_ROOT+'/'+game+'/'+entry.key).transaction(cur=>(!cur||entry.score>cur.score)?entry:undefined),4000);
-    }catch(e){console.warn('Skor Firebase\'e yazılamadı',e);}
-  }
+  if(!DB)return {offline:true};
+  try{
+    const r=await withTimeout(DB.ref(SCORE_ROOT+'/'+game+'/'+entry.key).transaction(cur=>(!cur||entry.score>(+cur.score||0))?entry:undefined),4000);
+    if(r&&r.committed)return {saved:true};
+    const v=r&&r.snapshot&&r.snapshot.val();
+    return {saved:false,best:v?(+v.score||0):0};
+  }catch(e){console.warn('Skor Firebase\'e yazılamadı',e);return {offline:true};}
 }
 async function renderBoard(sel,game,hlKey){
   const box=$(sel);
@@ -920,7 +929,11 @@ async function finishGame(){
   if(!S.failed&&!S.quit){sfx.win();confetti();}
   /* sonuç hemen görünsün; tablo kayıt bitince (en çok ~4 sn) gelsin */
   $('#lbRes').innerHTML='<ol class="lb"><li class="empty">Kaydediliyor…</li></ol>';
-  await bPut(S.mode,entry);
+  const sv=$('#rSave');sv.className='savemsg';sv.textContent='Puanın kaydediliyor…';
+  const res=await bPut(S.mode,entry);
+  if(res.saved){sv.classList.add('ok');sv.textContent='✅ '+entry.score.toLocaleString('tr-TR')+' puanın İlk 10 tablosuna kaydedildi!';}
+  else if(res.offline){sv.classList.add('warn');sv.textContent='⚠️ İnternete ulaşılamadı, puanın yalnızca bu cihaza kaydedildi.';}
+  else{sv.classList.add('ok');sv.innerHTML='✅ Puanın kaydedildi. Rekorun <b>'+res.best.toLocaleString('tr-TR')+'</b> puan; tabloda en yüksek puanın görünür.';}
   renderBoard('#lbRes',S.mode,entry.key);
 }
 
