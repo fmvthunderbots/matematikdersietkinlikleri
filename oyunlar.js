@@ -142,6 +142,13 @@ const SISTEM_OYUNLARI = [
         image: "./anitkabir_yolu_kapak.jpg",
         url: ".//anitkabir_yolu_6.html"
     },
+    {
+        id: "oyun-21",
+        title: "Zeka Oyunları",
+        grade: "6",
+        image: "./zeka_oyunlari.jpg",
+        url: ".//zeka_arenasi.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
