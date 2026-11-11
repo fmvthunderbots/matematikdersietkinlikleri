@@ -328,7 +328,7 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
   <!-- OYUN -->
   <section id="sGame" class="screen">
     <div class="hud">
-      <button id="btnMenu" class="ghost" title="Menüye dön">✕</button>
+      <button id="btnMenu" class="ghost" title="Oyunu bitir (puan kaydedilir)">✕</button>
       <div class="lvl"><span id="lvlTxt">Seviye 1 / 10</span><div class="dots" id="dots"></div></div>
       <button id="btnSound" class="ghost" title="Ses">🔊</button>
     </div>
@@ -816,7 +816,7 @@ function buildPlan(mode){
 function startGame(){
   if(!S.stu)return;
   ac();RUN++;
-  Object.assign(S,{plan:buildPlan(S.mode),lvl:0,score:0,streak:0,bestStreak:0,mist:0,perfRun:0,stars:[],lvlDone:0,totalSecs:0,failed:false});
+  Object.assign(S,{plan:buildPlan(S.mode),lvl:0,score:0,streak:0,bestStreak:0,mist:0,perfRun:0,stars:[],lvlDone:0,totalSecs:0,failed:false,quit:false});
   show('sGame');startLevel();
 }
 function setTool(t){S.tool=t;$('#toolFill').classList.toggle('on',t==='fill');$('#toolX').classList.toggle('on',t==='x');}
@@ -899,14 +899,14 @@ async function finishGame(){
   const entry={key:stuKey(stu),name:stu.ad,score:S.score,lvl:S.lvlDone,secs:S.totalSecs,mode:S.mode,date:Date.now()};
   const rk=RANKS.filter(r=>S.score>=r[0]).pop();
   $('#rBadge').textContent=rk[2];$('#rRank').textContent=rk[1];
-  $('#rName').textContent=stu.ad+' · '+MODE_NAMES[S.mode]+' · '+(S.failed?'Seviye '+(S.lvl+1)+'\'de hakların bitti':'Tüm seviyeleri bitirdin!');
+  $('#rName').textContent=stu.ad+' · '+MODE_NAMES[S.mode]+' · '+(S.failed?'Seviye '+(S.lvl+1)+'\'de hakların bitti':S.quit?'Seviye '+(S.lvl+1)+'\'de oyundan çıktın':'Tüm seviyeleri bitirdin!');
   $('#rScore').textContent=S.score.toLocaleString('tr-TR');
   $('#rLevel').textContent=S.lvlDone+' / '+S.plan.length;
   $('#rStars').textContent=S.stars.reduce((a,b)=>a+(b||0),0);
   $('#rStreak').textContent=S.bestStreak;
   $('#rTime').textContent=fmt(S.totalSecs);
   show('sResult');
-  if(!S.failed){sfx.win();confetti();}
+  if(!S.failed&&!S.quit){sfx.win();confetti();}
   /* sonuç hemen görünsün; tablo kayıt bitince (en çok ~4 sn) gelsin */
   $('#lbRes').innerHTML='<ol class="lb"><li class="empty">Kaydediliyor…</li></ol>';
   await bPut(S.mode,entry);
@@ -1216,12 +1216,15 @@ $('#btnMenu').onclick=()=>{
   const b=$('#btnMenu');
   if(!menuArmed){
     menuArmed=true;b.textContent='Çık?';
+    if(S.score>0)toast('Çıkarsan şu anki puanın kaydedilir');
     menuTimer=setTimeout(()=>{menuArmed=false;b.textContent='✕';},2500);return;
   }
   clearTimeout(menuTimer);menuArmed=false;b.textContent='✕';
+  if(!S.done)S.totalSecs+=Math.round((Date.now()-S.t0)/1000);   // yarım kalan seviyenin süresi
   clearInterval(S.timer);S.done=true;RUN++;
   if(keyH){document.removeEventListener('keydown',keyH);keyH=null;}
-  show('sStart');refreshStartBoard();
+  if(S.score>0){S.quit=true;finishGame();}          // o anki puan tabloya kaydedilir
+  else{show('sStart');refreshStartBoard();}         // 0 puanı tabloya yazma
 };
 $('#btnAgain').onclick=startGame;
 $('#btnHome').onclick=()=>{show('sStart');refreshStartBoard();};
