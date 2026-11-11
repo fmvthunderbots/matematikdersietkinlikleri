@@ -817,6 +817,8 @@ function startGame(){
   if(!S.stu)return;
   ac();RUN++;
   Object.assign(S,{plan:buildPlan(S.mode),lvl:0,score:0,streak:0,bestStreak:0,mist:0,perfRun:0,stars:[],lvlDone:0,totalSecs:0,failed:false,quit:false});
+  /* öğrencinin kaydını dinle: önbellek sıcak kalır, sayfa kapanırken kayıt tek mesajla gider */
+  if(DB){if(S.watch)S.watch.off();S.watch=DB.ref(SCORE_ROOT+'/'+S.mode+'/'+stuKey(S.stu));S.watch.on('value',()=>{},()=>{});}
   show('sGame');startLevel();
 }
 function setTool(t){S.tool=t;$('#toolFill').classList.toggle('on',t==='fill');$('#toolX').classList.toggle('on',t==='x');}
@@ -894,9 +896,18 @@ function showFailModal(){
   const b=$('#btnNext');b.focus();
   b.onclick=()=>{b.onclick=null;$('#modal').classList.remove('show');finishGame();};
 }
+function makeEntry(secs){const stu=S.stu||{ad:'Oyuncu'};return {key:stuKey(stu),name:stu.ad,score:S.score,lvl:S.lvlDone,secs,mode:S.mode,date:Date.now()};}
+/* öğrenci ✕'e basmadan sekmeyi/portalı kapatırsa veya uygulamadan çıkarsa: o anki puanı kaydet
+   (tabloda yalnızca en yüksek puan kalır, oyuna dönüp devam ederse sorun olmaz) */
+function autoSave(){
+  if(!$('#sGame').classList.contains('active')||!S.stu||S.score<=0)return;
+  bPut(S.mode,makeEntry(S.totalSecs+(S.done?0:Math.round((Date.now()-S.t0)/1000))));
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autoSave();});
+addEventListener('pagehide',autoSave);
 async function finishGame(){
   const stu=S.stu||{ad:'Oyuncu'};
-  const entry={key:stuKey(stu),name:stu.ad,score:S.score,lvl:S.lvlDone,secs:S.totalSecs,mode:S.mode,date:Date.now()};
+  const entry=makeEntry(S.totalSecs);
   const rk=RANKS.filter(r=>S.score>=r[0]).pop();
   $('#rBadge').textContent=rk[2];$('#rRank').textContent=rk[1];
   $('#rName').textContent=stu.ad+' · '+MODE_NAMES[S.mode]+' · '+(S.failed?'Seviye '+(S.lvl+1)+'\'de hakların bitti':S.quit?'Seviye '+(S.lvl+1)+'\'de oyundan çıktın':'Tüm seviyeleri bitirdin!');
