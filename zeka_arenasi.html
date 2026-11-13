@@ -1071,37 +1071,49 @@ function renderSudoku(box,P,ctx=SOLO){
     grid.appendChild(c);cells.push(c);
   }
   /* rakam: dokun (seçili kareye yaz) veya sürükleyip bir kareye bırak */
+  /* Olaylar pencereden ve parmak kimliğiyle dinlenir: bırakma düğmeye ulaşmasa da (donma, ikinci parmak,
+     pencere dışı) taş ekranda asılı kalmaz. Yeni bir dokunuş, yarım kalan eski sürüklemeyi temizler. */
   let drag=null;
   const cellAt=(x,y)=>{y-=43;   // hedef = parmağın üstünde duran taşın merkezi (.sdk-ghost translate -120%)
     const t=document.elementFromPoint(x,y);const c=t&&t.closest&&t.closest('.sdk-c');return c?cells.indexOf(c):-1;};
   const clearDrop=()=>cells.forEach(c=>c.classList.remove('drop'));
+  function stopDrag(){
+    const g=drag;if(!g)return null;drag=null;
+    if(g.ghost)g.ghost.remove();clearDrop();
+    removeEventListener('pointermove',onMove);removeEventListener('pointerup',onUp);
+    removeEventListener('pointercancel',onCancel);removeEventListener('blur',stopDrag);
+    return g;
+  }
+  function onMove(e){
+    if(!drag||e.pointerId!==drag.id)return;
+    if(!drag.ghost){
+      if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;
+      drag.ghost=el('div','sdk-ghost',String(drag.d));document.body.appendChild(drag.ghost);
+    }
+    drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
+    const i=cellAt(e.clientX,e.clientY);clearDrop();
+    if(i>=0&&!vals[i])cells[i].classList.add('drop');
+  }
+  function onCancel(e){if(drag&&e.pointerId===drag.id)stopDrag();}
+  function onUp(e){
+    if(!drag||e.pointerId!==drag.id)return;
+    const g=stopDrag();
+    if(!g.ghost)return;                  // sürüklenmedi: normal tıklama devam eder
+    g.b._dragged=true;setTimeout(()=>{g.b._dragged=false;},0);
+    const i=cellAt(e.clientX,e.clientY);
+    if(i>=0&&!vals[i]&&cells[i].isConnected){sel=i;paint();place(g.d);}
+  }
   for(let d=1;d<=4;d++){
     const b=el('button','sdk-n');b.type='button';
     b.addEventListener('click',()=>{if(b._dragged){b._dragged=false;return;}place(d);});
     b.addEventListener('pointerdown',e=>{
+      stopDrag();
       if(ctx.done||(e.pointerType==='mouse'&&e.button!==0))return;
-      drag={d,b,x:e.clientX,y:e.clientY,ghost:null};try{b.setPointerCapture(e.pointerId);}catch(_){}
+      drag={d,b,id:e.pointerId,x:e.clientX,y:e.clientY,ghost:null};
+      try{b.setPointerCapture(e.pointerId);}catch(_){}
+      addEventListener('pointermove',onMove);addEventListener('pointerup',onUp);
+      addEventListener('pointercancel',onCancel);addEventListener('blur',stopDrag);
     });
-    b.addEventListener('pointermove',e=>{
-      if(!drag||drag.b!==b)return;
-      if(!drag.ghost){
-        if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<8)return;
-        drag.ghost=el('div','sdk-ghost',String(d));document.body.appendChild(drag.ghost);
-      }
-      drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
-      const i=cellAt(e.clientX,e.clientY);clearDrop();
-      if(i>=0&&!vals[i])cells[i].classList.add('drop');
-    });
-    const end=(e,drop)=>{
-      if(!drag||drag.b!==b)return;
-      const g=drag.ghost;drag=null;clearDrop();
-      if(!g)return;                       // sürüklenmedi: normal tıklama devam eder
-      g.remove();b._dragged=true;setTimeout(()=>{b._dragged=false;},0);
-      const i=drop?cellAt(e.clientX,e.clientY):-1;
-      if(i>=0&&!vals[i]){sel=i;paint();place(d);}
-    };
-    b.addEventListener('pointerup',e=>end(e,true));
-    b.addEventListener('pointercancel',e=>end(e,false));
     pad.appendChild(b);padBtns.push(b);
   }
   wrap.append(grid,pad);box.appendChild(wrap);
@@ -1286,8 +1298,11 @@ const FREEZE_MS=1500;
 function duelPuzzle(k){
   if(!DU.puzzles[k]){
     const type=DU.seq[k%DU.seq.length],diff=Math.min(2,Math.floor(k/2));
-    let p=null;for(let i=0;i<5&&!p;i++)p=TYPES[type].make(diff);
-    DU.puzzles[k]={type,diff,p};
+    /* k. sırada iki oyuncu aynı tür ve zorlukta ama FARKLI bulmaca alır (kopya çekilemesin) */
+    const make=()=>{let p=null;for(let i=0;i<5&&!p;i++)p=TYPES[type].make(diff);return p;};
+    const a=make();let b=make();
+    for(let i=0;i<10&&JSON.stringify(a)===JSON.stringify(b);i++)b=make();
+    DU.puzzles[k]={type,diff,p:[a,b]};
   }
   return DU.puzzles[k];
 }
@@ -1304,7 +1319,7 @@ function duelLoad(pl){
   if(T.tools){const [f,x]=tools.children;f.textContent=T.tools[0];x.textContent=T.tools[1];duelTool(pl,'fill');}
   const box=pl.el.querySelector('.dp-board');box.innerHTML='';
   const bc=pl.el.querySelector('.board-card');bc.classList.remove('enter');void bc.offsetWidth;bc.classList.add('enter');
-  pl.api=T.render(box,Q.p,pl.ctx);
+  pl.api=T.render(box,Q.p[pl.i],pl.ctx);
 }
 function duelTool(pl,t){pl.tool=t;const [f,x]=pl.el.querySelector('.tools').children;f.classList.toggle('on',t==='fill');x.classList.toggle('on',t==='x');}
 function duelPlayer(i){
