@@ -269,9 +269,12 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
 
 /* tablet / bilgisayar modu: geniş yerleşim, fare ve klavye */
 .desk .wrap{max-width:1060px;padding-top:20px}
-.desk .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.desk .g-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,1fr);gap:22px;align-items:start}
-.desk .g-main .board-card{position:sticky;top:14px}
+/* iki sütun yalnızca geniş ekranda; dar pencerede tek sütun (tahta taşmasın) */
+@media (min-width:820px){
+  .desk .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}  
+  .desk .g-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,1fr);gap:22px;align-items:start}  
+  .desk .g-main .board-card{position:sticky;top:14px}  
+}
 .desk .g-side{display:flex;flex-direction:column}
 .desk .keyhint{display:block;margin-top:12px;color:var(--muted);font-size:13px;font-weight:700;line-height:1.9;background:#00000026;border-radius:14px;padding:10px 12px}
 .desk .sdk{--s:clamp(70px,8vw,108px)}
@@ -286,6 +289,7 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
 .kpis b{font-size:19px}
 @media (max-width:380px){.kpis b{font-size:16px}}
 
+body.embedded .hud,body.embedded .duel-top{padding-right:78px}
 /* ---------- düello (akıllı tahta: iki panel yan yana) ---------- */
 body.duel-on .wrap{max-width:none;padding:10px 12px 18px}
 .duel-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -311,7 +315,11 @@ body.duel-on .wrap{max-width:none;padding:10px 12px 18px}
 .duel-set{display:grid;gap:10px;text-align:left;margin:10px 0 16px}
 .duel-set input{width:100%;padding:11px 13px;border-radius:12px;border:2px solid var(--glassLine);background:#0006;color:#fff;font:800 16px var(--body);outline:none}
 .duel-set input:focus{border-color:var(--gold)}
-.duel-set .tabs{margin:0}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{flex:1;font-size:30px!important;line-height:1;border:2px solid var(--glassLine);background:#ffffff14;color:var(--ink);border-radius:14px;padding:11px 6px;font:700 17px var(--disp)}
+.stepper button:active{transform:scale(.94)}
+.desk .stepper button:hover{border-color:var(--gold2)}
+.stepper b{min-width:96px;text-align:center;font:700 32px var(--disp);color:var(--gold2)}
 @media (max-width:760px){
   .duel{grid-template-columns:1fr}
   .duel .sdk{--s:clamp(44px,18vw,80px)}
@@ -673,6 +681,8 @@ try{
   }
 }catch(e){console.warn('Firebase başlatılamadı',e);}
 const EMBEDDED=(function(){try{return window.parent!==window;}catch(e){return true;}})();
+/* portal sağ üste kendi kırmızı ✕ düğmesini koyuyor (50px, 20px içeride): üst çubuklar ona yer bıraksın */
+if(EMBEDDED)document.body.classList.add("embedded");
 const SCORE_ROOT='zeka_skor_'+ACTIVE_NODE.replace(/^students_/,'');   // örn. zeka_skor_grade_6
 
 /* ---- öğrenci listesi (portal: Firebase, düğüm içinde satır satır isim) ---- */
@@ -1272,7 +1282,7 @@ function renderSlither(box,P,ctx=SOLO){
    Aynı ekranda iki oyuncu (Mavi / Kırmızı) aynı bulmaca dizisini yan yana çözer.
    Doğru +10 (seri ×5'e kadar), bulmaca bitince +100, yanlış −15 ve 1,5 sn donma (rastgele tıklamayı önler).
    Süre bitince puanı yüksek olan kazanır. İlk 10 tablosuna yazılmaz. */
-const DU={secs:180,names:['Mavi Takım','Kırmızı Takım'],players:[],puzzles:[],seq:[],t0:0,timer:null,over:true};
+const DU={secs:60,names:['Mavi Takım','Kırmızı Takım'],players:[],puzzles:[],seq:[],t0:0,timer:null,over:true};
 const FREEZE_MS=1500;
 function duelPuzzle(k){
   if(!DU.puzzles[k]){
@@ -1328,19 +1338,19 @@ function duelPlayer(i){
 }
 function duelSetup(){
   const card=$('#modalCard');card.className='modal-card';
-  const tBtn=s=>'<button type="button" data-s="'+s+'" class="'+(DU.secs===s?'on':'')+'">'+(s/60)+' dakika</button>';
   card.innerHTML='<div class="m-emoji">⚔️</div><h2>Düello</h2>'+
     '<div class="mini">İki oyuncu aynı bulmacaları yan yana çözer. Yanlış hamle <b>1,5 sn</b> dondurur. Süre bitince puanı yüksek olan kazanır.</div>'+
     '<div class="duel-set">'+
       '<label class="lbl">🔵 Mavi oyuncu</label><input id="dN0" maxlength="20" value="'+esc(DU.names[0])+'">'+
       '<label class="lbl">🔴 Kırmızı oyuncu</label><input id="dN1" maxlength="20" value="'+esc(DU.names[1])+'">'+
       '<label class="lbl">⏱ Süre · Oyun: <b style="color:var(--gold)">'+MODE_NAMES[S.mode]+'</b> (başlangıçta seçili mod)</label>'+
-      '<div class="tabs" id="dTime">'+[120,180,300].map(tBtn).join('')+'</div>'+
+      '<div class="stepper"><button type="button" id="dMinus" aria-label="30 saniye azalt">−</button><b id="dSecs">'+fmt(DU.secs)+'</b><button type="button" id="dPlus" aria-label="30 saniye artır">+</button></div>'+
     '</div>'+
     '<button class="cta" id="dGo" type="button">⚔️ Düelloyu Başlat</button>'+
     '<button class="ghostbtn" id="dCancel" type="button">Vazgeç</button>';
   $('#modal').classList.add('show');
-  card.querySelectorAll('#dTime button').forEach(b=>b.onclick=()=>{DU.secs=+b.dataset.s;card.querySelectorAll('#dTime button').forEach(x=>x.classList.toggle('on',x===b));});
+  const step=d=>{DU.secs=Math.min(600,Math.max(30,DU.secs+d));$('#dSecs').textContent=fmt(DU.secs);};   // 30 sn – 10 dk
+  $('#dMinus').onclick=()=>step(-30);$('#dPlus').onclick=()=>step(30);
   $('#dCancel').onclick=()=>$('#modal').classList.remove('show');
   $('#dGo').onclick=()=>{
     DU.names=[0,1].map(i=>$('#dN'+i).value.trim()||(i?'Kırmızı Takım':'Mavi Takım'));
