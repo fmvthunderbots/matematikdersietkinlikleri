@@ -610,6 +610,9 @@ function applyDevice(d,save){
    yüklendiği sınıfın merkezi öğrenci listesiyle (students_grade_5 / _6 / _7) otomatik değiştirir.
    Satırın biçimini (const + tek tırnak + noktalı virgül) bozma. */
 const STUDENTS_NODE = 'students_grade_6';
+/* Portal oyunu url ile açtığında yukarıdaki satır değişmez; aynı dosya her sınıfta kullanılsın diye
+   sınıf adresten okunur: zeka_arenasi.html?sinif=5 → students_grade_5 (yoksa STUDENTS_NODE) */
+const ACTIVE_NODE=(()=>{try{const g=new URLSearchParams(location.search).get('sinif');if(/^[567]$/.test(g))return 'students_grade_'+g;}catch(e){}return STUDENTS_NODE;})();
 const FIREBASE_CONFIG={
   apiKey:"AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
   authDomain:"zihindencarpma.firebaseapp.com",
@@ -627,7 +630,7 @@ try{
   }
 }catch(e){console.warn('Firebase başlatılamadı',e);}
 const EMBEDDED=(function(){try{return window.parent!==window;}catch(e){return true;}})();
-const SCORE_ROOT='zeka_skor_'+STUDENTS_NODE.replace(/^students_/,'');   // örn. zeka_skor_grade_6
+const SCORE_ROOT='zeka_skor_'+ACTIVE_NODE.replace(/^students_/,'');   // örn. zeka_skor_grade_6
 
 /* ---- öğrenci listesi (portal: Firebase, düğüm içinde satır satır isim) ---- */
 let ROSTER=[],rosterReady=false;
@@ -636,7 +639,7 @@ const safeKey=s=>s.toLocaleLowerCase('tr').trim().replace(/[.$#\[\]\/\s]+/g,'_')
 const stuKey=s=>safeKey(s.ad);
 function startRosterListener(){
   if(!DB){rosterReady=true;renderWho();return;}
-  DB.ref(STUDENTS_NODE).on('value',snap=>{
+  DB.ref(ACTIVE_NODE).on('value',snap=>{
     const raw=snap.val();
     ROSTER=(raw?String(raw).split('\n'):[]).map(s=>s.trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b,'tr'));
     rosterReady=true;

@@ -154,7 +154,7 @@ const SISTEM_OYUNLARI = [
         title: "Zeka Oyunları",
         grade: "5",
         image: "./zeka_oyunlari.jpg",
-        url: ".//zeka_arenasi.html"
+        url: ".//zeka_arenasi.html?sinif=5"
     },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
