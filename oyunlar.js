@@ -156,6 +156,13 @@ const SISTEM_OYUNLARI = [
         image: "./zeka_oyunlari.jpg",
         url: ".//zeka_arenasi.html?sinif=5"
     },
+    {
+        id: "oyun-23",
+        title: "Zeka Oyunları",
+        grade: "7",
+        image: "./zeka_oyunlari.jpg",
+        url: ".//zeka_arenasi.html?sinif=7"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,

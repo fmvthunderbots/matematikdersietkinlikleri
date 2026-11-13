@@ -285,6 +285,38 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
 .kpis{grid-template-columns:repeat(4,1fr)}
 .kpis b{font-size:19px}
 @media (max-width:380px){.kpis b{font-size:16px}}
+
+/* ---------- düello (akıllı tahta: iki panel yan yana) ---------- */
+body.duel-on .wrap{max-width:none;padding:10px 12px 18px}
+.duel-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.duel-clock{font:700 34px var(--disp);background:#0006;border:2px solid var(--glassLine);border-radius:18px;padding:2px 24px;min-width:130px;text-align:center}
+.duel-clock.low{color:#ff8fa6;border-color:var(--red);animation:bump .9s infinite}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.dp{position:relative;border-radius:24px;padding:12px;border:3px solid;min-width:0}
+.dp.blue{border-color:#3b82f6;background:#3b82f61f}
+.dp.red{border-color:#ef4444;background:#ef44441f}
+.dp-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dp-name{font:600 22px var(--disp);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp.blue .dp-name{color:#93c5fd}.dp.red .dp-name{color:#fca5a5}
+.dp-score{font:700 32px var(--disp);line-height:1}
+.dp-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;font-weight:800;font-size:13px;color:var(--muted)}
+.dp .tools{margin-top:8px}
+.dp .board-card{margin-top:10px;padding:12px;border-radius:22px;transition:filter .2s}
+.dp.frozen .board-card{filter:grayscale(.8) brightness(.8);pointer-events:none}
+.dp-freeze{position:absolute;inset:0;display:none;place-items:center;font:700 26px var(--disp);color:#fff;text-shadow:0 2px 14px #000;pointer-events:none;z-index:5}
+.dp.frozen .dp-freeze{display:grid}
+.duel .sdk{--s:clamp(46px,min(8.5vw,10.5vh),96px);gap:12px}
+.duel .nono{--cs:clamp(32px,min(5.4vw,7.6vh),62px)}
+.duel .sl{max-width:min(100%,58vh)}
+.duel-set{display:grid;gap:10px;text-align:left;margin:10px 0 16px}
+.duel-set input{width:100%;padding:11px 13px;border-radius:12px;border:2px solid var(--glassLine);background:#0006;color:#fff;font:800 16px var(--body);outline:none}
+.duel-set input:focus{border-color:var(--gold)}
+.duel-set .tabs{margin:0}
+@media (max-width:760px){
+  .duel{grid-template-columns:1fr}
+  .duel .sdk{--s:clamp(44px,18vw,80px)}
+  .duel .nono{--cs:clamp(30px,10.5vw,56px)}
+}
 </style>
 </head>
 <body>
@@ -315,6 +347,7 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
             <button class="mode" data-m="nono"><i>🖼️</i><b>Karalamaca</b><small>Kareleri boya</small></button>
           </div>
           <button id="btnStart" class="cta" disabled>▶ Oyuna Başla</button>
+          <button id="btnDuel" class="ghostbtn" type="button">⚔️ Düello Modu</button>
           <div class="chips">
             <div class="chip">✅ Doğru hamle <b>+10</b>, seri yaptıkça çarpan <b>×5</b>'e kadar</div>
             <div class="chip">❤️ Her seviyede <b>hakların</b> var: Çitte <b>4</b>, Sudoku ve Karalamacada <b>3</b>. Yanlış hamle <b>−15</b> puan ve 1 hak götürür; haklar biterse seviye geçilmez</div>
@@ -387,6 +420,16 @@ kbd{background:#ffffff1f;border:1px solid var(--glassLine);border-radius:6px;pad
       </div>
       <div class="card"><h3>🏆 İlk 10</h3><div id="lbRes"></div></div>
     </div>
+  </section>
+
+  <!-- DÜELLO: iki oyuncu aynı bulmacaları yan yana çözer -->
+  <section id="sDuel" class="screen">
+    <div class="duel-top">
+      <button id="btnDuelExit" class="ghost" title="Düellodan çık">✕</button>
+      <div class="duel-clock" id="duelClock">0:00</div>
+      <button id="btnSound2" class="ghost" title="Ses">🔊</button>
+    </div>
+    <div class="duel" id="duelBox"></div>
   </section>
 </div>
 
@@ -720,7 +763,7 @@ async function bPut(game,entry){
 async function renderBoard(sel,game,hlKey){
   const box=$(sel);
   box.innerHTML='<div class="tabs">'+GAMES.map(g=>'<button data-g="'+g[0]+'" class="'+(g[0]===game?'on':'')+'">'+g[1]+'</button>').join('')+'</div><ol class="lb"><li class="empty">Yükleniyor…</li></ol>';
-  box.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>renderBoard(sel,b.dataset.g,hlKey));
+  box.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>sel==='#lbStart'?selectMode(b.dataset.g):renderBoard(sel,b.dataset.g,hlKey));
   const a=(await bGet(game)).slice(0,10);
   const ol=box.querySelector('.lb');
   if(!ol)return;
@@ -808,10 +851,13 @@ function bad(node){
   popup('−15',node,'bad');sfx.bad();shake();hud();bump('#score');bump('#hearts');
   if(S.lives<=0)failLevel();
 }
+/* render fonksiyonlarının bağlamı: tekli oyunda global S; düelloda her oyuncunun kendi bağlamı var */
+const SOLO={get done(){return S.done;},get tool(){return S.tool;},keys:true,
+  good:n=>good(n),bad:n=>bad(n),small:n=>small(n),solved:()=>solved()};
 function tick(){$('#timer').textContent=fmt(Math.floor((Date.now()-S.t0)/1000));}
 
 /* ---- ekran geçişleri ---- */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));window.scrollTo(0,0);}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.body.classList.toggle('duel-on',id==='sDuel');window.scrollTo(0,0);}
 function buildPlan(mode){
   const diffs=Array.from({length:LEVELS},(_,i)=>Math.floor(i*3/LEVELS)),types=['cit','sudoku','nono'];
   let seq=[];
@@ -933,6 +979,7 @@ async function finishGame(){
   /* sonuç hemen görünsün; tablo kayıt bitince (en çok ~4 sn) gelsin */
   $('#lbRes').innerHTML='<ol class="lb"><li class="empty">Kaydediliyor…</li></ol>';
   const sv=$('#rSave');sv.className='savemsg';sv.textContent='Puanın kaydediliyor…';
+  if(entry.score<=0){sv.textContent='Puanın 0 olduğu için tabloya kayıt yapılmadı.';renderBoard('#lbRes',S.mode,entry.key);return;}
   const res=await bPut(S.mode,entry);
   if(res.saved){sv.classList.add('ok');sv.textContent='✅ '+entry.score.toLocaleString('tr-TR')+' puanın İlk 10 tablosuna kaydedildi!';}
   else if(res.offline){sv.classList.add('warn');sv.textContent='⚠️ İnternete ulaşılamadı, puanın yalnızca bu cihaza kaydedildi.';}
@@ -1002,7 +1049,7 @@ function confetti(){
 })();
 
 /* ======================= SUDOKU ======================= */
-function renderSudoku(box,P){
+function renderSudoku(box,P,ctx=SOLO){
   const vals=P.puz.slice();let sel=-1;
   const wrap=el('div','sdk'),grid=el('div','sdk-grid'),pad=el('div','sdk-pad');
   const cells=[],padBtns=[];
@@ -1023,7 +1070,7 @@ function renderSudoku(box,P){
     const b=el('button','sdk-n');b.type='button';
     b.addEventListener('click',()=>{if(b._dragged){b._dragged=false;return;}place(d);});
     b.addEventListener('pointerdown',e=>{
-      if(S.done||(e.pointerType==='mouse'&&e.button!==0))return;
+      if(ctx.done||(e.pointerType==='mouse'&&e.button!==0))return;
       drag={d,b,x:e.clientX,y:e.clientY,ghost:null};try{b.setPointerCapture(e.pointerId);}catch(_){}
     });
     b.addEventListener('pointermove',e=>{
@@ -1066,21 +1113,21 @@ function renderSudoku(box,P){
     }
   }
   function place(d){
-    if(S.done)return;
+    if(ctx.done)return;
     if(sel<0){toast('Önce bir kareye dokun');return;}
     if(vals[sel])return;
     const idx=sel,c=cells[idx];
     if(P.sol[idx]===d){
       vals[idx]=d;c.textContent=d;c.classList.add('mine','cpop');
-      good(c);paint();
-      if(vals.every(Boolean))solved();
+      ctx.good(c);paint();
+      if(vals.every(Boolean))ctx.solved();
     }else{
-      c.textContent=d;c.classList.add('err');bad(c);
+      c.textContent=d;c.classList.add('err');ctx.bad(c);
       clearTimeout(c._t);c._t=setTimeout(()=>{c.classList.remove('err');if(!vals[idx])c.textContent='';},550);
     }
   }
-  keyH=e=>{
-    if(S.done)return;
+  if(ctx.keys)keyH=e=>{
+    if(ctx.done)return;
     if(e.key>='1'&&e.key<='4'){place(+e.key);return;}
     const mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-4,ArrowDown:4};
     if(mv[e.key]!=null){
@@ -1095,7 +1142,7 @@ function renderSudoku(box,P){
       paint();
     }
   };
-  document.addEventListener('keydown',keyH);
+  if(ctx.keys)document.addEventListener('keydown',keyH);
   paint();
   return {hint(){
     const empt=vals.map((v,i)=>v?-1:i).filter(i=>i>=0);
@@ -1103,13 +1150,13 @@ function renderSudoku(box,P){
     const i=(sel>=0&&!vals[sel])?sel:empt[rnd(empt.length)];
     vals[i]=P.sol[i];cells[i].textContent=vals[i];cells[i].classList.add('hinted','cpop');
     sel=i;paint();sfx.hint();
-    if(vals.every(Boolean))solved();
+    if(vals.every(Boolean))ctx.solved();
     return true;
   }};
 }
 
 /* ======================= KARALAMACA ======================= */
-function renderNono(box,P){
+function renderNono(box,P,ctx=SOLO){
   const n=P.n,st=Array(n*n).fill(0);
   const wrap=el('div','nono');wrap.style.setProperty('--n',n);
   const grid=el('div','nn-grid');grid.style.gridTemplateColumns='auto repeat('+n+',var(--cs))';
@@ -1120,7 +1167,7 @@ function renderNono(box,P){
     const d=el('div','nn-clue row',P.rows[r].map(x=>'<span>'+x+'</span>').join(''));rowEls.push(d);grid.appendChild(d);
     for(let c=0;c<n;c++){
       const i=r*n+c,b=el('button','nn-c');b.type='button';
-      b.addEventListener('click',()=>act(i,S.tool));
+      b.addEventListener('click',()=>act(i,ctx.tool));
       b.addEventListener('contextmenu',e=>{e.preventDefault();act(i,'x');});
       grid.appendChild(b);cells.push(b);
     }
@@ -1134,17 +1181,17 @@ function renderNono(box,P){
   function allDone(){return P.grid.every((v,i)=>!v||st[i]===1);}
   function finish(){
     cells.forEach((b,i)=>{if(st[i]===0){st[i]=2;b.classList.add('x','xa');}});
-    refresh();solved();
+    refresh();ctx.solved();
   }
   function act(i,tool){
-    if(S.done||st[i]!==0)return;
+    if(ctx.done||st[i]!==0)return;
     const b=cells[i],isFill=P.grid[i]===1;
     if(tool==='fill'){
-      if(isFill){st[i]=1;b.classList.add('on');good(b);}
-      else{st[i]=2;b.classList.add('x','xw');bad(b);}
+      if(isFill){st[i]=1;b.classList.add('on');ctx.good(b);}
+      else{st[i]=2;b.classList.add('x','xw');ctx.bad(b);}
     }else{
-      if(!isFill){st[i]=2;b.classList.add('x');small(b);}
-      else{st[i]=1;b.classList.add('on','rev');bad(b);}
+      if(!isFill){st[i]=2;b.classList.add('x');ctx.small(b);}
+      else{st[i]=1;b.classList.add('on','rev');ctx.bad(b);}
     }
     refresh();
     if(allDone())finish();
@@ -1162,7 +1209,7 @@ function renderNono(box,P){
 }
 
 /* ======================= ÇİT ======================= */
-function renderSlither(box,P){
+function renderSlither(box,P,ctx=SOLO){
   const D=slData(P.n),n=P.n,N=n+1,G=90,pad=42,W=n*G+pad*2;
   const root=svgEl('svg',{viewBox:'0 0 '+W+' '+W,class:'sl'});
   svgEl('rect',{x:6,y:6,width:W-12,height:W-12,rx:32,class:'sl-bg'},root);
@@ -1183,7 +1230,7 @@ function renderSlither(box,P){
     svgEl('line',{x1:mx-8,y1:my-8,x2:mx+8,y2:my+8},x);
     svgEl('line',{x1:mx-8,y1:my+8,x2:mx+8,y2:my-8},x);
     const h=svgEl('line',{x1,y1,x2,y2,class:'sl-hit'},g);
-    h.addEventListener('click',()=>act(id,S.tool));
+    h.addEventListener('click',()=>act(id,ctx.tool));
     h.addEventListener('contextmenu',ev=>{ev.preventDefault();act(id,'x');});
     groups.push(g);vis.push(v);
   });
@@ -1197,17 +1244,17 @@ function renderSlither(box,P){
     });
   }
   function act(id,tool){
-    if(S.done||es[id])return;
+    if(ctx.done||es[id])return;
     const g=groups[id],inSol=sol.has(id),node=vis[id];
     if(tool==='fill'){
-      if(inSol){es[id]=1;g.classList.add('on');good(node);}
-      else{es[id]=2;g.classList.add('x','xw');bad(node);}
+      if(inSol){es[id]=1;g.classList.add('on');ctx.good(node);}
+      else{es[id]=2;g.classList.add('x','xw');ctx.bad(node);}
     }else{
-      if(!inSol){es[id]=2;g.classList.add('x');small(node);}
-      else{es[id]=1;g.classList.add('on','rev');bad(node);}
+      if(!inSol){es[id]=2;g.classList.add('x');ctx.small(node);}
+      else{es[id]=1;g.classList.add('on','rev');ctx.bad(node);}
     }
     refresh();
-    if(P.sol.every(e=>es[e]===1)){root.classList.add('win');solved();}
+    if(P.sol.every(e=>es[e]===1)){root.classList.add('win');ctx.solved();}
   }
   refresh();
   return {hint(){
@@ -1216,16 +1263,137 @@ function renderSlither(box,P){
     const id=left[rnd(left.length)];
     es[id]=1;groups[id].classList.remove('x','xw');groups[id].classList.add('on','hint');
     sfx.hint();refresh();
-    if(P.sol.every(e=>es[e]===1)){root.classList.add('win');solved();}
+    if(P.sol.every(e=>es[e]===1)){root.classList.add('win');ctx.solved();}
     return true;
   }};
 }
 
+/* ======================= DÜELLO =======================
+   Aynı ekranda iki oyuncu (Mavi / Kırmızı) aynı bulmaca dizisini yan yana çözer.
+   Doğru +10 (seri ×5'e kadar), bulmaca bitince +100, yanlış −15 ve 1,5 sn donma (rastgele tıklamayı önler).
+   Süre bitince puanı yüksek olan kazanır. İlk 10 tablosuna yazılmaz. */
+const DU={secs:180,names:['Mavi Takım','Kırmızı Takım'],players:[],puzzles:[],seq:[],t0:0,timer:null,over:true};
+const FREEZE_MS=1500;
+function duelPuzzle(k){
+  if(!DU.puzzles[k]){
+    const type=DU.seq[k%DU.seq.length],diff=Math.min(2,Math.floor(k/2));
+    let p=null;for(let i=0;i<5&&!p;i++)p=TYPES[type].make(diff);
+    DU.puzzles[k]={type,diff,p};
+  }
+  return DU.puzzles[k];
+}
+function duelDraw(pl){
+  pl.el.querySelector('.dp-score').textContent=pl.score.toLocaleString('tr-TR');
+  pl.el.querySelector('.dp-solved').textContent='✅ '+pl.solved+' bulmaca';
+  const m=Math.min(5,1+Math.floor(Math.max(0,pl.streak-1)/5));
+  pl.el.querySelector('.dp-streak').textContent=pl.streak?'🔥 seri ×'+m:'';
+}
+function duelLoad(pl){
+  const Q=duelPuzzle(pl.k),T=TYPES[Q.type];
+  pl.el.querySelector('.dp-tag').innerHTML=T.icon+' '+T.name+' · '+DIFF_NAMES[Q.diff];
+  const tools=pl.el.querySelector('.tools');tools.style.display=T.tools?'flex':'none';
+  if(T.tools){const [f,x]=tools.children;f.textContent=T.tools[0];x.textContent=T.tools[1];duelTool(pl,'fill');}
+  const box=pl.el.querySelector('.dp-board');box.innerHTML='';
+  const bc=pl.el.querySelector('.board-card');bc.classList.remove('enter');void bc.offsetWidth;bc.classList.add('enter');
+  pl.api=T.render(box,Q.p,pl.ctx);
+}
+function duelTool(pl,t){pl.tool=t;const [f,x]=pl.el.querySelector('.tools').children;f.classList.toggle('on',t==='fill');x.classList.toggle('on',t==='x');}
+function duelPlayer(i){
+  const pl={i,name:DU.names[i],score:0,streak:0,solved:0,k:0,tool:'fill',locked:false,busy:false,api:null};
+  pl.el=el('div','dp '+(i?'red':'blue'),
+    '<div class="dp-head"><div class="dp-name">'+(i?'🔴 ':'🔵 ')+esc(pl.name)+'</div><div class="dp-score">0</div></div>'+
+    '<div class="dp-meta"><span class="dp-tag"></span><span class="dp-streak"></span><span class="dp-solved"></span></div>'+
+    '<div class="tools"><button type="button">■ Boya</button><button type="button">✕ Boş</button></div>'+
+    '<div class="board-card"><div class="dp-board"></div></div>'+
+    '<div class="dp-freeze">❄️ Yanlış! Bekle…</div>');
+  const [f,x]=pl.el.querySelector('.tools').children;f.onclick=()=>duelTool(pl,'fill');x.onclick=()=>duelTool(pl,'x');
+  pl.ctx={
+    get done(){return DU.over||pl.locked||pl.busy;},get tool(){return pl.tool;},keys:false,
+    good(n){pl.streak++;const m=Math.min(5,1+Math.floor((pl.streak-1)/5)),pts=10*m;pl.score+=pts;popup('+'+pts,n,'good');sfx.good(m);duelDraw(pl);},
+    small(n){pl.score+=2;popup('+2',n,'small');sfx.small();duelDraw(pl);},
+    bad(n){
+      pl.streak=0;pl.score=Math.max(0,pl.score-15);popup('−15',n,'bad');sfx.bad();duelDraw(pl);
+      const bc=pl.el.querySelector('.board-card');bc.classList.remove('shake');void bc.offsetWidth;bc.classList.add('shake');
+      pl.locked=true;pl.el.classList.add('frozen');
+      setTimeout(()=>{pl.locked=false;pl.el.classList.remove('frozen');},FREEZE_MS);
+    },
+    solved(){
+      if(pl.busy)return;
+      pl.busy=true;pl.solved++;pl.score+=100;
+      popup('+100 🧩',pl.el.querySelector('.board-card'),'good');sfx.win();duelDraw(pl);
+      setTimeout(()=>{pl.busy=false;if(DU.over)return;pl.k++;duelLoad(pl);},900);
+    }
+  };
+  return pl;
+}
+function duelSetup(){
+  const card=$('#modalCard');card.className='modal-card';
+  const tBtn=s=>'<button type="button" data-s="'+s+'" class="'+(DU.secs===s?'on':'')+'">'+(s/60)+' dakika</button>';
+  card.innerHTML='<div class="m-emoji">⚔️</div><h2>Düello</h2>'+
+    '<div class="mini">İki oyuncu aynı bulmacaları yan yana çözer. Yanlış hamle <b>1,5 sn</b> dondurur. Süre bitince puanı yüksek olan kazanır.</div>'+
+    '<div class="duel-set">'+
+      '<label class="lbl">🔵 Mavi oyuncu</label><input id="dN0" maxlength="20" value="'+esc(DU.names[0])+'">'+
+      '<label class="lbl">🔴 Kırmızı oyuncu</label><input id="dN1" maxlength="20" value="'+esc(DU.names[1])+'">'+
+      '<label class="lbl">⏱ Süre · Oyun: <b style="color:var(--gold)">'+MODE_NAMES[S.mode]+'</b> (başlangıçta seçili mod)</label>'+
+      '<div class="tabs" id="dTime">'+[120,180,300].map(tBtn).join('')+'</div>'+
+    '</div>'+
+    '<button class="cta" id="dGo" type="button">⚔️ Düelloyu Başlat</button>'+
+    '<button class="ghostbtn" id="dCancel" type="button">Vazgeç</button>';
+  $('#modal').classList.add('show');
+  card.querySelectorAll('#dTime button').forEach(b=>b.onclick=()=>{DU.secs=+b.dataset.s;card.querySelectorAll('#dTime button').forEach(x=>x.classList.toggle('on',x===b));});
+  $('#dCancel').onclick=()=>$('#modal').classList.remove('show');
+  $('#dGo').onclick=()=>{
+    DU.names=[0,1].map(i=>$('#dN'+i).value.trim()||(i?'Kırmızı Takım':'Mavi Takım'));
+    $('#modal').classList.remove('show');startDuel();
+  };
+}
+function startDuel(){
+  ac();clearInterval(DU.timer);
+  DU.seq=buildPlan(S.mode).map(x=>x.type);DU.puzzles=[];DU.over=false;
+  const box=$('#duelBox');box.innerHTML='';
+  DU.players=[duelPlayer(0),duelPlayer(1)];
+  DU.players.forEach(pl=>{box.appendChild(pl.el);duelDraw(pl);});
+  show('sDuel');
+  DU.players.forEach(duelLoad);
+  DU.t0=Date.now();DU.timer=setInterval(duelTick,250);duelTick();
+}
+function duelTick(){
+  const left=Math.max(0,DU.secs-Math.floor((Date.now()-DU.t0)/1000));
+  const c=$('#duelClock');c.textContent=fmt(left);c.classList.toggle('low',left<=10);
+  if(left<=0)endDuel();
+}
+function endDuel(){
+  if(DU.over)return;
+  DU.over=true;clearInterval(DU.timer);
+  const [a,b]=DU.players,tie=a.score===b.score,w=a.score>b.score?a:b;
+  const row=pl=>'<div'+(!tie&&pl===w?' class="tot"':'')+'><span>'+(pl.i?'🔴 ':'🔵 ')+esc(pl.name)+' · '+pl.solved+' bulmaca</span><b>'+pl.score.toLocaleString('tr-TR')+'</b></div>';
+  const card=$('#modalCard');card.className='modal-card'+(tie?'':' cheer-top');
+  card.innerHTML='<div class="cheer-big">'+(tie?'🤝':'🏆')+'</div>'+
+    '<h2>'+(tie?'Berabere!':esc(w.name)+' kazandı!')+'</h2>'+
+    '<div class="rows" style="margin-top:12px">'+row(a)+row(b)+'</div>'+
+    '<button class="cta" id="dAgain" type="button">↻ Rövanş</button>'+
+    '<button class="ghostbtn" id="dHome" type="button">Ana Menü</button>';
+  $('#modal').classList.add('show');sfx.win();confetti();
+  $('#dAgain').onclick=()=>{$('#modal').classList.remove('show');card.className='modal-card';startDuel();};
+  $('#dHome').onclick=()=>{$('#modal').classList.remove('show');card.className='modal-card';show('sStart');refreshStartBoard();};
+}
+let duelExitArmed=false;
+$('#btnDuel').onclick=duelSetup;
+$('#btnSound2').onclick=()=>{muted=!muted;$('#btnSound').textContent=$('#btnSound2').textContent=muted?'🔇':'🔊';};
+$('#btnDuelExit').onclick=()=>{
+  const b=$('#btnDuelExit');
+  if(!duelExitArmed){duelExitArmed=true;b.textContent='Çık?';setTimeout(()=>{duelExitArmed=false;b.textContent='✕';},2500);return;}
+  duelExitArmed=false;b.textContent='✕';
+  DU.over=true;clearInterval(DU.timer);show('sStart');refreshStartBoard();
+};
+
 /* ---- olay bağlama ---- */
-document.querySelectorAll('#modes .mode').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('#modes .mode').forEach(x=>x.classList.toggle('on',x===b));
-  S.mode=b.dataset.m;refreshStartBoard();
-}));
+/* oyun modu ↔ başlangıçtaki İlk 10 sekmesi birlikte değişir */
+function selectMode(m){
+  document.querySelectorAll('#modes .mode').forEach(x=>x.classList.toggle('on',x.dataset.m===m));
+  S.mode=m;refreshStartBoard();
+}
+document.querySelectorAll('#modes .mode').forEach(b=>b.addEventListener('click',()=>selectMode(b.dataset.m)));
 document.querySelectorAll('#devsw button').forEach(b=>b.addEventListener('click',()=>applyDevice(b.dataset.d,true)));
 $('#btnStart').onclick=startGame;
 $('#toolFill').onclick=()=>setTool('fill');
