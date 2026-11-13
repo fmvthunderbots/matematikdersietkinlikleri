@@ -315,11 +315,10 @@ body.duel-on .wrap{max-width:none;padding:10px 12px 18px}
 .duel-set{display:grid;gap:10px;text-align:left;margin:10px 0 16px}
 .duel-set input{width:100%;padding:11px 13px;border-radius:12px;border:2px solid var(--glassLine);background:#0006;color:#fff;font:800 16px var(--body);outline:none}
 .duel-set input:focus{border-color:var(--gold)}
-.stepper{display:flex;align-items:center;gap:10px}
-.stepper button{flex:1;font-size:30px!important;line-height:1;border:2px solid var(--glassLine);background:#ffffff14;color:var(--ink);border-radius:14px;padding:11px 6px;font:700 17px var(--disp)}
-.stepper button:active{transform:scale(.94)}
-.desk .stepper button:hover{border-color:var(--gold2)}
-.stepper b{min-width:96px;text-align:center;font:700 32px var(--disp);color:var(--gold2)}
+.dtime{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dtime button{border:2px solid var(--glassLine);background:#ffffff14;color:var(--ink);border-radius:14px;padding:12px 6px;font:700 19px var(--disp)}
+.dtime button.on{background:var(--gold);color:#2a1a00;border-color:var(--gold)}
+.desk .dtime button:hover{border-color:var(--gold2)}
 @media (max-width:760px){
   .duel{grid-template-columns:1fr}
   .duel .sdk{--s:clamp(44px,18vw,80px)}
@@ -1344,13 +1343,12 @@ function duelSetup(){
       '<label class="lbl">🔵 Mavi oyuncu</label><input id="dN0" maxlength="20" value="'+esc(DU.names[0])+'">'+
       '<label class="lbl">🔴 Kırmızı oyuncu</label><input id="dN1" maxlength="20" value="'+esc(DU.names[1])+'">'+
       '<label class="lbl">⏱ Süre · Oyun: <b style="color:var(--gold)">'+MODE_NAMES[S.mode]+'</b> (başlangıçta seçili mod)</label>'+
-      '<div class="stepper"><button type="button" id="dMinus" aria-label="30 saniye azalt">−</button><b id="dSecs">'+fmt(DU.secs)+'</b><button type="button" id="dPlus" aria-label="30 saniye artır">+</button></div>'+
+      '<div class="dtime" id="dTime">'+[60,90,120].map(t=>'<button type="button" data-s="'+t+'" class="'+(DU.secs===t?'on':'')+'">'+t+' sn</button>').join('')+'</div>'+
     '</div>'+
     '<button class="cta" id="dGo" type="button">⚔️ Düelloyu Başlat</button>'+
     '<button class="ghostbtn" id="dCancel" type="button">Vazgeç</button>';
   $('#modal').classList.add('show');
-  const step=d=>{DU.secs=Math.min(600,Math.max(30,DU.secs+d));$('#dSecs').textContent=fmt(DU.secs);};   // 30 sn – 10 dk
-  $('#dMinus').onclick=()=>step(-30);$('#dPlus').onclick=()=>step(30);
+  card.querySelectorAll('#dTime button').forEach(b=>b.onclick=()=>{DU.secs=+b.dataset.s;card.querySelectorAll('#dTime button').forEach(x=>x.classList.toggle('on',x===b));});
   $('#dCancel').onclick=()=>$('#modal').classList.remove('show');
   $('#dGo').onclick=()=>{
     DU.names=[0,1].map(i=>$('#dN'+i).value.trim()||(i?'Kırmızı Takım':'Mavi Takım'));
