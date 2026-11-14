@@ -163,6 +163,13 @@ const SISTEM_OYUNLARI = [
         image: "./zeka_oyunlari.jpg",
         url: ".//zeka_arenasi.html?sinif=7"
     },
+    {
+        id: "oyun-24",
+        title: "Kutuplarda Tam Sayılar",
+        grade: "7",
+        image: "./kutuplarda_tam_sayilar.jpg",
+        url: "./kutuplarda_tam_sayilar.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
