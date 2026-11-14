@@ -352,6 +352,14 @@
       .start-title { white-space: normal; font-size: 26px; }
       .card { padding: 26px 18px; }
     }
+
+    #wind-btn {
+      position: fixed; left: 14px; bottom: 14px; z-index: 300; width: 50px; height: 50px; border-radius: 50%;
+      border: 3px solid #fff; background: rgba(8, 30, 60, 0.75); font-size: 24px; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center;
+    }
+    #wind-btn.off { opacity: .55; }
+    #wind-btn.off::after { content: ''; position: absolute; width: 34px; height: 4px; background: #EF4444; transform: rotate(-45deg); border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -388,6 +396,8 @@
     </div>
   </div>
   <div id="center-line"></div>
+
+  <button id="wind-btn" type="button" title="Fırtına sesi: aç / kapat" onclick="toggleWind()">🌬️</button>
 
   <!-- Oyun Alanı -->
   <div id="game-area"></div>
@@ -1667,6 +1677,59 @@
         });
       } catch (e) {}
     }
+
+    /* ==============================
+       ARKA PLAN KUTUP FIRTINASI SESİ
+       Beyaz gürültü iki filtreden geçer: alçak uğultu + ıslık gibi rüzgâr. Şiddet ve ton birkaç saniyede bir
+       rastgele değişir (rüzgâr hamleleri). Tarayıcı sesi ilk dokunuştan sonra başlatabilir.
+       ============================== */
+    let wind = null;
+    let windOn = (function () { try { return localStorage.getItem('kutuptamsayi_wind') !== 'off'; } catch (e) { return true; } })();
+    function buildWind() {
+      const ctx = getAudioContext();
+      const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5 + w * 0.15; }  // kahverengiye yakın gürültü
+      const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+      const low = ctx.createBiquadFilter(); low.type = 'lowpass'; low.frequency.value = 380;
+      const lowG = ctx.createGain(); lowG.gain.value = 0.55;
+      const howl = ctx.createBiquadFilter(); howl.type = 'bandpass'; howl.frequency.value = 650; howl.Q.value = 6;
+      const howlG = ctx.createGain(); howlG.gain.value = 0.9;
+      src.connect(low); low.connect(lowG); lowG.connect(master);
+      src.connect(howl); howl.connect(howlG); howlG.connect(master);
+      src.start();
+      const gust = () => {                 // rüzgâr hamlesi
+        const t = ctx.currentTime, dur = 1.5 + Math.random() * 3;
+        howl.frequency.setTargetAtTime(380 + Math.random() * 900, t, dur / 2);
+        howlG.gain.setTargetAtTime(0.4 + Math.random() * 1.1, t, dur / 2);
+        lowG.gain.setTargetAtTime(0.35 + Math.random() * 0.5, t, dur / 2);
+      };
+      gust();
+      return { master, timer: setInterval(gust, 2600) };
+    }
+    function applyWind() {
+      const btn = document.getElementById('wind-btn');
+      if (btn) btn.classList.toggle('off', !windOn);
+      if (!windOn && !wind) return;
+      try {
+        if (!wind) wind = buildWind();
+        const ctx = getAudioContext();
+        wind.master.gain.setTargetAtTime(windOn ? 0.13 : 0, ctx.currentTime, 0.8);   // düşük ses: oyunu bastırmasın
+      } catch (e) {}
+    }
+    function toggleWind() {
+      windOn = !windOn;
+      try { localStorage.setItem('kutuptamsayi_wind', windOn ? 'on' : 'off'); } catch (e) {}
+      applyWind();
+    }
+    // ilk dokunuşta/tıklamada başlat (tarayıcı kuralı)
+    document.addEventListener('pointerdown', function first(e) {
+      if (e.target && e.target.id === 'wind-btn') return;   // düğmenin kendisi zaten açıp kapatır
+      document.removeEventListener('pointerdown', first, true);
+      applyWind();
+    }, true);
+    document.getElementById('wind-btn').classList.toggle('off', !windOn);   // ses ilk dokunuşta başlar
 
     /* ==============================
        KONFETİ
