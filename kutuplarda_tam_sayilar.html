@@ -309,13 +309,14 @@
     .g-card .ico { font-size: clamp(16px, 3.4vh, 30px); line-height: 1; }
     .g-team .s { font-size: clamp(24px, 5vh, 40px); }
     .g-teams { flex: none; }
+    @media (orientation: portrait) { .g-grid { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(6, minmax(0, 1fr)); } }
     .g-left { display: flex; align-items: center; gap: 8px; }
     .g-left #wind-btn { position: static; width: 42px; height: 42px; font-size: 20px; flex: none; }
     .g-diffs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
     .g-diffs button { border: 2px solid #BAE6FD; background: #fff; color: #0C4A6E; border-radius: 12px; padding: 9px 4px; font-family: 'Baloo 2'; font-weight: 800; font-size: 17px; cursor: pointer; }
     .g-diffs button.on { background: linear-gradient(180deg, #38BDF8, #0284C7); color: #fff; border-color: #0369A1; box-shadow: 0 4px 12px rgba(2,132,199,0.4); }
     @keyframes gIn { from { opacity: 0; transform: scale(.6) translateY(20px); } }
-    @media (max-width: 700px) { .g-grid { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(6, minmax(0, 1fr)); gap: 6px; } .g-head { flex-wrap: wrap; } .g-btn { padding: 6px 10px; font-size: 14px; } .g-title { font-size: 19px; } .g-team .s { font-size: 28px; } .g-team .n { font-size: 13px; } }
+    @media (max-width: 700px) { .g-grid { gap: 6px; } .g-head { flex-wrap: wrap; } .g-btn { padding: 6px 10px; font-size: 14px; } .g-title { font-size: 19px; } .g-team .s { font-size: 28px; } .g-team .n { font-size: 13px; } }
 
     /* grup soru ve joker pencereleri */
     .g-modal { position: fixed; inset: 0; z-index: 210; display: none; align-items: center; justify-content: center; padding: 14px; background: rgba(7, 30, 55, 0.78); backdrop-filter: blur(6px); }
