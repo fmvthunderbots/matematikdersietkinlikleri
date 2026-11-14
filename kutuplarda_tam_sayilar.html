@@ -256,7 +256,7 @@
     /* ===== GRUP MODU: 3 takım, 30 buz kutusu ===== */
     #group-app {
       position: fixed; inset: 0; z-index: 60; display: none; flex-direction: column;
-      padding: 12px 18px 16px; gap: 10px; overflow-y: auto;
+      height: 100vh; height: 100dvh; padding: 10px 18px 14px; gap: 1.4vh; overflow: hidden;
     }
     .g-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     body.embedded .g-head { padding-right: 70px; }
@@ -287,13 +287,14 @@
     .g-team.active .turn { display: block; animation: gPulse 1s infinite alternate; }
     @keyframes gPulse { from { opacity: .45; } to { opacity: 1; } }
     .g-grid {
-      display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 980px; width: 100%; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(5, minmax(0, 1fr));
+      gap: clamp(5px, 1.2vh, 12px); max-width: 1240px; width: 100%; margin: 0 auto; flex: 1; min-height: 0;
     }
     .g-card {
-      aspect-ratio: 1.25; border-radius: 16px; border: 3px solid #0c4a6e; cursor: pointer; position: relative;
+      min-height: 0; border-radius: 16px; border: 3px solid #0c4a6e; cursor: pointer; position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background: linear-gradient(145deg, #F0FBFF, #A5DCF4); box-shadow: inset 0 3px 0 #fff, 0 5px 0 #0c4a6e;
-      font-family: 'Baloo 2'; font-weight: 800; font-size: 30px; color: #0c4a6e; transition: transform .15s;
+      font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(18px, 4.6vh, 38px); color: #0c4a6e; transition: transform .15s;
       animation: gIn .45s backwards;
     }
     .g-card::before { content: ''; position: absolute; left: 10px; top: 8px; width: 28%; height: 12%; border-radius: 8px; background: rgba(255,255,255,0.9); }
@@ -304,10 +305,17 @@
     .g-card.open.no { background: #FEF2F2; border-color: #EF4444; color: #B91C1C; }
     .g-card.open.jk { background: #E0F2FE; border-color: #0EA5E9; }
     .g-card.off { opacity: .28; pointer-events: none; }
-    .g-card small { font-size: 15px; line-height: 1.1; }
-    .g-card .ico { font-size: 26px; line-height: 1; }
+    .g-card small { font-size: clamp(11px, 1.9vh, 16px); line-height: 1.1; text-align: center; padding: 0 4px; }
+    .g-card .ico { font-size: clamp(16px, 3.4vh, 30px); line-height: 1; }
+    .g-team .s { font-size: clamp(24px, 5vh, 40px); }
+    .g-teams { flex: none; }
+    .g-left { display: flex; align-items: center; gap: 8px; }
+    .g-left #wind-btn { position: static; width: 42px; height: 42px; font-size: 20px; flex: none; }
+    .g-diffs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .g-diffs button { border: 2px solid #BAE6FD; background: #fff; color: #0C4A6E; border-radius: 12px; padding: 9px 4px; font-family: 'Baloo 2'; font-weight: 800; font-size: 17px; cursor: pointer; }
+    .g-diffs button.on { background: linear-gradient(180deg, #38BDF8, #0284C7); color: #fff; border-color: #0369A1; box-shadow: 0 4px 12px rgba(2,132,199,0.4); }
     @keyframes gIn { from { opacity: 0; transform: scale(.6) translateY(20px); } }
-    @media (max-width: 700px) { .g-grid { grid-template-columns: repeat(5, 1fr); gap: 7px; } .g-card { font-size: 22px; } .g-title { font-size: 19px; } .g-team .s { font-size: 28px; } .g-team .n { font-size: 13px; } }
+    @media (max-width: 700px) { .g-grid { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(6, minmax(0, 1fr)); gap: 6px; } .g-head { flex-wrap: wrap; } .g-btn { padding: 6px 10px; font-size: 14px; } .g-title { font-size: 19px; } .g-team .s { font-size: 28px; } .g-team .n { font-size: 13px; } }
 
     /* grup soru ve joker pencereleri */
     .g-modal { position: fixed; inset: 0; z-index: 210; display: none; align-items: center; justify-content: center; padding: 14px; background: rgba(7, 30, 55, 0.78); backdrop-filter: blur(6px); }
@@ -477,6 +485,11 @@
         🦊 <b>Kutup Tilkileri</b>, 🐧 <b>Penguenler</b> ve 🦭 <b>Foklar</b> sırayla 30 buz kutusundan birini seçer.
         Kutulardan tam sayılarla <b>karışık 4 işlem</b> soruları ya da sürpriz <b>kutup jokerleri</b> çıkar.
         Ders bitmek üzereyse <b>⏳ Son Tur</b> ile her takıma son bir hak kalır.
+        <div class="g-diffs" id="g-diffs">
+          <button type="button" data-d="0">🟢 Kolay</button>
+          <button type="button" data-d="1" class="on">🟡 Orta</button>
+          <button type="button" data-d="2">🔴 Zor</button>
+        </div>
       </div>
       <button class="btn-start" onclick="startGame()">🚀 OYUNA BAŞLA</button>
       <button class="btn-subtle" onclick="showScreen('LEADERBOARD')" style="margin-top: 15px; width: 100%;">🏆 İlk 10 Lider Tablosu</button>
@@ -592,8 +605,8 @@
   <!-- ===== GRUP MODU ===== -->
   <div id="group-app">
     <div class="g-head">
-      <button class="g-btn menu" onclick="groupMenu()">🏠 Menü</button>
-      <div class="g-title">🐧 Kutuplarda Tam Sayılar · Grup</div>
+      <div class="g-left"><button class="g-btn menu" onclick="groupMenu()">🏠 Menü</button></div>
+      <div class="g-title">🐧 Kutuplarda Tam Sayılar · <span id="g-dname">Orta</span></div>
       <button class="g-btn last" id="g-last" onclick="triggerLastRound()">⏳ Son Tur</button>
     </div>
     <div class="g-teams" id="g-teams"></div>
@@ -1558,32 +1571,46 @@
 
     /* Karışık 4 işlem soruları. Gösterim ders kitabındaki gibi: çarpma "·", bölme ":". Bölmeler tam çıkar. */
     function gFmt(n) { return n < 0 ? '(−' + Math.abs(n) + ')' : (Math.random() < 0.5 ? '(+' + n + ')' : String(n)); }
-    function makeGroupQuestion(level) {
-      const nz = (a, b) => nonZeroRand(a, b);
+    /* Zorluk: 0 Kolay, 1 Orta, 2 Zor. Sayı aralıkları ve soru türlerinin dağılımı değişir; puanlar aynı kalır. */
+    let G_DIFF = 1;
+    const G_DIFF_NAMES = ['Kolay', 'Orta', 'Zor'];
+    const G_RANGE = [
+      { add: 9,  mA: 6,  mB: 5,  dB: 5,  dQ: 6,  pA: 8,  pB: 4, pD: 3, pQ: 5,  bA: 6,  bC: 3, bD: 3, bS: 5 },
+      { add: 15, mA: 12, mB: 9,  dB: 9,  dQ: 10, pA: 12, pB: 6, pD: 5, pQ: 8,  bA: 9,  bC: 5, bD: 4, bS: 6 },
+      { add: 25, mA: 15, mB: 12, dB: 12, dQ: 12, pA: 20, pB: 9, pD: 8, pQ: 10, bA: 12, bC: 6, bD: 6, bS: 9 }
+    ];
+    const G_MIX = [                                   // 22 soru: [toplama-çıkarma, çarpma-bölme, işlem önceliği, parantezli]
+      [8, 8, 5, 1],
+      [6, 7, 6, 3],
+      [3, 5, 8, 6]
+    ];
+    function makeGroupQuestion(level, diff) {
+      const nz = (a, b) => nonZeroRand(a, b), R = G_RANGE[diff == null ? G_DIFF : diff];
       if (level === 0) {                       // toplama / çıkarma: 10 P
-        const a = nz(-15, 15), b = nz(-15, 15);
+        const a = nz(-R.add, R.add), b = nz(-R.add, R.add);
         return Math.random() < 0.5 ? { expr: gFmt(a) + ' + ' + gFmt(b), ans: a + b, p: 10 }
                                    : { expr: gFmt(a) + ' − ' + gFmt(b), ans: a - b, p: 10 };
       }
       if (level === 1) {                       // çarpma / bölme: 15 P
-        if (Math.random() < 0.5) { const a = nz(-12, 12), b = nz(-9, 9); return { expr: gFmt(a) + ' · ' + gFmt(b), ans: a * b, p: 15 }; }
-        let b = nz(-9, 9); if (Math.abs(b) === 1) b *= 3; const q = nz(-10, 10);
+        if (Math.random() < 0.5) { const a = nz(-R.mA, R.mA), b = nz(-R.mB, R.mB); return { expr: gFmt(a) + ' · ' + gFmt(b), ans: a * b, p: 15 }; }
+        let b = nz(-R.dB, R.dB); if (Math.abs(b) === 1) b *= 2; const q = nz(-R.dQ, R.dQ);
         return { expr: gFmt(b * q) + ' : ' + gFmt(b), ans: q, p: 15 };
       }
       if (level === 2) {                       // işlem önceliği, parantezsiz: 20 P
-        const a = nz(-12, 12), b = nz(-6, 6), c = nz(-6, 6);
+        const a = nz(-R.pA, R.pA), b = nz(-R.pB, R.pB), c = nz(-R.pB, R.pB);
         if (Math.random() < 0.5) return { expr: gFmt(a) + ' + ' + gFmt(b) + ' · ' + gFmt(c), ans: a + b * c, p: 20 };
-        let d = nz(-5, 5); if (Math.abs(d) === 1) d *= 2; const q = nz(-8, 8);
+        let d = nz(-R.pD, R.pD); if (Math.abs(d) === 1) d *= 2; const q = nz(-R.pQ, R.pQ);
         return { expr: gFmt(a) + ' − ' + gFmt(d * q) + ' : ' + gFmt(d), ans: a - q, p: 20 };
       }
       // parantezli, üç işlem: 25 P
-      const a = nz(-9, 9), b = nz(-9, 9), c = nz(-5, 5);
-      if (Math.random() < 0.5) return { expr: '[' + gFmt(a) + ' + ' + gFmt(b) + '] · ' + gFmt(c), ans: (a + b) * c, p: 25 };
-      let d = nz(-4, 4); if (Math.abs(d) === 1) d *= 3; const s = nz(-6, 6); let e = nz(-6, 6); if (s * d - e === 0) e += (e > 0 ? 1 : -1);
+      const a = nz(-R.bA, R.bA), b = nz(-R.bA, R.bA), c = nz(-R.bC, R.bC);
+      if (Math.random() < 0.5 && a + b !== 0) return { expr: '[' + gFmt(a) + ' + ' + gFmt(b) + '] · ' + gFmt(c), ans: (a + b) * c, p: 25 };
+      let d = nz(-R.bD, R.bD); if (Math.abs(d) === 1) d *= 2; const s = nz(-R.bS, R.bS); let e = nz(-R.bS, R.bS); if (s * d - e === 0) e += (e > 0 ? 1 : -1);
       return { expr: '[' + gFmt(s * d - e) + ' + ' + gFmt(e) + '] : ' + gFmt(d), ans: s, p: 25 };
     }
     function buildGroupDeck() {
-      const levels = [0,0,0,0,0,0, 1,1,1,1,1,1,1, 2,2,2,2,2,2, 3,3,3];   // 22 soru
+      const levels = [];
+      G_MIX[G_DIFF].forEach((n, lv) => { for (let k = 0; k < n; k++) levels.push(lv); });   // 22 soru
       const seen = new Set(), qs = [];
       levels.forEach(lv => {
         let q, k = 0;
@@ -1594,11 +1621,17 @@
       for (let i = deck.length - 1; i > 0; i--) { const r = Math.floor(Math.random() * (i + 1)); [deck[i], deck[r]] = [deck[r], deck[i]]; }
       return deck;
     }
+    document.querySelectorAll('#g-diffs button').forEach(b => b.onclick = () => {
+      G_DIFF = +b.dataset.d;
+      document.querySelectorAll('#g-diffs button').forEach(x => x.classList.toggle('on', x === b));
+    });
 
     function startGroupGame() {
       document.getElementById('g-winmodal').classList.remove('show');
       G = { cards: buildGroupDeck(), scores: [0, 0, 0], dbl: [false, false, false], turn: 0, active: null, input: '', busy: false, last: false };
       showScreen('GROUP');
+      document.getElementById('g-dname').innerText = G_DIFF_NAMES[G_DIFF];
+      document.querySelector('.g-left').appendChild(document.getElementById('wind-btn'));
       document.getElementById('g-last').style.display = '';
       renderGroupTeams(); renderGroupGrid();
     }
@@ -1736,6 +1769,7 @@
     function closeGroupToMenu() {
       ['g-qmodal', 'g-jmodal', 'g-winmodal'].forEach(id => document.getElementById(id).classList.remove('show'));
       G = null; showScreen('START');
+      document.body.appendChild(document.getElementById('wind-btn'));
     }
     let gToastT = null;
     function groupToast(msg, color) {
