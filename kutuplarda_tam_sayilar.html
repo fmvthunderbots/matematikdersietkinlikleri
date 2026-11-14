@@ -33,22 +33,20 @@
       position: relative;
     }
 
-    /* Arka Plan Kar Yağışı */
-    #rain-container {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      pointer-events: none; z-index: 0; overflow: hidden;
-      background: rgba(186, 230, 253, 0.08);
+    /* Arka plan: kar fırtınası (tuval), sis, kırağı kenarları, rüzgâr hamlesi parıltısı */
+    #rain-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    #snow-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .fx-mist {
+      position: absolute; left: -40%; width: 180%; height: 34%; bottom: -8%;
+      background: radial-gradient(ellipse at center, rgba(235, 248, 255, 0.55), rgba(235, 248, 255, 0) 65%);
+      filter: blur(10px); animation: mistDrift 26s ease-in-out infinite alternate;
     }
-    .bg-snow {
-      position: absolute; top: -10px; border-radius: 50%;
-      background: rgba(255, 255, 255, 0.9); box-shadow: 0 0 6px rgba(255,255,255,0.8);
-      animation: bgSnowFall linear infinite;
-    }
-    @keyframes bgSnowFall {
-      0% { transform: translate(0, -10vh); opacity: 0; }
-      10% { opacity: 1; }
-      100% { transform: translate(var(--drift, 30px), 110vh); opacity: 0.2; }
-    }
+    .fx-mist.m2 { bottom: auto; top: 38%; height: 26%; opacity: 0.35; animation-duration: 38s; animation-direction: alternate-reverse; }
+    @keyframes mistDrift { from { transform: translateX(-10%); } to { transform: translateX(10%); } }
+    .fx-frost { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(255,255,255,0) 58%, rgba(214, 240, 255, 0.28) 82%, rgba(240, 250, 255, 0.55) 100%); }
+    .fx-gust { position: absolute; inset: -10%; background: linear-gradient(100deg, rgba(255,255,255,0) 35%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 65%); transform: translateX(110%); }
+    .fx-gust.go { animation: gustSweep 1.8s ease-out; }
+    @keyframes gustSweep { from { transform: translateX(110%); } to { transform: translateX(-110%); } }
 
     @keyframes heartBreakAnim {
       0% { transform: scale(1); filter: grayscale(0); }
@@ -67,7 +65,7 @@
     .hud-side.right { justify-content: flex-end; }
     
     .team-box {
-      background: rgba(8, 30, 60, 0.9); backdrop-filter: blur(10px);
+      background: rgba(40, 30, 20, 0.92); backdrop-filter: blur(10px);
       border-radius: 16px; padding: 10px 22px; text-align: center;
       border: 2px solid; min-width: 250px;
     }
@@ -360,6 +358,45 @@
     }
     #wind-btn.off { opacity: .55; }
     #wind-btn.off::after { content: ''; position: absolute; width: 34px; height: 4px; background: #EF4444; transform: rotate(-45deg); border-radius: 2px; }
+
+    /* ===== PROFESYONEL GÖRÜNÜM: buzlu cam paneller, parlak düğmeler ===== */
+    .app-overlay { background: radial-gradient(ellipse at center, rgba(7, 30, 55, 0.25), rgba(3, 14, 32, 0.68)); backdrop-filter: blur(3px); }
+    .card {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.93), rgba(224, 242, 254, 0.88));
+      backdrop-filter: blur(14px); border: 2px solid rgba(255, 255, 255, 0.9); border-radius: 30px;
+      box-shadow: 0 30px 80px rgba(2, 20, 45, 0.55), 0 0 0 7px rgba(186, 230, 253, 0.28), inset 0 1px 0 #fff;
+    }
+    .start-title { color: #0c4a6e; text-shadow: 0 2px 0 #fff, 0 6px 18px rgba(14, 165, 233, 0.35); letter-spacing: 0.3px; }
+    .start-subtitle { color: #0369A1; }
+    .btn-start {
+      background: linear-gradient(180deg, #38BDF8, #0284C7 60%, #0369A1); border-radius: 18px; letter-spacing: 0.5px;
+      box-shadow: 0 6px 0 #075985, 0 14px 30px rgba(2, 132, 199, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+      transition: transform 0.12s, box-shadow 0.12s, filter 0.2s;
+    }
+    .btn-start:hover { filter: brightness(1.07); }
+    .btn-start:active { transform: translateY(4px); box-shadow: 0 2px 0 #075985, 0 6px 14px rgba(2, 132, 199, 0.35); }
+    .btn-subtle { border-radius: 14px; transition: all 0.18s; }
+    .btn-subtle.active { box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4), inset 0 1px 0 rgba(255,255,255,0.4); }
+    .input-player { border-radius: 16px; background: rgba(255,255,255,0.9); }
+    .team-box {
+      background: linear-gradient(160deg, rgba(14, 45, 90, 0.82), rgba(6, 22, 48, 0.88)); backdrop-filter: blur(12px);
+      border-radius: 20px; border-width: 2px;
+    }
+    .question-text { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(186, 230, 253, 0.35); border-radius: 12px; }
+    .score-display, #timer-box {
+      background: linear-gradient(180deg, #ffffff, #E0F2FE); border: 2px solid #ffffff;
+      box-shadow: 0 8px 22px rgba(2, 20, 45, 0.4), inset 0 -3px 0 rgba(2, 132, 199, 0.15);
+    }
+    .falling-item::before { filter: drop-shadow(0 0 10px rgba(186, 230, 253, 0.85)) drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.4)); }
+    .falling-item span {
+      background: rgba(8, 30, 60, 0.74); border: 2px solid rgba(186, 230, 253, 0.95); border-radius: 12px;
+      text-shadow: none; box-shadow: 0 0 16px rgba(56, 189, 248, 0.6); padding: 2px 12px;
+    }
+    .g-team { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(224,242,254,0.92)); backdrop-filter: blur(10px); }
+    .g-title { text-shadow: 0 3px 0 #0c4a6e, 0 0 22px rgba(56, 189, 248, 0.8); }
+    #btn-mode-1p, #btn-mode-2p, #btn-mode-grp { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; font-size: 15px; }
+    .mi { font-size: 28px; line-height: 1; }
+    .g-box { border-radius: 30px; box-shadow: 0 30px 80px rgba(2, 20, 45, 0.55), 0 0 0 7px rgba(186, 230, 253, 0.3); }
   </style>
 </head>
 <body>
@@ -415,9 +452,9 @@
       <p class="start-subtitle">7. Sınıf Tam Sayılarla Çarpma ve Bölme Yarışması</p>
       
       <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 20px;">
-        <button id="btn-mode-1p" class="btn-subtle active" onclick="setMode('1P')">👤 Bireysel</button>
-        <button id="btn-mode-2p" class="btn-subtle" onclick="setMode('2P')">👥 İki Kişilik Düello</button>
-        <button id="btn-mode-grp" class="btn-subtle" onclick="setMode('GRP')">👨‍👩‍👧‍👦 Grup Modu</button>
+        <button id="btn-mode-1p" class="btn-subtle active" onclick="setMode('1P')"><span class="mi">👤</span>Bireysel</button>
+        <button id="btn-mode-2p" class="btn-subtle" onclick="setMode('2P')"><span class="mi">⚔️</span>Düello</button>
+        <button id="btn-mode-grp" class="btn-subtle" onclick="setMode('GRP')"><span class="mi">👨‍👩‍👧‍👦</span>Grup Modu</button>
       </div>
 
       <!-- AD SOYAD GİRİŞ ALANI (BİREYSEL İÇİN) -->
@@ -1138,21 +1175,62 @@
       return `${n}`;
     }
 
+    /* ==============================
+       KAR FIRTINASI: 3 derinlik katmanı, rastgele rüzgâr hamleleri (sesle eş zamanlı)
+       ============================== */
     function initRain() {
-      let rc = document.getElementById('rain-container');
-      rc.innerHTML = '';
-      for (let i = 0; i < 90; i++) {
-        let d = document.createElement('div');
-        d.className = 'bg-snow';
-        let size = Math.random() * 5 + 2;
-        d.style.width = d.style.height = size + 'px';
-        d.style.left = (Math.random() * 100) + 'vw';
-        d.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
-        d.style.animationDuration = (Math.random() * 6 + 5) + 's';
-        d.style.animationDelay = (-Math.random() * 10) + 's';
-        d.style.opacity = Math.random() * 0.6 + 0.4;
-        rc.appendChild(d);
+      const rc = document.getElementById('rain-container');
+      rc.innerHTML = '<canvas id="snow-canvas"></canvas><div class="fx-mist m2"></div><div class="fx-mist"></div><div class="fx-frost"></div><div class="fx-gust" id="fx-gust"></div>';
+      const cv = document.getElementById('snow-canvas'), ctx = cv.getContext('2d');
+      const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let W = 0, H = 0, flakes = [], gust = 0, gustTarget = 0, last = performance.now();
+      function size() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const want = calm ? 60 : Math.min(320, Math.round(W * H / 7000));
+        while (flakes.length < want) flakes.push(mk(true));
+        flakes.length = want;
       }
+      function mk(anyY) {
+        const z = Math.random();                       // 0 uzak .. 1 yakın
+        return { x: Math.random() * (W + 200) - 100, y: anyY ? Math.random() * H : -10, z,
+                 r: 0.8 + z * z * 3.6, vy: 30 + z * 90, ph: Math.random() * 6.28, a: 0.35 + z * 0.6 };
+      }
+      function startGust() {
+        if (calm) return;
+        gustTarget = 0.6 + Math.random() * 0.4;
+        const g = document.getElementById('fx-gust'); g.classList.remove('go'); void g.offsetWidth; g.classList.add('go');
+        if (typeof wind !== 'undefined' && wind && windOn) {   // rüzgâr sesi de sertleşsin
+          const t = getAudioContext().currentTime;
+          wind.master.gain.setTargetAtTime(0.22, t, 0.4); wind.master.gain.setTargetAtTime(0.13, t + 2.2, 1.2);
+        }
+        setTimeout(() => gustTarget = 0, 2000 + Math.random() * 1200);
+        setTimeout(startGust, 8000 + Math.random() * 9000);
+      }
+      function frame(now) {
+        const dt = Math.min(0.05, (now - last) / 1000); last = now;
+        gust += (gustTarget - gust) * Math.min(1, dt * 2.5);
+        ctx.clearRect(0, 0, W, H);
+        const t = now / 1000, streak = gust > 0.25;
+        ctx.lineCap = 'round';
+        for (const f of flakes) {
+          const vx = (-25 - gust * 420) * (0.35 + f.z) + Math.sin(t * 0.8 + f.ph) * 18;
+          const vy = f.vy * (1 + gust * 0.7);
+          f.x += vx * dt; f.y += vy * dt;
+          if (f.y > H + 10 || f.x < -120) { Object.assign(f, mk(false)); f.x = Math.random() * (W + 300); if (Math.random() < 0.4) { f.x = W + 20; f.y = Math.random() * H; } }
+          ctx.globalAlpha = f.a;
+          if (streak && f.z > 0.35) {
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = f.r * 1.1;
+            ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(f.x - vx * 0.035, f.y - vy * 0.035); ctx.stroke();
+          } else {
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(frame);
+      }
+      addEventListener('resize', size); size(); requestAnimationFrame(frame);
+      setTimeout(startGust, 4000);
     }
     initRain();
 
@@ -1741,7 +1819,7 @@
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
     function launchConfetti(count = 70) {
-      const colors = ['#0284C7', '#38BDF8', '#F59E0B', '#EF4444', '#FFFFFF', '#10B981'];
+      const colors = ['#0284C7', '#38BDF8', '#10B981', '#EF4444', '#06B6D4'];
       for (let i = 0; i < count; i++) {
         confettiPieces.push({
           x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.3 - 50,
