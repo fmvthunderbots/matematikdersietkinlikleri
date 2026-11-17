@@ -338,10 +338,6 @@ body.duel-on .wrap{max-width:none;padding:10px 12px 18px}
       <h1>ZEKA <span class="g">OYUNLARI</span></h1>
       <p class="sub">Çit · Sudoku · Kare Karalamaca</p>
     </div>
-    <div class="devsw" id="devsw">
-      <button data-d="phone">📱 Telefon</button>
-      <button data-d="desk">💻 Tablet / Bilgisayar</button>
-    </div>
     <div class="cols">
       <div>
         <div class="card">
@@ -643,7 +639,7 @@ function detectDevice(){
   let v=null;
   try{v=new URLSearchParams(location.search).get('cihaz');}catch(e){}
   if(v){v=v.toLowerCase();if(['telefon','phone','mobil'].includes(v))return 'phone';if(['pc','bilgisayar','tablet','desk','masaustu'].includes(v))return 'desk';}
-  try{const s=localStorage.getItem('zekaArenasi.device');if(s==='phone'||s==='desk')return s;}catch(e){}
+  /* seçim düğmesi kaldırıldı; eski kayıtlı seçim de yok sayılır, cihaz her açılışta otomatik anlaşılır */
   const coarse=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
   const small=Math.min(screen.width,screen.height)<600||/Android.+Mobile|iPhone|iPod/i.test(navigator.userAgent);
   return coarse&&small?'phone':'desk';
