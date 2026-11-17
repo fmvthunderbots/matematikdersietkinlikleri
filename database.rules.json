@@ -1,0 +1,20 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "$node": {
+      ".read": "$node.beginsWith('students_') || $node.beginsWith('scores') || $node.beginsWith('zeka_skor_') || $node === 'meb_perilikosk_top10'",
+      "$id": {
+        ".write": "($node.beginsWith('scores') || $node === 'meb_perilikosk_top10') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren()",
+        "$field": {
+          ".write": "$node.beginsWith('zeka_skor_') && newData.exists() && newData.child('score').isNumber() && (!data.exists() || newData.child('score').val() > data.child('score').val())",
+          ".validate": "($node.beginsWith('zeka_skor_') && newData.hasChildren(['name', 'score'])) || (!$node.beginsWith('zeka_skor_') && ((newData.isString() && newData.val().matches(/^[^<>\"`&]{0,100}$/)) || (newData.isNumber() && newData.val() >= -100000000000000 && newData.val() <= 100000000000000 && (($field !== 'score' && $field !== 'puan') || newData.val() <= 1000000)) || newData.isBoolean()))",
+          "$k": {
+            ".validate": "(newData.isString() && newData.val().matches(/^[^<>\"`&]{0,100}$/)) || (newData.isNumber() && newData.val() >= -100000000000000 && newData.val() <= 100000000000000 && (($k !== 'score' && $k !== 'puan') || newData.val() <= 1000000)) || newData.isBoolean()"
+          }
+        }
+      }
+    }
+  }
+}

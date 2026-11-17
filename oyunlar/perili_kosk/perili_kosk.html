@@ -4412,13 +4412,12 @@
       } catch(e) {}
 
       if (cloudDb) {
-        // Bir isim listede bir kez durur: yeni puan eskisinden yüksekse eskiler silinir, değilse kaydedilmez
+        // Yalnız kişisel rekor kaydedilir (veritabanı kuralları silmeye izin vermez; liste gösterirken isim başına en yüksek alınır)
         cloudDb.ref(DB_NODE).once('value').then(snap => {
-          const same = [];
-          snap.forEach(ch => { const v = ch.val() || {}; if (foldName(v.name) === foldName(name)) same.push({ key: ch.key, score: Number(v.score) || 0 }); });
-          if (same.some(r => r.score >= finalScore)) return;
-          same.forEach(r => cloudDb.ref(DB_NODE).child(r.key).remove());
-          cloudDb.ref(DB_NODE).push(entry);
+          let best = -1;
+          snap.forEach(ch => { const v = ch.val() || {}; if (foldName(v.name) === foldName(name)) best = Math.max(best, Number(v.score) || 0); });
+          if (best >= finalScore) return;
+          return cloudDb.ref(DB_NODE).push(entry);
         }).catch(() => {});
       }
     }
