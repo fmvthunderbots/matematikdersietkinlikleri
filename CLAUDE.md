@@ -41,7 +41,7 @@ Yeni oyunlarda doğrudan `students_grade_<sınıf>` okuyun.
 3. `Portal_Kurulumu.bat` adresi `matematikdersetkinlikleri` yazıyor; doğrusu `matematikdersietkinlikleri` ("i" eksik).
 4. `arkaplan7.jpg` hiçbir yerde kullanılmıyor. `oyunlar/tombala/` portalda (`oyunlar.js`) listelenmiyor.
    Perili Köşk ilk 10: düğüm `meb_perilikosk_top10`; isim başına tek kayıt (en yüksek puan) tutulur.
-   Oyun kodunda `SCORE_MGR_BAD_NAMES` = dedektif, nil tabak (Nil Tabak'ın 9620 puanlık kaydı listede duruyor).
+   Oyun kodunda `SCORE_MGR_BAD_NAMES` = dedektif, nil tabak: bu adlar kaydedilmez ve listede gösterilmez (kayıtları 2026-11-17'de silindi).
    Perili Köşk'te kullanılmayan görseller var (`exterior_bg.jpg`, `detective.png`, `perili_kosk_bg.jpg`, `perili_kosk_zafer.jpg`).
 5. Var olmayan dosyaya giden yollar: `5_okula_merhaba` `background.jpg` arıyor (yoksa internetten yedek görsel
    açılıyor); Perili Köşk yedek yolları `kapak.jpg` ve `perili_kosk_assets/...`.

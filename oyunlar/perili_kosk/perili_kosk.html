@@ -4427,7 +4427,7 @@
     function uniqueBestScores(list) {
       const best = new Map();
       list.forEach(e => {
-        if (!e || !String(e.name || '').trim() || foldName(e.name) === 'dedektif') return;
+        if (!e || !String(e.name || '').trim() || scoreMgrIsBad(e.name)) return;
         const k = foldName(e.name);
         if (!best.has(k) || (Number(e.score) || 0) > (Number(best.get(k).score) || 0)) best.set(k, e);
       });
