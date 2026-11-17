@@ -15,6 +15,8 @@ Yayın adresi: https://fmvthunderbots.github.io/matematikdersietkinlikleri/ (Git
 - Kökte kalanlar: `index.html`, `oyunlar.js`, portal arka planları (`arkaplan5-7.jpg`), `simge.*` (kurulum
   dosyası bunları kökten indirir), `Portal_Kurulumu.bat`.
 - Portal oyunları kendi içinde iframe ile açar.
+- Uygulama olarak yükleme (PWA): `manifest.json`, `sw.js` (önbellek tutmaz) ve `uygulama/` simgeleri
+  (`simge.jpg`'den üretildi). Portalda "Uygulamayı Yükle" düğmesi yalnız tarayıcı izin verince görünür.
 - `oyunlar/perili_kosk/students.js`: yalnızca Perili Köşk kullanır (sabit 6. sınıf listesi).
 - Firebase Realtime Database: `zihindencarpma-default-rtdb` (ayarlar `index.html` ve oyunların içinde).
 

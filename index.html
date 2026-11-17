@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matematik Etkinlik Portalı</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="uygulama/simge-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="uygulama/apple-touch-icon.png">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Matematik">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -223,10 +229,16 @@
             </button>
         </div>
         
+        <div class="flex items-center gap-3">
+        <!-- Uygulamayı Yükle: yalnız tarayıcı yüklemeye izin verince görünür -->
+        <button id="btn-install" onclick="installApp()" title="Uygulamayı Yükle" class="hidden h-11 px-4 bg-blue-600/90 border border-blue-400 rounded-full items-center gap-2 text-white font-bold text-sm whitespace-nowrap hover:bg-blue-500 transition-all shadow-lg">
+            <i class="fas fa-download"></i> Uygulamayı Yükle
+        </button>
         <!-- Sağ Üst: Yönetim Paneli (Öğrenci Listeleri & Materyal Yönetimi) -->
         <button onclick="openPasswordModal()" title="Sistem ve Öğrenci Yönetimi" class="w-11 h-11 bg-slate-800/80 border border-slate-600/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
             <i class="fas fa-cog text-lg transition-transform duration-500 group-hover:rotate-90"></i>
         </button>
+        </div>
     </nav>
 
     <!-- Main Content Area -->
@@ -741,6 +753,25 @@
             renderAdminGamesList();
             renderGames();
         }
+    }
+
+    // --- Uygulama olarak yükleme (PWA) ---
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    let installPrompt = null;
+    const installBtn = document.getElementById('btn-install');
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        installPrompt = e;
+        installBtn.classList.remove('hidden');
+        installBtn.classList.add('flex');
+    });
+    window.addEventListener('appinstalled', () => installBtn.classList.add('hidden'));
+    async function installApp() {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        await installPrompt.userChoice;
+        installPrompt = null;
+        installBtn.classList.add('hidden');
     }
 </script>
 </body>
