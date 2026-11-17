@@ -28,12 +28,11 @@ eski düğümler (ör. 6. sınıf: `students_olasilikfabrikasi`, `students_asalf
 elle güncellenmeli. Portal oyunları URL ile açtığı için
 oyunlar listeyi portaldan almaz; her oyun Firebase'de kendi düğümünü okur.
 
-Yeni oyunlarda doğrudan `students_grade_<sınıf>` okuyun. Oyun başka bir düğüm okuyorsa o düğümü
-`GRADE_SYNC_NODES` içine ekleyin.
+Yeni oyunlarda doğrudan `students_grade_<sınıf>` okuyun.
 
 ## Bilinen sorunlar (2026-11-14 itibarıyla düzeltilmedi)
 
-1. Şu oyunların okuduğu düğümler `GRADE_SYNC_NODES` içinde yok, panelden eklenen öğrenciler gitmiyor:
+1. Şu oyunlar eski panelin eşitlediği düğümleri okumuyordu; öğrenci listesi güncellenirken bunlar da yazılmalı:
    - 5. sınıf: `5_okula_merhaba` (`students_zihinden`), `geometri_kutuplar` (`students_geometrikutuplar`)
    - 6. sınıf: `asal_sayi_firtinasi` ve `aralarinda_asal_kutup` (`students_asalfirtina`; eski panel yanlışlıkla
      `students_asalsayifirtina` yazıyordu), `yazili_arenasi_6` (`students_yaziliarenasi_6`)
