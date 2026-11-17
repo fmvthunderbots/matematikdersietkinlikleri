@@ -193,13 +193,43 @@
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
 
+        /* Uygulamayı Yükle düğmesi: logo renkleri (lacivert + altın) */
+        .install-btn {
+            position: relative; overflow: hidden; align-items: center; gap: 10px;
+            height: 50px; padding: 4px 18px 4px 4px; border-radius: 999px; white-space: nowrap;
+            background: linear-gradient(135deg, #1e3a6e, #0f1f3d);
+            border: 1px solid rgba(251, 191, 36, 0.65);
+            box-shadow: 0 6px 22px rgba(245, 158, 11, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+        }
+        .install-btn:hover { transform: translateY(-2px); border-color: #fbbf24; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15); }
+        .install-btn:active { transform: translateY(0) scale(0.97); }
+        .install-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
+        .install-btn::after {
+            content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+            transform: skewX(-20deg); animation: install-shine 4.5s ease-in-out infinite; pointer-events: none;
+        }
+        @keyframes install-shine { 0%, 70% { left: -60%; } 100% { left: 130%; } }
+        .install-icon { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
+        .install-icon img { width: 100%; height: 100%; border-radius: 11px; display: block; }
+        .install-icon i {
+            position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f1f3d; font-size: 10px;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #0f1f3d;
+        }
+        .install-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+        .install-text b { color: #fff; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.2px; }
+        .install-text small { color: #fcd34d; font-size: 0.7rem; font-weight: 600; }
+        @media (prefers-reduced-motion: reduce) { .install-btn::after { animation: none; display: none; } }
+
         /* Dik tablet: menü sığsın diye boşluklar daralır */
         @media (min-width: 768px) and (max-width: 1023px) {
             nav.glass-nav { padding-left: 16px; padding-right: 16px; gap: 12px; }
             #grade-tabs { gap: 8px; }
             #grade-tabs .nav-btn { padding-left: 14px; padding-right: 14px; }
             #portal-title { font-size: 1.35rem; }
-            #btn-install { padding: 0; width: 44px; justify-content: center; }
+            #btn-install { padding: 3px; height: auto; }
             #btn-install .install-text { display: none; }
         }
 
@@ -217,7 +247,7 @@
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
             }
             #grade-tabs .nav-btn { flex: 1; justify-content: center; padding: 11px 2px; font-size: 0.8rem; gap: 4px; white-space: nowrap; border-radius: 14px; transform: none; }
-            #btn-install { padding: 0; width: 44px; justify-content: center; }
+            #btn-install { padding: 3px; height: auto; }
             #btn-install .install-text { display: none; }
             #portal-main { padding: 14px 14px 100px; }
             #games-container { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -265,8 +295,9 @@
         
         <div class="flex items-center gap-3">
         <!-- Uygulamayı Yükle: yalnız tarayıcı yüklemeye izin verince görünür -->
-        <button id="btn-install" onclick="installApp()" title="Uygulamayı Yükle" class="hidden h-11 px-4 bg-blue-600/90 border border-blue-400 rounded-full items-center gap-2 text-white font-bold text-sm whitespace-nowrap hover:bg-blue-500 transition-all shadow-lg">
-            <i class="fas fa-download"></i> <span class="install-text">Uygulamayı Yükle</span>
+        <button id="btn-install" onclick="installApp()" title="Matematik Oyunları uygulamasını yükle" aria-label="Uygulamayı Yükle" class="hidden install-btn">
+            <span class="install-icon"><img src="uygulama/simge-dugme.png" alt=""><i class="fas fa-arrow-down"></i></span>
+            <span class="install-text"><b>Uygulamayı Yükle</b><small>Tek dokunuşla aç</small></span>
         </button>
         <!-- Sağ Üst: Yönetim Paneli (Öğrenci Listeleri & Materyal Yönetimi) -->
         <button onclick="openPasswordModal()" title="Sistem ve Öğrenci Yönetimi" class="w-11 h-11 bg-slate-800/80 border border-slate-600/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
