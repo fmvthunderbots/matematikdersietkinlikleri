@@ -264,7 +264,11 @@
     }
     .btn-endgame:hover { background: #DC2626; transform: translateX(-50%) scale(1.05); }
     .btn-endgame:active { transform: translateX(-50%) scale(0.95); }
+  
+    /* Telefon: başlık ekrana sığsın */
+    @media (max-width: 600px) { .start-title { font-size: clamp(20px, 6.6vw, 30px) !important; white-space: normal !important; } }
   </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body>
 

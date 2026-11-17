@@ -190,7 +190,15 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 #credits a{color:var(--gold2);word-break:break-all;font-size:.85rem}
 #credits .btn{margin-top:1rem}
 @media print{body{display:none}}
+/* Telefon (dik): yazılar okunur boyda; şifre üstte, soru paneli altta tam genişlik */
+@media (max-width:600px) and (orientation:portrait){
+html{font-size:2.1vw}
+#panel{left:2vw;right:2vw;width:auto;top:34dvh;bottom:2vw;padding:1rem 1.2rem}
+#cipher{left:2vw;right:2vw;top:13vw}
+#note{left:2vw;right:2vw;width:auto;bottom:auto;top:46vw}
+}
 </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body>
 <div id="stage"><svg id="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"></svg></div>

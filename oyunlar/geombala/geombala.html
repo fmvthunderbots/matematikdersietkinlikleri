@@ -129,7 +129,22 @@
 
         /* Hız Barı Animasyonu */
         #speed-bar-fill { transition: width 0.1s linear, background-color 0.2s ease; }
+    
+        /* Telefon: torba ve çekilen kart üstte yan yana, iki tahta tam genişlikte alt alta, sayfa kayar */
+        @media (max-width: 600px) {
+            body { height: auto !important; min-height: 100dvh; overflow-y: auto !important; }
+            #gb-topbar h1 { display: none; }
+            #gb-main { display: flex !important; flex-direction: column; height: auto !important; }
+            #gb-left { flex-direction: row !important; height: 190px !important; flex: none; }
+            #gb-left > div { flex: 1 1 0; min-width: 0; }
+            #gb-left h2 { font-size: 9px; letter-spacing: 0.5px; }
+            #gb-right { height: auto !important; }
+            #panel-top, #panel-bottom { flex: none !important; height: 250px; }
+            #title-top, #title-bottom { font-size: 13px; }
+            #pass-label-k { font-size: 11px; }
+        }
     </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body class="h-screen w-screen overflow-hidden text-slate-800 p-2 flex flex-col font-sans select-none">
 
@@ -256,7 +271,7 @@
     </div>
     
     <!-- Üst Bar -->
-    <div class="w-full mb-2 bg-white rounded-xl shadow-sm border border-slate-200 px-3 py-1.5 flex items-center justify-between relative shrink-0 h-11">
+    <div id="gb-topbar" class="w-full mb-2 bg-white rounded-xl shadow-sm border border-slate-200 px-3 py-1.5 flex items-center justify-between relative shrink-0 h-11">
         <!-- Sol Taraf: Başlık ve Butonlar -->
         <div class="flex items-center gap-2 sm:gap-3">
             <div class="flex items-center gap-1.5">
@@ -283,10 +298,10 @@
     </div>
     
     <!-- Ana İçerik Konteyneri -->
-    <div class="flex-1 w-full grid grid-cols-12 gap-2 min-h-0 h-[calc(100vh-3.5rem)]">
+    <div id="gb-main" class="flex-1 w-full grid grid-cols-12 gap-2 min-h-0 h-[calc(100vh-3.5rem)]">
         
         <!-- Sol Taraf: Torba ve Çekilen Kart (4 Sütun) -->
-        <div class="col-span-4 flex flex-col gap-2 h-full min-h-0">
+        <div id="gb-left" class="col-span-4 flex flex-col gap-2 h-full min-h-0">
             <!-- Torba Kutusu -->
             <div class="bg-white rounded-xl shadow-sm p-2 flex flex-col items-center justify-between border border-slate-200 relative overflow-hidden flex-1 min-h-0">
                 <div class="w-full flex justify-between items-center px-1 z-10">
@@ -359,7 +374,7 @@
         </div>
 
         <!-- Sağ Taraf: Tombala Kartları (8 Sütun) -->
-        <div class="col-span-8 flex flex-col gap-2 h-full min-h-0">
+        <div id="gb-right" class="col-span-8 flex flex-col gap-2 h-full min-h-0">
             
             <!-- Üst Kart: Kızlar Takımı (Sınıf Modu) VEYA Öğrenci Kartı (Bireysel Mod) -->
             <div id="panel-top" class="bg-white rounded-xl shadow-sm overflow-hidden border border-pink-200 flex flex-col flex-1 min-h-0">

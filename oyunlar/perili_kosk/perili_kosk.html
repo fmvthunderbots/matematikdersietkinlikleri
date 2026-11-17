@@ -1837,7 +1837,21 @@
     .g-rank-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 16px; border-radius: 14px; background: rgba(28,14,50,0.85); border: 2px solid var(--tc); color: var(--tc); font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 18px; }
     .g-win-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     .g-win-btns .btn-action-primary, .g-win-btns .btn-action-subtle { width: auto; flex: 0 1 auto; padding: 12px 26px; font-size: 18px; }
+  
+    /* Telefon: üst gösterge iki satıra sığsın, rün ve düğmeler küçülsün */
+    @media (max-width: 600px) {
+      #top-hud { height: auto !important; row-gap: 4px; }
+      .mansion-badge { font-size: 18px; }
+      .room-badge { font-size: 12px; padding: 2px 8px; }
+      .progress-runes-wrapper { gap: 3px; padding: 4px 6px; }
+      .rune-slot { width: 24px; height: 24px; font-size: 11px; }
+      .hud-stats-zone { gap: 5px; }
+      .stat-pill { padding: 3px 8px; font-size: 14px; }
+      .hud-btn { height: 30px; padding: 0 8px; }
+      #bgm-btn-text, #audio-btn-text { display: none; }
+    }
   </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body>
 

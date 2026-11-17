@@ -169,7 +169,23 @@
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
         }
+    
+        /* Telefon görünümü: içerik ekran boyuna sığmayınca başlık kesilmesin, sayfa kaysın */
+        @media (max-width: 600px) {
+            body { justify-content: flex-start !important; height: auto !important; min-height: 100dvh; overflow-y: auto !important; overflow-x: hidden !important; padding-top: 8px !important; }
+            body > .absolute.top-4.left-4 { position: static !important; flex-direction: row !important; width: auto !important; margin: 0 auto 8px; justify-content: center; }
+            body > .absolute.top-4.left-4 button { font-size: 0.9rem !important; padding: 6px 12px !important; white-space: nowrap; }
+            #app { height: auto !important; padding-top: 0 !important; }
+            #app h1 { font-size: 1.8rem !important; line-height: 1.1 !important; letter-spacing: 1px !important; }
+            #teams { gap: 6px !important; margin-top: 18px !important; }
+            #teams > * { min-width: 0; }
+            #teams * { font-size: clamp(0.62rem, 3.2vw, 0.85rem); overflow-wrap: anywhere; }
+            #teams .text-3xl, #teams .text-4xl, #teams .text-5xl { font-size: 1.6rem !important; }
+            .modal-box { width: 94vw !important; max-width: 94vw !important; padding: 22px 14px !important; }
+            #winner-name { font-size: 2.2rem !important; }
+        }
     </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body class="p-2 relative flex flex-col justify-center items-center h-screen">
 

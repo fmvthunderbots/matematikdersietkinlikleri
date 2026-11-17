@@ -467,7 +467,26 @@
     }
     .btn-endgame:hover { background: #DC2626; transform: translateX(-50%) scale(1.05); }
     .btn-endgame:active { transform: translateX(-50%) scale(0.95); }
+  
+    /* Telefon: başlık ekrana sığsın */
+    @media (max-width: 600px) { .start-title { font-size: clamp(20px, 6.6vw, 30px) !important; white-space: normal !important; } }
+  
+    /* Telefon: kule üstte yatay ilerleme çubuğu, soru paneli altında tam genişlik */
+    @media (max-width: 600px) {
+      body { overflow-y: auto !important; }
+      #game-area { flex-direction: column; height: auto !important; min-height: calc(100dvh - 95px); padding: 6px 8px 12px !important; gap: 10px !important; }
+      .player-arena { flex-direction: column; gap: 8px !important; height: auto !important; width: 100%; }
+      .torch-tower, #game-area.duel-mode .torch-tower { width: auto !important; padding: 6px !important; }
+      .tower-header { display: none; }
+      .tower-steps { flex-direction: row !important; gap: 3px !important; }
+      .tower-step, #game-area.duel-mode .tower-step { flex: 1; justify-content: center !important; padding: 2px 0 !important; min-height: 24px; }
+      .tower-step > span:first-child { display: none; }
+      .question-panel { padding: 12px !important; }
+      .q-top-bar { flex-wrap: wrap; gap: 6px; }
+    }
+
   </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body>
 

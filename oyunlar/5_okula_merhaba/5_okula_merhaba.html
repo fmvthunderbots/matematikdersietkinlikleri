@@ -1436,8 +1436,17 @@
       .option-btn { font-size: 30px; padding: 16px; }
       .score-summary-grid { grid-template-columns: 1fr 1fr; }
       .rules-banner { flex-direction: column; align-items: center; }
+      /* Telefon: oyun sırasında araç çubuğu yatay ve üstte, istatistikler tek satıra sığar */
+      body.screen-game .top-toolbar { flex-direction: row; top: 8px; right: 8px; }
+      body.screen-game .game-layout { padding-top: 44px; }
+      .stats-bar { padding: 10px 10px; gap: 6px; }
+      .stat-box { gap: 6px; min-width: 0; }
+      .stat-icon { width: 32px; height: 32px; font-size: 17px; border-radius: 10px; flex-shrink: 0; }
+      .stat-label { font-size: 10px; white-space: nowrap; }
+      .stat-value { font-size: 18px; }
     }
   </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body class="screen-start intro-mode">
 

@@ -2287,7 +2287,11 @@
       color: #fff;
       border: 2px solid #fbbf24;
     }
+  
+    /* Telefon: savaş sahnesi kolonları ekrandan taşmasın */
+    @media (max-width: 600px) { .arena-battle-stage { grid-template-columns: minmax(0, 1fr) !important; } .battle-main-col, .boss-tower-col { min-width: 0; } }
   </style>
+    <script src="../../ortak/telefon.js"></script>
 </head>
 <body>
 
