@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matematik Etkinlik Portalı</title>
+    <title>Matematik Oyunları</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="uygulama/simge-192.png" type="image/png">
     <link rel="apple-touch-icon" href="uygulama/apple-touch-icon.png">
@@ -13,9 +13,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <!-- Firebase Bağımlılıkları (Merkezi Öğrenci Listesi İçin) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -140,27 +137,6 @@
             transform: scale(1.05);
         }
 
-        /* Modal ve Form Girdileri (Koyu Tema) */
-        #settings-modal, #password-modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            z-index: 50;
-            align-items: center; justify-content: center;
-        }
-
-        .dark-input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid #475569;
-            color: #f8fafc;
-        }
-        .dark-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
         /* Metalik / Parlak Başlık */
         .text-metallic {
             background: linear-gradient(to right, #cbd5e1, #f8fafc, #94a3b8);
@@ -196,7 +172,7 @@
         /* Uygulamayı Yükle düğmesi: logo renkleri (lacivert + altın) */
         .install-btn {
             position: relative; overflow: hidden; align-items: center; gap: 10px;
-            height: 50px; padding: 4px 18px 4px 4px; border-radius: 999px; white-space: nowrap;
+            height: 46px; padding: 0 20px; border-radius: 999px; white-space: nowrap;
             background: linear-gradient(135deg, #1e3a6e, #0f1f3d);
             border: 1px solid rgba(251, 191, 36, 0.65);
             box-shadow: 0 6px 22px rgba(245, 158, 11, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -211,16 +187,9 @@
             transform: skewX(-20deg); animation: install-shine 4.5s ease-in-out infinite; pointer-events: none;
         }
         @keyframes install-shine { 0%, 70% { left: -60%; } 100% { left: 130%; } }
-        .install-icon { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
-        .install-icon img { width: 100%; height: 100%; border-radius: 11px; display: block; }
-        .install-icon i {
-            position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 50%;
-            background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f1f3d; font-size: 10px;
-            display: flex; align-items: center; justify-content: center; border: 2px solid #0f1f3d;
-        }
-        .install-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
-        .install-text b { color: #fff; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.2px; }
-        .install-text small { color: #fcd34d; font-size: 0.7rem; font-weight: 600; }
+        .install-btn > i { color: #fbbf24; font-size: 1rem; }
+        .install-long { color: #fff; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.2px; }
+        .install-short { display: none; color: #fff; font-size: 0.9rem; font-weight: 800; }
         @media (prefers-reduced-motion: reduce) { .install-btn::after { animation: none; display: none; } }
 
         /* Dik tablet: menü sığsın diye boşluklar daralır */
@@ -229,8 +198,9 @@
             #grade-tabs { gap: 8px; }
             #grade-tabs .nav-btn { padding-left: 14px; padding-right: 14px; }
             #portal-title { font-size: 1.35rem; }
-            #btn-install { padding: 3px; height: auto; }
-            #btn-install .install-text { display: none; }
+            #btn-install { height: 40px; padding: 0 14px; gap: 7px; }
+            #btn-install .install-long { display: none; }
+            #btn-install .install-short { display: inline; }
         }
 
         /* Telefon görünümü (tablet ve bilgisayar etkilenmez) */
@@ -247,8 +217,9 @@
                 border-top: 1px solid rgba(255, 255, 255, 0.1);
             }
             #grade-tabs .nav-btn { flex: 1; justify-content: center; padding: 11px 2px; font-size: 0.8rem; gap: 4px; white-space: nowrap; border-radius: 14px; transform: none; }
-            #btn-install { padding: 3px; height: auto; }
-            #btn-install .install-text { display: none; }
+            #btn-install { height: 40px; padding: 0 14px; gap: 7px; }
+            #btn-install .install-long { display: none; }
+            #btn-install .install-short { display: inline; }
             #portal-main { padding: 14px 14px 100px; }
             #games-container { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
             .game-card:hover { transform: none; }
@@ -263,11 +234,8 @@
     <!-- Top Navbar -->
     <nav class="glass-nav w-full py-4 px-8 flex justify-between items-center z-10 sticky top-0">
         <div class="flex items-center gap-4">
-            <!-- Sol üst logoya çift tıklayarak veya sağ üstteki çarktan yönetim paneline girilebilir -->
-            <div id="portal-logo" ondblclick="openPasswordModal()" title="Yönetim Paneli (Çift Tıkla)" class="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500 rounded-full flex items-center justify-center text-white text-2xl shadow-lg cursor-pointer">
-                <i class="fas fa-square-root-alt"></i>
-            </div>
-            <h1 id="portal-title" class="text-2xl md:text-3xl font-extrabold text-metallic tracking-tight uppercase">Matematik Etkinlik Portalı</h1>
+            <img id="portal-logo" src="uygulama/simge-dugme.png" alt="Matematik Oyunları logosu" class="w-12 h-12 rounded-xl shadow-lg">
+            <h1 id="portal-title" class="text-2xl md:text-3xl font-extrabold text-metallic tracking-tight uppercase">Matematik Oyunları</h1>
         </div>
         
         <div id="grade-tabs" class="flex gap-4">
@@ -293,15 +261,10 @@
             </button>
         </div>
         
-        <div class="flex items-center gap-3">
+        <div class="flex items-center">
         <!-- Uygulamayı Yükle: yalnız tarayıcı yüklemeye izin verince görünür -->
         <button id="btn-install" onclick="installApp()" title="Matematik Oyunları uygulamasını yükle" aria-label="Uygulamayı Yükle" class="hidden install-btn">
-            <span class="install-icon"><img src="uygulama/simge-dugme.png" alt=""><i class="fas fa-arrow-down"></i></span>
-            <span class="install-text"><b>Uygulamayı Yükle</b><small>Tek dokunuşla aç</small></span>
-        </button>
-        <!-- Sağ Üst: Yönetim Paneli (Öğrenci Listeleri & Materyal Yönetimi) -->
-        <button onclick="openPasswordModal()" title="Sistem ve Öğrenci Yönetimi" class="w-11 h-11 bg-slate-800/80 border border-slate-600/80 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-400 hover:bg-blue-600 transition-all shadow-lg group">
-            <i class="fas fa-cog text-lg transition-transform duration-500 group-hover:rotate-90"></i>
+            <i class="fas fa-download"></i><span class="install-long">Uygulamayı Yükle</span><span class="install-short">Yükle</span>
         </button>
         </div>
     </nav>
@@ -317,7 +280,7 @@
                 <i class="fas fa-folder-open text-5xl text-slate-500"></i>
             </div>
             <h2 class="text-3xl font-bold mb-3 text-slate-200">Kayıt Bulunamadı</h2>
-            <p class="text-slate-400 text-lg leading-relaxed">Bu sınıfa ait sisteme yüklenmiş bir materyal yok. Sağ üstteki yönetim panelinden yeni etkinlik ekleyebilirsiniz.</p>
+            <p class="text-slate-400 text-lg leading-relaxed">Bu sınıfa ait etkinlik henüz eklenmedi.</p>
         </div>
     </main>
 
@@ -329,84 +292,10 @@
         <iframe id="game-frame" srcdoc=""></iframe>
     </div>
 
-    <!-- Password Modal -->
-    <div id="password-modal">
-        <div class="glass-panel p-8 rounded-2xl w-full max-w-md relative animate-[fadeIn_0.3s_ease-out]">
-            <button onclick="closePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-            <div class="text-center mb-6">
-                <i class="fas fa-user-shield text-4xl text-blue-400 mb-3"></i>
-                <h2 class="text-2xl font-bold text-white">Yönetici Girişi</h2>
-            </div>
-            <input type="password" id="admin-password" class="w-full p-4 rounded-xl dark-input outline-none transition-all mb-6 text-center text-2xl tracking-widest" placeholder="••••••••">
-            <button onclick="checkPassword()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/50">GİRİŞ YAP</button>
-        </div>
-    </div>
-
-    <!-- Settings Modal (Sadece Merkezi Öğrenci Yönetimi) -->
-    <div id="settings-modal">
-        <div class="glass-panel p-8 rounded-3xl w-full max-w-2xl max-h-[92vh] flex flex-col relative animate-[fadeIn_0.3s_ease-out]">
-            <button onclick="closeSettingsModal()" class="absolute top-5 right-6 text-slate-400 hover:text-red-400 transition-colors text-3xl z-10">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <h2 class="text-2xl font-bold mb-6 text-white border-b border-slate-700 pb-4 flex items-center justify-between pr-10">
-                <div><i class="fas fa-users text-amber-400 mr-3"></i> Merkezi Öğrenci Yönetimi</div>
-                <button onclick="logoutAdmin()" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white px-4 py-2 rounded-lg border border-slate-600 transition-colors">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
-                </button>
-            </h2>
-            
-            <div class="flex-1 overflow-y-auto pr-1 flex flex-col justify-between">
-                <div class="bg-slate-800/60 p-6 rounded-2xl border border-amber-500/40 flex flex-col justify-between">
-                    <div>
-                        <p class="text-sm text-slate-300 mb-4 leading-relaxed">
-                            Sene başında 5, 6 ve 7. sınıf öğrencilerini buradan <b>bir kez</b> kaydedin. O sınıfa eklediğiniz tüm oyunlar bu listeyi otomatik kullanır!
-                        </p>
-
-                        <!-- Sınıf Seçim Sekmeleri -->
-                        <div class="flex gap-2.5 mb-4">
-                            <button id="std-tab-5" onclick="selectStudentGradeTab('5')" class="flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all bg-amber-600 text-white border-amber-400 shadow">
-                                5. Sınıflar (<span id="count-grade-5">0</span>)
-                            </button>
-                            <button id="std-tab-6" onclick="selectStudentGradeTab('6')" class="flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all bg-slate-900 text-slate-400 border-slate-700">
-                                6. Sınıflar (<span id="count-grade-6">0</span>)
-                            </button>
-                            <button id="std-tab-7" onclick="selectStudentGradeTab('7')" class="flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all bg-slate-900 text-slate-400 border-slate-700">
-                                7. Sınıflar (<span id="count-grade-7">0</span>)
-                            </button>
-                        </div>
-
-                        <label id="std-grade-label" class="block text-sm font-bold text-amber-300 mb-2">
-                            5. Sınıf Öğrenci İsimlerini Ekle (Alt alta veya virgülle):
-                        </label>
-                        <textarea id="central-student-input" rows="4" class="w-full p-3 rounded-xl dark-input outline-none text-sm font-medium resize-none mb-3" placeholder="Örn:&#10;Ali Yılmaz&#10;Zeynep Demir"></textarea>
-
-                        <div class="flex justify-between items-center mb-2">
-                            <span id="central-student-status" class="text-sm font-bold text-emerald-400">5. Sınıflarda 0 öğrenci kayıtlı.</span>
-                            <button onclick="clearCentralStudentList()" class="text-xs text-rose-400 hover:text-rose-300 font-bold underline">Bu Sınıfı Sıfırla</button>
-                        </div>
-
-                        <!-- Mevcut Kayıtlı Öğrenciler Ön İzleme Kutusu -->
-                        <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-3 max-h-48 overflow-y-auto mb-5 text-xs text-slate-300 grid grid-cols-1 sm:grid-cols-2 gap-1.5" id="central-students-preview">
-                            Henüz öğrenci eklenmemiş.
-                        </div>
-                    </div>
-
-                    <button onclick="saveCentralStudentList()" class="w-full bg-amber-600 text-white font-bold py-4 rounded-xl hover:bg-amber-500 transition-colors shadow-lg shadow-amber-900/40 flex items-center justify-center gap-2 text-base">
-                        <i class="fas fa-cloud-upload-alt"></i> SEÇİLİ SINIF LİSTESİNE EKLE & SENKRONİZE ET
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Veritabanı Dosyası -->
     <script src="./oyunlar.js"></script>
     <script>
     const DB_KEY = 'edu_games_db';
-    const PASSWORD = '26575982824.bati';
     
     // Arka plan resimleri
     const BG_5 = './arkaplan5.jpg';
@@ -414,154 +303,6 @@
 
     let currentGrade = '5';
     let games = []; // oyunlar.js'den dolacak
-
-    /* ==========================================================
-       MERKEZİ FIREBASE ÖĞRENCİ YÖNETİMİ (5, 6 ve 7. SINIFLAR)
-       Sene başında tek bir kez buradan eklenir; hem sınıf düğümüne
-       (students_grade_5, students_grade_6, students_grade_7) hem de
-       mevcut tüm oyunların öğrenci düğümlerine otomatik yazılır!
-       ========================================================== */
-    const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyB_JfoXOVQHGeMpjFpvHe5idG6-_t03-nQ",
-        authDomain: "zihindencarpma.firebaseapp.com",
-        databaseURL: "https://zihindencarpma-default-rtdb.firebaseio.com",
-        projectId: "zihindencarpma",
-        storageBucket: "zihindencarpma.firebasestorage.app",
-        messagingSenderId: "111639321624",
-        appId: "1:111639321624:web:b6d14149d55b3982d6376d"
-    };
-
-    // Hangi sınıftaki oyunların hangi Firebase düğümlerini kullandığı (Eski oyunlarla %100 uyum için!)
-    const GRADE_SYNC_NODES = {
-        '5': ['students_grade_5', 'students_cumhuriyetekspresi', 'students_geombala'],
-        '6': ['students_grade_6', 'students_olasilikfabrikasi', 'students_asalsayifirtina', 'students_kutuplardaasallik', 'students_carpanavcilari', 'students_bolunebilme'],
-        '7': ['students_grade_7', 'students_tamsayifirtina', 'students_rasyonel']
-    };
-
-    let portalDb = null;
-    let selectedAdminGradeTab = '5';
-    let centralStudentsByGrade = { '5': [], '6': [], '7': [] };
-
-    if (typeof firebase !== 'undefined') {
-        try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG);
-            }
-            portalDb = firebase.database();
-
-            ['5', '6', '7'].forEach(g => {
-                portalDb.ref('students_grade_' + g).on('value', snap => {
-                    let raw = snap.val();
-                    if (raw) {
-                        centralStudentsByGrade[g] = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-                    } else {
-                        centralStudentsByGrade[g] = [];
-                    }
-                    updateStudentAdminUI();
-                });
-            });
-        } catch (e) {
-            console.error("Firebase bağlantı hatası:", e);
-        }
-    }
-
-    function selectStudentGradeTab(grade) {
-        selectedAdminGradeTab = grade;
-        ['5', '6', '7'].forEach(g => {
-            const btn = document.getElementById('std-tab-' + g);
-            if (!btn) return;
-            if (g === grade) {
-                btn.className = "flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-amber-600 text-white border-amber-400 shadow";
-            } else {
-                btn.className = "flex-1 py-2 rounded-lg font-bold text-xs border transition-all bg-slate-900 text-slate-400 border-slate-700 hover:text-white";
-            }
-        });
-        document.getElementById('std-grade-label').innerText = `${grade}. Sınıf Öğrenci İsimlerini Ekle (Alt alta veya virgülle):`;
-        updateStudentAdminUI();
-    }
-
-    function updateStudentAdminUI() {
-        ['5', '6', '7'].forEach(g => {
-            const cntEl = document.getElementById('count-grade-' + g);
-            if (cntEl) cntEl.innerText = centralStudentsByGrade[g].length;
-        });
-
-        const currentList = centralStudentsByGrade[selectedAdminGradeTab] || [];
-        const statusEl = document.getElementById('central-student-status');
-        if (statusEl) {
-            statusEl.innerText = `${selectedAdminGradeTab}. Sınıflarda ${currentList.length} öğrenci kayıtlı.`;
-        }
-
-        const previewEl = document.getElementById('central-students-preview');
-        if (previewEl) {
-            if (currentList.length === 0) {
-                previewEl.innerHTML = `<div class="text-slate-500 italic">Bu sınıfta henüz kayıtlı öğrenci yok.</div>`;
-            } else {
-                previewEl.innerHTML = currentList.map((name, i) =>
-                    `<div class="flex justify-between items-center bg-slate-800/80 px-2.5 py-1 rounded border border-slate-700/60">
-                        <span><b>${i + 1}.</b> ${name}</span>
-                        <button onclick="removeSingleCentralStudent('${selectedAdminGradeTab}', ${i})" class="text-rose-400 hover:text-rose-300 text-xs font-bold" title="Sil">✕</button>
-                    </div>`
-                ).join('');
-            }
-        }
-    }
-
-    function syncGradeListToAllGameNodes(grade, studentArray) {
-        if (!portalDb) return Promise.reject("Veritabanı yok");
-        const joined = studentArray.join('\n');
-        const targetNodes = GRADE_SYNC_NODES[grade] || ['students_grade_' + grade];
-        const promises = targetNodes.map(nodeName => portalDb.ref(nodeName).set(joined));
-        return Promise.all(promises);
-    }
-
-    function saveCentralStudentList() {
-        const inputEl = document.getElementById('central-student-input');
-        const text = inputEl.value;
-        if (!text.trim()) {
-            alert('Lütfen eklenecek öğrenci isimlerini kutuya yazın veya yapıştırın.');
-            return;
-        }
-
-        const newNames = text.replace(/"/g, '')
-                             .split(/[\n,;]+/)
-                             .map(s => s.trim())
-                             .filter(s => s.length > 0);
-
-        const existingList = centralStudentsByGrade[selectedAdminGradeTab] || [];
-        const existingLower = existingList.map(n => n.toLocaleLowerCase('tr-TR'));
-        let addedCount = 0;
-        const updatedList = [...existingList];
-
-        newNames.forEach(n => {
-            const low = n.toLocaleLowerCase('tr-TR');
-            if (!existingLower.includes(low)) {
-                updatedList.push(n);
-                existingLower.push(low);
-                addedCount++;
-            }
-        });
-
-        syncGradeListToAllGameNodes(selectedAdminGradeTab, updatedList).then(() => {
-            alert(`${selectedAdminGradeTab}. Sınıflara ${addedCount} yeni öğrenci eklendi ve bu sınıftaki tüm oyunlarla senkronize edildi!`);
-            inputEl.value = '';
-        }).catch(() => {
-            alert('Kaydedilirken bir hata oluştu.');
-        });
-    }
-
-    function removeSingleCentralStudent(grade, index) {
-        const list = [...(centralStudentsByGrade[grade] || [])];
-        const removedName = list[index];
-        if (!confirm(`"${removedName}" isimli öğrenciyi ${grade}. sınıf listesinden silmek istediğinize emin misiniz?`)) return;
-        list.splice(index, 1);
-        syncGradeListToAllGameNodes(grade, list);
-    }
-
-    function clearCentralStudentList() {
-        if (!confirm(`${selectedAdminGradeTab}. Sınıflara ait tüm öğrenci listesi silinecek (oyun skorları silinmez). Emin misiniz?`)) return;
-        syncGradeListToAllGameNodes(selectedAdminGradeTab, []);
-    }
 
     window.onload = () => {
         loadGamesFromDB();
@@ -651,18 +392,6 @@
         }
     }
 
-    function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('new-game-code').value = e.target.result;
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-    }
-
     /*
       AKILLI ÖĞRENCİ LİSTESİ ENJEKSİYONU:
       Portaldan bir oyun açılırken (veya yeni oyun eklenirken), o oyunun içindeki
@@ -701,123 +430,6 @@
         const container = document.getElementById('game-frame-container');
         container.style.display = 'none';
         frame.srcdoc = ''; 
-    }
-
-    function openPasswordModal() {
-        if (localStorage.getItem('admin_auth') === 'true') {
-            openSettingsModal();
-            return;
-        }
-
-        document.getElementById('admin-password').value = '';
-        document.getElementById('password-modal').style.display = 'flex';
-        setTimeout(() => document.getElementById('admin-password').focus(), 100);
-    }
-
-    function closePasswordModal() {
-        document.getElementById('password-modal').style.display = 'none';
-    }
-
-    function checkPassword() {
-        const pass = document.getElementById('admin-password').value;
-        if (pass === PASSWORD) {
-            localStorage.setItem('admin_auth', 'true');
-            closePasswordModal();
-            openSettingsModal();
-        } else {
-            alert('Yetkisiz Giriş Denemesi!');
-        }
-    }
-
-    function logoutAdmin() {
-        localStorage.removeItem('admin_auth');
-        closeSettingsModal();
-        alert('Yönetici çıkışı yapıldı.');
-    }
-
-    document.getElementById('admin-password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') checkPassword();
-    });
-
-    function openSettingsModal() {
-        document.getElementById('settings-modal').style.display = 'flex';
-        selectStudentGradeTab(currentGrade);
-    }
-
-    function closeSettingsModal() {
-        document.getElementById('settings-modal').style.display = 'none';
-    }
-
-    function addGame() {
-        const title = document.getElementById('new-game-title').value.trim();
-        const grade = document.getElementById('new-game-grade').value;
-        const image = document.getElementById('new-game-image').value.trim();
-        let code = document.getElementById('new-game-code').value.trim();
-
-        if (!title || !code) {
-            alert('Lütfen Başlık ve Kaynak Kod alanlarını doldurunuz!');
-            return;
-        }
-
-        // Oyunu kaydederken de doğrudan o sınıfın merkezi öğrenci listesine bağla
-        code = injectCentralStudentsIntoGameCode(code, grade);
-
-        const newGame = {
-            id: Date.now().toString(),
-            title: title,
-            grade: grade,
-            image: image,
-            code: code,
-            addedAt: new Date().toISOString()
-        };
-
-        games.push(newGame);
-        saveGamesToDB();
-        
-        alert(`Etkinlik ${grade}. Sınıflara başarıyla yüklendi ve ${grade}. sınıf öğrenci listesine otomatik bağlandı!`);
-        
-        document.getElementById('new-game-title').value = '';
-        document.getElementById('new-game-image').value = '';
-        document.getElementById('new-game-code').value = '';
-        
-        renderAdminGamesList();
-        renderGames();
-    }
-
-    function renderAdminGamesList() {
-        const list = document.getElementById('admin-games-list');
-        list.innerHTML = '';
-
-        if (games.length === 0) {
-            list.innerHTML = '<div class="text-center p-6 text-slate-500 font-medium">Veritabanında kayıtlı materyal yok.</div>';
-            return;
-        }
-
-        const sortedGames = [...games].sort((a, b) => b.id - a.id);
-
-        sortedGames.forEach(game => {
-            const item = document.createElement('div');
-            item.className = 'bg-slate-900 p-4 rounded-xl border border-slate-700 flex justify-between items-center group hover:border-slate-500 transition-colors';
-            item.innerHTML = `
-                <div>
-                    <h4 class="font-bold text-slate-200">${game.title}</h4>
-                    <span class="text-xs font-bold bg-blue-900/50 text-blue-400 px-2.5 py-1 rounded-md mt-2 inline-block border border-blue-800/50">${game.grade}. Sınıf</span>
-                </div>
-                <button onclick="deleteGame('${game.id}')" class="w-10 h-10 bg-red-900/30 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center border border-red-900/50">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            `;
-            list.appendChild(item);
-        });
-    }
-
-    function deleteGame(id) {
-        if (confirm('Bu materyali kalıcı olarak sistemden silmek istediğinize emin misiniz?')) {
-            games = games.filter(g => g.id !== id);
-            saveGamesToDB();
-            renderAdminGamesList();
-            renderGames();
-        }
     }
 
     // --- Uygulama olarak yükleme (PWA) ---

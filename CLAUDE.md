@@ -5,7 +5,8 @@ Yayın adresi: https://fmvthunderbots.github.io/matematikdersietkinlikleri/ (Git
 
 ## Yapı
 
-- `index.html`: portal. Oyun kartlarını gösterir, öğretmen panelinden sınıf listeleri yönetilir.
+- `index.html`: portal. Oyun kartlarını gösterir. Yönetim paneli (2026-11-17) kaldırıldı; öğrenci listesi, skor
+  temizliği gibi işleri kullanıcı Claude'a söyler, Claude Firebase REST ile doğrudan yapar (önce yedek alır).
 - `oyunlar.js`: oyun listesi (`SISTEM_OYUNLARI`). Yeni oyun = bu listeye yeni blok (`id`, `title`, `grade`, `image`, `url`).
 - `oyunlar/<oyun>/`: her oyunun `.html` dosyası, kapağı ve yalnız ona ait görsel/sesleri. Sürümleri aynı klasörde
   (`yazili_arenasi/` 5-6-7, `anitkabir_yolu/` 5-6). Oyun içi yollar klasöre göre göreli (`url('bg.jpg')`).
@@ -22,8 +23,9 @@ Yayın adresi: https://fmvthunderbots.github.io/matematikdersietkinlikleri/ (Git
 
 ## Öğrenci listesi akışı
 
-Panel, merkezi listeyi `students_grade_<sınıf>` düğümüne yazar ve `index.html` içindeki
-`GRADE_SYNC_NODES` haritasındaki eski düğümlere de kopyalar. Portal oyunları URL ile açtığı için
+Panel kaldırıldı. Öğrenci listesi değişince `students_grade_<sınıf>` ve o sınıfın oyunlarının okuduğu
+eski düğümler (ör. 6. sınıf: `students_olasilikfabrikasi`, `students_asalfirtina`, `students_yaziliarenasi_6` ...)
+elle güncellenmeli. Portal oyunları URL ile açtığı için
 oyunlar listeyi portaldan almaz; her oyun Firebase'de kendi düğümünü okur.
 
 Yeni oyunlarda doğrudan `students_grade_<sınıf>` okuyun. Oyun başka bir düğüm okuyorsa o düğümü
@@ -33,12 +35,14 @@ Yeni oyunlarda doğrudan `students_grade_<sınıf>` okuyun. Oyun başka bir dü�
 
 1. Şu oyunların okuduğu düğümler `GRADE_SYNC_NODES` içinde yok, panelden eklenen öğrenciler gitmiyor:
    - 5. sınıf: `5_okula_merhaba` (`students_zihinden`), `geometri_kutuplar` (`students_geometrikutuplar`)
-   - 6. sınıf: `asal_sayi_firtinasi` ve `aralarinda_asal_kutup` (`students_asalfirtina`; panel yanlışlıkla
-     `students_asalsayifirtina` yazıyor), `yazili_arenasi_6` (`students_yaziliarenasi_6`)
+   - 6. sınıf: `asal_sayi_firtinasi` ve `aralarinda_asal_kutup` (`students_asalfirtina`; eski panel yanlışlıkla
+     `students_asalsayifirtina` yazıyordu), `yazili_arenasi_6` (`students_yaziliarenasi_6`)
    - 7. sınıf: `yazili_arenasi_7` (`students_yaziliarenasi_7`)
 2. `arsiv/app.js` bu projeye ait değil (PDF çözüm sitesinin kodu, yanlışlıkla yüklenmiş).
 3. `Portal_Kurulumu.bat` adresi `matematikdersetkinlikleri` yazıyor; doğrusu `matematikdersietkinlikleri` ("i" eksik).
 4. `arkaplan7.jpg` hiçbir yerde kullanılmıyor. `oyunlar/tombala/` portalda (`oyunlar.js`) listelenmiyor.
+   Perili Köşk ilk 10: düğüm `meb_perilikosk_top10`; isim başına tek kayıt (en yüksek puan) tutulur.
+   Oyun kodunda `SCORE_MGR_BAD_NAMES` = dedektif, nil tabak (Nil Tabak'ın 9620 puanlık kaydı listede duruyor).
    Perili Köşk'te kullanılmayan görseller var (`exterior_bg.jpg`, `detective.png`, `perili_kosk_bg.jpg`, `perili_kosk_zafer.jpg`).
 5. Var olmayan dosyaya giden yollar: `5_okula_merhaba` `background.jpg` arıyor (yoksa internetten yedek görsel
    açılıyor); Perili Köşk yedek yolları `kapak.jpg` ve `perili_kosk_assets/...`.

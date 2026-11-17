@@ -4412,10 +4412,26 @@
       } catch(e) {}
 
       if (cloudDb) {
-        try {
+        // Bir isim listede bir kez durur: yeni puan eskisinden yüksekse eskiler silinir, değilse kaydedilmez
+        cloudDb.ref(DB_NODE).once('value').then(snap => {
+          const same = [];
+          snap.forEach(ch => { const v = ch.val() || {}; if (foldName(v.name) === foldName(name)) same.push({ key: ch.key, score: Number(v.score) || 0 }); });
+          if (same.some(r => r.score >= finalScore)) return;
+          same.forEach(r => cloudDb.ref(DB_NODE).child(r.key).remove());
           cloudDb.ref(DB_NODE).push(entry);
-        } catch(e) {}
+        }).catch(() => {});
       }
+    }
+
+    /* Aynı isimden yalnız en yüksek puanı bırakır, "Dedektif" gibi hatalı kayıtları atar */
+    function uniqueBestScores(list) {
+      const best = new Map();
+      list.forEach(e => {
+        if (!e || !String(e.name || '').trim() || foldName(e.name) === 'dedektif') return;
+        const k = foldName(e.name);
+        if (!best.has(k) || (Number(e.score) || 0) > (Number(best.get(k).score) || 0)) best.set(k, e);
+      });
+      return [...best.values()].sort((a, b) => b.score - a.score);
     }
 
     function showLeaderboard() {
@@ -4423,11 +4439,10 @@
       showScreen('LEADERBOARD');
 
       if (cloudDb) {
-        cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(15).once('value', snapshot => {
+        cloudDb.ref(DB_NODE).orderByChild('score').limitToLast(200).once('value', snapshot => {
           let list = [];
           snapshot.forEach(child => { list.push(child.val()); });
-          list.sort((a,b) => b.score - a.score);
-          renderLeaderboardTable(list);
+          renderLeaderboardTable(uniqueBestScores(list));
         }).catch(() => {
           renderLocalLeaderboard();
         });
@@ -4441,7 +4456,7 @@
       try {
         localScores = JSON.parse(localStorage.getItem('perilikosk_scores') || '[]');
       } catch(e) {}
-      renderLeaderboardTable(localScores);
+      renderLeaderboardTable(uniqueBestScores(localScores));
     }
 
     const BENCHMARK_LEADERBOARD = [
