@@ -91,6 +91,29 @@
   .liste li:nth-child(odd) { background: rgba(255,255,255,.05); }
   .liste li.ben { background: rgba(255,213,74,.2); outline: 1px solid var(--sari); }
   .liste .s { font-family: 'Orbitron', sans-serif; color: var(--sari); }
+  .liste li { align-items: center; }
+  .sag { display: flex; align-items: center; gap: 8px; }
+  .kutlaDugme { font: inherit; font-size: 12px; font-weight: 900; padding: 4px 9px; border-radius: 999px; cursor: pointer; color: #0b1020; border: none; background: linear-gradient(135deg, #8ef0c0, #3ee08f); white-space: nowrap; }
+  .kutlaDugme.k1 { background: linear-gradient(135deg, #fff1a8, #ffc63a); }
+  .kutlaDugme.k2 { background: linear-gradient(135deg, #ffffff, #b9c6d8); }
+  .kutlaDugme.k3 { background: linear-gradient(135deg, #ffc9a0, #d9844a); }
+
+  /* Kutlama */
+  #kutlama { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(2,3,12,.9); }
+  #kutlamaTuval { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #kutlamaKart { position: relative; width: min(460px, 100%); text-align: center; padding: 22px 20px 20px; border-radius: 22px; background: rgba(10,16,40,.86); border: 2px solid var(--kRenk, #3ee08f); box-shadow: 0 0 40px var(--kParlak, rgba(62,224,143,.5)), inset 0 0 30px rgba(255,255,255,.04); animation: kartGel .7s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes kartGel { from { transform: scale(.4) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  #kRozet { position: relative; width: 120px; height: 120px; margin: -70px auto 6px; display: grid; place-items: center; font-size: 64px; }
+  #kRozet::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, var(--kParlak, rgba(62,224,143,.5)), transparent 70%); animation: nabiz 1.4s ease-in-out infinite; }
+  #kRozet::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px dashed var(--kRenk, #3ee08f); animation: don 6s linear infinite; }
+  #kRozet span { position: relative; animation: zipla 1.2s ease-in-out infinite; }
+  @keyframes nabiz { 50% { transform: scale(1.15); opacity: .7; } }
+  @keyframes don { to { transform: rotate(360deg); } }
+  @keyframes zipla { 50% { transform: translateY(-6px) scale(1.06); } }
+  #kUnvan { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 20px; color: var(--kRenk, #3ee08f); letter-spacing: .03em; }
+  #kAd { font-size: 28px; font-weight: 900; margin: 8px 0 2px; }
+  #kPuan { font-family: 'Orbitron', sans-serif; font-size: 22px; color: var(--sari); }
+  #kMesaj { font-weight: 700; opacity: .9; line-height: 1.5; margin: 10px 0 16px; }
   .bos { opacity: .7; font-weight: 700; padding: 8px 0; }
   .sonucBuyuk { font-family: 'Orbitron', sans-serif; font-size: 44px; color: var(--sari); margin: 6px 0; }
   .istat { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 14px; }
@@ -206,6 +229,18 @@
       <div class="etiket">🏆 İlk 10</div>
       <ol class="liste" id="liste2"></ol>
     </div>
+  </div>
+</div>
+
+<div id="kutlama" class="gizli">
+  <canvas id="kutlamaTuval"></canvas>
+  <div id="kutlamaKart">
+    <div id="kRozet"><span id="kEmoji">🥇</span></div>
+    <div id="kUnvan"></div>
+    <div id="kAd"></div>
+    <div id="kPuan"></div>
+    <div id="kMesaj"></div>
+    <button class="anaDugme" id="kKapat">👏 Alkışla ve Kapat</button>
   </div>
 </div>
 
@@ -663,7 +698,7 @@ function listeCiz() {
   const h = ilk10.length
     ? ilk10.map((k, i) => {
         const ad = String(k.name).replace(/[<>&"]/g, '');
-        return `<li class="${ad === oyuncu ? 'ben' : ''}"><span>${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} ${ad}</span><span class="s">${bicim(k.score)}</span></li>`;
+        return `<li class="${ad === oyuncu ? 'ben' : ''}"><span>${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} ${ad}</span><span class="sag"><span class="s">${bicim(k.score)}</span><button class="kutlaDugme ${i < 3 ? 'k' + (i + 1) : ''}" data-sira="${i}">👏 Kutla</button></span></li>`;
       }).join('')
     : '<div class="bos">Henüz kayıt yok. İlk sen ol!</div>';
   $('liste1').innerHTML = h; $('liste2').innerHTML = h;
@@ -752,6 +787,147 @@ function dongu() {
   requestAnimationFrame(dongu);
 }
 dongu();
+
+/* ============ KUTLAMA ============ */
+const KUTLAMALAR = [
+  { emoji: '🥇', unvan: 'GALAKSİNİN ŞAMPİYON KURYESİ', renk: '#ffd54a', parlak: 'rgba(255,200,60,.55)',
+    mesaj: 'Güneş bile senin için parlıyor! Sekiz gezegenin hepsi bu şampiyonu selamlıyor. 🌞' },
+  { emoji: '🥈', unvan: 'GÜMÜŞ KUYRUKLU YILDIZ', renk: '#dfe8f5', parlak: 'rgba(220,232,255,.5)',
+    mesaj: 'Gökyüzünü gümüş bir iz bırakarak geçtin. Zirveye bir kuyruklu yıldız uzaklığındasın! ☄️' },
+  { emoji: '🥉', unvan: 'BRONZ METEOR', renk: '#e39a5e', parlak: 'rgba(227,154,94,.5)',
+    mesaj: 'Atmosfere meteor gibi girdin! Kızıl gezegenden bronz selamlar. 🔥' },
+  { emoji: '🚀', unvan: 'YILDIZ KURYE ROZETİ', renk: '#3ee08f', parlak: 'rgba(62,224,143,.45)',
+    mesaj: 'Paketin teslim edildi! İlk 10\'daki yerinle galaksinin en iyi kuryeleri arasındasın. 📦' }
+];
+const kTuval = $('kutlamaTuval'), kc = kTuval.getContext('2d');
+let kTur = 3, kParcacik = [], kZaman = 0, kSonUret = 0, kAcik = false, kOnceki = 0;
+
+function kutlamaAc(sira) {
+  const k = ilk10[sira]; if (!k) return;
+  kTur = Math.min(sira, 3);
+  const t = KUTLAMALAR[kTur], kart = $('kutlamaKart');
+  kart.style.setProperty('--kRenk', t.renk); kart.style.setProperty('--kParlak', t.parlak);
+  kart.style.animation = 'none'; void kart.offsetWidth; kart.style.animation = '';
+  $('kEmoji').textContent = t.emoji;
+  $('kUnvan').textContent = `${sira + 1}. SIRA · ${t.unvan}`;
+  $('kAd').textContent = String(k.name);
+  $('kPuan').textContent = bicim(k.score) + ' puan';
+  $('kMesaj').textContent = t.mesaj;
+  $('kutlama').classList.remove('gizli');
+  kParcacik = []; kZaman = 0; kSonUret = -1; kAcik = true; kOnceki = performance.now();
+  kTuval.width = innerWidth; kTuval.height = innerHeight;
+  kutlamaSesi(kTur);
+  requestAnimationFrame(kCiz);
+}
+function kutlamaKapat() { kAcik = false; $('kutlama').classList.add('gizli'); }
+$('kKapat').onclick = kutlamaKapat;
+$('kutlama').addEventListener('click', e => { if (e.target.id === 'kutlama' || e.target.id === 'kutlamaTuval') kutlamaKapat(); });
+document.addEventListener('click', e => { const b = e.target.closest('.kutlaDugme'); if (b) kutlamaAc(+b.dataset.sira); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && kAcik) kutlamaKapat(); });
+
+function kutlamaSesi(tur) {
+  const notalar = [
+    [523, 659, 784, 1047, 784, 1047, 1319],   // şampiyon fanfarı
+    [587, 740, 880, 1175, 1480],              // kuyruklu yıldız ışıltısı
+    [392, 494, 587, 784, 988],                // meteor
+    [440, 554, 659, 880]                      // teslimat zili
+  ][tur];
+  notalar.forEach((f, i) => setTimeout(() => ton(f, tur === 0 ? .35 : .25, 'triangle', .13), i * (tur === 0 ? 150 : 120)));
+  if (tur === 2) setTimeout(() => ton(160, .8, 'sawtooth', .08, 50), 200);
+}
+
+function yildizCiz(x, y, r, renk, aci) {
+  kc.save(); kc.translate(x, y); kc.rotate(aci); kc.fillStyle = renk; kc.beginPath();
+  for (let i = 0; i < 10; i++) { const rr = i % 2 ? r * .45 : r, a = i * Math.PI / 5 - Math.PI / 2; kc.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  kc.closePath(); kc.fill(); kc.restore();
+}
+function patlama(x, y, renkler, adet, hiz, sekil) {
+  for (let i = 0; i < adet; i++) {
+    const a = Math.random() * Math.PI * 2, v = hiz * (.4 + Math.random() * .6);
+    kParcacik.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, omur: 1.4 + Math.random(), yas: 0, renk: renkler[i % renkler.length], r: 3 + Math.random() * 4, sekil, aci: Math.random() * 6, don: (Math.random() - .5) * 8, yercekimi: 60 });
+  }
+}
+function kuyruklu(x, y, vx, vy, renk, r, yercekimi) {
+  kParcacik.push({ x, y, vx, vy, omur: 3, yas: 0, renk, r, sekil: 'kuyruk', yercekimi, iz: [] });
+}
+
+function kUret(t) {
+  const W = kTuval.width, H = kTuval.height;
+  if (kTur === 0) {          // altın havai fişekler
+    patlama(Math.random() * W, Math.random() * H * .6 + H * .05, ['#ffd54a', '#fff1a8', '#ff9a3c', '#ffffff'], 36, 260, 'yildiz');
+  } else if (kTur === 1) {   // gümüş kuyruklu yıldızlar
+    for (let i = 0; i < 2; i++) kuyruklu(-40, Math.random() * H * .7, 700 + Math.random() * 300, 120 + Math.random() * 160, '#eaf2ff', 4, 0);
+    patlama(Math.random() * W, Math.random() * H, ['#ffffff', '#cfe0ff'], 8, 80, 'yildiz');
+  } else if (kTur === 2) {   // bronz meteor yağmuru
+    for (let i = 0; i < 3; i++) kuyruklu(Math.random() * W * 1.2, -30, -180 - Math.random() * 120, 520 + Math.random() * 200, ['#ff9a3c', '#e39a5e', '#ff6a3c'][i], 5, 0);
+  } else {                   // roket paket bırakır, paket konfetiye dönüşür
+    kParcacik.push({ sekil: 'roket', x: -60, y: H * (.15 + Math.random() * .5), vx: 520, vy: 0, omur: 3, yas: 0, birakti: false, hedefX: W * (.25 + Math.random() * .5) });
+  }
+}
+
+function kCiz(simdi) {
+  if (!kAcik) { kc.clearRect(0, 0, kTuval.width, kTuval.height); return; }
+  const dt = Math.min((simdi - kOnceki) / 1000, .05); kOnceki = simdi; kZaman += dt;
+  const W = kTuval.width, H = kTuval.height, aralik = [.45, .35, .22, 1.1][kTur];
+  if (kZaman - kSonUret > aralik && kZaman < 9) { kSonUret = kZaman; kUret(kZaman); }
+  kc.clearRect(0, 0, W, H);
+
+  if (kTur === 0) {          // arkada parlayan güneş ve yörüngede dönen 8 gezegen
+    const cx = W / 2, cy = H / 2, R = Math.min(W, H) * .42;
+    const g = kc.createRadialGradient(cx, cy, 0, cx, cy, R * 1.1);
+    g.addColorStop(0, `rgba(255,200,60,${.32 + Math.sin(kZaman * 3) * .08})`); g.addColorStop(1, 'rgba(255,200,60,0)');
+    kc.fillStyle = g; kc.fillRect(0, 0, W, H);
+    GEZEGENLER.forEach((p, i) => {
+      const a = kZaman * (.9 - i * .06) + i * Math.PI / 4, rx = R * (.55 + i * .07), ry = rx * .38;
+      const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry, r = 4 + p.r * 3;
+      kc.strokeStyle = 'rgba(255,255,255,.07)'; kc.beginPath(); kc.ellipse(cx, cy, rx, ry, 0, 0, 7); kc.stroke();
+      kc.fillStyle = p.renk; kc.beginPath(); kc.arc(x, y, r, 0, 7); kc.fill();
+      if (p.halka) { kc.strokeStyle = 'rgba(230,210,150,.8)'; kc.lineWidth = 2; kc.beginPath(); kc.ellipse(x, y, r * 1.9, r * .6, -.3, 0, 7); kc.stroke(); kc.lineWidth = 1; }
+    });
+  }
+
+  kParcacik = kParcacik.filter(p => {
+    p.yas += dt;
+    if (p.sekil === 'roket') {
+      p.x += p.vx * dt; p.y += Math.sin(p.yas * 6) * .8;
+      if (!p.birakti && p.x >= p.hedefX) { p.birakti = true; kParcacik.push({ sekil: 'paket', x: p.x, y: p.y + 10, vx: 40, vy: -60, yas: 0, omur: .9, aci: 0 }); }
+      kc.font = '46px serif'; kc.textAlign = 'center'; kc.textBaseline = 'middle';
+      kc.save(); kc.translate(p.x, p.y); kc.rotate(Math.PI / 4); kc.fillText('🚀', 0, 0); kc.restore();
+      for (let i = 0; i < 2; i++) kParcacik.push({ x: p.x - 30, y: p.y + (Math.random() - .5) * 8, vx: -120 - Math.random() * 80, vy: (Math.random() - .5) * 40, omur: .5, yas: 0, renk: ['#ffa53a', '#ffd54a'][i], r: 3, sekil: 'daire', yercekimi: 0 });
+      return p.x < W + 80;
+    }
+    if (p.sekil === 'paket') {
+      p.vy += 300 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.aci += dt * 4;
+      kc.font = '34px serif'; kc.save(); kc.translate(p.x, p.y); kc.rotate(p.aci); kc.fillText('📦', 0, 0); kc.restore();
+      if (p.yas >= p.omur) {
+        patlama(p.x, p.y, ['#ff5a4a', '#2fb6ff', '#9b6bff', '#e94b8a', '#3ee08f', '#ffd54a'], 50, 320, 'konfeti');
+        patlama(p.x, p.y, ['#ffffff', '#ffd54a'], 14, 200, 'yildiz');
+        return false;
+      }
+      return true;
+    }
+    p.vy += (p.yercekimi || 0) * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    const s = Math.max(0, 1 - p.yas / p.omur);
+    kc.globalAlpha = s;
+    if (p.sekil === 'kuyruk') {
+      p.iz.push([p.x, p.y]); if (p.iz.length > 22) p.iz.shift();
+      for (let i = 1; i < p.iz.length; i++) {
+        kc.strokeStyle = p.renk; kc.globalAlpha = s * i / p.iz.length; kc.lineWidth = p.r * i / p.iz.length * 1.6;
+        kc.beginPath(); kc.moveTo(p.iz[i - 1][0], p.iz[i - 1][1]); kc.lineTo(p.iz[i][0], p.iz[i][1]); kc.stroke();
+      }
+      kc.globalAlpha = s; kc.fillStyle = '#fff'; kc.beginPath(); kc.arc(p.x, p.y, p.r, 0, 7); kc.fill();
+      if (kTur === 2 && p.y > H * .82 && !p.carpti) {   // meteor yere çarpınca bronz kıvılcım
+        p.carpti = true; patlama(p.x, p.y, ['#ff9a3c', '#e39a5e', '#ffd54a'], 18, 220, 'daire'); return false;
+      }
+    } else if (p.sekil === 'yildiz') { p.aci += p.don * dt; yildizCiz(p.x, p.y, p.r * 1.6, p.renk, p.aci); }
+    else if (p.sekil === 'konfeti') { p.aci += p.don * dt; kc.save(); kc.translate(p.x, p.y); kc.rotate(p.aci); kc.fillStyle = p.renk; kc.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); kc.restore(); }
+    else { kc.fillStyle = p.renk; kc.beginPath(); kc.arc(p.x, p.y, p.r * s + .5, 0, 7); kc.fill(); }
+    kc.globalAlpha = 1;
+    return p.yas < p.omur && p.x > -100 && p.x < W + 100 && p.y < H + 100;
+  });
+  requestAnimationFrame(kCiz);
+}
+addEventListener('resize', () => { if (kAcik) { kTuval.width = innerWidth; kTuval.height = innerHeight; } });
 </script>
 </body>
 </html>
