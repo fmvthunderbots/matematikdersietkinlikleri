@@ -45,6 +45,23 @@ oyunlar listeyi portaldan almaz; her oyun Firebase'de kendi düğümünü okur.
 
 Yeni oyunlarda doğrudan `students_grade_<sınıf>` okuyun.
 
+## Oyun ekranı kuralı: kapatma düğmesi
+
+Portal oyunu iframe'de açar ve sağ üst köşeye kırmızı kapatma düğmesi (✕) koyar (`index.html` `.close-game-btn`):
+bilgisayarda `top:20px; right:20px` 50×50, 767px altında `top:10px; right:10px` 40×40.
+Oyunlarda sağ üst köşede bu alanı boş bırakın: puan, süre, düğme koymayın. Pratikte sağ üstte
+bilgisayarda ~90×90 px, telefonda ~60×60 px boşluk (ör. üst çubuğa `padding-right: 90px` / telefonda `60px`).
+
+## Ses kuralı: yanlış cevap / yanma sesi
+
+Kullanıcı "pırt" gibi osuruk sesi andıran yanlış/yanma seslerini sevmiyor. Kalın (≈200 Hz altı) `sawtooth`/`square`
+dalgayla aşağı kayan "bzzzt" sesleri YAPMAYIN. Yanlış cevap için yumuşak `sine`/`triangle` iki notalı inen bir zil
+(ör. 520 Hz → 390 Hz, kısa, düşük ses) kullanın. Patlama/çarpma gibi efektlerde de aynı kural geçerli.
+
+Uzay temalı oyunlarda ayrıca: çınlayan zil/nota/arp sesi koymayın; gerçekçi uzay sesi kullanın
+(alçak motor uğultusu = düşük geçiren süzgeçli gürültü, hışırtı, kuru tık, boğuk gümleme). Galaksi Kuryesi'ndeki
+`vuss`, `gum`, `tik` yardımcıları örnektir.
+
 ## Bilinen sorunlar (2026-11-14 itibarıyla düzeltilmedi)
 
 1. Şu oyunlar eski panelin eşitlediği düğümleri okumuyordu; öğrenci listesi güncellenirken bunlar da yazılmalı:
