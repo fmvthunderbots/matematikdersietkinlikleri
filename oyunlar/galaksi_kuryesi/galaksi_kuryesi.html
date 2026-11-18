@@ -175,7 +175,7 @@
 
 <div id="hud" class="gizli">
   <div id="yakitKutu" class="kutu">
-    <div class="etiket" style="display:flex;justify-content:space-between;align-items:center;gap:8px">⛽ Yakıt <span id="testEtiket" class="gizli" style="color:var(--sari)">TEST</span> <button id="menuDugme" title="Puanını kaydedip ana menüye dön" style="pointer-events:auto;font:inherit;font-size:11px;font-weight:800;color:#eaf2ff;background:rgba(255,255,255,.1);border:1px solid var(--kenar);border-radius:8px;cursor:pointer;padding:2px 7px">🏠 Ana Menü</button> <button id="sesDugme" title="Sesi aç/kapat" style="pointer-events:auto;font-size:15px;background:none;border:none;cursor:pointer;padding:0">🔊</button></div>
+    <div class="etiket" style="display:flex;justify-content:space-between;align-items:center;gap:8px">⛽ Yakıt <button id="menuDugme" title="Puanını kaydedip ana menüye dön" style="pointer-events:auto;font:inherit;font-size:11px;font-weight:800;color:#eaf2ff;background:rgba(255,255,255,.1);border:1px solid var(--kenar);border-radius:8px;cursor:pointer;padding:2px 7px">🏠 Ana Menü</button> <button id="sesDugme" title="Sesi aç/kapat" style="pointer-events:auto;font-size:15px;background:none;border:none;cursor:pointer;padding:0">🔊</button></div>
     <div id="yakitSn">150</div>
     <div id="yakitBar"><div id="yakitDolu"></div></div>
   </div>
@@ -253,7 +253,6 @@
       <datalist id="ogrenciListe"></datalist>
       <div id="girisHata"></div>
       <button class="anaDugme" id="basla" style="width:100%">🚀 Yolculuğa Başla</button>
-      <button class="ikinciDugme" id="testBasla" style="width:100%;margin-top:8px" title="Seçili modda, isim gerekmez, puan kaydedilmez, her tık doğru sayılır">🧪 Test Modu (geçici)</button>
     </div>
     <div class="kutu" style="padding:18px">
       <div class="etiket">🏆 İlk 10</div>
@@ -783,9 +782,9 @@ function modSec(m) {
   $('kuralCan').innerHTML = m === 'sinif' ? '<b>Can ve süre yok.</b> Sonda doğru oranınıza göre bir değerlendirme çıkar.' : '<b>3 canın</b> var: her yanlış bir can götürür. Doğru cevap <b>puan ve yakıt</b> verir.';
   $('kuralSon').textContent = m === 'sinif' ? "Puan kaydedilmez ve ilk 10'a yazılmaz. Sınıfça birlikte çözün!" : 'Yakıt ya da can biterse yolculuk biter. Hızlı ol, seri yap!';
 }
-function oyunBasla(test = false) {
+function oyunBasla() {
   const sinif = mod === 'sinif';
-  o = { test, sinif, hedefSoru: sinif ? 8 : 24, hc: sinif ? 1 : 3, kayitli: false, ayak: 0, hucre: 0, p: 0, hiz: 0, puan: 0, seri: 0, yakit: YAKIT_BASLA, km: 0, can: CAN, dogru: 0, yanlis: 0, enSeri: 0, alet: { karaDelik: true, solucan: true, uzayli: true } };
+  o = { sinif, hedefSoru: sinif ? 8 : 24, hc: sinif ? 1 : 3, kayitli: false, ayak: 0, hucre: 0, p: 0, hiz: 0, puan: 0, seri: 0, yakit: YAKIT_BASLA, km: 0, can: CAN, dogru: 0, yanlis: 0, enSeri: 0, alet: { karaDelik: true, solucan: true, uzayli: true } };
   roket.position.set(26, 0, 0);
   while (meteorlar.length) meteorSil(0);
   while (paketler.length) { const m = paketler.pop(); if (m.parent) m.parent.remove(m); }
@@ -794,7 +793,6 @@ function oyunBasla(test = false) {
   ortamBaslat();
   $('giris').classList.add('gizli'); $('bitis').classList.add('gizli');
   $('hud').classList.remove('gizli');
-  $('testEtiket').classList.toggle('gizli', !test);
   $('canlar').style.display = sinif ? 'none' : '';
   rotaCiz(); hudGuncelle();
   durum = 'soru'; yeniSoru();
@@ -925,12 +923,12 @@ $('abakusSifirla').onclick = () => { if (!kilit) boncuklar.forEach((_, i) => { b
 $('abakusOnay').onclick = () => {
   if (kilit) return;
   const deger = Number(boncuklar.join(''));
-  sonuc(o.test || deger === mevcut.hedef, `Doğrusu: ${bicim(mevcut.hedef)}`, 150);
+  sonuc(deger === mevcut.hedef, `Doğrusu: ${bicim(mevcut.hedef)}`, 150);
 };
 
 function cevapla(bt, s, onEk = '') {
   if (kilit) return;
-  const dogru = o.test || s === mevcut.dogru;   // test modunda her tık doğru sayılır
+  const dogru = s === mevcut.dogru;
   if (!dogru) {
     bt.classList.add('yanlis');
     [...$('secenekler').children].forEach(b => { if (b.dataset.deger === mevcut.dogru) b.classList.add('dogru'); });
@@ -959,7 +957,7 @@ function sonuc(dogru, dogruMetni, taban, onEk = '') {
     patlat(roket.position, [0xff4d5e, 0xff9a3c], 18, 4);
     const c = $('canlar'); c.classList.remove('sars'); void c.offsetWidth; c.classList.add('sars');
   }
-  if (o.test || o.sinif) { o.can = CAN; o.yakit = YAKIT_MAX; }
+  if (o.sinif) { o.can = CAN; o.yakit = YAKIT_MAX; }
   rotaCiz(); hudGuncelle();
   if (o.can <= 0) { setTimeout(() => bitir(false, 'can'), 1600); return; }
   if (o.yakit <= 0) { setTimeout(() => bitir(false, 'yakit'), 1400); return; }
@@ -1057,7 +1055,6 @@ function listeCiz() {
   $('liste1').innerHTML = h; $('liste2').innerHTML = h;
 }
 function skorKaydet() {
-  if (o.test) { $('bitisKayit').textContent = '🧪 Test modu: puan kaydedilmedi.'; return; }
   if (o.kayitli) return;
   if (!db || !oyuncu) { $('bitisKayit').textContent = 'Puan kaydedilemedi (bağlantı yok).'; return; }
   o.kayitli = true;
@@ -1072,7 +1069,7 @@ function skorKaydet() {
 
 /* Oyun sürerken çıkılırsa (Ana Menü ya da portalın ✕ düğmesi) o anki puan kaydedilir */
 function erkenKaydet() {
-  if (!o || o.test || o.sinif || o.kayitli || !oyuncu || o.puan <= 0 || !/^(soru|yaklas|varis)$/.test(durum)) return;
+  if (!o || o.sinif || o.kayitli || !oyuncu || o.puan <= 0 || !/^(soru|yaklas|varis)$/.test(durum)) return;
   o.kayitli = true;
   const kayit = { name: oyuncu, fullName: oyuncu, score: Math.min(o.puan, 1000000), date: new Date().toLocaleString('tr-TR'), timestamp: Date.now() };
   try { fetch(`${FIREBASE_CONFIG.databaseURL}/${DB_NODE}.json`, { method: 'POST', body: JSON.stringify(kayit), keepalive: true }); } catch (e) {}
@@ -1085,7 +1082,6 @@ $('menuDugme').onclick = () => {
   $('giris').classList.remove('gizli'); $('girisHata').textContent = '';
   camera.fov = 60; camera.updateProjectionMatrix();
 };
-$('testBasla').onclick = () => { tik(1200, .08); oyuncu = ''; oyunBasla(true); };
 
 function isimDogrula() {
   const ad = $('adSoyad').value.trim().replace(/\s+/g, ' ');
@@ -1104,7 +1100,7 @@ $('basla').onclick = () => {
   if (!hata) { tik(1200, .08); oyunBasla(); }
 };
 $('adSoyad').addEventListener('keydown', e => { if (e.key === 'Enter') $('basla').click(); });
-$('tekrar').onclick = () => oyunBasla(o.test);
+$('tekrar').onclick = () => oyunBasla();
 addEventListener('keydown', e => {
   if (durum !== 'soru' || !mevcut || mevcut.tur !== 'secmeli') return;
   const b = $('secenekler').children[+e.key - 1]; if (b) b.click();
@@ -1140,7 +1136,7 @@ function dongu() {
   ortamGuncelle(dt, oyunda ? .25 + hizOrani * .75 : 0);
 
   if (durum === 'soru') {
-    if (!o.test && !o.sinif) o.yakit -= dt;
+    if (!o.sinif) o.yakit -= dt;
     if (o.yakit <= 0 && !kilit) { o.yakit = 0; kilit = true; hudGuncelle(); bitir(false, 'yakit'); }
     else if (Math.floor(o.yakit + dt) !== Math.floor(o.yakit)) hudGuncelle();
   }
