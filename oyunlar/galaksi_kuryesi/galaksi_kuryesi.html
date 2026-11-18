@@ -642,9 +642,9 @@ function paketGuncelle(dt, t) {
     if (Math.random() < .6) parcacik(kapiD.clone().add(new THREE.Vector3(0, 0, .3)), new THREE.Vector3((Math.random() - .5) * 2, (Math.random() - .5) * 2, 1.5), 0xdff3ff, .25, .45, 1.6);
   } else if (!p.indi) {   // gezegene doğru küçülerek süzülür
     if (!p.p0) { p.p0 = m.position.clone(); p.c = p.p0.clone().add(p.hedef).multiplyScalar(.5).add(new THREE.Vector3(-1.5, 2.4, 3)); }
-    const k = Math.min(1, (T - 1.9) / 3.4), e = 1 - Math.pow(1 - k, 2.2), a = 1 - e;   // sona doğru yavaşlar (iniş)
+    const k = Math.min(1, (T - 1.9) / 4.2), e = 1 - Math.pow(1 - k, 2.2), a = 1 - e;   // sona doğru yavaşlar (iniş)
     m.position.set(a * a * p.p0.x + 2 * a * e * p.c.x + e * e * p.hedef.x, a * a * p.p0.y + 2 * a * e * p.c.y + e * e * p.hedef.y, a * a * p.p0.z + 2 * a * e * p.c.z + e * e * p.hedef.z);
-    m.scale.setScalar((1 - .72 * e) * .8);
+    m.scale.setScalar(.8 * (1 - .97 * Math.pow(k, 1.4)));   // inerken noktaya kadar küçülür
     m.rotation.x += dt * (1.1 - k); m.rotation.y += dt * .7 * (1 - k);
     if (Math.random() < .5) parcacik(m.position, new THREE.Vector3((Math.random() - .5) * 1.5, (Math.random() - .5) * 1.5, (Math.random() - .5) * 1.5), 0xdff3ff, .22 * m.scale.x + .1, .45, 1.6);   // yön ve frenleme gazı
     if (k >= 1) paketTeslim();
@@ -653,12 +653,12 @@ function paketGuncelle(dt, t) {
 }
 function paketTeslim() {
   const p = paket; p.indi = true;
-  p.gez.attach(p.m); p.m.lookAt(p.m.position.clone().multiplyScalar(2).sub(p.gez.position));   // yüzeye dik dursun
+  const konum = p.m.position.clone(); scene.remove(p.m);   // teslim edildi, paket yok olur
   const dalga = new THREE.Sprite(new THREE.SpriteMaterial({ map: halkaDoku, color: 0x7dffb5, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
-  dalga.position.copy(p.m.getWorldPosition(new THREE.Vector3())); scene.add(dalga); dalgalar.push({ s: dalga, yas: 0 });
-  patlat(dalga.position, [0xffd54a, 0x3ee08f, 0xffffff], 22, 3);
+  dalga.position.copy(konum); scene.add(dalga); dalgalar.push({ s: dalga, yas: 0 });
+  patlat(dalga.position, [0xffd54a, 0x3ee08f, 0xffffff], 10, 1.2);
   gum(90, .5, .16); vuss(.6, 1500, 500, .06);
-  paketler.push(p.m); paket = null;
+  paket = null;
   $('teslimYazi').classList.add('gizli');
   const g = GEZEGENLER[o.ayak];
   $('varisBaslik').textContent = `📦 ${g.ad}'e paket teslim edildi!`;
@@ -672,7 +672,7 @@ function dalgaGuncelle(dt) {
   for (let i = dalgalar.length - 1; i >= 0; i--) {
     const d = dalgalar[i]; d.yas += dt; const k = d.yas / 1.1;
     if (k >= 1) { scene.remove(d.s); dalgalar.splice(i, 1); continue; }
-    d.s.scale.setScalar(.8 + k * 6); d.s.material.opacity = 1 - k;
+    d.s.scale.setScalar(.25 + k * 2); d.s.material.opacity = 1 - k;
   }
 }
 
