@@ -834,12 +834,12 @@ $('abakusSifirla').onclick = () => { if (!kilit) boncuklar.forEach((_, i) => { b
 $('abakusOnay').onclick = () => {
   if (kilit) return;
   const deger = Number(boncuklar.join(''));
-  sonuc(deger === mevcut.hedef, `Doğrusu: ${bicim(mevcut.hedef)}`, 150);
+  sonuc(o.test || deger === mevcut.hedef, `Doğrusu: ${bicim(mevcut.hedef)}`, 150);
 };
 
 function cevapla(bt, s, onEk = '') {
   if (kilit) return;
-  const dogru = s === mevcut.dogru;
+  const dogru = o.test || s === mevcut.dogru;   // test modunda her tık doğru sayılır
   if (!dogru) {
     bt.classList.add('yanlis');
     [...$('secenekler').children].forEach(b => { if (b.dataset.deger === mevcut.dogru) b.classList.add('dogru'); });
