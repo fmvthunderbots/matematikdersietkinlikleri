@@ -664,6 +664,7 @@ function paketTeslim() {
   $('varisSayi').textContent = bicim(g.d) + ' km';
   $('varisOkunus').textContent = oku(g.d);
   $('varis').classList.remove('gizli');
+  $('varisBaslik').style.color = ''; o.teslim++;
   o.puan += 200; hudGuncelle(); varisSure = 3.2;
 }
 const dalgalar = [];
@@ -784,7 +785,7 @@ function modSec(m) {
 }
 function oyunBasla() {
   const sinif = mod === 'sinif';
-  o = { sinif, hedefSoru: sinif ? 8 : 24, hc: sinif ? 1 : 3, kayitli: false, ayak: 0, hucre: 0, p: 0, hiz: 0, puan: 0, seri: 0, yakit: YAKIT_BASLA, km: 0, can: CAN, dogru: 0, yanlis: 0, enSeri: 0, alet: { karaDelik: true, solucan: true, uzayli: true } };
+  o = { sonYanlis: false, teslim: 0, sinif, hedefSoru: sinif ? 8 : 24, hc: sinif ? 1 : 3, kayitli: false, ayak: 0, hucre: 0, p: 0, hiz: 0, puan: 0, seri: 0, yakit: YAKIT_BASLA, km: 0, can: CAN, dogru: 0, yanlis: 0, enSeri: 0, alet: { karaDelik: true, solucan: true, uzayli: true } };
   roket.position.set(26, 0, 0);
   while (meteorlar.length) meteorSil(0);
   while (paketler.length) { const m = paketler.pop(); if (m.parent) m.parent.remove(m); }
@@ -950,7 +951,7 @@ function sonuc(dogru, dogruMetni, taban, onEk = '') {
     sesDogru(); flas('rgba(62,224,143,.5)'); roket.userData.itis = 1;   // motor itişi artar
   } else {
     o.seri = 0; o.yanlis++;
-    if (o.sinif) o.hucre++;   // sınıf modunda yanlış da bir sonraki gezegene götürür
+    if (o.sinif) { o.hucre++; o.sonYanlis = true; }   // sınıf modunda yanlış da bir sonraki gezegene götürür ama paket teslim edilemez
     else { o.can--; o.yakit -= YANLIS_YAKIT; }
     $('geribildirim').innerHTML = `<span style="color:var(--kirmizi)">✘ ${o.sinif ? 'Olmadı!' : `Rota saptı! −1 can · −${YANLIS_YAKIT} yakıt`}</span><br><span style="color:#eaf2ff">${dogruMetni}</span>`;
     sesYanlis(); flas('rgba(255,77,94,.6)'); roket.userData.sars = .6;
@@ -972,14 +973,24 @@ function yaklasBasla() {
   durum = 'yaklas'; $('soru').classList.add('gizli');
   sesWarp();
 }
+function teslimEdilemedi() {
+  const g = GEZEGENLER[o.ayak];
+  $('varisBaslik').textContent = `⚠️ ${g.ad}'e paket teslim edilemedi!`; $('varisBaslik').style.color = '#ff6b6b';
+  $('varisSayi').textContent = bicim(g.d) + ' km';
+  $('varisOkunus').textContent = 'Yanlış cevap yüzünden kargo kapısı açılmadı. Roket sıradaki gezegene devam ediyor…';
+  $('varis').classList.remove('gizli'); varisSure = 3.4;
+  sesYanlis(); flas('rgba(255,77,94,.35)');
+}
 function varisGoster() {
-  durum = 'varis'; varisSure = 99;
+  durum = 'varis';
+  if (o.sinif && o.sonYanlis) { teslimEdilemedi(); return; }
+  varisSure = 99;
   $('teslimYazi').classList.remove('gizli');
   paketBirak(gezMesh[o.ayak], o.ayak);
 }
 function varisBitti() {
   $('varis').classList.add('gizli'); $('teslimYazi').classList.add('gizli');
-  o.ayak++; o.hucre = 0; o.p = 0;
+  o.ayak++; o.hucre = 0; o.p = 0; o.sonYanlis = false;
   if (o.ayak >= GEZEGENLER.length) { bitir(true); return; }
   durum = 'soru'; yeniSoru();
 }
@@ -994,7 +1005,7 @@ function sinifDegerlendir() {
   $('bitisBaslik').textContent = 'Sınıf Görevi Tamam! 🚀';
   $('bitisAlt').textContent = cumle;
   $('bitisPuan').textContent = '%' + oran;
-  $('bitisIstat').innerHTML += `<div>🎯 ${o.dogru} / ${o.hedefSoru} doğru</div>`;
+  $('bitisIstat').innerHTML += `<div>🎯 ${o.dogru} / ${o.hedefSoru} doğru</div><div>📦 ${o.teslim} / 8 paket teslim edildi</div>`;
   $('bitisKayit').textContent = '🏫 Sınıf modu: puan kaydedilmez.';
 }
 function bitir(kazandi, neden) {
