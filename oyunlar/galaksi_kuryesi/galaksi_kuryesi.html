@@ -413,7 +413,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 3000);
 scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x4a3a66, 0.35));
-const gunesIsik = new THREE.PointLight(0xfff2d0, 2.2, 0, 0);
+const gunesIsik = new THREE.PointLight(0xfff2d0, 1.35, 0, 0);
 gunesIsik.position.set(GUNES_X, 0, 0);
 scene.add(gunesIsik);
 
@@ -500,11 +500,17 @@ const roket = new THREE.Group();
   [[.95, .64], [-1.1, .6]].forEach(([y, r]) => { const b = new THREE.Mesh(new THREE.TorusGeometry(r, .045, 12, 56), kirmizi); b.position.y = y; b.rotation.x = Math.PI / 2; ic.add(b); });
   const ince = new THREE.Mesh(new THREE.TorusGeometry(.675, .018, 8, 56), krom); ince.position.y = -.2; ince.rotation.x = Math.PI / 2; ic.add(ince);
   // lombozlar
-  [[.42, .25], [-.45, .15]].forEach(([y, r]) => {
+  [[.42, .25]].forEach(([y, r]) => {
     const cerceve = new THREE.Mesh(new THREE.TorusGeometry(r, .045, 12, 32), krom); cerceve.position.set(0, y, .655); ic.add(cerceve);
     const cam = new THREE.Mesh(new THREE.SphereGeometry(r * .92, 24, 16), new THREE.MeshStandardMaterial({ color: 0x6fd3ff, emissive: 0x1d6fa8, emissiveIntensity: .8, roughness: .05, metalness: .2 }));
     cam.scale.z = .35; cam.position.set(0, y, .64); ic.add(cam);
   });
+  // kargo kapısı (+z yüzü): içi koyu boşluk, menteşeli kapak
+  const bosluk = new THREE.Mesh(new THREE.PlaneGeometry(.5, .55), new THREE.MeshBasicMaterial({ color: 0x1a140d }));
+  bosluk.position.set(0, -.45, .664); ic.add(bosluk);
+  const mentese = new THREE.Group(); mentese.position.set(-.26, -.45, .672); ic.add(mentese);
+  const kapak = new THREE.Mesh(new THREE.BoxGeometry(.52, .57, .035), new THREE.MeshStandardMaterial({ color: 0xaab3c2, roughness: .35, metalness: .7 })); kapak.position.set(.26, 0, 0); mentese.add(kapak);
+  const kapakSerit = new THREE.Mesh(new THREE.BoxGeometry(.52, .08, .04), new THREE.MeshStandardMaterial({ color: 0xffc23a, roughness: .5 })); kapakSerit.position.set(.26, -.2, .003); mentese.add(kapakSerit);
   // kanatlar
   const kanat = new THREE.Shape();
   kanat.moveTo(0, .3); kanat.quadraticCurveTo(.32, -.05, .6, -.72); kanat.lineTo(.68, -1.3); kanat.quadraticCurveTo(.35, -1.05, 0, -1.0); kanat.lineTo(0, .3);
@@ -526,10 +532,10 @@ const roket = new THREE.Group();
   const motorIsik = new THREE.PointLight(0xff9a3c, 1.4, 7, 2); motorIsik.position.y = -2.4; ic.add(motorIsik);
   ic.rotation.z = -Math.PI / 2;   // burun +x yönünde
   roket.add(ic);
-  roket.userData = { alev, alevIc, alevParlama, motorIsik };
+  roket.userData = { alev, alevIc, alevParlama, motorIsik, kapi: mentese, bosluk };
 })();
 scene.add(roket);
-const dolguIsik = new THREE.DirectionalLight(0xa9c4ff, .55); dolguIsik.position.set(-10, 12, 25); scene.add(dolguIsik);
+const dolguIsik = new THREE.DirectionalLight(0xa9c4ff, .35); dolguIsik.position.set(-10, 12, 25); scene.add(dolguIsik);
 
 /* Parçacıklar (motor izi, meteor ateşi, patlamalar) */
 const parDoku = tuvalDoku([64, 64], (x, w) => {
@@ -610,20 +616,37 @@ function paketYap() {
   g.userData.led = led;
   return g;
 }
+function kapiAyarla(acik) {
+  roket.userData.kapi.rotation.y = -acik * 1.9;
+  roket.userData.bosluk.material.color.setRGB(.1 + acik * .55, .08 + acik * .36, .05 + acik * .12);   // açılınca içerisi aydınlanır
+}
 function paketBirak(gez, i) {
   const r = GEZEGENLER[i].r, dir = new THREE.Vector3(-.55, .25, .8).normalize();
-  const m = paketYap(); m.position.copy(roket.position).add(new THREE.Vector3(.6, -.5, 1)); scene.add(m);
-  paket = { m, t: 0, sure: 3.2, indi: false, bas: m.position.clone(), hedef: gez.position.clone().addScaledVector(dir, r * 1.02), gez, led: m.userData.led };
-  vuss(.5, 900, 400, .05); tik(1600, .06);
-  for (let k = 0; k < 10; k++) parcacik(m.position, new THREE.Vector3((Math.random() - .5) * 3, (Math.random() - .5) * 3, (Math.random() - .5) * 3), 0xdff3ff, .4, .6, 1.6);
+  const m = paketYap(); m.visible = false; scene.add(m);
+  paket = { m, t: 0, indi: false, gez, led: m.userData.led, hedef: gez.position.clone().addScaledVector(dir, r * 1.02), p0: null, c: null };
+  $('teslimYazi').textContent = '🚪 Kargo kapısı açılıyor…';
+  vuss(.7, 300, 900, .04);
 }
+const kolay = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
 function paketGuncelle(dt, t) {
-  const p = paket; p.t += dt;
-  if (!p.indi) {
-    const k = Math.min(1, p.t / p.sure), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    p.m.position.lerpVectors(p.bas, p.hedef, e); p.m.position.y += Math.sin(k * Math.PI) * 1.3;
-    p.m.rotation.x += dt * .9; p.m.rotation.y += dt * .6;
-    if (Math.random() < .5) parcacik(p.m.position, new THREE.Vector3((Math.random() - .5) * 2, (Math.random() - .5) * 2, (Math.random() - .5) * 2), 0xdff3ff, .3, .5, 1.8);   // yön düzelten soğuk gaz
+  const p = paket, m = p.m, T = p.t += dt;
+  // kapı: 0–0.9 sn açılır, 2.0–2.6 sn kapanır
+  let acik = kolay(Math.min(1, T / .9)); if (T > 2) acik = 1 - kolay(Math.min(1, (T - 2) / .6));
+  kapiAyarla(acik);
+  const kapiD = roket.position.clone().add(new THREE.Vector3(-.45, 0, .67));
+  if (T < .9) { m.visible = false; }
+  else if (T < 1.9) {   // içeriden dışarı kayar
+    if (!m.visible) { m.visible = true; $('teslimYazi').textContent = '📦 Paket gezegene iniyor…'; tik(1500, .05); }
+    const k = kolay((T - .9) / 1);
+    m.position.set(kapiD.x, kapiD.y, kapiD.z - .4 + k * 2.8); m.scale.setScalar((.7 + k * .3) * .8); m.rotation.y += dt * .3;
+    if (Math.random() < .6) parcacik(kapiD.clone().add(new THREE.Vector3(0, 0, .3)), new THREE.Vector3((Math.random() - .5) * 2, (Math.random() - .5) * 2, 1.5), 0xdff3ff, .25, .45, 1.6);
+  } else if (!p.indi) {   // gezegene doğru küçülerek süzülür
+    if (!p.p0) { p.p0 = m.position.clone(); p.c = p.p0.clone().add(p.hedef).multiplyScalar(.5).add(new THREE.Vector3(-1.5, 2.4, 3)); }
+    const k = Math.min(1, (T - 1.9) / 3.4), e = 1 - Math.pow(1 - k, 2.2), a = 1 - e;   // sona doğru yavaşlar (iniş)
+    m.position.set(a * a * p.p0.x + 2 * a * e * p.c.x + e * e * p.hedef.x, a * a * p.p0.y + 2 * a * e * p.c.y + e * e * p.hedef.y, a * a * p.p0.z + 2 * a * e * p.c.z + e * e * p.hedef.z);
+    m.scale.setScalar((1 - .72 * e) * .8);
+    m.rotation.x += dt * (1.1 - k); m.rotation.y += dt * .7 * (1 - k);
+    if (Math.random() < .5) parcacik(m.position, new THREE.Vector3((Math.random() - .5) * 1.5, (Math.random() - .5) * 1.5, (Math.random() - .5) * 1.5), 0xdff3ff, .22 * m.scale.x + .1, .45, 1.6);   // yön ve frenleme gazı
     if (k >= 1) paketTeslim();
   }
   p.led.visible = Math.floor(t * 3) % 2 === 0;
@@ -767,6 +790,7 @@ function oyunBasla(test = false) {
   while (meteorlar.length) meteorSil(0);
   while (paketler.length) { const m = paketler.pop(); if (m.parent) m.parent.remove(m); }
   if (paket) { scene.remove(paket.m); paket = null; }
+  kapiAyarla(0);
   ortamBaslat();
   $('giris').classList.add('gizli'); $('bitis').classList.add('gizli');
   $('hud').classList.remove('gizli');
@@ -1147,7 +1171,10 @@ function dongu() {
   let sars = roket.userData.sars || 0;
   if (sars > 0) roket.userData.sars = sars - dt;
   roket.position.y = Math.sin(t * 2) * .25 + (sars > 0 ? (Math.random() - .5) * sars : 0);
-  roket.rotation.x = t * (.4 + hizOrani * 2.5) % (Math.PI * 2);   // uzun eksende yavaş dönüş
+  const ud = roket.userData; ud.rotA = ud.rotA || 0;
+  if (durum !== 'varis') ud.rotA += dt * (.4 + hizOrani * 2.5);   // uzun eksende yavaş dönüş
+  else ud.rotA += (Math.ceil(ud.rotA / (Math.PI * 2) - .02) * Math.PI * 2 - ud.rotA) * Math.min(1, dt * 3);   // kapı kameraya dönük dursun
+  roket.rotation.x = ud.rotA;
   roket.rotation.z = Math.sin(t * 1.3) * .06 + (sars > 0 ? (Math.random() - .5) * sars : 0);
 
   if (durum === 'menu' || durum === 'bitti') {
