@@ -558,7 +558,7 @@ function patlat(pos, renkler, adet, hiz) {
 
 /* Meteorlar ve lazer */
 const meteorlar = [], lazerler = [];
-let meteorSayac = 1;
+let meteorSayac = 4;
 const tasMat = new THREE.MeshStandardMaterial({ color: 0x7d6a5c, roughness: .95, flatShading: true });
 function meteorYap(yakin) {
   const r = .5 + Math.random() * 1.1, geo = new THREE.IcosahedronGeometry(r, 1), pa = geo.attributes.position, tohum = Math.random() * 10;
@@ -1059,7 +1059,7 @@ function dongu() {
   // meteorlar
   if (oyunda) {
     meteorSayac -= dt;
-    if (meteorSayac <= 0) { meteorYap(Math.random() < .22); meteorSayac = durum === 'yaklas' ? .35 : 1 + Math.random() * 1.6; }
+    if (meteorSayac <= 0) { meteorYap(Math.random() < .2); meteorSayac = durum === 'yaklas' ? 3 + Math.random() * 2 : 7 + Math.random() * 7; }
   }
   meteorGuncelle(dt);
   parcacikGuncelle(dt);
