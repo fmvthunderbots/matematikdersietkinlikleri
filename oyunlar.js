@@ -170,6 +170,13 @@ const SISTEM_OYUNLARI = [
         image: "./oyunlar/kutuplarda_tam_sayilar/kutuplarda_tam_sayilar.jpg",
         url: "./oyunlar/kutuplarda_tam_sayilar/kutuplarda_tam_sayilar.html"
     },
+    {
+        id: "oyun-25",
+        title: "Galaksi Kuryesi",
+        grade: "5",
+        image: "./oyunlar/galaksi_kuryesi/galaksi_kuryesi.jpg",
+        url: "./oyunlar/galaksi_kuryesi/galaksi_kuryesi.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
