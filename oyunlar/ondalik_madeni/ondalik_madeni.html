@@ -116,10 +116,10 @@
   #derinlikYazi { margin-bottom: 36px; font-family: 'Baloo 2'; font-weight: 800; font-size: 17px; color: var(--kehribar); text-shadow: 0 2px 6px #000; white-space: nowrap; }
 
   /* Seviye başlığı */
-  .seviyeYazi { position: fixed; z-index: 4; text-align: center; pointer-events: none; opacity: 0; transition: opacity .6s; text-shadow: 0 4px 24px #000, 0 0 2px #000; }
+  .seviyeYazi { position: fixed; z-index: 4; text-align: center; pointer-events: none; opacity: 0; transition: opacity .6s; padding: 0 16px; box-sizing: border-box; overflow-wrap: anywhere; text-shadow: 0 4px 24px #000, 0 0 2px #000; }
   .seviyeYazi.goster { opacity: 1; }
-  .seviyeYazi .n { font-family: 'Nunito'; font-weight: 900; font-size: 15px; color: var(--kehribar); opacity: .9; }
-  .seviyeYazi .a { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(30px, 5vw, 58px); line-height: 1.05; }
+  .seviyeYazi .n { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(38px, 8vw, 84px); line-height: 1; color: var(--kehribar); letter-spacing: .5px; -webkit-text-stroke: 2px rgba(20,12,6,.9); paint-order: stroke fill; text-shadow: 0 3px 0 #2a1808, 0 6px 26px #000, 0 0 4px #000; }
+  .seviyeYazi .a { font-family: 'Baloo 2'; font-weight: 800; font-size: clamp(24px, 4.2vw, 46px); line-height: 1.1; margin-top: 4px; -webkit-text-stroke: 1px rgba(20,12,6,.85); paint-order: stroke fill; }
 
   /* Ekranlar */
   .ekran { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; background: radial-gradient(ellipse at 60% 50%, rgba(20,15,12,.15), rgba(10,7,5,.75)); }
@@ -535,16 +535,32 @@ function insaAyarla(T, n) {   // ilk n destek tam kurulu, lambaları yanık
   T.fenerler.forEach((f, i) => { f.g.visible = i < n; f.g.userData.parla.material.opacity = .35; });
 }
 const _o = new THREE.Matrix4();
-function insaParca(T, j, a) {   // j. destek: direkler yerden kaldırılıp dikilir, kiriş yukarı çekilip oturur, en son payandalar çakılır
+const ipMat = new THREE.MeshStandardMaterial({ color: 0x9a8058, roughness: .95 });
+const DIREK_EL = 3.6, DIREK_H = 2.05, DIREK_T0 = .06, DIREK_T1 = Math.asin(DIREK_H / DIREK_EL);   // direği kavradığı nokta (dipten), baş üstü el yüksekliği, yatık ve ucu baş üstündeki açı
+const direkTepe = f => Math.acos(Math.min(1, -f.t.y));   // dik direğin (dünyada dik) eğimli zeminle yaptığı açı
+function direkAci(a, tm) {   // direğin zeminle açısı: yerde yatar > usta ucunu baş üstüne kaldırır > elleriyle yürüterek diker (tm: dik hali)
+  const yum = x => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  if (a < .25) return DIREK_T0;
+  if (a < .36) return DIREK_T0 + (DIREK_T1 - DIREK_T0) * yum((a - .25) / .11);
+  return DIREK_T1 + (tm - DIREK_T1) * yum((a - .36) / .26);
+}
+const _dv = new THREE.Vector3(), _dq = new THREE.Quaternion(), _ds = new THREE.Vector3(), _dy = new THREE.Vector3(), _dt = new THREE.Vector3(), _dd = new THREE.Vector3(), _dq2 = new THREE.Quaternion();
+function insaParca(T, j, a) {   // j. destek: direkler yerden elle dikilir, kiriş makarayla çekilip oturur, en son payandalar çakılır
   const D = T.destek, c = x => Math.max(0, Math.min(1, x)), BOY = R * .5 - ZEMIN;
   D.direk.count = D.payanda.count = (j + 1) * 2; D.kiris.count = j + 1;
-  const dik = c(a / .55), aci = (1 - dik * dik * (3 - 2 * dik)) * Math.PI * .47;   // yatıktan dike, yumuşak bitiş
+  const f = cerceve(T.ofs, -18.5 + j * 6), th = direkAci(a, direkTepe(f));
   [0, 1].forEach(y => {
-    D.direk.setMatrixAt(j * 2 + y, _o.copy(D.taban.direk[j * 2 + y]).multiply(_m.makeTranslation(0, -BOY / 2, 0)).multiply(_m2.makeRotationX(-aci)).multiply(_m.makeTranslation(0, BOY / 2, 0)));
     D.payanda.setMatrixAt(j * 2 + y, _o.copy(D.taban.payanda[j * 2 + y]).multiply(_m.makeScale(1, Math.max(.001, c((a - .82) * 5.5)), 1)));
+    if (a < .07) { D.direk.setMatrixAt(j * 2 + y, _o.makeScale(0, 0, 0)); return; }   // o ana kadar direk ustanın omzunda
+    D.taban.direk[j * 2 + y].decompose(_dv, _dq, _ds);
+    _dy.set(0, 1, 0).applyQuaternion(_dq);   // dik direğin ekseni
+    _dt.copy(f.t).negate(); _dd.copy(_dy).addScaledVector(_dt, -_dt.dot(_dy)).normalize();   // zeminde bize doğru yön ve ona dik, direğe doğru yön
+    _dd.multiplyScalar(Math.sin(th)).addScaledVector(_dt, Math.cos(th));   // dipten uca: uç bize doğru zemine yatar, en sonda tam dik
+    _dv.addScaledVector(_dy, -BOY / 2 * _ds.y).addScaledVector(_dd, BOY / 2 * _ds.y);   // dip yerinde kalır
+    _dq2.setFromUnitVectors(_dy, _dd).multiply(_dq);
+    D.direk.setMatrixAt(j * 2 + y, _o.compose(_dv, _dq2, _ds));
   });
-  const k = c((a - .5) / .3);
-  D.kiris.setMatrixAt(j, a < .45 ? _o.makeScale(0, 0, 0) : _o.copy(D.taban.kiris[j]).multiply(_m.makeTranslation(0, -(1 - k * k * (3 - 2 * k)) * 2.7, 0)));
+  D.kiris.setMatrixAt(j, a < .8 ? _o.makeScale(0, 0, 0) : D.taban.kiris[j]);   // o ana kadar kirişi işçiler taşır, sonra makarayla çekilir (kirisTasi)
   [D.direk, D.kiris, D.payanda].forEach(m => { m.instanceMatrix.needsUpdate = true; });
 }
 const _m2 = new THREE.Matrix4();
@@ -611,19 +627,130 @@ function kazmaBasGeo() {
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   g.setIndex(idx); g.computeVertexNormals(); return g;
 }
-const eldivenMat = new THREE.MeshStandardMaterial({ color: 0x4a2f1a, roughness: .72, emissive: 0x0e0804 });
+const eldivenMat = new THREE.MeshStandardMaterial({ color: 0x6b4426, roughness: .78, emissive: 0x120a05 });   // deri iş eldiveni
+const hyp = (x, y, z = 0) => Math.sqrt(x * x + y * y + z * z);   // Math.hypot yavaş
+function yuzeyAgi(f, lo, hi, h) {   // uzaklık alanından (içi eksi) tek parça, pürüzsüz yüzey çıkarır (naive surface nets)
+  const nx = Math.ceil((hi[0] - lo[0]) / h) + 1, ny = Math.ceil((hi[1] - lo[1]) / h) + 1, nz = Math.ceil((hi[2] - lo[2]) / h) + 1;
+  const I = (i, j, k) => i + nx * (j + ny * k), V = new Float32Array(nx * ny * nz), P = [0, 0, 0];
+  const B = 4, esik = 5 * h;   // 4x4x4 bloğun ortası yüzeyden uzaksa blok tek değerle dolar (yalnız işaret gerekir); hız için
+  for (let bk = 0; bk < nz; bk += B) for (let bj = 0; bj < ny; bj += B) for (let bi = 0; bi < nx; bi += B) {
+    P[0] = lo[0] + (bi + 1.5) * h; P[1] = lo[1] + (bj + 1.5) * h; P[2] = lo[2] + (bk + 1.5) * h;
+    const dc = f(P), uzak = Math.abs(dc) > esik;
+    for (let k = bk; k < Math.min(bk + B, nz); k++) for (let j = bj; j < Math.min(bj + B, ny); j++) for (let i = bi; i < Math.min(bi + B, nx); i++) {
+      if (uzak) { V[I(i, j, k)] = dc; continue; }
+      P[0] = lo[0] + i * h; P[1] = lo[1] + j * h; P[2] = lo[2] + k * h; V[I(i, j, k)] = f(P);
+    }
+  }
+  const E = []; for (let c = 0; c < 8; c++) for (const b of [1, 2, 4]) if (!(c & b)) E.push([c, c | b]);
+  const hucre = new Int32Array(nx * ny * nz).fill(-1), pos = [], v = [];
+  for (let k = 0; k < nz - 1; k++) for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+    let m = 0;
+    for (let c = 0; c < 8; c++) { v[c] = V[I(i + (c & 1), j + ((c >> 1) & 1), k + ((c >> 2) & 1))]; if (v[c] < 0) m |= 1 << c; }
+    if (m === 0 || m === 255) continue;
+    let sx = 0, sy = 0, sz = 0, n = 0;
+    for (const [a, b] of E) {
+      if ((v[a] < 0) === (v[b] < 0)) continue;
+      const t = v[a] / (v[a] - v[b]);
+      sx += (a & 1) + t * ((b & 1) - (a & 1)); sy += ((a >> 1) & 1) + t * (((b >> 1) & 1) - ((a >> 1) & 1)); sz += ((a >> 2) & 1) + t * (((b >> 2) & 1) - ((a >> 2) & 1)); n++;
+    }
+    hucre[I(i, j, k)] = pos.length / 3; pos.push(lo[0] + (i + sx / n) * h, lo[1] + (j + sy / n) * h, lo[2] + (k + sz / n) * h);
+  }
+  const idx = [], dort = (a, b, c, d) => { if (a >= 0 && b >= 0 && c >= 0 && d >= 0) idx.push(a, b, c, a, c, d); };
+  for (let k = 1; k < nz - 1; k++) for (let j = 1; j < ny - 1; j++) for (let i = 1; i < nx - 1; i++) {
+    const ic = V[I(i, j, k)] < 0;
+    if (ic !== (V[I(i + 1, j, k)] < 0)) ic ? dort(hucre[I(i, j - 1, k - 1)], hucre[I(i, j, k - 1)], hucre[I(i, j, k)], hucre[I(i, j - 1, k)]) : dort(hucre[I(i, j - 1, k)], hucre[I(i, j, k)], hucre[I(i, j, k - 1)], hucre[I(i, j - 1, k - 1)]);
+    if (ic !== (V[I(i, j + 1, k)] < 0)) ic ? dort(hucre[I(i - 1, j, k - 1)], hucre[I(i - 1, j, k)], hucre[I(i, j, k)], hucre[I(i, j, k - 1)]) : dort(hucre[I(i, j, k - 1)], hucre[I(i, j, k)], hucre[I(i - 1, j, k)], hucre[I(i - 1, j, k - 1)]);
+    if (ic !== (V[I(i, j, k + 1)] < 0)) ic ? dort(hucre[I(i - 1, j - 1, k)], hucre[I(i, j - 1, k)], hucre[I(i, j, k)], hucre[I(i - 1, j, k)]) : dort(hucre[I(i - 1, j, k)], hucre[I(i, j, k)], hucre[I(i, j - 1, k)], hucre[I(i - 1, j - 1, k)]);
+  }
+  const nor = [], e = h * .5;   // normal: alanın eğiminden, yumuşak gölge
+  for (let q = 0; q < pos.length; q += 3) {
+    const x = pos[q], y = pos[q + 1], z = pos[q + 2];
+    const gx = f([x + e, y, z]) - f([x - e, y, z]), gy = f([x, y + e, z]) - f([x, y - e, z]), gz = f([x, y, z + e]) - f([x, y, z - e]), l = hyp(gx, gy, gz) || 1;
+    nor.push(gx / l, gy / l, gz / l);
+  }
+  let yon = 0;   // üçgen sırası normalle ters düştüyse hepsini çevir (dışarıdan görünsün)
+  for (let q = 0; q < idx.length; q += 3) {
+    const a = idx[q] * 3, b = idx[q + 1] * 3, c = idx[q + 2] * 3;
+    const ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2], wx = pos[c] - pos[a], wy = pos[c + 1] - pos[a + 1], wz = pos[c + 2] - pos[a + 2];
+    yon += (uy * wz - uz * wy) * nor[a] + (uz * wx - ux * wz) * nor[a + 1] + (ux * wy - uy * wx) * nor[a + 2];
+  }
+  if (yon < 0) for (let q = 0; q < idx.length; q += 3) { const t = idx[q + 1]; idx[q + 1] = idx[q + 2]; idx[q + 2] = t; }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setIndex(idx);
+  return g;
+}
+const EL_BILEK = new THREE.Vector3(.082 * Math.cos(Math.PI / 90), -.008, .082 * Math.sin(Math.PI / 90));   // el yerelinde bilek
+function elYap(yon) {   // sağ el sapı kavrar; el, bilek ve ön kol ucu tek parça yüzey. El yerelinde sap Y ekseni (işaret parmağı başa yakın); θ=0 bileğe, θ=-95° boğumlara bakar
+  const rh = .033, d = Math.PI / 180, nk = (a, R, y) => [R * Math.cos(a * d), y, R * Math.sin(a * d)];
+  const bilek = EL_BILEK.toArray(), kolUc = EL_BILEK.clone().addScaledVector(yon, .2).toArray();
+  const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * .25; };
+  const kapsul = (p, a, b, r1, r2) => {   // uçları yuvarlak, incelen çubuk
+    const ax = p[0] - a[0], ay = p[1] - a[1], az = p[2] - a[2], bx = b[0] - a[0], by = b[1] - a[1], bz = b[2] - a[2];
+    const t = Math.max(0, Math.min(1, (ax * bx + ay * by + az * bz) / (bx * bx + by * by + bz * bz)));
+    return hyp(ax - bx * t, ay - by * t, az - bz * t) - (r1 + (r2 - r1) * t);
+  };
+  const elips = (a, R, y, sx, sy, sz) => {   // sapın çevresine teğet yassı kütle (sx teğet, sz dışa)
+    const c = nk(a, R, y), ca = Math.cos(a * d), sa = Math.sin(a * d);
+    return p => {
+      const qx = p[0] - c[0], qy = p[1] - c[1], qz = p[2] - c[2], lx = qx * sa - qz * ca, lz = qx * ca + qz * sa;
+      const k0 = hyp(lx / sx, qy / sy, lz / sz), k1 = hyp(lx / (sx * sx), qy / (sy * sy), lz / (sz * sz));
+      return k1 < 1e-9 ? -Math.min(sx, sy, sz) : k0 * (k0 - 1) / k1;
+    };
+  };
+  const avuc = [elips(-50, .052, .002, .062, .07, .03), elips(-88, .058, 0, .03, .068, .024), elips(-6, .056, -.022, .036, .05, .03), elips(4, .068, .015, .032, .04, .03)];   // el sırtı, boğum sırası, avuç kökü, başparmak kökü
+  const zincir = (P, r) => [0, 1, 2].map(i => [P[i], P[i + 1], r[i], r[i + 1]]);
+  const parmaklar = [[.05, .0155, 0], [.017, .0165, 2], [-.017, .016, 0], [-.05, .014, -10]].map(([y, r, ek]) =>   // işaret üstte, serçe altta
+    zincir([[-95, .066], [-172, .064], [-238, .06], [-285 - ek, .054]].map(([a, R], i) => nk(a, R, y + i * .002)), [0, 1, 2, 3].map(i => r * (1 - i * .06))));
+  parmaklar.push(zincir([nk(-8, .074, .03), nk(32, .07, .062), nk(78, .066, .074), nk(112, .06, .07)], [.023, .02, .018, .016]));   // başparmak
+  const PK = [.009, .009, .009, .009, .018];
+  const kure = parmaklar.map(Z => {   // her parmağı saran küre: uzaktaki noktada boğumlar hesaplanmaz (hız)
+    const c = [0, 1, 2].map(i => (Z[0][0][i] + Z[1][0][i] + Z[2][0][i] + Z[2][1][i]) / 4);
+    return [c, Math.max(...Z.map(([a, b, r1]) => Math.max(hyp(a[0] - c[0], a[1] - c[1], a[2] - c[2]), hyp(b[0] - c[0], b[1] - c[1], b[2] - c[2])) + r1))];
+  });
+  const alan = p => {
+    let dp = 1;
+    for (const e of avuc) dp = smin(dp, e(p), .025);
+    dp = smin(dp, kapsul(p, bilek, kolUc, .043, .05), .03);   // bilek ve ön kol
+    let dd = dp;
+    parmaklar.forEach((Z, n) => {   // parmaklar avuca yumuşak bağlanır, birbirine yapışmaz
+      const [c, R] = kure[n], u = hyp(p[0] - c[0], p[1] - c[1], p[2] - c[2]) - R;
+      let z = u;
+      if (u < .03) { z = 1; for (const [a, b, r1, r2] of Z) z = smin(z, kapsul(p, a, b, r1, r2), .006); }
+      dd = Math.min(dd, smin(dp, z, PK[n]));
+    });
+    return Math.max(dd, rh - .003 - hyp(p[0], p[2]));   // sapın yeri boş: avuç sapa oturur
+  };
+  const lo = [-.11, -.1, -.11], hi = [.11, .11, .11];
+  kolUc.forEach((v, i) => { lo[i] = Math.min(lo[i], v - .07); hi[i] = Math.max(hi[i], v + .07); });
+  const g = new THREE.Mesh(elYap.geo || (elYap.geo = yuzeyAgi(alan, lo, hi, .0038)), eldivenMat);   // iki madencinin eli aynı: bir kez kur
+  g.userData.bilek = EL_BILEK.clone().addScaledVector(yon, .11);   // tulum kolu buradan başlar; kolun ucu içinde kalır
+  return g;
+}
 function kazmaYap() {
-  const g = new THREE.Group(), pivot = new THREE.Group(); g.add(pivot);
+  const g = new THREE.Group(), pivot = new THREE.Group(), YH = .27; g.add(pivot); pivot.position.y = YH;   // savurma ekseni elin içinde: kazma bilekten döner
+  const ic = new THREE.Group(); ic.position.y = -YH; pivot.add(ic);
   const sapP = [[0, 0], [.03, 0], [.042, .012], [.044, .035], [.036, .07], [.032, .2], [.033, .45], [.037, .65], [.043, .8], [.047, .87], [.047, .97], [.04, .985], [0, .99]]
     .map(([r, y]) => new THREE.Vector2(r, y));
   const sap = new THREE.Mesh(new THREE.LatheGeometry(sapP, 20), new THREE.MeshStandardMaterial({ map: sapDoku, color: 0x9a8070, roughness: .62, bumpMap: sapDoku, bumpScale: .003 }));
-  pivot.add(sap);
+  ic.add(sap);
   const bas = new THREE.Mesh(kazmaBasGeo(), new THREE.MeshStandardMaterial({ vertexColors: true, color: 0xb8bec6, metalness: .9, roughness: .42, envMap: ortamHarita, envMapIntensity: 1.1 }));
-  bas.rotation.y = Math.PI / 2; bas.position.y = .9; pivot.add(bas);
-  const kama = new THREE.Mesh(new THREE.BoxGeometry(.012, .02, .07), pasMat); kama.position.y = .988; pivot.add(kama);   // sap ucundaki demir kama
+  bas.rotation.y = Math.PI / 2; bas.position.y = .9; ic.add(bas);
+  const kama = new THREE.Mesh(new THREE.BoxGeometry(.012, .02, .07), pasMat); kama.position.y = .988; ic.add(kama);   // sap ucundaki demir kama
   g.position.set(.36, -.62, -.8); g.rotation.set(-.25, .35, .42); g.scale.setScalar(.72); g.updateMatrixWorld(true);
-  // birinci şahıs eller: eldiven sapı yumruk gibi sarar; ön kol dirseğe (kameranın altına) uzanır
-  g.userData.pivot = pivot; return g;
+  // tek el sapı kavrar; ön kol ekranın sağ altına, dirseğe uzanır
+  const dirsek = g.worldToLocal(new THREE.Vector3(.5, -1.0, -.25)).sub(pivot.position);   // kamera yerelinde dirsek, ekran dışında
+  const aci = -Math.atan2(dirsek.z, dirsek.x);   // bilek dirseğe baksın
+  const el = elYap(dirsek.clone().applyAxisAngle(YUKARI, -aci).sub(EL_BILEK).normalize()); el.rotation.y = aci; pivot.add(el); el.updateMatrix();
+  const onkol = new THREE.Group(); g.add(onkol);
+  const yen = new THREE.Mesh(new THREE.CylinderGeometry(.095, .066, 1.3, 20), isciMat.tulum); yen.position.y = .65; onkol.add(yen);   // tulum kolu
+  const kivrim = new THREE.Mesh(new THREE.TorusGeometry(.066, .016, 10, 24), isciMat.tulum); kivrim.rotation.x = Math.PI / 2; kivrim.position.y = .006; onkol.add(kivrim);   // kol ağzı
+  g.userData.pivot = pivot; g.userData.onkol = { g: onkol, bilek: el.userData.bilek.clone().applyMatrix4(el.matrix), dirsek };
+  kolGuncelle(g); return g;
+}
+function kolGuncelle(g) {   // ön kol bilekten dirseğe: kazma savrulurken dirsek de büyük ölçüde izler (kol ucu tulumdan çıkmaz)
+  const O = g.userData.onkol, pv = g.userData.pivot, rx = pv.rotation.x, X = new THREE.Vector3(1, 0, 0);
+  const b = O.bilek.clone().applyAxisAngle(X, rx).add(pv.position), e = O.dirsek.clone().applyAxisAngle(X, rx * .85).add(pv.position);
+  O.g.position.copy(b); O.g.quaternion.setFromUnitVectors(YUKARI, e.sub(b).normalize());
 }
 
 /* Maden işçisi: yuvarlak hatlı gövde, dizden/dirsekten bükülen kol ve bacaklar, yüz, baret ve kafa lambası */
@@ -681,6 +808,24 @@ function bacakParca(rUst, rAlt, L, mat) {   // üst ucu origin'de, aşağı L uz
   for (let i = n; i >= 0; i--) { const t = i / n; pts.push(new THREE.Vector2(Math.max(.001, rUst + (rAlt - rUst) * t + Math.sin(t * Math.PI) * .004), -L * t)); }
   return new THREE.Mesh(new THREE.LatheGeometry(pts, 18), mat);
 }
+function botYap(bot, kure, lathe) {   // iş botu: bileği saran konç, yuvarlak burun, ayrı kalın kauçuk taban ve topuk (bot yerelinde y=-.1 yer)
+  const M = isciMat;
+  bot.add(lathe([[.072, -.07], [.07, -.04], [.066, 0], [.064, .04], [.066, .075]], M.deri, 20));   // konç
+  const yaka = new THREE.Mesh(new THREE.TorusGeometry(.064, .012, 8, 20), M.deri); yaka.rotation.x = Math.PI / 2; yaka.position.y = .075; bot.add(yaka);   // dolgulu konç ağzı
+  const ust = kure(.072, M.deri, 1, .62, 1.75); ust.position.set(0, -.052, .055); bot.add(ust);   // ayak sırtı
+  const burun = kure(.064, M.deri, 1.02, .66, 1.05); burun.position.set(0, -.058, .14); bot.add(burun);   // yuvarlak burun
+  const ard = kure(.068, M.deri, 1, .8, .95); ard.position.set(0, -.05, -.03); bot.add(ard);   // topuk sertliği
+  [.045, .015, -.015].forEach(y => { const b = new THREE.Mesh(new THREE.BoxGeometry(.05, .007, .006), M.taban); b.position.set(0, y, .068); bot.add(b); });   // bağcık
+  const taban = (zOn, zArka, gOn, gArka, ust, h) => {   // üstten bakınca yuvarlak hatlı taban (x,z düzleminde), ust: üst yüz yüksekliği, h: kalınlık
+    const sh = new THREE.Shape(); sh.moveTo(-gArka, zArka);
+    sh.bezierCurveTo(-gArka, zArka + .04, -gOn, zOn - .09, -gOn, zOn - .04); sh.bezierCurveTo(-gOn, zOn + .01, gOn, zOn + .01, gOn, zOn - .04);
+    sh.bezierCurveTo(gOn, zOn - .09, gArka, zArka + .04, gArka, zArka); sh.bezierCurveTo(gArka, zArka - .03, -gArka, zArka - .03, -gArka, zArka);
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: h, bevelEnabled: true, bevelThickness: .004, bevelSize: .005, bevelSegments: 2, curveSegments: 10 });
+    const m = new THREE.Mesh(geo, M.taban); m.rotation.x = Math.PI / 2; m.position.y = ust; bot.add(m);   // şekil y'si z olur, kalınlık aşağı uzanır
+  };
+  taban(.2, -.07, .078, .062, -.08, .018);   // dış taban, burundan topuğa
+  taban(.02, -.075, .066, .066, -.066, .03);   // topuk: arkada daha kalın, önünde basamak
+}
 function isciYap(n = 0) {
   const g = new THREE.Group(), M = isciMat, T = ISCI_TIP[n % 4];
   const ten = new THREE.MeshStandardMaterial({ color: T.ten, roughness: .6, emissive: new THREE.Color(T.ten).multiplyScalar(.18) });
@@ -695,9 +840,7 @@ function isciYap(n = 0) {
     const diz = new THREE.Group(); diz.position.y = -.44; ust.add(diz); diz.add(bacakParca(.066, .05, .42, M.tulum));   // baldır
     const bant = new THREE.Mesh(new THREE.CylinderGeometry(.0605, .0605, .03, 18, 1, true), M.serit); bant.position.y = -.2; diz.add(bant);   // reflektör bant
     const bot = new THREE.Group(); bot.position.y = -.42; diz.add(bot);   // ayak bileği
-    const govdeC = new THREE.Mesh(new THREE.CylinderGeometry(.06, .064, .12, 18), M.taban); govdeC.position.y = -.04; bot.add(govdeC);   // çizme gövdesi
-    const burun = kure(.074, M.taban, 1.0, .75, 1.9); burun.position.set(0, -.06, .06); bot.add(burun);   // çizme burnu
-    bot.add(kutu(.15, .03, .3, M.taban, 0, -.085, .05));   // taban
+    botYap(bot, kure, lathe);
     g.add(ust); return { ust, diz };
   });
   const kalca = kure(.17, M.tulum, 1, .7, .72); kalca.position.y = .97; g.add(kalca);
@@ -746,8 +889,9 @@ function isciYap(n = 0) {
   const kablo = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[0, 1.0, -.15], [.03, 1.25, -.17], [.02, 1.5, -.14], [0, 1.7, -.15], [0, 1.73, -.08]].map(v => new THREE.Vector3(...v))), 24, .008, 6), M.aku); g.add(kablo);
   // kollar: omuz > dirsek (kıvrık kol ağzı) > manşetli eldiven, başparmak
   const kol = [-.21, .21].map(x => {
-    const ust = new THREE.Group(); ust.position.set(x, 1.41, 0); ust.add(kapsul(.06, .05, .31, M.tulum));
-    const dirsek = new THREE.Group(); dirsek.position.y = -.29; ust.add(dirsek); dirsek.add(kapsul(.05, .042, .25, M.tulum));
+    const ust = new THREE.Group(); ust.position.set(x, 1.41, 0); ust.add(bacakParca(.06, .05, .29, M.tulum));   // üst kol: üstü omuz küresinde
+    const dirsek = new THREE.Group(); dirsek.position.y = -.29; ust.add(dirsek); dirsek.add(bacakParca(.05, .046, .22, M.tulum));   // ön kol, dirsekte aynı kalınlık
+    dirsek.add(new THREE.Mesh(new THREE.SphereGeometry(.05, 18, 12), M.tulum));   // dirsek: kolla aynı yarıçap, bükülünce boşluk ya da topak olmaz
     const mans = new THREE.Mesh(new THREE.CylinderGeometry(.05, .046, .06, 14), M.eldiven); mans.position.y = -.22; dirsek.add(mans);
     const el = kure(.05, M.eldiven, .85, 1.15, .75); el.position.y = -.28; dirsek.add(el);
     const bp = kapsul(.017, .015, .06, M.eldiven); bp.position.set(x > 0 ? -.035 : .035, -.25, .02); bp.rotation.z = x > 0 ? -.7 : .7; dirsek.add(bp);
@@ -761,7 +905,7 @@ function isciYap(n = 0) {
   const kav = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, .09, 10), M.aku); kav.rotation.x = Math.PI / 2; kav.position.z = .02; cekic.add(kav);
   const bs = new THREE.Mesh(new THREE.CylinderGeometry(.028, .028, .13, 12), M.metal); bs.position.z = .28; cekic.add(bs);
   // omuzda destek tahtası
-  const tahta = new THREE.Mesh(new THREE.BoxGeometry(.22, .22, T.rol === 'direk' ? 3.4 : .01), tahtaMat); tahta.position.set(-.21, 1.62, -.5); g.add(tahta);
+  const tahta = new THREE.Mesh(new THREE.BoxGeometry(.3, .3, T.rol === 'direk' ? R * .5 - ZEMIN : .01), tahtaMat); tahta.position.set(T.x > 0 ? -.4 : .4, 1.62, -1.0); g.add(tahta);   // omuzda taşınan direk (kurulan direkle aynı boy)
   g.traverse(o => { if (o.isMesh) o.castShadow = false; });
   g.visible = false;
   return { g, bacak, kol, tahta, rol: T.rol, x: T.x, ds: T.ds };
@@ -883,7 +1027,6 @@ const sesYanlis = () => { ton(520, .16, 'triangle', .08); setTimeout(() => ton(3
 const sesDevir = () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => setTimeout(() => ton(f, .3, 'sine', .07), i * 95));
 const sesHazineIyi = () => [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => ton(f, .35, 'triangle', .07), i * 80));
 const sesHazineKotu = () => { gurultuSes(1.1, 'lowpass', 500, .5, 80); ton(330, .3, 'triangle', .07, 220); };
-const sesDamla = () => { const f = rastgele(1300, 2200); ton(f, .12, 'sine', .035, f * .6); };
 function ortamBaslat() {   // mağara rüzgârı (alçak süzgeçli gürültü)
   try { sesHazir(); if (ortam) return;
     if (!gurultu) gurultuSes(.01, 'lowpass', 100, .0001);
@@ -916,7 +1059,9 @@ const madenciler = [0, 1].map(i => {
   p.isciler = [0, 1, 2, 3].map(n => { const w = isciYap(n); scene.add(w.g); return w; });
   p.topci = isciYap(0); p.topci.g.children.forEach(c => { if (c === p.topci.tahta) c.visible = false; }); scene.add(p.topci.g);
   p.araba = arabaYap(); p.araba.position.set(0, 0, .75); p.topci.g.add(p.araba);
-  p.kirisTasi = new THREE.Mesh(new THREE.BoxGeometry(3.2, .26, .26), tahtaMat); p.kirisTasi.position.set(0, 1.66, 0); p.isciler[2].g.add(p.kirisTasi);   // iki kirişçinin omzundaki kiriş
+  p.kirisTasi = new THREE.Mesh(new THREE.BoxGeometry(R * .74 * 2 + .6, .4, .4), tahtaMat); p.kirisTasi.visible = false; scene.add(p.kirisTasi);
+  p.ipler = [0, 1, 2, 3].map(() => { const m = new THREE.Mesh(new THREE.CylinderGeometry(.022, .022, 1, 6), ipMat); m.visible = false; scene.add(m); return m; });   // kirişi çeken iki ip (makaraya çıkan ve inen kollar)
+  p.makaralar = [0, 1].map(() => { const m = new THREE.Mesh(new THREE.TorusGeometry(.12, .035, 8, 18), isciMat.metal); m.visible = false; scene.add(m); return m; });   // iki kirişçinin baş üstünde taşıdığı kiriş (kurulanla aynı)
   scene.add(p.kam);
   ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '⌫ Sil'].forEach(t => {
     const b = document.createElement('button'); b.className = 'tas' + (t.length > 1 ? ' sil' : ''); b.textContent = t;
@@ -930,7 +1075,7 @@ const aktifler = () => mod === 'duello' && durum !== 'menu' ? madenciler : [made
 function madenciSifirla(p) {
   Object.assign(p, { s: 0, sHedef: 0, puan: 0, batti: false, ilkGecti: false, seviye: 0, dogru: 0, yanlis: 0, ilkDogru: 0, adimSay: 0, k: null, deger: '', vurus: 0, salla: 0, sallaGuc: 0,
     sallanma: 0, kusursuz: true, kullanilan: new Set(), dongu: null, hazine: null, beklet: null, yuzHedefS: 7.5, yuzEk: 0, insa: null });
-  p.isciler.forEach(w => { w.g.visible = false; });
+  p.isciler.forEach(w => { w.g.visible = false; }); p.kirisTasi.visible = false; p.ipler.forEach(m => { m.visible = false; }); p.makaralar.forEach(m => { m.visible = false; });
   if (p.topla) p.topla.isler.forEach(toplaBitir); p.topla = null; p.topci.g.visible = false; kirintiTemizle();
   if (p.alma) scene.remove(p.alma.obj); p.alma = null; p.solEl.visible = false;
   p.T.catlakMat.opacity = 0; catlakCiz(p.T, 0);
@@ -957,7 +1102,7 @@ function seviyeBasla(p) {
   p.q('.tBolme').style.display = '';
   p.q('.tSeviye').innerHTML = `${p.seviye + 1}. seviye · ${S.ad} · ${kesirH(a, b)} kesrini böl`;
   p.q('.tGeri').innerHTML = '';
-  seviyeYazisi(p, `${p.seviye + 1}. seviye`, S.ad);
+  seviyeYazisi(p, `${p.seviye + 1}. Seviye`, S.ad);
   fenerCiz(); ciz(p); soruSor(p);
 }
 function seviyeYazisi(p, n, a) {
@@ -1031,7 +1176,7 @@ function onayla(p) {
   const k = p.k;
   if (TEST_MOD && mod === 'sinif' && durum === 'oyun' && k && !p.beklet && !p.batti && (k.faz === 'rakam' || k.faz === 'kalan')) testCevabi(p);
   if (TEST_MOD && mod === 'sinif' && durum === 'oyun' && k && k.faz === 'devir' && !p.beklet) { testCevabi(p); return; }
-  if (durum !== 'oyun' || !k || p.deger === '' || p.beklet || p.batti) return;
+  if (durum !== 'oyun' || !k || p.deger === '' || p.beklet || p.batti || (k.faz !== 'rakam' && k.faz !== 'kalan')) return;   // seviye bitince eski cevap yeniden puan saymasın
   const v = +p.deger;
   p.adimSay++; altaKaydir(p);
   if (k.faz === 'rakam') {
@@ -1101,6 +1246,7 @@ function devirBulundu(p, r) {
     };
     s.appendChild(bt);
   });
+  if (TEST_MOD && mod === 'sinif') { const tb = document.createElement('button'); tb.className = 'secT genis'; tb.textContent = 'Kaz ⛏ (test)'; tb.onclick = () => testCevabi(p); s.appendChild(tb); }   // test modu: soru çözmeden ilerle
   p.adimSay++; altaKaydir(p);
 }
 function seviyeBitti(p, html) {
@@ -1176,9 +1322,9 @@ function ilerleVeKur(p, sonra) {
   const s0 = p.s; p.yuzEk = 0; ilerle(p, 6);
   const j = destekNo(p.sHedef + 5.5);   // yeni destek kaya yüzünün hemen önüne
   if (mod === 'duello') { kirintiTemizle(); p.beklet = setTimeout(() => { p.beklet = null; if (durum !== 'oyun') return; insaAyarla(p.T, j + 1); sonra(); }, 1300); return; }
-  p.insa = { t: 0, j, sj: -18.5 + j * 6 - .7, sonra, faz: 'kur', tk: 0, tik: 0, toz: 0, gurul: false };   // işçi yok: tahtalar kendiliğinden kurulur
+  p.insa = { t: 0, j, sj: -18.5 + j * 6 - .7, sonra, faz: 'gel', sp: s0, tut: s0, tk: 0, tik: 0, toz: 0, gurul: false, adimSes: -1 };   // işçiler arkamızdan gelir, önümüzde desteği kurar, dönüp gider
   toplaBasla(p, p.sHedef - .2, kirintilar.filter(q => q.kalici && q.aktif));
-  p.isciler.forEach(w => { w.g.visible = false; w.tahta.visible = false; }); p.kirisTasi.visible = false;
+  p.isciler.forEach(w => { w.g.visible = true; w.g.scale.setScalar(1); w.tahta.visible = w.rol === 'direk'; w.tahta.position.y = 1.62; });
 }
 /* Toplayıcı: el arabasıyla gelir, yerdeki taşları ve seçilmeyen cevherleri kürekler, geri döner */
 function toplaBasla(p, hedefS, isler) {
@@ -1224,63 +1370,122 @@ function almaGuncelle(p, dt) {
   const c = Math.min(1, k / .4); A.obj.position.lerpVectors(A.bas, hedef, c * c * (3 - 2 * c)); A.obj.scale.setScalar(A.b * (1 - c * .75));
   if (k >= 1) { scene.remove(A.obj); p.solEl.visible = false; p.alma = null; }
 }
-const KUR = 5.2;   // kurulum yavaş: direk, kiriş ve payanda sırayla, toz içinde   // dört kişilik ekip desteği bu sürede kurar
+const KUR = 8, ISCI_HIZ = 3.6;   // kurulum süresi, işçi yürüyüş hızı
+const ISCI_YER = [{ x: -2.9, ds: -.55 }, { x: 2.9, ds: -.55 }, { x: -1.2, ds: .6 }, { x: 1.2, ds: .6 }];   // desteğe göre yerleri: direkçiler direğin iç yanında, kirişçiler desteğin biraz önünde
+function adimSesi(I, t) { const adim = Math.floor(t * 3.2); if (adim !== I.adimSes) { I.adimSes = adim; gurultuSes(.07, 'lowpass', 420 + Math.random() * 160, .11); if (adim % 3 === 0) gurultuSes(.05, 'bandpass', 2200, .025); } }   // çizme sesi, arada çakıl
+const _ia = new THREE.Vector3(), _ib = new THREE.Vector3(), _ic = new THREE.Vector3(), _xEks = new THREE.Vector3(1, 0, 0);
+function ipCek(m, a, b) { m.visible = true; m.position.copy(a).add(b).multiplyScalar(.5); _ic.copy(b).sub(a); m.scale.set(1, _ic.length(), 1); m.quaternion.setFromUnitVectors(YUKARI, _ic.normalize()); }   // a ile b arasına ip parçası
 function insaGuncelle(p, dt) {
   const I = p.insa; if (!I) return;
   I.t += dt;
-  let sw = I.sj, a = 0, olcek = 1;
-  if (I.faz === 'gel') {   // önden belirir (büyüyerek), sırtları kameraya dönük yürür, malzemeyi getirir
-    olcek = Math.min(1, I.t / .4);
-    sw = Math.min(I.sj, I.sp + 2.4 * I.t);
-    const adim = Math.floor(I.t * 2.4); if (adim !== I.adimSes) { I.adimSes = adim; gurultuSes(.08, 'lowpass', 500, .12); }
-    if (sw >= I.sj) { I.faz = 'kur'; I.tk = I.t; p.isciler.forEach(w => { w.tahta.visible = false; }); }
-  } else if (I.faz === 'kur') {   // yerinde durur, direkleri diker, kirişi oturtur
-    sw = I.sj; a = (I.t - I.tk) / KUR;
+  const sd = I.sj + .7, c = x => Math.max(0, Math.min(1, x)), yum = x => { x = c(x); return x * x * (3 - 2 * x); }, ara = (x, a0, a1) => yum((x - a0) / (a1 - a0));   // sd: desteğin yeri
+  const fd = cerceve(p.T.ofs, sd);
+  let sw = sd, a = 0;
+  if (I.faz === 'gel') {   // arkamızdan gelip yanımızdan geçerler: sırtları bize dönük, malzeme omuzlarında
+    sw = Math.min(sd, I.sp + ISCI_HIZ * I.t);
+    adimSesi(I, I.t);
+    if (sw >= sd) { I.faz = 'kur'; I.tk = I.t; I.tut = Math.min(p.sHedef, sd - 6.8); }
+  } else if (I.faz === 'kur') {
+    a = (I.t - I.tk) / KUR;
     insaParca(p.T, I.j, a);
-    if (!I.gurul) { I.gurul = true; gurultuSes(2.4, 'lowpass', 340, .28, 120); }   // toz bulutu başlamadan gürültü
+    const dip = y => fd.p.clone().addScaledVector(fd.sag, y * R * .74).addScaledVector(fd.ust, ZEMIN + .15);
+    if (a > .07 && !I.birak) { I.birak = true; ton(150, .18, 'triangle', .13, 110); gurultuSes(.35, 'lowpass', 600, .2); p.isciler.forEach(w => { w.tahta.visible = false; }); [-1, 1].forEach(y => tozAt(dip(y).addScaledVector(fd.t, -2.4), 2, 1.4)); }   // direkler yere bırakılır: tok ahşap sesi, biraz toz
+    if (a > .08 && !I.kirisYer) { I.kirisYer = true; ton(130, .2, 'triangle', .12, 95); tozAt(fd.p.clone().addScaledVector(fd.ust, ZEMIN + .2).addScaledVector(fd.t, .6), 2, 2); }   // kiriş yere konur
+    if (a > .25 && !I.kazi) { I.kazi = true; gurultuSes(1.4, 'bandpass', 700, .1, 300); }   // direğin dibi zeminde sürtünür
+    if (a > .45 && !I.kirisSes) { I.kirisSes = true; I.gicir = 0; }
+    if (I.kirisSes && a < .8) { I.gicir -= dt; if (I.gicir <= 0) { I.gicir = .45 + Math.random() * .2; gurultuSes(.3, 'bandpass', 480 + Math.random() * 120, .07, 360); } }   // ip makarada gıcırdar
+    if (a > .62 && !I.dikildi) { I.dikildi = true; ton(170, .22, 'triangle', .14, 110); gurultuSes(.25, 'lowpass', 650, .22); [-1, 1].forEach(y => tozAt(dip(y), 4, 1.6)); }   // direk yerine oturur
+    if (a > .8 && !I.kirisOtur) { I.kirisOtur = true; ton(110, .25, 'sine', .15, 70); gurultuSes(.22, 'lowpass', 520, .25, 150); [-1, 0, 1].forEach(y => tozAt(fd.p.clone().addScaledVector(fd.sag, y * 2.2).addScaledVector(fd.ust, R * .5), 3, 1.8)); }   // kiriş oturur, üstten toz dökülür
+    if (a > .84 && a < .98 && Math.floor(a * 40) !== I.tik) { I.tik = Math.floor(a * 40); if (Math.random() < .75) sesCekic(); }   // payandalar çakılır
+    // toz: iş ilerledikçe yavaş yavaş artar, havada asılı kalır
     I.toz += dt;
-    if (I.toz > .18) { I.toz = 0; const f = cerceve(p.T.ofs, I.sj); [-1, 1].forEach(y => tozAt(f.p.clone().addScaledVector(f.sag, y * (1.5 + Math.random() * 3)).addScaledVector(f.ust, -1 + Math.random() * 2.2).addScaledVector(f.t, -.8 - Math.random() * 1.8), 2, 2.8)); tozAt(f.p.clone().addScaledVector(f.t, -1.2).addScaledVector(f.ust, -.6 + Math.random() * 1.2), 2, 2.8); }   // kalın toz perdesi: tahta parçaları aralardan görünür
-    if (a > .05 && !I.kazi) { I.kazi = true; gurultuSes(.7, 'bandpass', 700, .14, 300); }   // kaya zemini sürtünme sesi
-    if (a > .58 && !I.dikildi) { I.dikildi = true; ton(170, .22, 'triangle', .14, 110); gurultuSes(.25, 'lowpass', 650, .22); }   // direk oturur: tok ahşap sesi + çatırtı
-    if (a > .8 && !I.kirisSes) { I.kirisSes = true; gurultuSes(.6, 'bandpass', 480, .16, 260); }   // kiriş kayarak yerine oturur
-    if (a > .5 && !I.kirisCek) { I.kirisCek = true; p.kirisTasi.visible = false; }
-    if (a > .92 && !I.kirisOtur) { I.kirisOtur = true; ton(95, .25, 'sine', .14, 60); gurultuSes(.2, 'lowpass', 500, .25, 150); }   // son oturma
-    if (a > .12 && a < .92 && Math.floor(a * 26) !== I.tik) { I.tik = Math.floor(a * 26); if (Math.random() < .7) sesCekic(); }   // düzensiz çekiç ritmi
+    if (I.toz > .55 - .38 * a) {
+      I.toz = 0; const n = a < .35 ? 1 : 2, yay = 1.6 + a * 1.6;
+      [-1, 1].forEach(y => tozAt(fd.p.clone().addScaledVector(fd.sag, y * (1.6 + Math.random() * yay)).addScaledVector(fd.ust, ZEMIN + .2 + Math.random() * (1 + a * 1.8)).addScaledVector(fd.t, -.5 - Math.random() * (1.5 + a * 2)), n, 1.8 + a * 1.2));
+    }
     if (a >= 1) {
       insaAyarla(p.T, I.j + 1);
       const L = p.T.fenerler[I.j]; if (L) L.g.userData.parla.material.opacity = 0;
       I.faz = 'git'; I.td = I.t; const f = I.sonra; I.sonra = null; if (durum === 'oyun') f();
     }
-  } else {   // döner, aynı yoldan geri yürür, geldiği yerde küçülüp kaybolur
-    sw = I.sj - 4 * (I.t - I.td);   // işi bitince normal yürüyüşle çıkar
-    const adim = Math.floor((I.t - I.td) * 2.4); if (adim !== I.adimSes) { I.adimSes = adim; gurultuSes(.08, 'lowpass', 500, .12); }
-    const L = p.T.fenerler[I.j]; if (L) L.g.userData.parla.material.opacity = Math.min(.35, (I.t - I.td) * .6);
-    if (sw < p.s - 2) { p.isciler.forEach(w => { w.g.visible = false; }); p.insa = null; return; }
+  } else {   // döner, yanımızdan geçip girişe doğru gider; toz yavaşça çöker
+    const tg = I.t - I.td;
+    sw = sd - 3.4 * tg;
+    adimSesi(I, tg);
+    const L = p.T.fenerler[I.j]; if (L) L.g.userData.parla.material.opacity = Math.min(.35, tg * .6);
+    I.toz += dt; if (tg < 1.6 && I.toz > .3 + tg * .4) { I.toz = 0; [-1, 1].forEach(y => tozAt(fd.p.clone().addScaledVector(fd.sag, y * (1.6 + Math.random() * 3)).addScaledVector(fd.ust, ZEMIN + .3 + Math.random() * 2.6).addScaledVector(fd.t, -.5 - Math.random() * 3), 1, 2.8)); }
+    if (sw < p.s - .5) { p.isciler.forEach(w => { w.g.visible = false; }); p.kirisTasi.visible = false; p.ipler.forEach(m => { m.visible = false; }); p.makaralar.forEach(m => { m.visible = false; }); p.insa = null; return; }
   }
-  const don = I.faz === 'git', yur = I.faz !== 'kur', fz0 = I.t * 10;
+  const don = I.faz === 'git', yur = I.faz !== 'kur', fz0 = I.t * 11;
+  const ad = (k, x, d) => { k.ust.rotation.x = x; k.dirsek.rotation.x = d; };
+  // kiriş: önce taşınır, yere konur, sonra makarayla çekilip direklerin üstüne oturur
+  const K = p.kirisTasi; let kh = ZEMIN + 2.1, ks = sw + .6;
+  const kirisVar = !don && a < .8;
+  if (!yur) {
+    if (a < .08) kh = ZEMIN + 2.1 - ara(a, 0, .08) * (2.1 - .22);
+    else { const k = ara(a, .45, .8); kh = ZEMIN + .22 + k * (R * .5 + .2 - ZEMIN - .22); ks = sd + .6 * (1 - k * k * k); }   // yukarı çıkarken desteğin hizasına salınır
+  }
+  if (!kirisVar) K.visible = false;
+  else { const f = cerceve(p.T.ofs, ks); K.visible = true; _m.makeBasis(f.sag.clone().negate(), f.ust, f.t); K.quaternion.setFromRotationMatrix(_m); K.position.copy(f.p).addScaledVector(f.ust, kh); }
+  const ipVar = !yur && a > .1 && a < .88;
   p.isciler.forEach((w, i) => {
-    const f = cerceve(p.T.ofs, sw + (don ? -w.ds : w.ds)); _m.makeBasis(f.sag, f.ust, f.t); _q.setFromRotationMatrix(_m);
-    if (!don) _q.multiply(new THREE.Quaternion().setFromAxisAngle(YUKARI, Math.PI));   // gelirken ve kurarken sırtları kameraya, dönüşte yüzleri
-    w.g.position.copy(f.p).addScaledVector(f.sag, w.x).addScaledVector(f.ust, ZEMIN); w.g.quaternion.copy(_q);
-    w.g.scale.setScalar(Math.max(.001, olcek));
-    const [sol, sag] = w.kol, ad = (k, x, d) => { k.ust.rotation.x = x; k.dirsek.rotation.x = d; };
-    w.bacak.forEach((b, k) => { const fz = fz0 + i * 1.3 + k * Math.PI; b.ust.rotation.x = yur ? Math.sin(fz) * .5 : (k ? .35 : -.25); b.diz.rotation.x = yur ? Math.max(0, -Math.cos(fz)) * .9 : (k ? .5 : .15); });
-    if (yur) {   // yürürken: yük omuzdaysa iki el yükü tutar
-      const sal = Math.sin(fz0 + i * 1.3) * .4;
+    const Y = ISCI_YER[i], yan = Math.sign(Y.x);
+    let ws = sw + Y.ds, yon = don ? Math.PI : 0, cok = 0, adimla = false, egil = 0;   // egil: belden öne eğilme
+    const [sol, sag] = w.kol, tutan = Y.x > 0 ? sol : sag, bos = Y.x > 0 ? sag : sol;   // direği tutan kol dış omuz tarafı
+    if (yur) {
+      const sal = Math.sin(fz0 + i * 1.3) * .4; adimla = true;
       if (don) { ad(sol, -sal, -.3); ad(sag, sal, -.3); }
-      else if (w.rol === 'direk') { ad(sol, -1.0, -1.6); ad(sag, sal * .5, -.3); }
-      else { ad(sol, -2.6, -.9); ad(sag, -2.6, -.9); }
-    } else if (w.rol === 'direk' && a < .45) {   // yatan direği iki eliyle iterek kaldırır
-      const k = Math.min(1, a / .4); ad(sol, -1.1 - k * 1.6, -.6 + k * .5); ad(sag, -1.1 - k * 1.6, -.6 + k * .5);
-    } else if (w.rol === 'kiris' && a < .45) {   // kirişi omuzdan baş üstüne kaldırır
-      const k = Math.max(0, (a - .2) / .25); ad(sol, -2.6 - k * .4, -.9 + k * .9); ad(sag, -2.6 - k * .4, -.9 + k * .9);
-      if (i === 2) p.kirisTasi.position.y = 1.66 + k * .62;
-    } else if (w.rol === 'kiris' && a < .75) {   // kirişi yukarı çeker
-      const v = Math.sin(I.t * 9 + i); ad(sol, -2.9 + v * .25, -.2); ad(sag, -2.9 - v * .25, -.2);
-    } else if (I.faz === 'kur') {   // payandaları çakar
-      const v = Math.sin(I.t * 16 + i * 1.7); ad(sol, -1.2, -.8); ad(sag, -1.5 - v * .45, -.5 - v * .55);
-    } else { ad(sol, -.3, -.2); ad(sag, -.3, -.2); }
+      else if (w.rol === 'direk') { ad(tutan, -2.5, -1.2); ad(bos, sal * .6, -.3); }   // direk omuzda, el üstünden kavrar
+      else { ad(sol, -2.95, -.15); ad(sag, -2.95, -.15); }   // kiriş baş üstünde
+    } else if (w.rol === 'direk') {
+      const tm = direkTepe(fd), th = direkAci(a, tm), sb = sd - (R * .5 - ZEMIN) / 2 * fd.t.y;   // sb: dik direk dünyada dik durduğu için dibi eğimli zeminde biraz ileride
+      if (a < .07) { const k = ara(a, 0, .07); w.tahta.position.y = 1.62 - k * 1.45; ad(tutan, -2.5 + k * 1.6, -1.2 + k * .8); ad(bos, -k * .9, -.3); cok = k; }   // direği omuzdan yere indirir
+      else if (a < .2) {   // kalkar, dönüp direğin ucuna yürür, geri döner
+        const u = (a - .07) / .13; const s0 = sd + Y.ds, s1 = sb - DIREK_EL * Math.cos(DIREK_T0) - .45; ws = s0 + ara(u, .15, .85) * (s1 - s0);
+        yon = Math.PI * ara(u, 0, .2) * (1 - ara(u, .8, 1)); cok = 1 - ara(u, 0, .15); adimla = u > .12 && u < .88;
+        const sal = Math.sin(I.t * 9 + i) * .35; ad(sol, -sal * (1 - cok), -.3); ad(sag, sal * (1 - cok), -.3);
+      } else if (a < .25) { const k = ara(a, .2, .25); ws = sb - DIREK_EL * Math.cos(DIREK_T0) - .45; cok = k * 1.3; egil = k * 1.0; ad(sol, -.2 - k * 1.0, -.2); ad(sag, -.2 - k * 1.0, -.2); }   // eğilip çömelir, ucu kavrar
+      else if (a < .36) {   // ucu kaldırır: çömelmeden doğrulur, kollar baş üstüne
+        const k = ara(a, .25, .36); ws = sb - DIREK_EL * Math.cos(th) - (.45 - k * .31); cok = (1 - k) * 1.3; egil = (1 - k) * 1.0;
+        ad(sol, -1.2 - k * 1.7, -.2); ad(sag, -1.2 - k * 1.7, -.2);
+      } else if (a < .62) {   // elleriyle direği yürütür: elden ele ilerleyip dibe doğru yürür
+        const g = ara(th, tm - .4, tm), hh = DIREK_H - g * .7;
+        ws = sb - Math.max(.9, hh / Math.tan(th) + .14 + g * .2); adimla = true;
+        const v = Math.sin(I.t * 7 + i) * .18;
+        ad(sol, -2.9 + g * 1.35 + v, -.2 - g * .25); ad(sag, -2.9 + g * 1.35 - v, -.2 - g * .25); cok = .12 + Math.abs(v) * .4;
+      } else if (a < .82) { ws = sb - .9; const v = Math.sin(I.t * 1.6 + i) * .05; ad(sol, -1.55 + v, -.4); ad(sag, -1.55 - v, -.4); cok = .1; }   // direği dik tutar, yerine oturtur
+      else { ws = sb - .9; const v = Math.sin(I.t * 17 + i * 1.7); ad(bos, -1.4, -.8); ad(tutan, -1.9 - v * .5, -.5 - v * .6); }   // payandayı çakar
+    } else {   // kirişçi
+      if (a < .08) { const k = ara(a, 0, .08); ws = sd + .6; cok = k * .9; egil = k * .8; ad(sol, -2.95 + k * 1.75, -.15 - k * .2); ad(sag, -2.95 + k * 1.75, -.15 - k * .2); }   // kirişi yere indirir
+      else if (a < .22) { ws = sd + .6; cok = .9; egil = .8; const v = Math.sin(I.t * 9 + i * 2) * .2; ad(sol, -1.2 + v, -.5 - v); ad(sag, -1.2 - v, -.5 + v); }   // ipi kirişe bağlar
+      else if (a < .36) { const k = ara(a, .22, .36); ws = sd + .6 - k * 2.5; cok = .9 - k * .75; egil = .8 * (1 - ara(k, 0, .4)); adimla = k > .05 && k < .95; ad(sol, -.9 - k * 1.2, -.5 + k * .2); ad(sag, -.9 - k * 1.2, -.5 + k * .2); }   // ipi salarak geri geri çekilir
+      else if (a < .45) { ws = sd - 1.9; const k = ara(a, .36, .45); cok = .15 + k * .15; ad(sol, -2.1 - k * .4, -.3); ad(sag, -2.1 - k * .4, -.3); }   // ipi gerer
+      else if (a < .8) { ws = sd - 1.9; const v = Math.sin(I.t * 6 + i * 1.5); ad(sol, -2.5 + v * .45, -.35 - Math.max(0, v) * .5); ad(sag, -2.5 - v * .45, -.35 - Math.max(0, -v) * .5); cok = .3 + Math.abs(v) * .12; }   // elden ele ipi çeker
+      else { ws = sd - 1.9; const v = Math.sin(I.t * 5 + i); ad(sol, -1.2 + v * .3, -1.1); ad(sag, -1.2 - v * .3, -1.1); cok = .05; }   // ipi bağlar, toplar
+    }
+    const f = cerceve(p.T.ofs, ws); _m.makeBasis(f.sag.clone().negate(), f.ust, f.t); _q.setFromRotationMatrix(_m);   // sağ el kuralına uygun dönüş: yüz (+z) ileri bakar, sırtı bize
+    if (yon) _q.multiply(_dq2.setFromAxisAngle(YUKARI, yon));
+    w.g.position.copy(f.p).addScaledVector(f.sag, Y.x).addScaledVector(f.ust, ZEMIN);
+    if (egil) { w.g.position.sub(_ib.set(0, .95 * (Math.cos(egil) - 1), .95 * Math.sin(egil)).applyQuaternion(_q)); _q.multiply(_dq2.setFromAxisAngle(_xEks, egil)); }   // kalçadan öne eğilir
+    w.g.quaternion.copy(_q);
+    w.adim = (w.adim || 0) + (w.sOnce != null ? Math.abs(ws - w.sOnce) : 0) * 4.2; w.sOnce = ws;
+    w.bacak.forEach((b, k) => {
+      const fz = (yur ? fz0 + i * 1.3 : w.adim) + k * Math.PI;
+      if (adimla) { b.ust.rotation.x = Math.sin(fz) * .5 * (1 - cok * .5) - cok * .4; b.diz.rotation.x = Math.max(0, -Math.cos(fz)) * .9 + cok * .6; }
+      else { b.ust.rotation.x = -.15 - cok * .55 + (k ? .1 : -.1); b.diz.rotation.x = .1 + cok * 1.0; }
+      b.ust.rotation.x -= egil;
+    });
+    w.g.position.addScaledVector(f.ust, adimla ? Math.abs(Math.sin(yur ? fz0 + i * 1.3 : w.adim)) * .03 - cok * .1 : -cok * .14);   // yürürken hafif sekme, çömelince alçalma
+    if (w.rol !== 'direk' && ipVar) {   // ip: kirişten makaraya, makaradan ustanın ellerine
+      w.g.updateMatrixWorld(true);
+      _ia.set(0, -.28, 0); sol.dirsek.localToWorld(_ia); _ib.set(0, -.28, 0); sag.dirsek.localToWorld(_ib); _ia.add(_ib).multiplyScalar(.5);
+      const k = yan > 0 ? 1 : 0, x = yan * 1.0, mk = fd.p.clone().addScaledVector(fd.sag, x).addScaledVector(fd.ust, R * .5 + 1.25);
+      const fk = cerceve(p.T.ofs, ks), bag = fk.p.clone().addScaledVector(fk.sag, x).addScaledVector(fk.ust, kh + .2);
+      const M = p.makaralar[k]; M.visible = true; M.position.copy(mk); M.quaternion.setFromRotationMatrix(_m.makeBasis(fd.sag, fd.ust, fd.t));
+      ipCek(p.ipler[k * 2], bag, mk); ipCek(p.ipler[k * 2 + 1], mk, _ia);
+    }
   });
+  if (!ipVar) { p.ipler.forEach(m => { m.visible = false; }); p.makaralar.forEach(m => { m.visible = false; }); }
 }
 function altinIsik(p) {
   p.yuzIsik.color.set(0xffc83a); p.yuzIsik.intensity = 2.5;
@@ -1345,7 +1550,7 @@ function hazineSec(p, i) {
   [...p.q('.tSec').children].forEach((b, j) => { b.disabled = true; if (j === i) b.classList.add('dogru'); });
   setTimeout(() => {
     const h = H.sonuc[i], g = H.kumeler[i];
-    sesVurus(); setTimeout(() => (h.puan > 0 ? sesHazineIyi : h.puan < 0 ? sesHazineKotu : sesDamla)(), 150);
+    sesVurus(); if (h.puan) setTimeout(h.puan > 0 ? sesHazineIyi : sesHazineKotu, 150);
     hazineAc(p, g, h, true);
     puanEkle(p, h.puan);
     if (h.puan > 0 && mod !== 'duello') setTimeout(() => { const o = g.children.find(c => c.userData.don); if (o && p.hazine === H) elleAl(p, o); }, 700);
@@ -1685,11 +1890,12 @@ function kCiz(simdi) {
 
 /* ================= DÖNGÜ ================= */
 const saat = new THREE.Clock(), bak = new THREE.Vector3(), kamP = new THREE.Vector3();
-let damlaSayac = 3, menuS = 0;
+let menuS = 0;
 function madenciGuncelle(p, dt, t) {
   if (durum === 'menu') { menuS += dt * .9; p.s = p.sHedef = menuS; }
-  const ds = (p.sHedef - p.s) * Math.min(1, dt * 2.2); p.s += Math.sign(ds) * Math.min(Math.abs(ds), 5 * dt);   // yürüme hızı sınırlı
-  const yuruyor = Math.abs(p.sHedef - p.s) > .05;
+  const hs = p.insa && p.insa.tut != null ? Math.min(p.sHedef, p.insa.tut) : p.sHedef;   // işçiler çalışırken onların gerisinde dur
+  const ds = (hs - p.s) * Math.min(1, dt * 2.2); p.s += Math.sign(ds) * Math.min(Math.abs(ds), 5 * dt);   // yürüme hızı sınırlı
+  const yuruyor = Math.abs(hs - p.s) > .05;
   const f = cerceve(p.T.ofs, p.s), bob = yuruyor ? Math.sin(t * 9) * .05 : Math.sin(t * 1.4) * .015;
   kamP.copy(f.p).addScaledVector(f.ust, GOZ + bob);
   if (p.sallanma > 0) { p.sallanma = Math.max(0, p.sallanma - dt); kamP.add(_v.set(Math.random() - .5, Math.random() - .5, 0).multiplyScalar(p.sallanma * .25)); }
@@ -1715,6 +1921,7 @@ function madenciGuncelle(p, dt, t) {
     p.salla = Math.max(0, p.salla - dt * 2.6); const k = 1 - p.salla;
     pv.rotation.x = k < .3 ? k / .3 * .9 : k < .45 ? .9 - (k - .3) / .15 * 2.3 : -1.4 + (k - .45) / .55 * 1.4;
   } else pv.rotation.x = Math.sin(t * 1.6) * .03;
+  kolGuncelle(p.kazma);
   p.kazma.visible = durum === 'oyun'; p.kazma.position.y = -.6 + (yuruyor ? Math.abs(Math.sin(t * 9)) * .04 : 0);
 
   // en yakın iki fener ışık verir
@@ -1742,7 +1949,6 @@ function dongu() {
   kristalMat.emissiveIntensity = 1.3 + Math.sin(t * 1.7) * .3;
   madenciler.forEach(p => p.T.yuzMat.color.copy(kayaMat.color).multiplyScalar(.55));
   parcaGuncelle(dt); ucanGuncelle(dt);
-  if ((damlaSayac -= dt) <= 0) { damlaSayac = 2.5 + Math.random() * 5; if (ses && durum !== 'bitti') sesDamla(); }
 
   const H = innerHeight, A = alanlar(), tek = A.length === 1;
   if (tek && composer) {
