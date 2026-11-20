@@ -177,6 +177,13 @@ const SISTEM_OYUNLARI = [
         image: "./oyunlar/galaksi_kuryesi/galaksi_kuryesi.jpg",
         url: "./oyunlar/galaksi_kuryesi/galaksi_kuryesi.html"
     },
+    {
+        id: "oyun-26",
+        title: "Ondalık Madeni",
+        grade: "6",
+        image: "./oyunlar/ondalik_madeni/ondalik_madeni.jpg",
+        url: "./oyunlar/ondalik_madeni/ondalik_madeni.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
