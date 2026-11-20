@@ -538,12 +538,12 @@ const _o = new THREE.Matrix4();
 function insaParca(T, j, a) {   // j. destek: direkler yerden kaldırılıp dikilir, kiriş yukarı çekilip oturur, en son payandalar çakılır
   const D = T.destek, c = x => Math.max(0, Math.min(1, x)), BOY = R * .5 - ZEMIN;
   D.direk.count = D.payanda.count = (j + 1) * 2; D.kiris.count = j + 1;
-  const dik = c(a / .4), aci = (1 - dik * dik * (3 - 2 * dik)) * Math.PI * .47;   // yatıktan dike, yumuşak bitiş
+  const dik = c(a / .55), aci = (1 - dik * dik * (3 - 2 * dik)) * Math.PI * .47;   // yatıktan dike, yumuşak bitiş
   [0, 1].forEach(y => {
     D.direk.setMatrixAt(j * 2 + y, _o.copy(D.taban.direk[j * 2 + y]).multiply(_m.makeTranslation(0, -BOY / 2, 0)).multiply(_m2.makeRotationX(-aci)).multiply(_m.makeTranslation(0, BOY / 2, 0)));
-    D.payanda.setMatrixAt(j * 2 + y, _o.copy(D.taban.payanda[j * 2 + y]).multiply(_m.makeScale(1, Math.max(.001, c((a - .75) * 4)), 1)));
+    D.payanda.setMatrixAt(j * 2 + y, _o.copy(D.taban.payanda[j * 2 + y]).multiply(_m.makeScale(1, Math.max(.001, c((a - .82) * 5.5)), 1)));
   });
-  const k = c((a - .45) / .3);
+  const k = c((a - .5) / .3);
   D.kiris.setMatrixAt(j, a < .45 ? _o.makeScale(0, 0, 0) : _o.copy(D.taban.kiris[j]).multiply(_m.makeTranslation(0, -(1 - k * k * (3 - 2 * k)) * 2.7, 0)));
   [D.direk, D.kiris, D.payanda].forEach(m => { m.instanceMatrix.needsUpdate = true; });
 }
@@ -650,10 +650,10 @@ const isciMat = {
   lens: new THREE.MeshBasicMaterial({ color: 0xfff4cc })
 };
 const ISCI_TIP = [   // dört kişilik ekip: ikisi direk diker, ikisi kirişi taşır
-  { ten: 0xc58f68, kask: 0xf2bd2c, biyik: true, sakal: false, rol: 'direk', x: -2.3, ds: .9 },
-  { ten: 0xa8714e, kask: 0xf4f4ee, biyik: false, sakal: true, rol: 'direk', x: 2.3, ds: .9 },
-  { ten: 0xd6a07c, kask: 0xe2622a, biyik: false, sakal: false, rol: 'kiris', x: -1.05, ds: -.7 },
-  { ten: 0x8c5a3c, kask: 0xf2bd2c, biyik: true, sakal: true, rol: 'kiris', x: 1.05, ds: -.7 }
+  { ten: 0xc58f68, kask: 0xf2bd2c, biyik: true, sakal: false, rol: 'direk', x: -.9, ds: .9 },
+  { ten: 0xa8714e, kask: 0xf4f4ee, biyik: false, sakal: true, rol: 'direk', x: .9, ds: .9 },
+  { ten: 0xd6a07c, kask: 0xe2622a, biyik: false, sakal: false, rol: 'kiris', x: -.3, ds: -.7 },
+  { ten: 0x8c5a3c, kask: 0xf2bd2c, biyik: true, sakal: true, rol: 'kiris', x: .3, ds: -.7 }
 ];
 function kapsul(r1, r2, L, mat) {   // üst ucu eklem noktasında, aşağı uzanan yuvarlak uçlu uzuv
   const pts = [], yb = -L + r2, yt = -r1;
@@ -741,7 +741,8 @@ function isciYap(n = 0) {
   const lamba = new THREE.Mesh(new THREE.CylinderGeometry(.032, .036, .05, 16), M.aku); lamba.rotation.x = Math.PI / 2; lamba.position.set(0, .085, .14); bas.add(lamba);
   const halka = new THREE.Mesh(new THREE.TorusGeometry(.031, .005, 6, 16), M.metal); halka.position.set(0, .085, .166); bas.add(halka);
   const cam = new THREE.Mesh(new THREE.CircleGeometry(.027, 16), M.lens); cam.position.set(0, .085, .167); bas.add(cam);
-  const isik = parlama(0xfff0c0, .45, .8); isik.position.set(0, .085, .19); bas.add(isik);
+  const isik = parlama(0xfff0c0, .26, .4); isik.position.set(0, .085, .19); bas.add(isik);
+  const govdeIsik = new THREE.PointLight(0xffd8a0, .7, 3.2, 2); govdeIsik.position.set(0, 1.1, .4); g.add(govdeIsik);   // karanlıkta işçi gövdesini görünür kılar
   const kablo = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[0, 1.0, -.15], [.03, 1.25, -.17], [.02, 1.5, -.14], [0, 1.7, -.15], [0, 1.73, -.08]].map(v => new THREE.Vector3(...v))), 24, .008, 6), M.aku); g.add(kablo);
   // kollar: omuz > dirsek (kıvrık kol ağzı) > manşetli eldiven, başparmak
   const kol = [-.21, .21].map(x => {
@@ -787,7 +788,7 @@ const tozlar = [], _tozRenk = new THREE.Color(.75, .68, .6);
 function tozAt(merkez, n, boy) {   // taş tozu: fener ışığında yavaşça yayılıp çöker
   for (let i = 0; i < n; i++) {
     let q = tozlar.find(x => !x.aktif);
-    if (!q) { if (tozlar.length > 60) break; q = { s: new THREE.Sprite(new THREE.SpriteMaterial({ map: tozDoku, transparent: true, depthWrite: false, opacity: 0 })), v: new THREE.Vector3() }; scene.add(q.s); tozlar.push(q); }
+    if (!q) { if (tozlar.length > 140) break; q = { s: new THREE.Sprite(new THREE.SpriteMaterial({ map: tozDoku, transparent: true, depthWrite: false, opacity: 0 })), v: new THREE.Vector3() }; scene.add(q.s); tozlar.push(q); }
     q.aktif = true; q.s.visible = true; q.s.material.color.copy(kayaMat.color).lerp(_tozRenk, .5);
     q.s.position.copy(merkez).add(_v.set((Math.random() - .5) * boy, (Math.random() - .5) * boy * .6, (Math.random() - .5) * boy));
     q.v.set((Math.random() - .5) * .8, Math.random() * .3, (Math.random() - .5) * .8);
@@ -814,7 +815,7 @@ function parcaGuncelle(dt) {
   });
   tozlar.forEach(q => {
     if (!q.aktif) return; q.t += dt; q.s.position.addScaledVector(q.v, dt); q.v.multiplyScalar(1 - dt * .8); q.v.y -= .05 * dt;
-    const k = q.t / q.omur; q.s.material.opacity = (k < .15 ? k / .15 : 1 - (k - .15) / .85) * .45; q.s.scale.setScalar(q.b * (1 + k * 1.8));
+    const k = q.t / q.omur; q.s.material.opacity = (k < .15 ? k / .15 : 1 - (k - .15) / .85) * .26; q.s.scale.setScalar(q.b * (1 + k * 1.8));
     if (k >= 1) { q.aktif = false; q.s.visible = false; }
   });
   kivilcimlar.forEach(q => { if (!q.aktif) return; q.t += dt; q.v.y -= 6 * dt; q.m.position.addScaledVector(q.v, dt); const k = 1 - q.t / q.omur; q.m.material.opacity = Math.max(0, k); q.m.scale.setScalar(.12 * k + .03); if (k <= 0) { q.aktif = false; q.m.visible = false; } });
@@ -915,7 +916,7 @@ const madenciler = [0, 1].map(i => {
   p.isciler = [0, 1, 2, 3].map(n => { const w = isciYap(n); scene.add(w.g); return w; });
   p.topci = isciYap(0); p.topci.g.children.forEach(c => { if (c === p.topci.tahta) c.visible = false; }); scene.add(p.topci.g);
   p.araba = arabaYap(); p.araba.position.set(0, 0, .75); p.topci.g.add(p.araba);
-  p.kirisTasi = new THREE.Mesh(new THREE.BoxGeometry(3.2, .26, .26), tahtaMat); p.kirisTasi.position.set(1.05, 1.66, 0); p.isciler[2].g.add(p.kirisTasi);   // iki kirişçinin omzundaki kiriş
+  p.kirisTasi = new THREE.Mesh(new THREE.BoxGeometry(3.2, .26, .26), tahtaMat); p.kirisTasi.position.set(0, 1.66, 0); p.isciler[2].g.add(p.kirisTasi);   // iki kirişçinin omzundaki kiriş
   scene.add(p.kam);
   ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '⌫ Sil'].forEach(t => {
     const b = document.createElement('button'); b.className = 'tas' + (t.length > 1 ? ' sil' : ''); b.textContent = t;
@@ -1015,8 +1016,21 @@ function hizPuani(p, taban, tavan) {   // bireysel ve düelloda hızlı cevap ek
 }
 function geri(p, html) { p.q('.tGeri').innerHTML = html; altaKaydir(p); }
 const altaKaydir = p => setTimeout(() => { p.el.scrollTop = p.el.scrollHeight; }, 0);
+const TEST_MOD = /[?&]test=1/.test(location.search);   // adres sonunda ?test=1: sınıf modunda Kaz cevabı kendisi doğru girer
+function testCevabi(p) {   // yalnızca test modu: doğru cevabı girer (devir sorusunda doğru seçeneği tıklar)
+  const k = p.k;
+  if (k.faz === 'rakam') p.deger = String(Math.floor(k.simdi / k.b));
+  else if (k.faz === 'kalan') p.deger = String(k.simdi - k.rakam * k.b);
+  else if (k.faz === 'devir') {
+    const d = { tam: k.tam, pre: k.ond.slice(0, k.devirBas), rep: k.devirRep };
+    [...p.q('.tSec').children].forEach(b => { const sy = b.querySelector('.sayi'); if (!b.disabled && sy && sy.outerHTML === sayiHTML(d)) b.click(); });
+  }
+  degerYaz(p);
+}
 function onayla(p) {
   const k = p.k;
+  if (TEST_MOD && mod === 'sinif' && durum === 'oyun' && k && !p.beklet && !p.batti && (k.faz === 'rakam' || k.faz === 'kalan')) testCevabi(p);
+  if (TEST_MOD && mod === 'sinif' && durum === 'oyun' && k && k.faz === 'devir' && !p.beklet) { testCevabi(p); return; }
   if (durum !== 'oyun' || !k || p.deger === '' || p.beklet || p.batti) return;
   const v = +p.deger;
   p.adimSay++; altaKaydir(p);
@@ -1162,9 +1176,9 @@ function ilerleVeKur(p, sonra) {
   const s0 = p.s; p.yuzEk = 0; ilerle(p, 6);
   const j = destekNo(p.sHedef + 5.5);   // yeni destek kaya yüzünün hemen önüne
   if (mod === 'duello') { kirintiTemizle(); p.beklet = setTimeout(() => { p.beklet = null; if (durum !== 'oyun') return; insaAyarla(p.T, j + 1); sonra(); }, 1300); return; }
-  p.insa = { t: 0, j, s0: s0 - 1.2, sj: -18.5 + j * 6 - .7, sonra, faz: 'gel', tik: 0 };
+  p.insa = { t: 0, j, sj: -18.5 + j * 6 - .7, sonra, faz: 'kur', tk: 0, tik: 0, toz: 0, gurul: false };   // işçi yok: tahtalar kendiliğinden kurulur
   toplaBasla(p, p.sHedef - .2, kirintilar.filter(q => q.kalici && q.aktif));
-  p.isciler.forEach(w => { w.g.visible = true; w.tahta.visible = true; }); p.kirisTasi.visible = true; p.kirisTasi.position.y = 1.66;
+  p.isciler.forEach(w => { w.g.visible = false; w.tahta.visible = false; }); p.kirisTasi.visible = false;
 }
 /* Toplayıcı: el arabasıyla gelir, yerdeki taşları ve seçilmeyen cevherleri kürekler, geri döner */
 function toplaBasla(p, hedefS, isler) {
@@ -1210,36 +1224,45 @@ function almaGuncelle(p, dt) {
   const c = Math.min(1, k / .4); A.obj.position.lerpVectors(A.bas, hedef, c * c * (3 - 2 * c)); A.obj.scale.setScalar(A.b * (1 - c * .75));
   if (k >= 1) { scene.remove(A.obj); p.solEl.visible = false; p.alma = null; }
 }
-const KUR = 2.6;   // dört kişilik ekip desteği bu sürede kurar
+const KUR = 5.2;   // kurulum yavaş: direk, kiriş ve payanda sırayla, toz içinde   // dört kişilik ekip desteği bu sürede kurar
 function insaGuncelle(p, dt) {
   const I = p.insa; if (!I) return;
   I.t += dt;
-  let sw, a = 0;
-  if (I.faz === 'gel') {
-    sw = Math.min(I.sj, I.s0 + 4 * I.t);
+  let sw = I.sj, a = 0, olcek = 1;
+  if (I.faz === 'gel') {   // önden belirir (büyüyerek), sırtları kameraya dönük yürür, malzemeyi getirir
+    olcek = Math.min(1, I.t / .4);
+    sw = Math.min(I.sj, I.sp + 2.4 * I.t);
+    const adim = Math.floor(I.t * 2.4); if (adim !== I.adimSes) { I.adimSes = adim; gurultuSes(.08, 'lowpass', 500, .12); }
     if (sw >= I.sj) { I.faz = 'kur'; I.tk = I.t; p.isciler.forEach(w => { w.tahta.visible = false; }); }
-  } else if (I.faz === 'kur') {
+  } else if (I.faz === 'kur') {   // yerinde durur, direkleri diker, kirişi oturtur
     sw = I.sj; a = (I.t - I.tk) / KUR;
     insaParca(p.T, I.j, a);
-    if (a > .4 && !I.dikildi) { I.dikildi = true; sesKirilma(); }   // direkler yerine oturur
-    if (a > .45 && !I.kirisCek) { I.kirisCek = true; p.kirisTasi.visible = false; }
-    if (a > .75 && !I.kirisOtur) { I.kirisOtur = true; gurultuSes(.25, 'lowpass', 500, .3, 150); ton(95, .2, 'sine', .12, 60); }
-    if (a > .75 && Math.floor(a * 16) !== I.tik) { I.tik = Math.floor(a * 16); sesCekic(); }
+    if (!I.gurul) { I.gurul = true; gurultuSes(2.4, 'lowpass', 340, .28, 120); }   // toz bulutu başlamadan gürültü
+    I.toz += dt;
+    if (I.toz > .18) { I.toz = 0; const f = cerceve(p.T.ofs, I.sj); [-1, 1].forEach(y => tozAt(f.p.clone().addScaledVector(f.sag, y * (1.5 + Math.random() * 3)).addScaledVector(f.ust, -1 + Math.random() * 2.2).addScaledVector(f.t, -.8 - Math.random() * 1.8), 2, 2.8)); tozAt(f.p.clone().addScaledVector(f.t, -1.2).addScaledVector(f.ust, -.6 + Math.random() * 1.2), 2, 2.8); }   // kalın toz perdesi: tahta parçaları aralardan görünür
+    if (a > .05 && !I.kazi) { I.kazi = true; gurultuSes(.7, 'bandpass', 700, .14, 300); }   // kaya zemini sürtünme sesi
+    if (a > .58 && !I.dikildi) { I.dikildi = true; ton(170, .22, 'triangle', .14, 110); gurultuSes(.25, 'lowpass', 650, .22); }   // direk oturur: tok ahşap sesi + çatırtı
+    if (a > .8 && !I.kirisSes) { I.kirisSes = true; gurultuSes(.6, 'bandpass', 480, .16, 260); }   // kiriş kayarak yerine oturur
+    if (a > .5 && !I.kirisCek) { I.kirisCek = true; p.kirisTasi.visible = false; }
+    if (a > .92 && !I.kirisOtur) { I.kirisOtur = true; ton(95, .25, 'sine', .14, 60); gurultuSes(.2, 'lowpass', 500, .25, 150); }   // son oturma
+    if (a > .12 && a < .92 && Math.floor(a * 26) !== I.tik) { I.tik = Math.floor(a * 26); if (Math.random() < .7) sesCekic(); }   // düzensiz çekiç ritmi
     if (a >= 1) {
       insaAyarla(p.T, I.j + 1);
       const L = p.T.fenerler[I.j]; if (L) L.g.userData.parla.material.opacity = 0;
-      I.faz = 'don'; I.td = I.t; const f = I.sonra; I.sonra = null; if (durum === 'oyun') f();
+      I.faz = 'git'; I.td = I.t; const f = I.sonra; I.sonra = null; if (durum === 'oyun') f();
     }
-  } else {
-    sw = I.sj - 4 * (I.t - I.td);
+  } else {   // döner, aynı yoldan geri yürür, geldiği yerde küçülüp kaybolur
+    sw = I.sj - 4 * (I.t - I.td);   // işi bitince normal yürüyüşle çıkar
+    const adim = Math.floor((I.t - I.td) * 2.4); if (adim !== I.adimSes) { I.adimSes = adim; gurultuSes(.08, 'lowpass', 500, .12); }
     const L = p.T.fenerler[I.j]; if (L) L.g.userData.parla.material.opacity = Math.min(.35, (I.t - I.td) * .6);
     if (sw < p.s - 2) { p.isciler.forEach(w => { w.g.visible = false; }); p.insa = null; return; }
   }
-  const don = I.faz === 'don', yur = I.faz !== 'kur', fz0 = I.t * 10;
+  const don = I.faz === 'git', yur = I.faz !== 'kur', fz0 = I.t * 10;
   p.isciler.forEach((w, i) => {
     const f = cerceve(p.T.ofs, sw + (don ? -w.ds : w.ds)); _m.makeBasis(f.sag, f.ust, f.t); _q.setFromRotationMatrix(_m);
-    if (!don) _q.multiply(new THREE.Quaternion().setFromAxisAngle(YUKARI, Math.PI));   // kazarken sırtları kameraya, dönüşte yüzleri
+    if (!don) _q.multiply(new THREE.Quaternion().setFromAxisAngle(YUKARI, Math.PI));   // gelirken ve kurarken sırtları kameraya, dönüşte yüzleri
     w.g.position.copy(f.p).addScaledVector(f.sag, w.x).addScaledVector(f.ust, ZEMIN); w.g.quaternion.copy(_q);
+    w.g.scale.setScalar(Math.max(.001, olcek));
     const [sol, sag] = w.kol, ad = (k, x, d) => { k.ust.rotation.x = x; k.dirsek.rotation.x = d; };
     w.bacak.forEach((b, k) => { const fz = fz0 + i * 1.3 + k * Math.PI; b.ust.rotation.x = yur ? Math.sin(fz) * .5 : (k ? .35 : -.25); b.diz.rotation.x = yur ? Math.max(0, -Math.cos(fz)) * .9 : (k ? .5 : .15); });
     if (yur) {   // yürürken: yük omuzdaysa iki el yükü tutar
@@ -1254,9 +1277,9 @@ function insaGuncelle(p, dt) {
       if (i === 2) p.kirisTasi.position.y = 1.66 + k * .62;
     } else if (w.rol === 'kiris' && a < .75) {   // kirişi yukarı çeker
       const v = Math.sin(I.t * 9 + i); ad(sol, -2.9 + v * .25, -.2); ad(sag, -2.9 - v * .25, -.2);
-    } else {   // payandaları çakar
+    } else if (I.faz === 'kur') {   // payandaları çakar
       const v = Math.sin(I.t * 16 + i * 1.7); ad(sol, -1.2, -.8); ad(sag, -1.5 - v * .45, -.5 - v * .55);
-    }
+    } else { ad(sol, -.3, -.2); ad(sag, -.3, -.2); }
   });
 }
 function altinIsik(p) {
@@ -1314,6 +1337,7 @@ function hazineBasla(p) {
     if (i === 2) bt.style.gridColumn = 'span 2';
     s.appendChild(bt);
   });
+  if (TEST_MOD && mod === 'sinif') setTimeout(() => { if (p.hazine && !p.hazine.secildi && durum === 'oyun') hazineSec(p, 0); }, 900);   // test modu: damar kendisi seçilir
 }
 function hazineSec(p, i) {
   const H = p.hazine; if (!H || H.secildi || H.kumeler.length < 3) return;
