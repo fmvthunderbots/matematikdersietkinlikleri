@@ -1667,7 +1667,7 @@ function oyunBasla() {
   $('derinlik').classList.toggle('gizli', mod === 'duello');
   madenciler.forEach(p => {
     const acik = aktifler().includes(p);
-    p.el.classList.toggle('gizli', !acik); p.el.classList.toggle('seffaf', mod === 'duello');
+    p.el.classList.toggle('gizli', !acik); p.el.classList.add('seffaf');   // soru paneli her modda şeffaf: telefonda sahne görünsün
     [p.far, p.dolgu, ...p.fenerIsik, p.yuzIsik].forEach(l => l.visible = acik); p.kam.visible = acik;
     p.s = -19; insaAyarla(p.T, destekNo(5.5) + 1);   // girişten kazı yerine kadar galeri hazır
     if (acik) { ciz(p); p.el.classList.add('gizli'); seviyeYazisi(p, 'Madene giriş', 'Kazı yerine yürüyorsun'); }
