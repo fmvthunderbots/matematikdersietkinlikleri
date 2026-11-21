@@ -322,6 +322,74 @@
         .lb-row.rank-1 { background: linear-gradient(90deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; }
         .lb-row.rank-2 { background: linear-gradient(90deg, #e0f2fe, #f0f9ff); border: 2px solid #38bdf8; }
         .lb-row.rank-3 { background: linear-gradient(90deg, #ffedd5, #fff7ed); border: 2px solid #fb923c; }
+
+        /* Yatay telefon: giriş kartı iki sütun; bireysel soruda kutu ile düğme yan yana (klavye açılınca soru görünsün) */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .screen-overlay { padding: 6px; }
+            #start-overlay .menu-card { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; align-items: center;
+                max-width: min(640px, 94vw); padding: 10px 14px; border-width: 3px; border-radius: 18px; }
+            #start-overlay .menu-card > * { margin-bottom: 6px !important; }
+            #start-overlay .menu-card > button[onclick^="openSettings"], #start-overlay .menu-card > .text-5xl { display: none; }
+            #start-overlay .menu-card > h1 { grid-column: 1; grid-row: 1; font-size: 24px; line-height: 1.1; }
+            #start-overlay .menu-card > p { grid-column: 1; grid-row: 2; }
+            #start-overlay .menu-card > button[onclick^="handleStart"] { grid-column: 1; grid-row: 3; padding: 8px 0; font-size: 20px; }
+            #start-overlay .menu-card > button[onclick^="openLeaderboard"] { grid-column: 1; grid-row: 4; padding: 6px 0; font-size: 15px; margin: 0 !important; }
+            #start-overlay .menu-card > .text-left.text-xs { grid-column: 2; grid-row: 1; margin: 0 !important; }
+            #start-overlay .menu-card > .flex.gap-3 { grid-column: 2; grid-row: 2; }
+            #start-overlay #form-1p, #start-overlay #form-group-info { grid-column: 2; grid-row: 3 / span 2; }
+            .mode-btn { padding: 6px 8px; font-size: 15px; gap: 0; }
+            .mode-btn .text-3xl { font-size: 20px; }
+            #player-fullname { padding: 8px 10px; font-size: 15px; }
+            html body #group-controls.absolute.top-4.left-4 button { font-size: 12px !important; padding: 4px 7px !important; }
+            body #app #teams { margin-left: 322px !important; }
+            #solo-app { padding: 4px 10px !important; justify-content: flex-start; }
+            .gomulu #solo-app { padding-right: 64px !important; }
+            #solo-app > div:first-child { padding: 3px 12px; }
+            #solo-app > div:first-child .text-3xl { display: none; }
+            #solo-app > div:first-child .text-xs { font-size: 11px; }
+            #solo-score { font-size: 22px; }
+            #solo-app > .flex-1 { margin: 6px 0 0; align-items: flex-start; }
+            #solo-app > .text-center.text-xs { display: none; }
+            #solo-question-box:not(.hidden) { padding: 8px 12px; display: grid; width: 100%; grid-template-columns: 1fr auto; column-gap: 8px; align-items: center; border-radius: 16px; }
+            #solo-question-box > * { grid-column: 1 / -1; }
+            #solo-question-box > .text-5xl { display: none; }
+            #solo-question-box > .inline-flex { justify-self: center; margin-bottom: 4px; padding: 2px 12px; font-size: 14px; }
+            #solo-q-text { font-size: 19px; margin-bottom: 8px; }
+            #solo-input { grid-column: 1; margin: 0; padding: 6px 10px; font-size: 18px; }
+            #solo-input + button { grid-column: 2; padding: 8px 14px; font-size: 16px; }
+            #solo-chest-stage { padding: 8px 12px; }
+            #solo-chest-stage h2 { font-size: 20px; }
+            #solo-chest-stage p { margin-bottom: 6px; font-size: 13px; }
+            #solo-chests-grid { margin-bottom: 6px; gap: 8px; }
+            .chest-card { height: 84px !important; }
+            .chest-face .text-5xl { font-size: 28px; margin-bottom: 0; }
+            .chest-face .text-xl { font-size: 15px; }
+            .chest-back { padding: 2px 4px !important; }
+            .chest-back .text-4xl { display: none; }
+            .chest-back .text-base { font-size: 13px; }
+            .chest-back .text-2xl { font-size: 18px; margin-top: 0; }
+            #solo-chest-stage > p { display: none; }
+            #solo-chest-stage > div:first-child { margin-bottom: 2px; }
+            #btn-skip-chest { padding: 6px 0 !important; font-size: 15px !important; }
+            #solo-result-overlay .menu-card { padding: 10px 14px; }
+            #solo-result-overlay .menu-card > .text-7xl { display: none; }
+            #solo-result-overlay h2 { font-size: 24px; }
+            #solo-result-overlay p { margin-bottom: 8px; }
+            #solo-result-overlay .grid { margin-bottom: 8px; }
+            #solo-result-overlay .grid > div { padding: 4px; }
+            #solo-result-overlay .grid .text-4xl { font-size: 26px; }
+            #solo-result-overlay .menu-card > button { display: inline-flex !important; width: 48.5% !important; margin: 0 !important; padding: 8px 4px !important; font-size: 15px !important; }
+            .gomulu #leaderboard-overlay .menu-card > div:first-child { padding-right: 56px; }
+            #leaderboard-overlay .menu-card { padding: 10px 14px; max-height: calc(100dvh - 12px) !important; }
+            #leaderboard-overlay h2 { font-size: 22px; }
+            #celebration-card { padding: 10px 16px !important; max-height: calc(100dvh - 12px); overflow-y: auto; }
+            #cel-icon { font-size: 36px; margin-bottom: 0; }
+            #cel-name { font-size: 26px; }
+            #cel-desc { font-size: 13px; margin-bottom: 8px; line-height: 1.35; }
+            #celebration-card > * { margin-top: 0 !important; margin-bottom: 4px !important; }
+            #cel-score { font-size: 20px; }
+            #celebration-card button { padding: 6px 12px !important; }
+        }
     </style>
     <script src="../../ortak/telefon.js"></script>
 </head>
