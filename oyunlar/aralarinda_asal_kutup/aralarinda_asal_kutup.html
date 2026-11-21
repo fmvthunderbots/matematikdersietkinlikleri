@@ -221,6 +221,10 @@
     /* Telefon: buz tablosu ekrana sığsın (boru çizimi 500px'e göre, bu yüzden ölçekle küçült) */
     @media (max-width: 600px) { #game-container { transform: translate(-50%, -50%) scale(0.72); } }
     @media (max-width: 360px) { #game-container { transform: translate(-50%, -50%) scale(0.62); } }
+    /* Yatay telefon: 500px'lik buz tablosu ekran yüksekliğine sığsın */
+    @media (max-height: 500px) and (orientation: landscape) { #game-container { top: 50%; left: 54%; transform: translate(-50%, -50%) scale(0.9); } }
+    @media (max-height: 430px) and (orientation: landscape) { #game-container { transform: translate(-50%, -50%) scale(0.74); } }
+    @media (max-height: 370px) and (orientation: landscape) { #game-container { transform: translate(-50%, -50%) scale(0.6); } }
 
   </style>
   
