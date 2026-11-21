@@ -143,6 +143,29 @@
             #title-top, #title-bottom { font-size: 13px; }
             #pass-label-k { font-size: 11px; }
         }
+
+        /* Yatay telefon: başlangıç kartı iki sütun (solda giriş, sağda kurallar); sağ üstte kapatma düğmesine yer */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .app-overlay { padding: 6px !important; }
+            #startScreen.menu-card { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; align-items: center;
+                max-width: min(640px, 94vw); padding: 10px 14px; border-width: 3px; border-radius: 18px; }
+            #startScreen > * { grid-column: 1; margin-bottom: 6px !important; }
+            #startScreen > button[onclick^="openSettings"] { display: none; }
+            #startScreen h1 { font-size: 24px !important; line-height: 1.1; margin: 0 !important; }
+            #startScreen > p { margin-bottom: 6px !important; }
+            #form-1p:not(.hidden), #form-class:not(.hidden) { display: contents; }
+            #form-1p > div, #form-class > div { grid-column: 2; grid-row: 1 / span 7; align-self: center; }
+            #startScreen > .inline-flex { display: none; }
+            #startScreen > p { font-size: 12px !important; }
+            #form-1p > div, #form-class > div { font-size: 12px !important; padding: 8px !important; }
+            .mode-btn { padding: 5px 6px; font-size: 12px; line-height: 1.2; }
+            .input-player { padding: 7px 12px; margin-bottom: 6px !important; }
+            .btn-main-start { padding: 7px 16px; font-size: 20px; }
+            #startScreen > button:last-child { margin: 0 !important; padding: 6px 0 !important; }
+            .gomulu #gb-topbar { padding-right: 64px !important; }
+            #mode-indicator-pill, #gb-left [class*="text-[10px]"] { font-size: 11px !important; }
+            #bag-icon { width: 56px !important; height: 56px !important; }
+        }
     </style>
     <script src="../../ortak/telefon.js"></script>
 </head>
