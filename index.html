@@ -225,7 +225,25 @@
             .game-card:hover { transform: none; }
             .game-cover { height: 110px; font-size: 2.5rem; }
             .game-title { padding: 8px 6px 10px; font-size: 0.85rem; line-height: 1.25; }
+        }
+        /* Telefon (dik ya da yatay): küçük kapatma düğmesi */
+        @media (max-width: 767px), (max-height: 500px) {
             .close-game-btn { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 18px; }
+        }
+
+        /* Oyun açıkken telefon dik tutulursa: "yan çevir" ekranı (oyun arkada çalışmaya devam eder) */
+        #rotate-hint {
+            display: none; position: absolute; inset: 0; z-index: 105;
+            flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+            padding: 24px; text-align: center; background: #0f172a; color: #fff;
+        }
+        #rotate-hint i { font-size: 4.5rem; color: #fbbf24; animation: rotate-phone 2s ease-in-out infinite; }
+        #rotate-hint b { font-size: 1.5rem; font-weight: 800; }
+        #rotate-hint span { font-size: 0.95rem; color: #cbd5e1; }
+        @keyframes rotate-phone { 0%, 25% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+        @media (prefers-reduced-motion: reduce) { #rotate-hint i { animation: none; transform: rotate(-90deg); } }
+        @media (orientation: portrait) and (max-width: 599px) and (pointer: coarse) {
+            #rotate-hint { display: flex; }
         }
     </style>
 </head>
@@ -288,6 +306,11 @@
     <div id="game-frame-container">
         <div class="close-game-btn" onclick="closeGame()">
             <i class="fas fa-times"></i>
+        </div>
+        <div id="rotate-hint">
+            <i class="fas fa-mobile-screen-button"></i>
+            <b>Telefonunu yan çevir</b>
+            <span>Dönmüyorsa ekran döndürme kilidini kapat.</span>
         </div>
         <iframe id="game-frame" srcdoc=""></iframe>
     </div>
@@ -422,14 +445,27 @@
             }
             
             container.style.display = 'block';
+            // Telefonda tam ekran + yatay (Android). iPhone desteklemez; orada "yan çevir" ekranı çıkar.
+            if (telefonMu() && container.requestFullscreen) {
+                container.requestFullscreen({ navigationUI: 'hide' })
+                    .then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'))
+                    .catch(() => {});
+            }
         }
+    }
+
+    // Tahta da dokunmatik; kısa kenarı 600'den küçük olan dokunmatik ekran = telefon
+    function telefonMu() {
+        return matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600;
     }
 
     function closeGame() {
         const frame = document.getElementById('game-frame');
         const container = document.getElementById('game-frame-container');
         container.style.display = 'none';
-        frame.srcdoc = ''; 
+        frame.srcdoc = '';
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+        try { screen.orientation.unlock(); } catch (e) {}
     }
 
     // --- Uygulama olarak yükleme (PWA) ---
