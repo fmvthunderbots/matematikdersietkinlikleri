@@ -197,6 +197,18 @@ html{font-size:2.1vw}
 #cipher{left:2vw;right:2vw;top:13vw}
 #note{left:2vw;right:2vw;width:auto;bottom:auto;top:46vw}
 }
+/* Yatay telefon (kısa ekran): yazılar okunacak kadar büyük; soru solda, şifre ve not sağda; sağ üst kapatma düğmesine boş */
+@media (max-height:500px) and (orientation:landscape){
+html{font-size:min(1.3vw,2.6vh)}
+#panel{left:8px;top:8px;bottom:8px;width:60vw;padding:.8rem 1.1rem .8rem}
+#cipher{left:calc(60vw + 16px);right:8px;top:calc(2.6rem + 16px);padding:.7rem .6rem;gap:.6rem}
+.gomulu #hudTools{right:62px}
+#hudTools{top:8px}
+#note{right:8px;bottom:8px;width:calc(40vw - 24px)}
+#opts{grid-template-columns:repeat(4,1fr);gap:.5rem}
+.opt{min-height:3rem;padding:.5rem .6rem;gap:.5rem}
+#panel.nofig #opts{grid-template-columns:1fr 1fr}
+}
 </style>
     <script src="../../ortak/telefon.js"></script>
 </head>
