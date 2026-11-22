@@ -1850,6 +1850,98 @@
       .hud-btn { height: 30px; padding: 0 8px; }
       #bgm-btn-text, #audio-btn-text { display: none; }
     }
+    /* Yatay telefon (kısa ekran): menü iki sütun, üst çubuk tek satır, sağ üst kapatma düğmesine boş */
+    @media (max-height: 500px) and (orientation: landscape) {
+      #menu-settings-btn { display: none !important; }
+      .card-screen { padding: 8px 12px; }
+      #mainMenuScreen .main-box { max-width: 680px; padding: 12px 18px; display: grid; grid-template-columns: auto 1fr; column-gap: 18px; align-items: center; }
+      #mainMenuScreen .main-box > * { grid-column: 2; margin-top: 0 !important; margin-bottom: 8px !important; }
+      #mainMenuScreen .cover-frame-wrapper { grid-column: 1; grid-row: 1 / 7; width: min(200px, 34vw); height: min(200px, 34vw); margin: 0 !important; }
+      .game-logo-title { font-size: 28px !important; line-height: 1.1; }
+      .game-sub-badge { font-size: 12px !important; padding: 3px 10px !important; }
+      #mainMenuScreen .input-field { padding: 9px 12px !important; font-size: 15px !important; }
+      #mainMenuScreen .btn-action-primary { padding: 9px 20px !important; font-size: 17px !important; }
+      #mainMenuScreen .btn-action-group { padding: 6px 14px !important; }
+      #mainMenuScreen .btn-action-subtle { padding: 6px 8px !important; font-size: 13px !important; }
+      #top-hud { height: auto !important; padding: 4px 10px !important; gap: 8px; }
+      .gomulu #top-hud { padding-right: 64px !important; }
+      .hud-title-zone { gap: 6px; }
+      .hud-title-zone { display: none !important; }
+      .progress-runes-wrapper { gap: 3px; padding: 3px 6px; }
+      .rune-slot { width: 20px; height: 20px; font-size: 10px; }
+      .hud-stats-zone { gap: 5px; }
+      .stat-pill { padding: 2px 8px; font-size: 14px; }
+      .hud-btn { height: 28px; padding: 0 7px; }
+      #riddle-modal { padding: 6px !important; }
+      .riddle-parchment { padding: 8px 16px !important; max-height: calc(100dvh - 12px); overflow-y: auto; border-radius: 18px; }
+      .parchment-header { margin-bottom: 4px !important; padding-bottom: 4px !important; }
+      .parchment-title { font-size: 17px !important; }
+      .room-tag { font-size: 12px !important; padding: 2px 8px !important; }
+      .riddle-context { font-size: 12.5px !important; line-height: 1.3 !important; margin-bottom: 6px !important; padding: 4px 10px !important; }
+      .riddle-question-box { padding: 6px 10px !important; margin-bottom: 8px !important; }
+      .riddle-main-number { font-size: 30px !important; line-height: 1.1 !important; margin: 0 !important; }
+      .riddle-instruction { font-size: 14px !important; margin-top: 2px !important; }
+      #riddle-options-container { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+      #riddle-options-container > * { padding: 8px 6px !important; min-height: 0 !important; font-size: 17px !important; }
+      #groupScreen { padding: 6px 10px; }
+      .gomulu #groupScreen { padding-right: 64px; }
+      #groupScreen .g-wrap { gap: 5px; max-width: none; }
+      #groupScreen .g-bar, #groupScreen .g-bar-group { gap: 5px; flex-wrap: nowrap; }
+      #groupScreen .g-btn { padding: 3px 8px; font-size: 12px; white-space: nowrap; }
+      #groupScreen .g-title { display: none; }
+      #groupScreen .g-teams { gap: 8px; max-width: none; margin: 4px 0 2px; }
+      #groupScreen .g-team { padding: 2px 8px; border-width: 2px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+      #groupScreen .g-team.active { transform: scale(1.03); }
+      #groupScreen .g-team-name { font-size: 13px; }
+      #groupScreen .g-team-score { font-size: 22px; }
+      #groupScreen .g-team-badges { min-height: 0; font-size: 12px; }
+      #groupScreen .g-grid { grid-template-columns: repeat(10, 1fr) !important; grid-auto-rows: 1fr; gap: 5px !important; max-width: none; align-content: stretch; }
+      #groupScreen .g-card { height: auto; }
+      .g-modal { padding: 6px !important; }
+      .g-modal .riddle-parchment { padding: 8px 16px !important; max-height: calc(100dvh - 12px); overflow-y: auto; }
+      .g-turn { margin: 0 0 4px !important; padding: 2px 10px !important; font-size: 13px !important; }
+      #g-q-options { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+      #g-q-options > * { padding: 8px 6px !important; min-height: 0 !important; font-size: 17px !important; }
+      .g-feedback { margin: 4px 0 !important; padding: 4px 10px !important; font-size: 14px !important; }
+      #g-q-next, #g-j-btn { padding: 8px 18px !important; font-size: 16px !important; }
+      .g-j-icon { font-size: 34px !important; margin: 0 !important; }
+      .g-j-title { font-size: 22px !important; margin: 0 0 4px !important; }
+      .g-j-avatar { width: 54px !important; height: 54px !important; }
+      .g-j-say { font-size: 13px !important; }
+      .g-j-effect { margin: 4px 0 !important; font-size: 14px !important; }
+      #leaderboardScreen .lb-card-box { padding: 8px 14px !important; max-height: calc(100dvh - 16px); display: flex; flex-direction: column; border-radius: 18px; }
+      .gomulu #leaderboardScreen .lb-header { padding-right: 52px; }
+      #leaderboardScreen .lb-header { margin-bottom: 4px !important; padding-bottom: 4px !important; }
+      #leaderboardScreen .lb-main-title { font-size: 20px !important; }
+      #leaderboardScreen .lb-sub-title { font-size: 12px !important; }
+      #leaderboardScreen .lb-close-btn { width: 32px !important; height: 32px !important; font-size: 15px !important; }
+      #leaderboardScreen .lb-table-container { flex: 1; min-height: 0; overflow-y: auto; max-height: none !important; }
+      #leaderboardScreen .lb-table td, #leaderboardScreen .lb-table th { padding-top: 4px !important; padding-bottom: 4px !important; font-size: 14px !important; }
+      #leaderboardScreen .lb-card-box > div:last-child { margin-top: 6px !important; }
+      #leaderboardScreen .lb-card-box > div:last-child button { padding: 6px 16px !important; font-size: 14px !important; }
+      #victoryScreen .main-box { padding: 10px 18px !important; max-height: calc(100dvh - 16px); overflow-y: auto; }
+      #victoryScreen .classic-trophy { font-size: 34px !important; margin: 0 !important; line-height: 1.1; }
+      #victoryScreen .classic-stars { display: none; }
+      #victoryScreen h2 { font-size: 22px !important; }
+      #victoryScreen #victorySubtitle { font-size: 12.5px !important; margin-bottom: 6px !important; }
+      #victoryScreen .victory-stats-panel { gap: 8px !important; margin: 0 !important; }
+      #victoryScreen .victory-stat-box { padding: 4px 8px !important; }
+      #victoryScreen .vstat-val { font-size: 20px !important; }
+      #victoryScreen .main-box > div:last-child { margin-top: 8px !important; }
+      #victoryScreen .main-box > div:last-child button { padding: 8px 12px !important; font-size: 15px !important; }
+      .g-win-box { padding: 10px 18px !important; max-height: calc(100dvh - 12px); overflow-y: auto; }
+      .g-win-trophy { font-size: 34px !important; margin: 0 !important; line-height: 1.1; }
+      .g-win-label { font-size: 12px !important; margin: 0 !important; }
+      .g-win-name { font-size: 30px !important; margin: 0 !important; line-height: 1.1; }
+      .g-win-msg { font-size: 13px !important; margin: 2px 0 !important; }
+      .g-win-score { font-size: 20px !important; margin: 2px 0 !important; padding: 2px 14px !important; }
+      .g-win-rank { font-size: 12.5px !important; margin: 2px auto 4px !important; grid-template-columns: repeat(3, 1fr); max-width: none !important; }
+      .g-rank-row { padding: 3px 8px !important; gap: 6px; }
+      .g-win-name { white-space: nowrap; }
+      .g-win-btns { margin-top: 6px !important; gap: 8px !important; }
+      .g-win-btns button { padding: 8px 14px !important; font-size: 15px !important; }
+      #bgm-btn-text, #audio-btn-text { display: none; }
+    }
   </style>
     <script src="../../ortak/telefon.js"></script>
 </head>
