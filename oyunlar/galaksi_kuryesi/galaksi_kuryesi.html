@@ -167,6 +167,54 @@
     .cubukDugme { width: 26px; }
     .boncuk { width: 22px; height: 11px; }
   }
+  /* Yatay telefon (kısa ekran): giriş/bitiş iki sütun, başla düğmesi hep görünür, sağ üst kapatma düğmesine boş */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .ekran { padding: 8px 12px; }
+    .gomulu .ekran { padding-right: 64px; }
+    .ekranKart { grid-template-columns: 1.2fr 1fr !important; gap: 10px; height: calc(100dvh - 16px); align-items: stretch; }
+    .ekranKart > .kutu { padding: 8px 12px !important; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .baslik { font-size: 26px; }
+    .altBaslik { font-size: 12px; margin: 2px 0 4px; }
+    .kurallar { flex: 1 1 auto; min-height: 0; overflow-y: auto; font-size: 12px; line-height: 1.35; margin: 0 0 6px; }
+    .modDugme { padding: 5px; font-size: 13px; }
+    #modSecici { margin-bottom: 6px !important; }
+    .giris { padding: 7px 10px; font-size: 15px; margin-bottom: 6px; }
+    .anaDugme { padding: 8px 16px; font-size: 16px; }
+    #girisHata:empty { display: none; }
+    .logo { white-space: nowrap; } .logo span { display: inline !important; }
+    .ekranKart .liste li { font-size: 12.5px; padding: 3px 6px; gap: 6px; }
+    .ekranKart .liste li > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ekranKart .liste .kutlaDugme { font-size: 11px; padding: 2px 6px; }
+    .ekranKart .liste { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 4px; }
+    .sonucBuyuk { font-size: 34px !important; }
+    #kutlama { padding: 8px; }
+    #kutlamaKart { padding: 8px 16px 10px; max-height: calc(100dvh - 16px); overflow: visible; }
+    #kRozet { width: 56px; height: 56px; margin: 0 auto 2px; font-size: 32px; }
+    #kUnvan { font-size: 15px; }
+    #kAd { font-size: 21px; margin: 2px 0 0; }
+    #kPuan { font-size: 17px; }
+    #kMesaj { font-size: 12.5px; line-height: 1.35; margin: 4px 0 8px; }
+    #kKapat { padding: 7px 14px; font-size: 16px; }
+    #hud { padding: 4px 70px 0 8px; gap: 6px; }
+    #hud .kutu { padding: 3px 8px; }
+    #yakitSn, #puan { font-size: 16px; }
+    #sayacSayi { font-size: 16px; }
+    .durak { font-size: 10px; padding: 1px 6px; }
+    #soru { bottom: 6px; max-height: calc(100dvh - 64px); padding: 6px 10px 8px; }
+    #soruUst { margin-bottom: 2px; }
+    #soruGovde { flex-direction: row !important; gap: 8px; }
+    #alet { width: 92px !important; flex-direction: column !important; padding: 4px !important; gap: 4px !important; }
+    #alet .etiket { display: none; }
+    .aletDugme { flex: 0 0 auto !important; padding: 3px 2px !important; flex-direction: row; justify-content: center; gap: 4px; }
+    .aletDugme .ikon { font-size: 16px !important; }
+    .aletDugme b { font-size: 10.5px; }
+    .aletDugme small { display: none; }
+    #soruMetin { font-size: 15px !important; margin: 2px 0 6px; }
+    .buyukSayi { font-size: 20px !important; }
+    #secenekler, #secenekler.tekSutun { gap: 6px; grid-template-columns: 1fr 1fr; }
+    .secenek { font-size: 13.5px; padding: 6px 8px; }
+    .secenek.sayiSecenek { font-size: 15px; }
+  }
 </style>
 </head>
 <body>
