@@ -1813,6 +1813,7 @@ const derinlikM = p => Math.max(0, Math.round(p.s * 4.2));
 /* Maden kesiti: katmanlar seviye renklerinde; madenci simgesi kuyunun dibinde iner */
 function katmanCiz() {   // kesitteki katmanlar moda göre (bireysel 5, diğerleri 8)
   document.querySelectorAll('#katmanlar .katman').forEach(k => k.remove());
+  $('katmanlar').style.gridTemplateRows = `repeat(${seviyeSay()}, 1fr)`;
   $('katmanlar').insertAdjacentHTML('beforeend', Array.from({ length: seviyeSay() }, (_, i) => SEVIYELER[sx(i)]).map((S, i) => {
   const c = new THREE.Color(S.kaya).multiplyScalar(.75).getStyle();
   return `<div class="katman" style="background:linear-gradient(90deg, ${c}, ${new THREE.Color(S.kaya).multiplyScalar(.55).getStyle()})" title="${S.ad}">${i + 1}${HAZINE_SEVIYE.includes(i + 1) ? `<span class="hz" data-hz="${i + 1}">💎</span>` : ''}</div>`;
