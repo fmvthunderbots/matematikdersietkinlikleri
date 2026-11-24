@@ -382,20 +382,44 @@ function devirSecenek(d) {
   });
   return cikti;
 }
+/* sonlu kesir için 3 yanlış: pay ve paydayı yan yana yazmak, ters bölmek, basamak kaydırmak, tam kısmı şaşırmak */
+function sonluSecenek(a, b, d) {
+  const ters = bol(b, a), c = karistir([{ tam: 0, pre: String(a) + String(b), rep: '' }, { tam: ters.tam, pre: ters.rep ? (ters.pre + ters.rep).slice(0, 3) : ters.pre, rep: '' },
+    { tam: d.tam, pre: '0' + d.pre, rep: '' }, { tam: d.tam + 1, pre: d.pre, rep: '' }, { tam: 0, pre: String(a), rep: '' },
+    { tam: d.tam, pre: d.pre.slice(1) || String(rastgele(1, 9)), rep: '' }, { tam: d.tam ? 0 : rastgele(1, 3), pre: d.pre, rep: '' }]);
+  const gor = new Set([anahtar(d)]), cikti = [];
+  c.forEach(o => { const k = anahtar(o); if (cikti.length < 3 && !gor.has(k)) { gor.add(k); cikti.push(o); } });
+  return cikti;
+}
+console.assert(sonluSecenek(3, 5, bol(3, 5)).length === 3 && sonluSecenek(9, 4, bol(9, 4)).length === 3, 'sonluSecenek');
 console.assert(anahtar(bol(7, 11)) === anahtar({ tam: 0, pre: '', rep: '63' }), '7/11');
 console.assert(anahtar(bol(5, 24)) === anahtar({ tam: 0, pre: '208', rep: '3' }), '5/24');
 
 /* ================= SEVİYELER ================= */
+// her oyunda kesir rastgele üretilir: payda listeden, pay rastgele; devirli: true/false seviyenin türünü korur, bilesik: pay paydadan büyük
 const SEVIYELER = [
-  { ad: 'Toprak Katmanı', havuz: [[1, 2], [1, 4], [3, 4], [2, 5], [3, 5], [1, 5]], kaya: 0xb08a66, kristal: 0xffb547, sis: 0x1c140e },
-  { ad: 'Kumtaşı Geçidi', havuz: [[3, 8], [5, 8], [7, 8], [1, 8], [9, 20], [7, 25]], kaya: 0xc79a62, kristal: 0xffd36b, sis: 0x1e150c },
-  { ad: 'Kehribar Damarı', havuz: [[1, 3], [2, 3], [2, 9], [4, 9], [5, 9], [7, 9]], kaya: 0xa0603a, kristal: 0xff8a2a, sis: 0x1d0f08 },
-  { ad: 'Bakır Mağarası', havuz: [[9, 5], [11, 4], [4, 3], [7, 3], [12, 5], [13, 4]], kaya: 0x9a6a4e, kristal: 0x4fe0b0, sis: 0x0f1612 },
-  { ad: 'Zümrüt Galerisi', havuz: [[1, 6], [5, 6], [7, 6], [1, 15], [2, 15], [11, 6]], kaya: 0x6f8a72, kristal: 0x3dff8a, sis: 0x08140d },
-  { ad: 'Safir Derinlikleri', havuz: [[7, 11], [1, 11], [5, 11], [2, 11], [4, 11], [3, 11]], kaya: 0x5f6f96, kristal: 0x4aa8ff, sis: 0x080d1a },
-  { ad: 'Ametist Çekirdeği', havuz: [[10, 6], [16, 6], [25, 6], [17, 9], [12, 11], [14, 3]], kaya: 0x7a5e96, kristal: 0xc77dff, sis: 0x110a1a },
-  { ad: 'Magma Kapısı', havuz: [[7, 12], [5, 12], [1, 12], [21, 24], [5, 24], [18, 90]], kaya: 0x8a4a3a, kristal: 0xff5a2a, sis: 0x1e0805 }
+  { ad: 'Toprak Katmanı', payda: [2, 4, 5], devirli: false, kaya: 0xb08a66, kristal: 0xffb547, sis: 0x1c140e },
+  { ad: 'Kumtaşı Geçidi', payda: [8, 20, 25], devirli: false, kaya: 0xc79a62, kristal: 0xffd36b, sis: 0x1e150c },
+  { ad: 'Kehribar Damarı', payda: [3, 9], devirli: true, kaya: 0xa0603a, kristal: 0xff8a2a, sis: 0x1d0f08 },
+  { ad: 'Bakır Mağarası', payda: [3, 4, 5], bilesik: true, kaya: 0x9a6a4e, kristal: 0x4fe0b0, sis: 0x0f1612 },
+  { ad: 'Zümrüt Galerisi', payda: [6, 15], devirli: true, kaya: 0x6f8a72, kristal: 0x3dff8a, sis: 0x08140d },
+  { ad: 'Safir Derinlikleri', payda: [11], devirli: true, kaya: 0x5f6f96, kristal: 0x4aa8ff, sis: 0x080d1a },
+  { ad: 'Ametist Çekirdeği', payda: [3, 6, 9, 11], bilesik: true, kaya: 0x7a5e96, kristal: 0xc77dff, sis: 0x110a1a },
+  { ad: 'Magma Kapısı', payda: [12, 24, 90], kaya: 0x8a4a3a, kristal: 0xff5a2a, sis: 0x1e0805 }
 ];
+const ebob = (a, b) => b ? ebob(b, a % b) : a;
+function devirliMi(a, b) { let d = b / ebob(a, b); while (d % 2 === 0) d /= 2; while (d % 5 === 0) d /= 5; return d > 1; }
+function kesirUret(lv, kullanilan = new Set()) {   // tam sayı çıkmaz; aynı oyunda tekrar etmemeye çalışır
+  const S = SEVIYELER[Math.min(lv, 7)];
+  let son;
+  for (let i = 0; i < 60; i++) {
+    const b = sec(S.payda), a = S.bilesik ? rastgele(b + 1, 4 * b) : rastgele(1, b - 1);
+    if (a % b === 0 || (S.devirli !== undefined && devirliMi(a, b) !== S.devirli)) continue;
+    son = [a, b]; if (!kullanilan.has(a + '/' + b)) break;
+  }
+  return son;
+}
+console.assert(SEVIYELER.every((S, lv) => { const [a, b] = kesirUret(lv); return a % b && (S.devirli === undefined || devirliMi(a, b) === S.devirli); }), 'kesirUret');
 const HAZINE_SEVIYE = [2, 4, 6];   // bu seviyeler bitince hazine damarı
 const HAZINELER = [
   { ad: 'Elmas', puan: 300, renk: 0xbff8ff, emoji: '💎', w: 1 },
@@ -1145,9 +1169,7 @@ function seviyeRenk(lv) { const S = SEVIYELER[Math.min(lv, 7)]; renkHedef.kaya.s
 /* ================= BÖLME AKIŞI ================= */
 function seviyeBasla(p) {
   const lv = Math.min(p.seviye, 7), S = SEVIYELER[lv];
-  let aday = S.havuz.filter(f => !p.kullanilan.has(f.join('/')));
-  if (!aday.length) aday = S.havuz;
-  const [a, b] = mod === 'duello' ? duelloSira[p.seviye] || sec(aday) : sec(aday);
+  const [a, b] = mod === 'duello' ? duelloSira[p.seviye] || kesirUret(lv) : kesirUret(lv, p.kullanilan);
   p.kullanilan.add(a + '/' + b);
   p.k = { a, b, simdi: a, rakam: 0, tam: null, ond: '', gorulen: new Map(), adimlar: [{ bolunen: a, carpim: null, kalan: null }], faz: 'rakam' };
   p.kusursuz = true;
@@ -1157,7 +1179,8 @@ function seviyeBasla(p) {
   p.q('.tSeviye').innerHTML = `${p.seviye + 1}. seviye · ${S.ad} · ${kesirH(a, b)} kesrini böl`;
   p.q('.tGeri').innerHTML = '';
   seviyeYazisi(p, `${p.seviye + 1}. Seviye`, S.ad);
-  fenerCiz(); ciz(p); soruSor(p);
+  fenerCiz(); ciz(p);
+  if (mod === 'bireysel') tekSoru(p); else soruSor(p);
 }
 function seviyeYazisi(p, n, a) {
   const y = p.yazi; y.querySelector('.n').textContent = n; y.querySelector('.a').textContent = a;
@@ -1302,6 +1325,34 @@ function devirBulundu(p, r) {
   });
   if (TEST_MOD && mod === 'sinif') { const tb = document.createElement('button'); tb.className = 'secT genis'; tb.textContent = 'Kaz ⛏ (test)'; tb.onclick = () => testCevabi(p); s.appendChild(tb); }   // test modu: soru çözmeden ilerle
   p.adimSay++; altaKaydir(p);
+}
+/* Bireysel mod: her seviyede tek soru, adım adım bölme yok; kesrin ondalık gösterimi seçilir */
+function tekSoru(p) {
+  const k = p.k, d = bol(k.a, k.b), devirli = !!d.rep;
+  k.faz = 'tek'; p.q('.tBolme').style.display = 'none';
+  girisGoster(p, false); p.deneme = 0; p.soruBasla = performance.now();
+  p.q('.tSoru').innerHTML = `${kesirH(k.a, k.b)} kesrinin ondalık gösterimi hangisi? <span style="opacity:.7;font-size:.85em">Payı paydaya böl, defterini kullanabilirsin.</span>`;
+  const s = p.q('.tSec'); s.innerHTML = '';
+  karistir([d, ...(devirli ? devirSecenek(d) : sonluSecenek(k.a, k.b, d))]).forEach((o, i) => {
+    const bt = document.createElement('button'); bt.className = 'secT'; bt.innerHTML = `<small>${i + 1}</small>${sayiHTML(o)}`;
+    bt.onclick = () => {
+      if (k.faz !== 'tek' || bt.disabled || p.beklet || durum !== 'oyun') return;
+      p.adimSay++;
+      if (anahtar(o) === anahtar(d)) {
+        bt.classList.add('dogru'); k.faz = 'bitti'; k.tam = d.tam; k.ond = d.pre + d.rep;
+        const kazan = p.deneme ? 15 : hizPuani(p, 40, 30); puanEkle(p, kazan); if (!p.deneme) p.ilkDogru++; p.dogru++; sesDogru();
+        vur(p, ''); if (devirli) { donguYap(p, d.rep); sesDevir(); } else { altinIsik(p); sesDevir(); }
+        seviyeBitti(p, `${devirli ? '🔁' : '🟡'} Doğru! ${kesirH(k.a, k.b)} = ${sayiHTML(d)} → ${devirli
+          ? '<b style="font-family:Nunito;font-size:1em;color:var(--camgobegi)">devirli</b>' : '<b style="font-family:Nunito;font-size:1em;color:var(--kehribar)">sonlu</b>'} ondalık gösterim. +${kazan}`);
+      } else {
+        p.deneme++; p.yanlis++; p.kusursuz = false; bt.classList.add('yanlis'); bt.disabled = true; sesYanlis();
+        flas('rgba(255,122,107,.25)'); p.sallanma = .35; puanEkle(p, -20);
+        geri(p, `<span style="color:var(--mercan)">✘ Olmadı.</span> ${k.a} ÷ ${k.b} bölmesini yap${devirli ? '; kalan tekrar ediyorsa devir çizgisi yalnızca tekrar eden rakamların üstüne gelir' : ''}.`);
+      }
+    };
+    s.appendChild(bt);
+  });
+  altaKaydir(p);
 }
 function seviyeBitti(p, html) {
   p.ilkGecti = true;
@@ -1696,7 +1747,7 @@ function modSec(m) {
   $('adSoyad').style.display = m === 'bireysel' ? '' : 'none';
   $('girisHata').textContent = '';
   $('kuralMod').innerHTML = {
-    bireysel: '<b>8 seviye.</b> Hızlı ve doğru kazdıkça puanın artar, yanlış cevap puan götürür. İlk bölmeyi bitirdikten sonra <b>puanın sıfırın altına düşerse oyun biter.</b> 2., 4. ve 6. seviyeden sonra <b>hazine damarı</b> seni bekler. Puanın ilk 10\'a yazılır.',
+    bireysel: '<b>8 seviye, her seviyede tek soru:</b> kesrin ondalık gösterimini seç. Hızlı ve doğru kazdıkça puanın artar, yanlış cevap puan götürür. İlk bölmeyi bitirdikten sonra <b>puanın sıfırın altına düşerse oyun biter.</b> 2., 4. ve 6. seviyeden sonra <b>hazine damarı</b> seni bekler. Puanın ilk 10\'a yazılır.',
     duello: 'Ekran ikiye bölünür: 🔴 Kırmızı ve 🔵 Mavi aynı kesirleri kazar. Süre bitince puanı yüksek olan kazanır. Klavyede Kırmızı üst sıradaki rakamlar + Boşluk, Mavi sayı tuş takımı + Enter.',
     sinif: '<b>8 seviye, süre yok.</b> Tahtada birlikte düşünün, her adımı sınıfça kazın. Hazine damarları da var. Puan kaydedilmez.'
   }[m];
@@ -1719,7 +1770,7 @@ function oyunBasla() {
   if (document.activeElement) document.activeElement.blur();
   durum = 'oyun'; kayitli = false; gecen = 0; kalan = duelloSure;
   duelloSira = [];
-  for (let i = 0; i < 40; i++) duelloSira.push(sec(SEVIYELER[Math.min(i, 7)].havuz));
+  for (let i = 0; i < 40; i++) duelloSira.push(kesirUret(i, new Set(duelloSira.map(f => f.join('/')))));
   madenciler.forEach(madenciSifirla);
   ['giris', 'bitis'].forEach(x => $(x).classList.add('gizli'));
   $('ust').classList.remove('gizli');
