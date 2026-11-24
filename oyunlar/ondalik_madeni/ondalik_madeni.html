@@ -402,7 +402,7 @@ const SEVIYELER = [
   { ad: 'Kumtaşı Geçidi', payda: [8, 20, 25], devirli: false, kaya: 0xc79a62, kristal: 0xffd36b, sis: 0x1e150c },
   { ad: 'Kehribar Damarı', payda: [3, 9], devirli: true, kaya: 0xa0603a, kristal: 0xff8a2a, sis: 0x1d0f08 },
   { ad: 'Bakır Mağarası', payda: [3, 4, 5], bilesik: true, kaya: 0x9a6a4e, kristal: 0x4fe0b0, sis: 0x0f1612 },
-  { ad: 'Zümrüt Galerisi', payda: [6, 15], devirli: true, kaya: 0x6f8a72, kristal: 0x3dff8a, sis: 0x08140d },
+  { ad: 'Zümrüt Galerisi', payda: [6, 15], devirli: true, karisik: true, kaya: 0x6f8a72, kristal: 0x3dff8a, sis: 0x08140d },
   { ad: 'Safir Derinlikleri', payda: [11], devirli: true, kaya: 0x5f6f96, kristal: 0x4aa8ff, sis: 0x080d1a },
   { ad: 'Ametist Çekirdeği', payda: [3, 6, 9, 11], bilesik: true, kaya: 0x7a5e96, kristal: 0xc77dff, sis: 0x110a1a },
   { ad: 'Magma Kapısı', payda: [12, 24, 90], kaya: 0x8a4a3a, kristal: 0xff5a2a, sis: 0x1e0805 }
@@ -414,13 +414,17 @@ function kesirUret(lv, kullanilan = new Set()) {   // tam sayı çıkmaz; aynı 
   let son;
   for (let i = 0; i < 60; i++) {
     const b = sec(S.payda), a = S.bilesik ? rastgele(b + 1, 4 * b) : rastgele(1, b - 1);
-    if (a % b === 0 || (S.devirli !== undefined && devirliMi(a, b) !== S.devirli)) continue;
+    if (a % b === 0 || (S.devirli !== undefined && devirliMi(a, b) !== S.devirli) || (S.karisik && !bol(a, b).pre)) continue;   // karisik: virgülden sonra devretmeyen rakam da var
     son = [a, b]; if (!kullanilan.has(a + '/' + b)) break;
   }
   return son;
 }
 console.assert(SEVIYELER.every((S, lv) => { const [a, b] = kesirUret(lv); return a % b && (S.devirli === undefined || devirliMi(a, b) === S.devirli); }), 'kesirUret');
 const HAZINE_SEVIYE = [2, 4, 6];   // bu seviyeler bitince hazine damarı
+// bireysel: 5 seviye, her soru tipinden biri (sonlu, saf devirli, bileşik, karışık devirli, iki basamak devreden); diğer modlar 8 seviye
+const BIREYSEL_SIRA = [1, 2, 3, 4, 5];
+const seviyeSay = () => mod === 'bireysel' ? BIREYSEL_SIRA.length : SEVIYELER.length;
+const sx = lv => mod === 'bireysel' ? BIREYSEL_SIRA[Math.min(lv, BIREYSEL_SIRA.length - 1)] : Math.min(lv, 7);
 const HAZINELER = [
   { ad: 'Elmas', puan: 300, renk: 0xbff8ff, emoji: '💎', w: 1 },
   { ad: 'Yakut', puan: 200, renk: 0xff2e55, emoji: '🔴', w: 1.6 },
@@ -1164,11 +1168,11 @@ function madenciSifirla(p) {
 
 /* Seviye renkleri: tünel, kristal, sis yumuşakça geçer */
 const renkHedef = { kaya: new THREE.Color(0xb08a66), kristal: new THREE.Color(0xffb547), sis: new THREE.Color(0x1c140e) };
-function seviyeRenk(lv) { const S = SEVIYELER[Math.min(lv, 7)]; renkHedef.kaya.set(S.kaya); renkHedef.kristal.set(S.kristal); renkHedef.sis.set(S.sis); }
+function seviyeRenk(lv) { const S = SEVIYELER[sx(lv)]; renkHedef.kaya.set(S.kaya); renkHedef.kristal.set(S.kristal); renkHedef.sis.set(S.sis); }
 
 /* ================= BÖLME AKIŞI ================= */
 function seviyeBasla(p) {
-  const lv = Math.min(p.seviye, 7), S = SEVIYELER[lv];
+  const lv = sx(p.seviye), S = SEVIYELER[lv];
   const [a, b] = mod === 'duello' ? duelloSira[p.seviye] || kesirUret(lv) : kesirUret(lv, p.kullanilan);
   p.kullanilan.add(a + '/' + b);
   p.k = { a, b, simdi: a, rakam: 0, tam: null, ond: '', gorulen: new Map(), adimlar: [{ bolunen: a, carpim: null, kalan: null }], faz: 'rakam' };
@@ -1362,7 +1366,7 @@ function seviyeBitti(p, html) {
   geri(p, `<span style="color:var(--yosun)">Seviye tamam: +50${p.kusursuz ? ' · hatasız kazı: +50' : ''}</span>`);
   p.seviye++; fenerCiz();
   const s = p.q('.tSec'); s.innerHTML = '';
-  const sonMu = mod !== 'duello' && p.seviye >= 8, hazineMi = mod !== 'duello' && HAZINE_SEVIYE.includes(p.seviye);
+  const sonMu = mod !== 'duello' && p.seviye >= seviyeSay(), hazineMi = mod !== 'duello' && HAZINE_SEVIYE.includes(p.seviye);
   kayaKir(p);
   const devam = () => {
     if (durum !== 'oyun') return;
@@ -1730,8 +1734,8 @@ function flas(renk) { const f = $('flas'); f.style.background = renk; f.style.tr
 function fenerCiz() {
   if (mod === 'duello') { $('fenerler').innerHTML = madenciler.map((p, i) => `<span style="font-family:'Baloo 2';font-weight:800;color:${i ? '#7fc0ff' : '#ff8a7a'}">${i ? '🔵' : '🔴'} ${p.puan}</span>`).join('<span style="opacity:.4">·</span>'); return; }
   const p = madenciler[0]; let h = '';
-  for (let i = 0; i < 8; i++) {
-    h += `<span class="fener ${i < p.seviye ? 'yandi' : i === p.seviye ? 'simdi' : ''}" title="${i + 1}. seviye: ${SEVIYELER[i].ad}"></span>`;
+  for (let i = 0; i < seviyeSay(); i++) {
+    h += `<span class="fener ${i < p.seviye ? 'yandi' : i === p.seviye ? 'simdi' : ''}" title="${i + 1}. seviye: ${SEVIYELER[sx(i)].ad}"></span>`;
     if (HAZINE_SEVIYE.includes(i + 1)) h += `<span class="elmasIs ${p.seviye >= i + 1 ? 'acik' : ''}" title="Hazine damarı">💎</span>`;
   }
   $('fenerler').innerHTML = h;
@@ -1747,7 +1751,7 @@ function modSec(m) {
   $('adSoyad').style.display = m === 'bireysel' ? '' : 'none';
   $('girisHata').textContent = '';
   $('kuralMod').innerHTML = {
-    bireysel: '<b>8 seviye, her seviyede tek soru:</b> kesrin ondalık gösterimini seç. Hızlı ve doğru kazdıkça puanın artar, yanlış cevap puan götürür. İlk bölmeyi bitirdikten sonra <b>puanın sıfırın altına düşerse oyun biter.</b> 2., 4. ve 6. seviyeden sonra <b>hazine damarı</b> seni bekler. Puanın ilk 10\'a yazılır.',
+    bireysel: '<b>5 seviye, her seviyede tek soru:</b> kesrin ondalık gösterimini seç. Hızlı ve doğru kazdıkça puanın artar, yanlış cevap puan götürür. İlk bölmeyi bitirdikten sonra <b>puanın sıfırın altına düşerse oyun biter.</b> 2. ve 4. seviyeden sonra <b>hazine damarı</b> seni bekler. Puanın ilk 10\'a yazılır.',
     duello: 'Ekran ikiye bölünür: 🔴 Kırmızı ve 🔵 Mavi aynı kesirleri kazar. Süre bitince puanı yüksek olan kazanır. Klavyede Kırmızı üst sıradaki rakamlar + Boşluk, Mavi sayı tuş takımı + Enter.',
     sinif: '<b>8 seviye, süre yok.</b> Tahtada birlikte düşünün, her adımı sınıfça kazın. Hazine damarları da var. Puan kaydedilmez.'
   }[m];
@@ -1769,7 +1773,7 @@ function bloomKur() {
 function oyunBasla() {
   if (document.activeElement) document.activeElement.blur();
   durum = 'oyun'; kayitli = false; gecen = 0; kalan = duelloSure;
-  duelloSira = [];
+  duelloSira = []; katmanCiz();
   for (let i = 0; i < 40; i++) duelloSira.push(kesirUret(i, new Set(duelloSira.map(f => f.join('/')))));
   madenciler.forEach(madenciSifirla);
   ['giris', 'bitis'].forEach(x => $(x).classList.add('gizli'));
@@ -1845,17 +1849,22 @@ $('menuDugme').onclick = menuyeDon; $('menuyeDon').onclick = menuyeDon;
 $('tekrar').onclick = oyunBasla;
 const derinlikM = p => Math.max(0, Math.round(p.s * 4.2));
 /* Maden kesiti: katmanlar seviye renklerinde; madenci simgesi kuyunun dibinde iner */
-$('katmanlar').insertAdjacentHTML('beforeend', SEVIYELER.map((S, i) => {
+function katmanCiz() {   // kesitteki katmanlar moda göre (bireysel 5, diğerleri 8)
+  document.querySelectorAll('#katmanlar .katman').forEach(k => k.remove());
+  $('katmanlar').insertAdjacentHTML('beforeend', Array.from({ length: seviyeSay() }, (_, i) => SEVIYELER[sx(i)]).map((S, i) => {
   const c = new THREE.Color(S.kaya).multiplyScalar(.75).getStyle();
   return `<div class="katman" style="background:linear-gradient(90deg, ${c}, ${new THREE.Color(S.kaya).multiplyScalar(.55).getStyle()})" title="${S.ad}">${i + 1}${HAZINE_SEVIYE.includes(i + 1) ? `<span class="hz" data-hz="${i + 1}">💎</span>` : ''}</div>`;
 }).join(''));
+  kesitSon = '';
+}
 let kesitSon = '';
+katmanCiz();
 function kesitGuncelle() {
-  const p = madenciler[0], oran = Math.max(0, Math.min(1, p.s / 48)), y = (oran * 100).toFixed(1) + '%';
+  const p = madenciler[0], oran = Math.max(0, Math.min(1, p.s / (seviyeSay() * 6))), y = (oran * 100).toFixed(1) + '%';
   const anahtar = y + '|' + p.seviye + '|' + derinlikM(p); if (anahtar === kesitSon) return; kesitSon = anahtar;
   $('derinlikYazi').textContent = derinlikM(p) + ' m';
   $('kuyu').style.height = y; $('madenciIkon').style.top = y;
-  document.querySelectorAll('.katman').forEach((k, i) => k.classList.toggle('simdi', i === Math.min(7, p.seviye)));
+  document.querySelectorAll('.katman').forEach((k, i) => k.classList.toggle('simdi', i === Math.min(seviyeSay() - 1, p.seviye)));
   document.querySelectorAll('.katman .hz').forEach(h => h.classList.toggle('acik', p.seviye >= +h.dataset.hz));
 }
 function ikonKaz() { const m = $('madenciIkon'); m.classList.remove('kaz'); void m.getBoundingClientRect(); m.classList.add('kaz'); }
