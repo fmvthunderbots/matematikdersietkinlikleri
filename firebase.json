@@ -11,6 +11,7 @@
       "**/.*",
       "**/node_modules/**",
       "arsiv/**",
+      "oyunlar/matemon/**",
       "**/*.md",
       "**/*.bat"
     ],
