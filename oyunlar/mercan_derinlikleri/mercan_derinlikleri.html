@@ -23,6 +23,8 @@
   .kes > span:last-child { padding-top: .04em; }
   .kar { white-space: nowrap; display: inline-flex; align-items: center; }
   .islem { white-space: nowrap; }
+  .bosKutu { display: inline-block; min-width: 1.6em; padding: 0 .2em; border: .1em dashed var(--altin); border-radius: .25em; color: var(--altin); text-align: center; vertical-align: middle; }
+  .soruNot { font-size: .62em; opacity: .75; font-weight: 800; }
 
   /* ÜST ÇUBUK (sağ üst köşe portalın ✕ düğmesine boş) */
   .ust { position: fixed; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; gap: 12px; padding: 12px 90px 12px 12px; pointer-events: none; }
@@ -443,119 +445,109 @@ const uygula = (x, o, y) => o === '+' ? topla(x, y) : cikar(x, y);
 const SEVIYE_PUAN = [0, 10, 15, 20, 25, 30];
 const SEVIYE_AD = ['', 'Isınma: kesirleri hatırla', 'Eşit paydalı işlem', 'Farklı paydalı işlem', 'Tam sayılı kesirler', 'Parantez ve problemler'];
 
+// Soru üreticisi: her seviyede birçok şablon; sayılar her seferinde rastgele.
 // Soru: { metin, tur: 'sade' (değer eşitse doğru, en sade tam puan) | 'tam' (beklenen biçim aynen),
-//         deger:{n,d}, beklenen:{t,n,d} (yalnız 'tam'), seviye, cevapH }
-function soruIsinma() {
-  const f = basitKesir(sec([3, 4, 5, 6, 7, 8, 9, 10, 11, 12])), k = rnd(2, 5), t = rnd(1, 4);
-  const secenek = sec(['genislet', 'sadelestir', 'ensade', 'bilesige', 'tamliya', 'denk']);
-  if (secenek === 'genislet') return { metin: `${kesH(f.n, f.d)} kesrini <b>${k} ile genişletiniz</b>.`, tur: 'tam', beklenen: { t: 0, n: f.n * k, d: f.d * k } };
-  if (secenek === 'sadelestir') { const m = rnd(2, 7); return { metin: `${kesH(f.n * m, f.d * m)} kesrini <b>${m} ile sadeleştiriniz</b>.`, tur: 'tam', beklenen: { t: 0, n: f.n, d: f.d } }; }
-  if (secenek === 'ensade') { const m = rnd(2, 8); return { metin: `${kesH(f.n * m, f.d * m)} kesrini <b>en sade hâle</b> getiriniz.`, tur: 'tam', beklenen: { t: 0, n: f.n, d: f.d } }; }
-  if (secenek === 'bilesige') { const b = tamli(t, f); return { metin: `${tamH(t, f.n, f.d)} tam sayılı kesrini <b>bileşik kesre</b> çeviriniz.`, tur: 'tam', beklenen: { t: 0, n: b.n, d: b.d } }; }
-  if (secenek === 'tamliya') { const b = tamli(t, f); return { metin: `${kesH(b.n, b.d)} bileşik kesrini <b>tam sayılı kesre</b> çeviriniz.`, tur: 'tam', beklenen: { t, n: f.n, d: f.d } }; }
-  return { metin: `${kesH(f.n, f.d)} kesrine denk olan, <b>paydası ${f.d * k}</b> olan kesri yazınız.`, tur: 'tam', beklenen: { t: 0, n: f.n * k, d: f.d * k } };
-}
-function soruEsitPayda() {
-  const d = rnd(3, 15);
-  if (Math.random() < .25) {   // üç kesir
-    let a, b, c; do { a = rnd(1, d - 1); b = rnd(1, d - 1); c = rnd(1, d - 1); } while (a + b - c <= 0 || a + b - c > 2 * d);
-    return { metin: `<span class="islem">${kesH(a, d)} + ${kesH(b, d)} − ${kesH(c, d)} = ?</span>`, deger: K(a + b - c, d) };
-  }
-  const o = sec(['+', '−']); let a, b;
-  do { a = rnd(1, d - 1); b = rnd(1, d - 1); } while (o === '−' ? a <= b : a + b > 2 * d - 2);
-  return { metin: `<span class="islem">${kesH(a, d)} ${o} ${kesH(b, d)} = ?</span>`, deger: K(o === '+' ? a + b : a - b, d) };
-}
-function soruFarkliPayda() {
-  if (Math.random() < .3) {   // üç kesir (1/2 + 1/3 + 1/6, 5/8 + 1/4 − 1/2 gibi)
-    let p, x, o1, o2, v;
-    do { p = ortakPaydalar(3); x = p.map(basitKesir); o1 = '+'; o2 = sec(['+', '−']); v = uygula(uygula(x[0], o1, x[1]), o2, x[2]); } while (v.n <= 0);
-    return { metin: `<span class="islem">${kesH(x[0].n, x[0].d)} + ${kesH(x[1].n, x[1].d)} ${o2} ${kesH(x[2].n, x[2].d)} = ?</span>`, deger: v };
-  }
-  let [d1, d2] = paydaCifti(), x = basitKesir(d1), y = basitKesir(d2), o = sec(['+', '−']);
-  if (o === '−') { if (!buyuk(x, y)) [x, y] = [y, x]; if (!buyuk(x, y)) return soruFarkliPayda(); }
-  return { metin: `<span class="islem">${kesH(x.n, x.d)} ${o} ${kesH(y.n, y.d)} = ?</span>`, deger: uygula(x, o, y) };
-}
-function soruTamSayili() {
-  const tip = sec(['tamtam', 'tamtam', 'tamtam', 'dogal']);
-  if (tip === 'tamtam') {
-    const o = sec(['+', '−']), [d1, d2] = Math.random() < .3 ? [sec(PAYDALAR.slice(1)), 0] : paydaCifti();
-    const f1 = basitKesir(d1), f2 = basitKesir(d2 || d1);
-    let t1, t2;
-    if (o === '+') { t1 = rnd(1, 5); t2 = rnd(1, 4); } else { t1 = rnd(3, 7); t2 = rnd(1, t1 - 1); }
-    const x = tamli(t1, f1), y = tamli(t2, f2);
-    if (o === '−' && !buyuk(x, y)) return soruTamSayili();
-    return { metin: `<span class="islem">${tamH(t1, f1.n, f1.d)} ${o} ${tamH(t2, f2.n, f2.d)} = ?</span>`, deger: uygula(x, o, y) };
-  }
-  const f = basitKesir(sec([3, 4, 5, 6, 7, 8, 9, 10])), n = rnd(2, 8), bicim = rnd(1, 4);
-  const N = { n, d: 1 };
-  if (bicim === 1) return { metin: `<span class="islem">${n} + ${kesH(f.n, f.d)} = ?</span>`, deger: topla(N, f) };
-  if (bicim === 2) return { metin: `<span class="islem">${n} − ${kesH(f.n, f.d)} = ?</span>`, deger: cikar(N, f) };
-  if (bicim === 3) { const t = rnd(1, 4); return { metin: `<span class="islem">${n} + ${tamH(t, f.n, f.d)} = ?</span>`, deger: topla(N, tamli(t, f)) }; }
-  const m = rnd(1, 3), b = tamli(m + rnd(0, 1), f);   // 25/8 − 2 gibi
-  return { metin: `<span class="islem">${kesH(b.n, b.d)} − ${m} = ?</span>`, deger: cikar(b, { n: m, d: 1 }) };
-}
-function soruParantez() {
-  let metin, v;
-  do {
-    const p = ortakPaydalar(3), x = p.map(basitKesir), tip = rnd(1, 3);
-    if (tip === 1) { const t = rnd(1, 2), y = tamli(t, x[1]); metin = `(${kesH(x[0].n, x[0].d)} + ${tamH(t, x[1].n, x[1].d)}) − ${kesH(x[2].n, x[2].d)}`; v = cikar(topla(x[0], y), x[2]); }
-    else if (tip === 2) { const n = rnd(2, 5); metin = `(${n} − ${kesH(x[0].n, x[0].d)}) + ${tamH(1, x[1].n, x[1].d)}`; v = topla(cikar({ n, d: 1 }, x[0]), tamli(1, x[1])); }
-    else { const a = { n: x[0].d - 1, d: x[0].d }; metin = `${kesH(a.n, a.d)} − (${kesH(x[1].n, x[1].d)} + ${kesH(x[2].n, x[2].d)})`; v = cikar(a, topla(x[1], x[2])); }
-  } while (v.n <= 0);
-  return { metin: `<span class="islem">${metin} = ?</span>`, deger: v };
-}
-const URUNLER = [['kabak', 'patlıcan'], ['buğday', 'arpa'], ['domates', 'biber'], ['mısır', 'fasulye'], ['çilek', 'marul']];
-const ISIMLER = [['Selin', 'Ece', "Selin'den"], ['Deniz', 'Mert', "Deniz'den"], ['Ada', 'Kerem', "Ada'dan"], ['Zeynep', 'Arda', "Zeynep'ten"], ['Elif', 'Can', "Elif'ten"]];
-function soruProblem() {
-  const tip = rnd(1, 8);
-  if (tip === 1) {   // tarla, boş kalan
-    let x, y; do { const [a, b] = paydaCifti(); x = basitKesir(a); y = basitKesir(b); } while (!buyuk({ n: 1, d: 1 }, topla(x, y)));
-    const u = sec(URUNLER);
-    return { metin: `Bir çiftçi tarlasının ${kesH(x.n, x.d)}'${ekNe(x.d)} ${u[0]}, ${kesH(y.n, y.d)}'${ekNe(y.d)} ${u[1]} ekmiştir. Tarlanın <b>kaçta kaçı boş</b> kalmıştır?`, deger: cikar({ n: 1, d: 1 }, topla(x, y)) };
-  }
-  if (tip === 2) {   // havuz
-    let x, y; do { const [a, b] = Math.random() < .5 ? [12, 12] : paydaCifti(); x = basitKesir(a); y = basitKesir(b); } while (!buyuk(x, y));
-    return { metin: `Bir havuzun ${kesH(x.n, x.d)}'${ek(x.d)} su ile doludur. Havuzun ${kesH(y.n, y.d)}'${ek(y.d)} kadar su boşaltılırsa havuzun <b>kaçta kaçı dolu</b> olur?`, deger: cikar(x, y) };
-  }
-  if (tip === 3) {   // kamyon
-    const N = rnd(6, 15), f = basitKesir(sec([2, 3, 4, 5, 8])), t = rnd(1, N - 2);
-    return { metin: `Bir kamyon ${N} tonluk yükün ${tamH(t, f.n, f.d)} tonunu boşaltmıştır. Kamyonda <b>kaç ton</b> yük kalmıştır?`, deger: cikar({ n: N, d: 1 }, tamli(t, f)) };
-  }
-  if (tip === 4) {   // fırın, un çuvalı
-    let N, x, y, t1, t2; do { const [a, b] = paydaCifti(); N = rnd(6, 12); t1 = rnd(1, 3); t2 = rnd(1, 3); x = tamli(t1, basitKesir(a)); y = tamli(t2, basitKesir(b)); } while (!buyuk({ n: N, d: 1 }, topla(x, y)));
-    return { metin: `Bir fırında ${N} çuval un vardı. Pazartesi ${karisikH(x)} çuval, salı ${karisikH(y)} çuval un kullanıldı. Fırında <b>kaç çuval</b> un kaldı?`, deger: cikar({ n: N, d: 1 }, topla(x, y)) };
-  }
-  if (tip === 5) {   // iki kişi, toplam çalışma
-    let A, B; do { const [a, b] = paydaCifti(); A = tamli(rnd(2, 4), basitKesir(a)); B = tamli(rnd(1, 2), basitKesir(b)); } while (!buyuk(A, B));
-    const [k1, k2, k1den] = sec(ISIMLER);
-    return { metin: `${k1} ${karisikH(A)} saat ders çalışmıştır. ${k2}, ${k1den} ${karisikH(B)} saat az çalışmıştır. İkisi <b>toplam kaç saat</b> ders çalışmıştır?`, deger: cikar(topla(A, A), B) };
-  }
-  if (tip === 6) {   // kaptaki su
-    let x, y, z, v; do { const p = ortakPaydalar(3); [x, y, z] = p.map(basitKesir); v = topla(cikar(x, y), z); } while (!buyuk(x, y));
-    return { metin: `Bir kapta ${kesH(x.n, x.d)} litre su vardır. Kaptan ${kesH(y.n, y.d)} litre su dökülüp ${kesH(z.n, z.d)} litre su ekleniyor. Kapta son durumda <b>kaç litre</b> su vardır?`, deger: v };
-  }
-  if (tip === 7) {   // iki kulüp farkı
-    let x, y; do { const [a, b] = paydaCifti(); x = basitKesir(a); y = basitKesir(b); } while (!buyuk(x, y) || !buyuk({ n: 1, d: 1 }, topla(x, y)));
-    return { metin: `Bir sınıftaki öğrencilerin ${kesH(x.n, x.d)}'${ek(x.d)} satranç, ${kesH(y.n, y.d)}'${ek(y.d)} yüzme kulübüne yazılmıştır. Satranç kulübündekiler, yüzme kulübündekilerden sınıfın <b>kaçta kaçı kadar fazladır</b>?`, deger: cikar(x, y) };
-  }
-  let N, p, top; do { N = rnd(5, 8); p = [tamli(0, basitKesir(sec([2, 4]))), tamli(1, basitKesir(sec([2, 4, 8]))), tamli(rnd(1, 2), basitKesir(sec([2, 4, 8])))]; top = topla(topla(p[0], p[1]), p[2]); } while (!buyuk({ n: N, d: 1 }, top));
-  return { metin: `Uzunlukları ${karisikH(p[0])} m, ${karisikH(p[1])} m ve ${karisikH(p[2])} m olan üç çubuk yan yana konuyor. Dördüncü bir çubuk eklenince toplam uzunluk ${N} m oluyor. Dördüncü çubuk <b>kaç metredir</b>?`, deger: cikar({ n: N, d: 1 }, top) };
-}
-// Paydanın okunuşuna göre iyelik eki: 1/2'si, 1/3'ü, 2/5'i, 3/4'ü ...
+//         deger:{n,d}, beklenen:{t,n,d} (yalnız 'tam'), seviye, sablon, cevapH }
+const BIR = { n: 1, d: 1 }, dogal = n => ({ n, d: 1 });
+const bk = () => basitKesir(sec([3, 4, 5, 6, 7, 8, 9, 10, 11, 12]));
+const ikiFarkli = () => { const [a, b] = paydaCifti(); return [basitKesir(a), basitKesir(b)]; };
+const T = (metin, t, n, d) => ({ metin, tur: 'tam', beklenen: { t, n, d } });
+const SD = (metin, deger) => ({ metin, deger });
+const IS = s => `<span class="islem">${s} = ?</span>`;
+const BOS = '<span class="bosKutu">?</span>';
+const BOS_SORU = '<br><small class="soruNot">Soru işaretinin yerine hangi sayı gelmeli?</small>';
+const kH = f => kesH(f.n, f.d);
+// Paydanın okunuşuna göre ekler: 2/9'u, 2/9'unu, 2/9'una; 1/4'ü, 1/4'ünü, 1/4'üne
 function ek(d) { return { 2: 'si', 3: 'ü', 4: 'ü', 5: 'i', 6: 'sı', 7: 'si', 8: 'i', 9: 'u', 10: 'u', 11: 'i', 12: 'si', 14: 'ü', 15: 'i', 16: 'sı', 18: 'i', 20: 'si', 24: 'ü', 30: 'u', 36: 'sı' }[d] || 'i'; }
-const ekNe = d => ek(d) + (/[ıu]$/.test(ek(d)) ? 'na' : 'ne');   // yönelme: 2/9'una, 1/4'üne
+const ekNe = d => ek(d) + (/[ıu]$/.test(ek(d)) ? 'na' : 'ne');
+const ekNi = d => ek(d) + { i: 'ni', ı: 'nı', u: 'nu', ü: 'nü' }[ek(d).slice(-1)];
+const URUNLER = [['kabak', 'patlıcan'], ['buğday', 'arpa'], ['domates', 'biber'], ['mısır', 'fasulye'], ['çilek', 'marul'], ['nane', 'maydanoz']];
+const ISIMLER = [['Selin', 'Ece', "Selin'den"], ['Deniz', 'Mert', "Deniz'den"], ['Ada', 'Kerem', "Ada'dan"], ['Zeynep', 'Arda', "Zeynep'ten"], ['Elif', 'Can', "Elif'ten"], ['Defne', 'Ali', "Defne'den"], ['Yusuf', 'Nehir', "Yusuf'tan"]];
+function kosullu(uret, kosul) { let x; do x = uret(); while (!kosul(x)); return x; }
 
-function soruUret(seviye) {
-  const s = seviye === 1 ? soruIsinma() : seviye === 2 ? soruEsitPayda() : seviye === 3 ? soruFarkliPayda()
-    : seviye === 4 ? soruTamSayili() : (Math.random() < .4 ? soruParantez() : soruProblem());
-  s.seviye = seviye; s.tur = s.tur || 'sade'; s.puan = SEVIYE_PUAN[seviye];
+const SABLON = {
+  1: {
+    genislet() { const f = bk(), k = rnd(2, 6); return T(`${kH(f)} kesrini <b>${k} ile genişletiniz</b>.`, 0, f.n * k, f.d * k); },
+    sadelestir() { const f = bk(), m = rnd(2, 7); return T(`${kesH(f.n * m, f.d * m)} kesrini <b>${m} ile sadeleştiriniz</b>.`, 0, f.n, f.d); },
+    enSade() { const f = bk(), m = rnd(2, 9); return T(`${kesH(f.n * m, f.d * m)} kesrini <b>en sade hâle</b> getiriniz.`, 0, f.n, f.d); },
+    bilesige() { const f = bk(), t = rnd(1, 5), b = tamli(t, f); return T(`${tamH(t, f.n, f.d)} tam sayılı kesrini <b>bileşik kesre</b> çeviriniz.`, 0, b.n, b.d); },
+    tamliya() { const f = bk(), t = rnd(1, 5), b = tamli(t, f); return T(`${kH(b)} bileşik kesrini <b>tam sayılı kesre</b> çeviriniz.`, t, f.n, f.d); },
+    denkPayda() { const f = bk(), k = rnd(2, 5); return T(`${kH(f)} kesrine denk olan, <b>paydası ${f.d * k}</b> olan kesri yazınız.`, 0, f.n * k, f.d * k); },
+    denkPay() { const f = bk(), k = rnd(2, 5); return T(`${kH(f)} kesrine denk olan, <b>payı ${f.n * k}</b> olan kesri yazınız.`, 0, f.n * k, f.d * k); },
+    dogalKesir() { const n = rnd(2, 9), d = rnd(2, 8); return T(`${n} doğal sayısını <b>paydası ${d}</b> olan bir kesir olarak yazınız.`, 0, n * d, d); }
+  },
+  2: {
+    ikiKesir() { const d = rnd(3, 15), o = sec(['+', '−']); const [a, b] = kosullu(() => [rnd(1, d - 1), rnd(1, d - 1)], ([a, b]) => o === '−' ? a > b : a + b <= 2 * d - 2); return SD(IS(`${kesH(a, d)} ${o} ${kesH(b, d)}`), K(o === '+' ? a + b : a - b, d)); },
+    ucKesir() { const d = rnd(4, 15), o = sec(['+−', '−+', '++']); const [a, b, c] = kosullu(() => [rnd(1, d - 1), rnd(1, d - 1), rnd(1, d - 1)], ([a, b, c]) => { const v = a + (o[0] === '+' ? b : -b) + (o[1] === '+' ? c : -c); return a > b && v > 0 && v <= 2 * d; }); const v = a + (o[0] === '+' ? b : -b) + (o[1] === '+' ? c : -c); return SD(IS(`${kesH(a, d)} ${isaret(o[0])} ${kesH(b, d)} ${isaret(o[1])} ${kesH(c, d)}`), K(v, d)); },
+    eksikToplanan() { const d = rnd(4, 15), [a, b] = kosullu(() => [rnd(1, d - 1), rnd(2, d)], ([a, b]) => b > a); return SD(`<span class="islem">${kesH(a, d)} + ${BOS} = ${kesH(b, d)}</span>${BOS_SORU}`, K(b - a, d)); },
+    eksikCikan() { const d = rnd(4, 15), [a, b] = kosullu(() => [rnd(2, d - 1), rnd(1, d - 1)], ([a, b]) => a > b); return SD(`<span class="islem">${kesH(a, d)} − ${BOS} = ${kesH(b, d)}</span>${BOS_SORU}`, K(a - b, d)); },
+    birdenCikar() { const d = rnd(3, 15), a = rnd(1, d - 1), n = rnd(1, 3); return SD(IS(`${n} − ${kesH(a, d)}`), K(n * d - a, d)); },
+    pasta() { const d = sec([6, 8, 9, 10, 12]), [a, b] = kosullu(() => [rnd(1, d - 2), rnd(1, d - 2)], ([a, b]) => a + b < d); const [k1, k2] = sec(ISIMLER); return SD(`Bir pastanın ${kesH(a, d)}'${ekNi(d)} ${k1}, ${kesH(b, d)}'${ekNi(d)} ${k2} yedi. İkisi birlikte pastanın <b>kaçta kaçını</b> yedi?`, K(a + b, d)); }
+  },
+  3: {
+    ikiKesir() { let [x, y] = ikiFarkli(); const o = sec(['+', '−']); if (o === '−' && !buyuk(x, y)) [x, y] = [y, x]; if (o === '−' && !buyuk(x, y)) return SABLON[3].ikiKesir(); return SD(IS(`${kH(x)} ${o} ${kH(y)}`), uygula(x, o, y)); },
+    ucKesir() { let x, o2, v; do { x = ortakPaydalar(3).map(basitKesir); o2 = sec(['+', '−']); v = uygula(topla(x[0], x[1]), o2, x[2]); } while (v.n <= 0); return SD(IS(`${kH(x[0])} + ${kH(x[1])} ${o2} ${kH(x[2])}`), v); },
+    eksikTerim() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(y, x)); return Math.random() < .5 ? SD(`<span class="islem">${kH(x)} + ${BOS} = ${kH(y)}</span>${BOS_SORU}`, cikar(y, x)) : SD(`<span class="islem">${kH(y)} − ${BOS} = ${kH(x)}</span>${BOS_SORU}`, cikar(y, x)); },
+    bireTamamla() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(BIR, topla(x, y))); return SD(`${kH(x)} ile ${kH(y)} kesirlerinin toplamına <b>kaç eklenirse 1</b> olur?`, cikar(BIR, topla(x, y))); },
+    fark() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => x.n * y.d !== y.n * x.d); const [b, k] = buyuk(x, y) ? [x, y] : [y, x]; return SD(`${kH(x)} ile ${kH(y)} kesirlerinden <b>büyük olanın küçük olandan farkı</b> kaçtır?`, cikar(b, k)); },
+    sise() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(BIR, topla(x, y))); return SD(`Bir şişedeki suyun ${kH(x)}'${ekNi(x.d)} sabah, ${kH(y)}'${ekNi(y.d)} öğlen içtim. Şişedeki suyun <b>kaçta kaçını</b> içmiş oldum?`, topla(x, y)); }
+  },
+  4: {
+    tamToplama() { const [f1, f2] = ikiFarkli(), t1 = rnd(1, 5), t2 = rnd(1, 4); return SD(IS(`${tamH(t1, f1.n, f1.d)} + ${tamH(t2, f2.n, f2.d)}`), topla(tamli(t1, f1), tamli(t2, f2))); },
+    tamCikarma() { const [f1, f2] = kosullu(ikiFarkli, ([a, b]) => buyuk(b, a)), t1 = rnd(3, 8), t2 = rnd(1, t1 - 1); return SD(IS(`${tamH(t1, f1.n, f1.d)} − ${tamH(t2, f2.n, f2.d)}`), cikar(tamli(t1, f1), tamli(t2, f2))); },
+    esitPaydaTam() { const d = sec([3, 4, 5, 6, 7, 8, 9, 10, 12]), f1 = basitKesir(d), f2 = basitKesir(d), o = sec(['+', '−']), t1 = rnd(3, 7), t2 = rnd(1, t1 - 1); return SD(IS(`${tamH(t1, f1.n, f1.d)} ${o} ${tamH(t2, f2.n, f2.d)}`), uygula(tamli(t1, f1), o, tamli(t2, f2))); },
+    dogalIle() {
+      const f = basitKesir(sec([3, 4, 5, 6, 7, 8, 9, 10])), n = rnd(2, 8), bicim = rnd(1, 4);
+      if (bicim === 1) return SD(IS(`${n} + ${kH(f)}`), topla(dogal(n), f));
+      if (bicim === 2) return SD(IS(`${n} − ${kH(f)}`), cikar(dogal(n), f));
+      if (bicim === 3) { const t = rnd(1, 4); return SD(IS(`${n + t} − ${tamH(t, f.n, f.d)}`), cikar(dogal(n + t), tamli(t, f))); }
+      const m = rnd(1, 3), b = tamli(m + rnd(0, 1), f); return SD(IS(`${kH(b)} − ${m}`), cikar(b, dogal(m)));   // 25/8 − 2 gibi
+    },
+    eksikTam() { const f = basitKesir(sec([2, 3, 4, 5, 6, 8])), t = rnd(1, 4), N = t + rnd(1, 4); return SD(`<span class="islem">${tamH(t, f.n, f.d)} + ${BOS} = ${N}</span>${BOS_SORU}`, cikar(dogal(N), tamli(t, f))); },
+    dalgic() { const [f1, f2] = ikiFarkli(), x = tamli(rnd(2, 6), f1), y = tamli(rnd(1, 4), f2); return SD(`Bir dalgıç önce ${karisikH(x)} metre, sonra ${karisikH(y)} metre daha derine daldı. Dalgıç <b>toplam kaç metre</b> derine inmiştir?`, topla(x, y)); }
+  },
+  5: {
+    parantez1() { let x, t, v; do { x = ortakPaydalar(3).map(basitKesir); t = rnd(1, 2); v = cikar(topla(x[0], tamli(t, x[1])), x[2]); } while (v.n <= 0); return SD(IS(`(${kH(x[0])} + ${tamH(t, x[1].n, x[1].d)}) − ${kH(x[2])}`), v); },
+    parantez2() { const x = ortakPaydalar(2).map(basitKesir), n = rnd(2, 5); return SD(IS(`(${n} − ${kH(x[0])}) + ${tamH(1, x[1].n, x[1].d)}`), topla(cikar(dogal(n), x[0]), tamli(1, x[1]))); },
+    parantez3() { let x, a, v; do { x = ortakPaydalar(3).map(basitKesir); a = { n: x[0].d - 1, d: x[0].d }; v = cikar(a, topla(x[1], x[2])); } while (v.n <= 0); return SD(IS(`${kH(a)} − (${kH(x[1])} + ${kH(x[2])})`), v); },
+    parantez4() { const x = ortakPaydalar(2).map(basitKesir), n = rnd(2, 4); return SD(IS(`${n} − (${kH(x[0])} + ${kH(x[1])})`), cikar(dogal(n), topla(x[0], x[1]))); },
+    tarla() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(BIR, topla(x, y))), u = sec(URUNLER); return SD(`Bir çiftçi tarlasının ${kH(x)}'${ekNe(x.d)} ${u[0]}, ${kH(y)}'${ekNe(y.d)} ${u[1]} ekmiştir. Tarlanın <b>kaçta kaçı boş</b> kalmıştır?`, cikar(BIR, topla(x, y))); },
+    havuz() { const [x, y] = kosullu(() => Math.random() < .5 ? [basitKesir(12), basitKesir(12)] : ikiFarkli(), ([x, y]) => buyuk(x, y)); return SD(`Bir havuzun ${kH(x)}'${ek(x.d)} su ile doludur. Havuzun ${kH(y)}'${ek(y.d)} kadar su boşaltılırsa havuzun <b>kaçta kaçı dolu</b> olur?`, cikar(x, y)); },
+    kamyon() { const N = rnd(6, 15), f = basitKesir(sec([2, 3, 4, 5, 8])), t = rnd(1, N - 2); return SD(`Bir kamyon ${N} tonluk yükün ${tamH(t, f.n, f.d)} tonunu boşaltmıştır. Kamyonda <b>kaç ton</b> yük kalmıştır?`, cikar(dogal(N), tamli(t, f))); },
+    firin() { let N, x, y; do { const [a, b] = ikiFarkli(); N = rnd(6, 12); x = tamli(rnd(1, 3), a); y = tamli(rnd(1, 3), b); } while (!buyuk(dogal(N), topla(x, y))); return SD(`Bir fırında ${N} çuval un vardı. Pazartesi ${karisikH(x)} çuval, salı ${karisikH(y)} çuval un kullanıldı. Fırında <b>kaç çuval</b> un kaldı?`, cikar(dogal(N), topla(x, y))); },
+    calisma() { let A, B; do { const [a, b] = ikiFarkli(); A = tamli(rnd(2, 4), a); B = tamli(rnd(1, 2), b); } while (!buyuk(A, B)); const [k1, k2, k1den] = sec(ISIMLER); return SD(`${k1} ${karisikH(A)} saat ders çalışmıştır. ${k2}, ${k1den} ${karisikH(B)} saat az çalışmıştır. İkisi <b>toplam kaç saat</b> ders çalışmıştır?`, cikar(topla(A, A), B)); },
+    kap() { let x, y, z; do [x, y, z] = ortakPaydalar(3).map(basitKesir); while (!buyuk(x, y)); return SD(`Bir kapta ${kH(x)} litre su vardır. Kaptan ${kH(y)} litre su dökülüp ${kH(z)} litre su ekleniyor. Kapta son durumda <b>kaç litre</b> su vardır?`, topla(cikar(x, y), z)); },
+    kulup() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(x, y) && buyuk(BIR, topla(x, y))); return SD(`Bir sınıftaki öğrencilerin ${kH(x)}'${ek(x.d)} satranç, ${kH(y)}'${ek(y.d)} yüzme kulübüne yazılmıştır. Satranç kulübündekiler, yüzme kulübündekilerden sınıfın <b>kaçta kaçı kadar fazladır</b>?`, cikar(x, y)); },
+    cubuk() { let N, p, top; do { N = rnd(5, 8); p = [tamli(0, basitKesir(sec([2, 4]))), tamli(1, basitKesir(sec([2, 4, 8]))), tamli(rnd(1, 2), basitKesir(sec([2, 4, 8])))]; top = topla(topla(p[0], p[1]), p[2]); } while (!buyuk(dogal(N), top)); return SD(`Uzunlukları ${karisikH(p[0])} m, ${karisikH(p[1])} m ve ${karisikH(p[2])} m olan üç çubuk yan yana konuyor. Dördüncü bir çubuk eklenince toplam uzunluk ${N} m oluyor. Dördüncü çubuk <b>kaç metredir</b>?`, cikar(dogal(N), top)); },
+    kitap() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(BIR, topla(x, y))), [k1] = sec(ISIMLER); return SD(`${k1} bir kitabın ${kH(x)}'${ekNi(x.d)} pazartesi, ${kH(y)}'${ekNi(y.d)} salı okudu. Kitabın <b>kaçta kaçı okunmadan</b> kaldı?`, cikar(BIR, topla(x, y))); },
+    ip() { let N, x, y; do { const [a, b] = ikiFarkli(); N = rnd(5, 10); x = tamli(rnd(1, 3), a); y = tamli(rnd(0, 2), b); } while (!buyuk(dogal(N), topla(x, y))); return SD(`${N} metrelik bir ipten ${karisikH(x)} metre ve ${karisikH(y)} metre uzunluğunda iki parça kesildi. Geriye <b>kaç metre</b> ip kaldı?`, cikar(dogal(N), topla(x, y))); },
+    depo() { let N, x, y, v; do { const [a, b] = ikiFarkli(); N = rnd(10, 30); x = tamli(rnd(3, 9), a); y = tamli(rnd(1, 6), b); v = topla(cikar(dogal(N), x), y); } while (!buyuk(dogal(N), x)); return SD(`Bir arabanın deposunda ${N} litre benzin vardı. Yolculukta ${karisikH(x)} litre benzin harcandı, sonra ${karisikH(y)} litre benzin alındı. Depoda <b>kaç litre</b> benzin var?`, v); },
+    yuruyus() { const [a, b] = ikiFarkli(), x = tamli(rnd(1, 3), a), y = tamli(rnd(1, 3), b), [k1] = sec(ISIMLER); return SD(`${k1} sabah ${karisikH(x)} km, akşam ${karisikH(y)} km yürüdü. ${k1} o gün <b>toplam kaç km</b> yürüdü?`, topla(x, y)); },
+    kek() { const [x, y] = ikiFarkli(), z = basitKesir(sec([2, 4])); return SD(`Bir kek tarifinde ${kH(x)} kg un, ${kH(y)} kg şeker ve ${kH(z)} kg süt kullanılıyor. Bu malzemelerin toplamı <b>kaç kg</b> eder?`, topla(topla(x, y), z)); },
+    dalgicCik() { let x, y, z, v; do { const [a, b] = ikiFarkli(); x = tamli(rnd(6, 12), a); y = tamli(rnd(1, 4), b); z = tamli(rnd(1, 3), basitKesir(sec([2, 4]))); v = topla(cikar(x, y), z); } while (!buyuk(x, y)); return SD(`Bir dalgıç ${karisikH(x)} metre derindeydi. Önce ${karisikH(y)} metre yukarı çıktı, sonra ${karisikH(z)} metre aşağı indi. Dalgıç şimdi <b>kaç metre</b> derinde?`, v); },
+    akvaryum() { const [x, y] = kosullu(ikiFarkli, ([x, y]) => buyuk(BIR, topla(x, y))); return SD(`Bir akvaryumun ${kH(x)}'${ek(x.d)} su ile doluydu. Akvaryumun ${kH(y)}'${ek(y.d)} kadar daha su eklendi. Akvaryumun <b>kaçta kaçı</b> dolu oldu?`, topla(x, y)); }
+  }
+};
+
+/* Tekrarı önleme: aynı şablon bir oyunda az kullanılsın, o cihazda son çıkan sorular yeniden gelmesin. */
+const HAFIZA = 'mercan_soru_hafiza';
+function hafizaOku() { try { return JSON.parse(localStorage.getItem(HAFIZA)) || { sablon: {}, gorulen: [] }; } catch (e) { return { sablon: {}, gorulen: [] }; } }
+function hafizaYaz(h) { try { h.gorulen = h.gorulen.slice(-400); localStorage.setItem(HAFIZA, JSON.stringify(h)); } catch (e) {} }
+function soruUret(seviye, sayac = {}) {
+  const adlar = Object.keys(SABLON[seviye]), az = Math.min(...adlar.map(a => sayac[seviye + a] || 0));
+  const ad = sec(adlar.filter(a => (sayac[seviye + a] || 0) === az));
+  sayac[seviye + ad] = az + 1;
+  const s = SABLON[seviye][ad]();
+  s.seviye = seviye; s.sablon = ad; s.tur = s.tur || 'sade'; s.puan = SEVIYE_PUAN[seviye];
   if (s.tur === 'tam') { const b = s.beklenen; s.deger = K(b.t * b.d + b.n, b.d); s.cevapH = b.t ? tamH(b.t, b.n, b.d) : kesH(b.n, b.d); }
   else s.cevapH = s.deger.n > s.deger.d && s.deger.d > 1 ? `${karisikH(s.deger)} <span style="opacity:.7">(${bilesikH(s.deger)})</span>` : karisikH(s.deger);
   return s;
 }
-function soruSeti(seviyeler) {   // aynı soru iki kez çıkmasın
-  const gor = new Set();
-  return seviyeler.map(sv => { let s, i = 0; do s = soruUret(sv); while (gor.has(s.metin) && ++i < 30); gor.add(s.metin); return s; });
+function soruSeti(seviyeler) {
+  const h = hafizaOku(), gor = new Set(h.gorulen), sayac = { ...h.sablon };
+  const set = seviyeler.map(sv => { let s, i = 0; do s = soruUret(sv, sayac); while (gor.has(s.metin) && ++i < 30); gor.add(s.metin); h.gorulen.push(s.metin); return s; });
+  h.sablon = sayac; hafizaYaz(h);
+  return set;
 }
 // Girdi: {t, n, d} metin. Sonuç: 'dogru' | 'sadelestir' | 'yanlis' | 'eksik'
 function cevapDenetle(soru, g) {
