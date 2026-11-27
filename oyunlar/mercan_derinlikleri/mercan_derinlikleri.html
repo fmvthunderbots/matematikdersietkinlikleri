@@ -184,10 +184,14 @@
   #sonuc .ilk10, #kazanan .ilk10 { text-align: left; margin-top: 12px; }
 
   /* KUTLAMA */
-  #kutlama { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: rgba(1,10,20,.55); }
+  #kutlama { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 45%, rgba(4,40,64,.72), rgba(1,10,20,.88)); }
   #kTuval { position: absolute; inset: 0; width: 100%; height: 100%; }
   #kKart { position: relative; text-align: center; padding: 28px 36px; width: min(520px, 92vw); border-color: var(--kRenk, #fff); box-shadow: 0 0 60px var(--kParlak, rgba(255,255,255,.4)); animation: gir .5s ease; }
-  #kRozet { font-size: 80px; line-height: 1; }
+  #kRozet { font-size: 80px; line-height: 1; display: inline-block; animation: rozetZipla 1.6s ease-in-out infinite; }
+  #kutlama.tur0 #kRozet { filter: drop-shadow(0 0 22px rgba(255,211,107,.9)); }
+  #kutlama.tur0 #kAd { background: linear-gradient(90deg, #fff6d0, #ffd36b, #fff6d0); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: parla 2.4s linear infinite; }
+  @keyframes rozetZipla { 0%, 100% { transform: translateY(0) scale(1) rotate(-4deg); } 50% { transform: translateY(-10px) scale(1.1) rotate(4deg); } }
+  @keyframes parla { to { background-position: -200% 0; } }
   #kUnvan { color: var(--kRenk); font-weight: 900; letter-spacing: .06em; }
   #kAd { font-family: 'Baloo 2', sans-serif; font-size: 38px; margin: 6px 0 0; }
   #kPuan { font-family: 'Baloo 2', sans-serif; font-size: 26px; color: var(--altin); }
@@ -1154,16 +1158,37 @@ function kazananGoster() {
 }
 $('yeniSinif').onclick = () => { kutlamaKapat(); sinifBasla(); };
 
-/* ================= KUTLAMA ================= */
+/* ================= KUTLAMA (1., 2., 3. ve 4-10. sıraya özel sahneler) ================= */
 const KUTLAMALAR = [
-  { emoji: '🦪', unvan: 'İnci Avcısı Kaptan', renk: '#fff6e6', parlak: 'rgba(255,246,230,.55)', mesaj: 'Okyanusun en derin noktasına ulaştın. Bütün inciler senin için parlıyor!' },
-  { emoji: '🐬', unvan: 'Yunus Kalpli Dalgıç', renk: '#cfe6f2', parlak: 'rgba(207,230,242,.5)', mesaj: 'Yunuslar seninle yarışmaya doyamadı. Zirveye bir dalış kaldı!' },
-  { emoji: '🐢', unvan: 'Mercan Koruyucusu', renk: '#ffb08a', parlak: 'rgba(255,176,138,.5)', mesaj: 'Mercanların arasından kesirleri tek tek topladın. Harika bir dalış!' },
-  { emoji: '🐠', unvan: 'Resif Kâşifi', renk: '#5fe3ef', parlak: 'rgba(95,227,239,.45)', mesaj: 'İlk 10 dalgıç arasındasın. Denizin derinlikleri sana selam veriyor!' }
+  { emoji: '👑', unvan: 'İnci Avcısı Kaptan', renk: '#ffd36b', parlak: 'rgba(255,211,107,.6)', mesaj: 'Okyanusun en derin noktasına ulaştın ve batık hazineyi buldun. Bütün inciler senin için parlıyor!' },
+  { emoji: '🐬', unvan: 'Yunus Kalpli Dalgıç', renk: '#d8ecf7', parlak: 'rgba(216,236,247,.55)', mesaj: 'Yunuslar senin onuruna sudan sıçrıyor. Zirveye yalnızca bir dalış kaldı!' },
+  { emoji: '🐢', unvan: 'Mercan Koruyucusu', renk: '#ff9f80', parlak: 'rgba(255,159,128,.55)', mesaj: 'Sen geçtikçe mercanlar yeniden çiçek açıyor. Kesirleri tek tek topladın, harika bir dalış!' },
+  { emoji: '🐠', unvan: 'Resif Kâşifi', renk: '#5fe3ef', parlak: 'rgba(95,227,239,.45)', mesaj: 'İlk 10 dalgıç arasındasın. Balık sürüleri senin için dans ediyor!' }
 ];
-const KUTLAMA_RENK = [['#fff6e6', '#ffffff', '#ffe3c2', '#d8f6ff'], ['#ffffff', '#cfe6f2', '#9fd8f0'], ['#ffb08a', '#ffd3b8', '#ff7a6b'], ['#5fe3ef', '#ff7a6b', '#ffd36b', '#8dffcf', '#c77dff']];
 const kTuval = $('kTuval'), kc = kTuval.getContext('2d');
-let kAcik = false, kTur = 3, kPar = [], kOnce = 0, kZaman = 0;
+let kAcik = false, kTur = 3, kPar = [], kOnce = 0, kZaman = 0, kS = {};
+
+/* --- sesler --- */
+function sesHazine() {
+  [[523, 0], [659, .12], [784, .24], [1047, .36]].forEach(([f, b]) => nota(f, b, .55, 'triangle', .08));
+  [1047, 1319, 1568].forEach(f => nota(f, .52, 1.4, 'sine', .055));
+  for (let i = 0; i < 16; i++) { const b = .7 + i * .09 + Math.random() * .05, f = 2300 + Math.random() * 1700; nota(f, b, .14, 'sine', .035); nota(f * 1.5, b + .01, .09, 'sine', .018); }   // para şıngırtısı
+  for (let i = 0; i < 10; i++) kabarcikSes(.05, .4 + i * .12);
+  setTimeout(balinaSes, 1500); setTimeout(() => [784, 988, 1175, 1568].forEach((f, i) => nota(f, i * .1, .7, 'sine', .05)), 2600);
+}
+function sesYunus() {
+  [0, 1.1, 2.2].forEach(b => { nota(1500, b, .32, 'sine', .045, 2900); nota(2700, b + .32, .28, 'sine', .035, 1700); });   // ıslık
+  for (let i = 0; i < 18; i++) nota(3000 + Math.random() * 900, .15 + i * .032, .018, 'sine', .03);   // tıkırtı
+  [784, 988, 1175, 1568].forEach((f, i) => nota(f, .6 + i * .1, .6, 'sine', .055));
+  for (let i = 0; i < 6; i++) kabarcikSes(.05, 1 + i * .1);
+}
+function sesMercan() {
+  [523, 587, 659, 784, 880, 1047, 880, 1047].forEach((f, i) => nota(f, i * .14, .5, 'triangle', .075));
+  [659, 784, 1047].forEach(f => nota(f, 1.2, 1.3, 'sine', .045));
+  for (let i = 0; i < 8; i++) kabarcikSes(.045, .2 + i * .17);
+}
+function sesSuru() { for (let i = 0; i < 12; i++) kabarcikSes(.055, i * .08); [659, 784, 988, 1319].forEach((f, i) => nota(f, .5 + i * .1, .5, 'sine', .055)); }
+
 function kutlamaAc(k, sira, mesaj) {
   if (!k) return;
   kTur = Math.min(sira, 3); const t = KUTLAMALAR[kTur], kart = $('kKart');
@@ -1171,29 +1196,132 @@ function kutlamaAc(k, sira, mesaj) {
   kart.style.animation = 'none'; void kart.offsetWidth; kart.style.animation = '';
   $('kRozet').textContent = t.emoji; $('kUnvan').textContent = mesaj ? 'Yarışmanın Şampiyonu' : `${sira + 1}. sıra · ${t.unvan}`;
   $('kAd').textContent = String(k.name); $('kPuan').textContent = k.score + ' puan'; $('kMesaj').textContent = mesaj || t.mesaj;
-  $('kutlama').classList.remove('gizli'); kTuval.width = innerWidth; kTuval.height = innerHeight;
-  kPar = []; kAcik = true; kZaman = 0; kOnce = performance.now(); sesHazir(); kutlamaSesi();
+  $('kutlama').className = 'tur' + kTur; kTuval.width = innerWidth; kTuval.height = innerHeight;
+  const W2 = kTuval.width, H2 = kTuval.height, b = Math.min(W2, H2);
+  kPar = []; kS = { b, yunusSonra: .2, suruSonra: 0, sira: 1 };
+  if (kTur === 2) kS.mercanlar = Array.from({ length: Math.ceil(W2 / 90) }, (_, i) => ({ x: (i + .3 + Math.random() * .4) * W2 / Math.ceil(W2 / 90), boy: b * (.12 + Math.random() * .14), renk: sec(['#ff7a6b', '#ff9fd6', '#ffb347', '#c77dff', '#ff5f7e', '#ffd36b']), gec: Math.random() * 1.2, faz: Math.random() * 6, tur: Math.random() < .7 ? 'dal' : 'yelpaze' }));
+  kAcik = true; kZaman = 0; kOnce = performance.now(); sesHazir();
+  [sesHazine, sesYunus, sesMercan, sesSuru][kTur]();
   requestAnimationFrame(kCiz);
 }
 function kutlamaKapat() { kAcik = false; $('kutlama').classList.add('gizli'); }
 $('kKapat').onclick = kutlamaKapat;
 $('kutlama').addEventListener('click', e => { if (e.target.id === 'kutlama' || e.target.id === 'kTuval') kutlamaKapat(); });
 document.addEventListener('click', e => { const b = e.target.closest('.kutla'); if (b) kutlamaAc(ilk10[+b.dataset.sira], +b.dataset.sira); });
+
+/* --- çizim yardımcıları --- */
+function kKabarcik(x, y, r) { kc.strokeStyle = 'rgba(255,255,255,.7)'; kc.lineWidth = 1.5; kc.beginPath(); kc.arc(x, y, r, 0, 7); kc.stroke(); kc.fillStyle = 'rgba(255,255,255,.15)'; kc.fill(); kc.fillStyle = 'rgba(255,255,255,.8)'; kc.beginPath(); kc.arc(x - r * .35, y - r * .35, r * .25, 0, 7); kc.fill(); }
+function kInci(x, y, r) { const g = kc.createRadialGradient(x - r * .3, y - r * .3, 1, x, y, r); g.addColorStop(0, '#fff'); g.addColorStop(.6, '#fdeef6'); g.addColorStop(1, '#d9b8e6'); kc.fillStyle = g; kc.beginPath(); kc.arc(x, y, r, 0, 7); kc.fill(); }
+function kPara(x, y, r, don) { const s = Math.abs(Math.cos(don)) * .85 + .15; kc.save(); kc.translate(x, y); kc.scale(s, 1); kc.fillStyle = '#e8a91c'; kc.beginPath(); kc.arc(0, 0, r, 0, 7); kc.fill(); kc.fillStyle = '#ffd95a'; kc.beginPath(); kc.arc(0, 0, r * .78, 0, 7); kc.fill(); kc.fillStyle = '#fff3b0'; kc.fillRect(-r * .15, -r * .5, r * .3, r); kc.restore(); }
+function kYildiz(x, y, r, a, renk, kollar = 5, ic = .45) { kc.save(); kc.translate(x, y); kc.rotate(a); kc.fillStyle = renk; kc.beginPath(); for (let i = 0; i < kollar * 2; i++) { const rr = i % 2 ? r * ic : r, aa = i * Math.PI / kollar - Math.PI / 2; kc.lineTo(Math.cos(aa) * rr, Math.sin(aa) * rr); } kc.closePath(); kc.fill(); kc.restore(); }
+function kParilti(x, y, r, a) { kc.globalAlpha = a; kYildiz(x, y, r, 0, '#fff', 4, .2); kc.globalAlpha = 1; }
+function kSandik(x, y, s, acik) {
+  const w = s * 1.6, h = s;
+  // içten gelen ışık
+  if (acik > 0) { const g = kc.createRadialGradient(x, y - h * .5, 0, x, y - h * .5, s * 2.4); g.addColorStop(0, `rgba(255,230,140,${.75 * acik})`); g.addColorStop(1, 'rgba(255,230,140,0)'); kc.fillStyle = g; kc.beginPath(); kc.arc(x, y - h * .5, s * 2.4, 0, 7); kc.fill(); }
+  kc.fillStyle = '#7a4a22'; kc.fillRect(x - w / 2, y - h, w, h);
+  kc.fillStyle = '#5c3416'; for (let i = 1; i < 4; i++) kc.fillRect(x - w / 2, y - h + i * h / 4 - 2, w, 3);
+  kc.fillStyle = '#e8b53a'; kc.fillRect(x - w / 2, y - h, w * .08, h); kc.fillRect(x + w / 2 - w * .08, y - h, w * .08, h); kc.fillRect(x - w * .07, y - h * .75, w * .14, h * .3);
+  // kapak (menteşe arkada; açılınca geriye yatar)
+  kc.save(); kc.translate(x, y - h); kc.scale(1, 1 - acik * 1.6);
+  kc.fillStyle = '#8b5428'; kc.beginPath(); kc.moveTo(-w / 2, 0); kc.lineTo(-w / 2, -h * .35); kc.quadraticCurveTo(0, -h * .75, w / 2, -h * .35); kc.lineTo(w / 2, 0); kc.closePath(); kc.fill();
+  kc.fillStyle = '#e8b53a'; kc.fillRect(-w / 2, -h * .08, w, h * .08); kc.restore();
+}
+function kYunus(x, y, s, aci, yon) {
+  kc.save(); kc.translate(x, y); kc.rotate(aci); kc.scale(yon * s, s);
+  const g = kc.createLinearGradient(0, -20, 0, 20); g.addColorStop(0, '#4d7596'); g.addColorStop(.55, '#8fb3cc'); g.addColorStop(1, '#e6f1f7');
+  kc.fillStyle = g; kc.beginPath(); kc.moveTo(62, 4); kc.quadraticCurveTo(48, -2, 40, -10); kc.quadraticCurveTo(0, -24, -40, -8); kc.quadraticCurveTo(-58, -2, -66, 0); kc.quadraticCurveTo(-56, 6, -40, 8); kc.quadraticCurveTo(0, 22, 40, 10); kc.quadraticCurveTo(52, 8, 62, 4); kc.fill();
+  kc.fillStyle = '#4d7596'; kc.beginPath(); kc.moveTo(4, -16); kc.quadraticCurveTo(-6, -38, -18, -40); kc.quadraticCurveTo(-12, -26, -14, -14); kc.fill();   // sırt yüzgeci
+  kc.beginPath(); kc.moveTo(-64, 0); kc.lineTo(-84, -16); kc.quadraticCurveTo(-76, 0, -84, 16); kc.closePath(); kc.fill();   // kuyruk
+  kc.beginPath(); kc.moveTo(14, 10); kc.lineTo(2, 26); kc.lineTo(24, 12); kc.fill();
+  kc.fillStyle = '#10222f'; kc.beginPath(); kc.arc(40, -4, 2.6, 0, 7); kc.fill();
+  kc.strokeStyle = 'rgba(16,34,47,.5)'; kc.lineWidth = 1.5; kc.beginPath(); kc.moveTo(52, 4); kc.quadraticCurveTo(56, 7, 61, 5); kc.stroke();
+  kc.restore();
+}
+function kKaplumbaga(x, y, s, t) {
+  kc.save(); kc.translate(x, y); kc.scale(s, s); const k = Math.sin(t * 3) * .5;
+  kc.fillStyle = '#8fbf6a';
+  [[22, -18, -1], [22, 18, 1], [-24, -15, -1], [-24, 15, 1]].forEach(([px, py, sg]) => { kc.save(); kc.translate(px, py); kc.rotate(sg * (.6 + k)); kc.beginPath(); kc.ellipse(0, sg * 8, 6, 15, 0, 0, 7); kc.fill(); kc.restore(); });
+  kc.beginPath(); kc.ellipse(38, 0, 11, 8, 0, 0, 7); kc.fill();
+  const g = kc.createRadialGradient(-4, -6, 2, 0, 0, 34); g.addColorStop(0, '#8a6a3a'); g.addColorStop(1, '#4d6b2a'); kc.fillStyle = g; kc.beginPath(); kc.ellipse(0, 0, 32, 24, 0, 0, 7); kc.fill();
+  kc.strokeStyle = 'rgba(30,40,15,.5)'; kc.lineWidth = 2; kc.beginPath(); kc.moveTo(-14, -18); kc.lineTo(-6, 0); kc.lineTo(-14, 18); kc.moveTo(14, -18); kc.lineTo(6, 0); kc.lineTo(14, 18); kc.moveTo(-6, 0); kc.lineTo(6, 0); kc.stroke();
+  kc.fillStyle = '#111'; kc.beginPath(); kc.arc(43, -3, 2, 0, 7); kc.fill(); kc.restore();
+}
+function kBalik(x, y, r, yon, renk, t, palyaco) {
+  kc.save(); kc.translate(x, y); kc.scale(yon, 1); kc.fillStyle = renk;
+  kc.beginPath(); kc.ellipse(0, 0, r, r * .5, 0, 0, 7); kc.fill();
+  kc.save(); kc.translate(-r * .9, 0); kc.rotate(Math.sin(t * 12) * .3); kc.beginPath(); kc.moveTo(0, 0); kc.lineTo(-r * .7, -r * .5); kc.lineTo(-r * .7, r * .5); kc.closePath(); kc.fill(); kc.restore();
+  if (palyaco) { kc.fillStyle = '#fff'; [-.35, .25].forEach(p => kc.fillRect(r * p - r * .08, -r * .48, r * .16, r * .96)); }
+  kc.fillStyle = '#fff'; kc.beginPath(); kc.arc(r * .55, -r * .1, r * .14, 0, 7); kc.fill(); kc.fillStyle = '#111'; kc.beginPath(); kc.arc(r * .58, -r * .1, r * .07, 0, 7); kc.fill();
+  kc.restore();
+}
+function kMercan(m, y0, ilerleme, t) {
+  if (ilerleme <= 0) return;
+  kc.strokeStyle = m.renk; kc.lineCap = 'round';
+  if (m.tur === 'yelpaze') { kc.lineWidth = 2.5; for (let i = -7; i <= 7; i++) { const a = -Math.PI / 2 + i * .1 + Math.sin(t * .8 + m.faz) * .04; kc.beginPath(); kc.moveTo(m.x, y0); kc.lineTo(m.x + Math.cos(a) * m.boy * ilerleme, y0 + Math.sin(a) * m.boy * ilerleme); kc.stroke(); } return; }
+  const dal = (x, y, a, l, w, d) => { if (d > 4) return; const x2 = x + Math.cos(a) * l, y2 = y + Math.sin(a) * l; kc.lineWidth = w; kc.beginPath(); kc.moveTo(x, y); kc.lineTo(x2, y2); kc.stroke(); const s = Math.sin(t * .9 + m.faz + d) * .05; dal(x2, y2, a - .45 + s, l * .72, w * .75, d + 1); dal(x2, y2, a + .42 + s, l * .7, w * .75, d + 1); };
+  dal(m.x, y0, -Math.PI / 2, m.boy * .38 * ilerleme, Math.max(2, kS.b * .018 * ilerleme), 0);
+}
+
 function kCiz(simdi) {
   if (!kAcik) { kc.clearRect(0, 0, kTuval.width, kTuval.height); return; }
   const dt = Math.min((simdi - kOnce) / 1000, .05); kOnce = simdi; kZaman += dt;
-  const W2 = kTuval.width, H2 = kTuval.height, renkler = KUTLAMA_RENK[kTur];
-  if (kZaman < 10) {
-    for (let i = 0; i < [4, 3, 3, 2][kTur]; i++) kPar.push({ x: Math.random() * W2, y: H2 + 20, vx: (Math.random() - .5) * 40, vy: -(120 + Math.random() * 200), r: 4 + Math.random() * 12, tur: Math.random() < .7 ? 'kab' : 'inci', renk: sec(renkler), t: 0 });
-    if (Math.random() < [.08, .05, .05, .04][kTur]) { const yon = Math.random() < .5 ? 1 : -1; kPar.push({ x: yon > 0 ? -40 : W2 + 40, y: H2 * (.2 + Math.random() * .6), vx: yon * (160 + Math.random() * 120), vy: 0, r: 16 + Math.random() * 12, tur: 'balik', yon, renk: sec(renkler), t: 0 }); }
-  }
+  const W2 = kTuval.width, H2 = kTuval.height, b = kS.b, t = kZaman, uret = t < 10;
   kc.clearRect(0, 0, W2, H2);
+  // her kutlamada aşağıdan kabarcıklar
+  if (uret && Math.random() < .25) kPar.push({ tur: 'kab', x: Math.random() * W2, y: H2 + 20, vx: 0, vy: -(80 + Math.random() * 140), r: 3 + Math.random() * 9 });
+
+  if (kTur === 0) {   // HAZİNE SANDIĞI
+    const sx = W2 / 2, sy = H2 * .97, ss = b * .13, acik = Math.min(1, Math.max(0, (t - .3) / .7));
+    kc.save(); kc.globalCompositeOperation = 'lighter';   // dönen ışık hüzmeleri
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + t * .25, L = Math.max(W2, H2) * 1.2; kc.fillStyle = `rgba(255,220,120,${.07 * acik})`; kc.beginPath(); kc.moveTo(sx, sy - ss); kc.lineTo(sx + Math.cos(a - .06) * L, sy - ss + Math.sin(a - .06) * L); kc.lineTo(sx + Math.cos(a + .06) * L, sy - ss + Math.sin(a + .06) * L); kc.fill(); }
+    kc.restore();
+    const bx = -W2 * .4 + (t / 11) * W2 * 1.8, by = H2 * .2;   // uzaktan geçen balina
+    if (bx < W2 * 1.4) {
+      kc.save(); kc.globalAlpha = .28; kc.fillStyle = '#0b2f4a'; kc.translate(bx, by); kc.scale(b * .0045, b * .0045);
+      kc.beginPath(); kc.ellipse(0, 0, 70, 24, 0, 0, 7); kc.fill(); kc.beginPath(); kc.moveTo(-64, 0); kc.lineTo(-100, -22 + Math.sin(t * 2) * 6); kc.lineTo(-92, 0); kc.lineTo(-100, 22 + Math.sin(t * 2) * 6); kc.fill(); kc.restore();
+      if (Math.random() < .12) kPar.push({ tur: 'kab', x: bx + b * .25, y: by - b * .08, vx: 0, vy: -60, r: 3 + Math.random() * 4 });
+    }
+    if (uret && t > .8 && t < 7.5) for (let i = 0; i < 2; i++) kPar.push({ tur: Math.random() < .62 ? 'para' : 'inci', x: sx + (Math.random() - .5) * ss, y: sy - ss * 1.1, vx: (Math.random() - .5) * W2 * .55, vy: -(H2 * (.75 + Math.random() * .55)), g: H2 * 1.05, r: b * (.012 + Math.random() * .012), don: Math.random() * 6, dv: 6 + Math.random() * 8 });
+    if (Math.random() < .3) kPar.push({ tur: 'parilti', x: Math.random() * W2, y: Math.random() * H2 * .8, r: b * (.01 + Math.random() * .02), omur: .9, t: 0 });
+    kSandik(sx, sy, ss, acik);
+  } else if (kTur === 1) {   // YUNUS GÖSTERİSİ
+    kS.yunusSonra -= dt;
+    if (uret && kS.yunusSonra <= 0) { kS.sira *= -1; const yon = kS.sira; kPar.push({ tur: 'yunus', yon, x0: yon > 0 ? -W2 * .12 : W2 * 1.12, p: 0, sure: 2.3, h: H2 * (.45 + Math.random() * .2), s: b * (.0024 + Math.random() * .0008), sic: [false, false] }); kS.yunusSonra = 1.05; if (kZaman > .5) { nota(1500, 0, .3, 'sine', .035, 2800); } }
+    if (Math.random() < .25) kPar.push({ tur: 'parilti', x: Math.random() * W2, y: Math.random() * H2 * .7, r: b * (.008 + Math.random() * .016), omur: 1, t: 0 });
+  } else if (kTur === 2) {   // MERCAN BAHÇESİ
+    const y0 = H2 + 4;
+    kc.fillStyle = 'rgba(232,211,160,.5)'; kc.beginPath(); kc.ellipse(W2 / 2, H2 + b * .02, W2 * .7, b * .06, 0, 0, 7); kc.fill();
+    kS.mercanlar.forEach(m => kMercan(m, y0, Math.min(1, Math.max(0, (t - m.gec) / 1.6)), t));
+    if (uret && Math.random() < .07) kPar.push({ tur: 'yildiz', x: Math.random() * W2, y: -30, vy: H2 * (.12 + Math.random() * .1), r: b * (.022 + Math.random() * .02), a: Math.random() * 6, da: (Math.random() - .5) * 2, renk: sec(['#ff8a5b', '#ffb347', '#ff6f91', '#ffd36b']), dur: H2 - b * (.02 + Math.random() * .05) });
+    const kx = -W2 * .2 + (t / 9) * W2 * 1.5; if (kx < W2 * 1.3) kKaplumbaga(kx, H2 * .3 + Math.sin(t) * 12, b * .0042, t);
+    if (uret && Math.random() < .05) { const yon = Math.random() < .5 ? 1 : -1; kPar.push({ tur: 'balik', x: yon > 0 ? -40 : W2 + 40, y: H2 * (.45 + Math.random() * .3), vx: yon * b * .35, r: b * .022, yon, renk: '#ff8a2a', palyaco: true }); }
+  } else {   // BALIK SÜRÜSÜ
+    kS.suruSonra -= dt;
+    if (uret && kS.suruSonra <= 0) { kS.sira *= -1; const yon = kS.sira, renk = sec(['#ffd36b', '#ff7a6b', '#5fe3ef', '#ff9fd6', '#8dffcf', '#c77dff']); for (let i = 0; i < 26; i++) kPar.push({ tur: 'suru', yon, gec: i * .07, x0: yon > 0 ? -60 : W2 + 60, ofs: (Math.random() - .5) * b * .16, faz: kZaman, renk, r: b * (.016 + Math.random() * .008), t: 0, hiz: W2 / 3.2 }); kS.suruSonra = 3; }
+  }
+
   kPar = kPar.filter(q => {
-    q.t += dt; q.x += (q.vx + (q.tur === 'balik' ? 0 : Math.sin(q.t * 3 + q.r) * 30)) * dt; q.y += q.vy * dt;
-    if (q.tur === 'kab') { kc.strokeStyle = q.renk; kc.lineWidth = 2; kc.beginPath(); kc.arc(q.x, q.y, q.r, 0, 7); kc.stroke(); kc.fillStyle = 'rgba(255,255,255,.6)'; kc.beginPath(); kc.arc(q.x - q.r * .35, q.y - q.r * .35, q.r * .25, 0, 7); kc.fill(); }
-    else if (q.tur === 'inci') { const g = kc.createRadialGradient(q.x - q.r * .3, q.y - q.r * .3, 1, q.x, q.y, q.r); g.addColorStop(0, '#fff'); g.addColorStop(1, q.renk); kc.fillStyle = g; kc.beginPath(); kc.arc(q.x, q.y, q.r * .8, 0, 7); kc.fill(); }
-    else { kc.save(); kc.translate(q.x, q.y + Math.sin(q.t * 4) * 8); kc.scale(q.yon, 1); kc.fillStyle = q.renk; kc.beginPath(); kc.ellipse(0, 0, q.r, q.r * .45, 0, 0, 7); kc.fill(); kc.beginPath(); kc.moveTo(-q.r * .9, 0); kc.lineTo(-q.r * 1.6, -q.r * .45); kc.lineTo(-q.r * 1.6, q.r * .45); kc.fill(); kc.restore(); }
-    return q.y > -40 && q.x > -80 && q.x < W2 + 80;
+    if (q.tur === 'kab') { q.y += q.vy * dt; q.x += Math.sin(q.y * .03) * .6; kKabarcik(q.x, q.y, q.r); return q.y > -30; }
+    if (q.tur === 'para' || q.tur === 'inci') { q.vy += q.g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.don += q.dv * dt; q.tur === 'para' ? kPara(q.x, q.y, q.r, q.don) : kInci(q.x, q.y, q.r * .85); return q.y < H2 + 40; }
+    if (q.tur === 'parilti') { q.t += dt; kParilti(q.x, q.y, q.r, Math.sin(q.t / q.omur * Math.PI)); return q.t < q.omur; }
+    if (q.tur === 'yunus') {
+      q.p += dt / q.sure; const p = q.p, x = q.x0 + q.yon * W2 * 1.24 * p, y = H2 * 1.02 - 4 * q.h * p * (1 - p);
+      const dx = q.yon * W2 * 1.24, dy = -4 * q.h * (1 - 2 * p);
+      kYunus(x, y, q.s, Math.atan2(dy, Math.abs(dx)) * q.yon, q.yon);
+      [[.12, 0], [.88, 1]].forEach(([pp, i]) => { if (!q.sic[i] && p > pp) { q.sic[i] = true; for (let k = 0; k < 18; k++) kPar.push({ tur: 'damla', x, y: H2 * .98, vx: (Math.random() - .5) * b * .5, vy: -(b * (.4 + Math.random() * .5)), r: b * (.004 + Math.random() * .006) }); kabarcikSes(.04); } });
+      if (Math.random() < .5) kPar.push({ tur: 'kab', x: x - q.yon * q.s * 60, y, vx: 0, vy: -40, r: 2 + Math.random() * 3 });
+      return p < 1;
+    }
+    if (q.tur === 'damla') { q.vy += b * 1.6 * dt; q.x += q.vx * dt; q.y += q.vy * dt; kc.fillStyle = 'rgba(220,245,255,.85)'; kc.beginPath(); kc.arc(q.x, q.y, q.r, 0, 7); kc.fill(); return q.y < H2 + 10; }
+    if (q.tur === 'yildiz') { if (q.y < q.dur) { q.y += q.vy * dt; q.a += q.da * dt; } kYildiz(q.x, q.y, q.r, q.a, q.renk); return true; }
+    if (q.tur === 'balik') { q.x += q.vx * dt; kBalik(q.x, q.y + Math.sin(kZaman * 3 + q.x * .01) * 6, q.r, q.yon, q.renk, kZaman, q.palyaco); return q.x > -80 && q.x < W2 + 80; }
+    if (q.tur === 'suru') {
+      q.t += dt; const yol = Math.max(0, q.t - q.gec) * q.hiz, x = q.x0 + q.yon * yol;
+      const y = H2 * .5 + Math.sin(x / W2 * Math.PI * 2 + q.faz) * H2 * .18 + q.ofs;
+      kBalik(x, y, q.r, q.yon, q.renk, kZaman); return yol < W2 + 160;
+    }
+    return false;
   });
   requestAnimationFrame(kCiz);
 }
