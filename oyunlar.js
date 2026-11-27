@@ -184,6 +184,13 @@ const SISTEM_OYUNLARI = [
         image: "./oyunlar/ondalik_madeni/ondalik_madeni.jpg",
         url: "./oyunlar/ondalik_madeni/ondalik_madeni.html"
     },
+    {
+        id: "oyun-27",
+        title: "Mercan Derinlikleri",
+        grade: "6",
+        image: "./oyunlar/mercan_derinlikleri/mercan_derinlikleri.jpg",
+        url: "./oyunlar/mercan_derinlikleri/mercan_derinlikleri.html"
+    },
     // YENİ OYUN EKLEMEK İÇİN ALT TARAFA ŞU ŞABLONU KOPYALAYABİLİRSİNİZ:
     /*
     ,
